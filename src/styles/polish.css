@@ -1,0 +1,51 @@
+/* ===================================================================
+   전역 디자인 정제 (polish) — 색·레이아웃·문구·브랜드 불변.
+   포커스 접근성 + 입력 포커스 링 + 모션 배려만 전역으로 통일.
+   ※ 배경/테두리는 건드리지 않고 box-shadow/outline만 얹음 → 디자인 보존.
+   =================================================================== */
+
+/* 입력 포커스 — 브랜드 코랄 소프트 링(아주 옅게).
+   페이지별 .xx-input:focus 규칙이 있으면 그쪽이 우선(구체성 높음),
+   포커스 스타일이 없던 입력만 이 규칙이 채워줌. */
+input:not([type='checkbox']):not([type='radio']):not([type='range']):focus,
+textarea:focus,
+select:focus {
+  box-shadow: 0 0 0 3px rgba(255, 90, 77, 0.08);
+}
+
+/* 내비게이션 링크 — 페이지마다 클래스가 달라 속성 선택자로 통일.
+   새 장식(밑줄 등) 추가 없이, 기존 링크가 hover에 아주 살짝 떠오르며 부드럽게 반응.
+   색/굵기/레이아웃은 각 페이지 규칙 그대로. */
+[class*='navlink'],
+[class*='nav-link'] {
+  transition:
+    color 0.18s ease,
+    opacity 0.18s ease,
+    transform 0.18s cubic-bezier(0.34, 1.2, 0.5, 1);
+}
+[class*='navlink']:hover,
+[class*='nav-link']:hover {
+  transform: translateY(-1px);
+}
+
+/* 키보드 포커스 접근성 링 — 마우스 클릭에는 나타나지 않음(:focus-visible). */
+button:focus-visible,
+a:focus-visible,
+[role='button']:focus-visible,
+[tabindex]:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid rgba(255, 90, 77, 0.35);
+  outline-offset: 2px;
+}
+
+/* 모션 배려 — 큰 모션(진입 페이드·스크롤 리빌·hover 부상·press)은 각 파일/블록에서
+   개별 reduced-motion 처리함. 여기서 전역으로 모든 animation을 죽이면 마스코트의 은은한
+   float(브랜드 핵심)까지 멈춰 어색하므로, 전역 말살은 하지 않는다.
+   reduced-motion에서도 부드러운 스크롤만 끔(전정 자극 없음). */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto !important;
+  }
+}

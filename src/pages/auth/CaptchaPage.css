@@ -1,0 +1,664 @@
+/* CatChap 보안캡챠 — handoff 원본 값 그대로 (접두사 cp-)
+   ccSpin 만 공용 animations.css와 동일 → 공용 재사용. 나머지는 값이 다르거나 공용에 없음 → cp 접두사. */
+
+@keyframes cpFloat {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-3deg);
+  }
+  50% {
+    transform: translateY(-11px) rotate(3deg);
+  }
+}
+@keyframes cpIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes cpPulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.12);
+    opacity: 0.65;
+  }
+}
+@keyframes cpShake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-8px);
+  }
+  40% {
+    transform: translateX(8px);
+  }
+  60% {
+    transform: translateX(-6px);
+  }
+  80% {
+    transform: translateX(6px);
+  }
+}
+@keyframes cpPop {
+  0% {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.18);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+@keyframes cpBounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.cp-page {
+  min-height: 100vh;
+  background:
+    radial-gradient(1100px 560px at 80% -10%, #ffe4d0 0%, rgba(255, 228, 208, 0) 60%),
+    radial-gradient(900px 500px at 8% 100%, #ffe0ea 0%, rgba(255, 224, 234, 0) 55%),
+    #fff6ec;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* floating cute shapes */
+.cp-shape1 {
+  position: absolute;
+  top: 12%;
+  left: 13%;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  filter: blur(1px);
+  animation: cpBounce 5s ease-in-out infinite;
+}
+.cp-shape2 {
+  position: absolute;
+  bottom: 15%;
+  right: 12%;
+  width: 54px;
+  height: 54px;
+  border-radius: 18px;
+  background: rgba(255, 180, 160, 0.4);
+  transform: rotate(16deg);
+  animation: cpBounce 6s ease-in-out infinite;
+}
+.cp-shape3 {
+  position: absolute;
+  top: 24%;
+  right: 18%;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: rgba(255, 146, 46, 0.3);
+  transform: rotate(-12deg);
+}
+.cp-shape4 {
+  position: absolute;
+  bottom: 26%;
+  left: 16%;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(255, 109, 166, 0.4);
+}
+
+/* WIDGET */
+.cp-widget {
+  width: 100%;
+  max-width: 580px;
+  position: relative;
+  z-index: 2;
+  animation: cpIn 0.45s ease;
+}
+
+/* peeking mascot */
+.cp-peek {
+  display: flex;
+  justify-content: center;
+  margin-bottom: -30px;
+  position: relative;
+  z-index: 3;
+}
+.cp-peek-float {
+  animation: cpFloat 4.5s ease-in-out infinite;
+}
+.cp-peek-img {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  /* 떠다니는 마스코트 그림자 제거 */
+  border: 4px solid #fff;
+}
+
+/* SHELL */
+.cp-shell {
+  background: #fff;
+  border: 3px solid #ffede4;
+  border-radius: 30px;
+  overflow: hidden;
+  box-shadow: 0 30px 60px -24px rgba(180, 120, 90, 0.55);
+}
+.cp-shell-shake {
+  animation: cpShake 0.45s ease;
+}
+
+/* HEADER — 그라디언트 색은 phase에 따라 CSS 변수로 주입 */
+.cp-header {
+  background: linear-gradient(120deg, var(--cp-hc1), var(--cp-hc2));
+  padding: 34px 22px 20px;
+  text-align: center;
+  transition: background 0.3s;
+  position: relative;
+}
+.cp-guard-chip {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255, 255, 255, 0.24);
+  padding: 5px 11px;
+  border-radius: 20px;
+}
+.cp-guard-icon {
+  font-size: 14px;
+  color: #fff;
+}
+.cp-guard-text {
+  font-size: 10.5px;
+  font-weight: 800;
+  color: #fff;
+}
+.cp-h-title {
+  font-family: 'Jua', sans-serif;
+  font-size: 21px;
+  color: #fff;
+  line-height: 1.25;
+}
+.cp-h-sub {
+  font-size: 12.5px;
+  color: rgba(255, 255, 255, 0.92);
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+/* BODY */
+.cp-body {
+  padding: 22px;
+}
+
+/* WHY BANNER */
+.cp-why {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  background: #fff6ed;
+  border: 2px solid #ffe1b8;
+  border-radius: 16px;
+  padding: 13px 15px;
+  margin-bottom: 18px;
+}
+.cp-why-icon {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+  background: #ffedd6;
+  color: #ff922e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cp-why-icon-i {
+  font-size: 19px;
+}
+.cp-why-text {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #9b7a2e;
+  line-height: 1.55;
+}
+
+/* CHALLENGE */
+.cp-ch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.cp-prompt {
+  font-family: 'Jua', sans-serif;
+  font-size: 16px;
+  color: #3a3340;
+}
+.cp-shuffle {
+  border: none;
+  background: #fff1e9;
+  color: #b0a79b;
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cp-shuffle:hover {
+  background: #ffe3d6;
+  color: #ff5a4d;
+}
+.cp-shuffle-icon {
+  font-size: 17px;
+}
+
+/* CAPTCHA API MOUNT SLOT */
+.cp-slot {
+  border: 2px dashed #ffd6c4;
+  border-radius: 20px;
+  background: #fffbf6;
+  min-height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cp-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 13px;
+  padding: 28px 16px;
+}
+.cp-spinner {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 4px solid #ffe7dc;
+  border-top-color: #ff5a4d;
+  animation: ccSpin 0.8s linear infinite; /* 공용 ccSpin과 값 동일 → 재사용 */
+}
+.cp-loading-text {
+  font-size: 13px;
+  font-weight: 800;
+  color: #8a8072;
+}
+.cp-loading-api {
+  font-size: 11px;
+  font-weight: 600;
+  color: #c7bbad;
+  font-family: monospace;
+}
+.cp-ready {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 11px;
+  padding: 24px 16px;
+  text-align: center;
+}
+.cp-ready-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
+  background: #ffe0db;
+  color: #ff5a6e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: cpBounce 2.5s ease-in-out infinite;
+}
+.cp-ready-icon-i {
+  font-size: 30px;
+}
+.cp-ready-title {
+  font-family: 'Jua', sans-serif;
+  font-size: 15px;
+  color: #5a5248;
+}
+.cp-ready-desc {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #a79e92;
+  line-height: 1.55;
+  max-width: 280px;
+}
+.cp-ready-code {
+  font-family: monospace;
+  color: #ff5a4d;
+}
+
+/* ERROR */
+.cp-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff0ec;
+  border-radius: 12px;
+  padding: 10px 13px;
+  margin-top: 12px;
+}
+.cp-error-icon {
+  font-size: 16px;
+  color: #ff5a4d;
+  flex-shrink: 0;
+}
+.cp-error-text {
+  font-size: 12px;
+  font-weight: 700;
+  color: #c0402e;
+}
+
+/* TIMER */
+.cp-timer-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 15px;
+}
+.cp-timer {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #b0a79b;
+}
+.cp-timer-icon {
+  font-size: 13px;
+  color: #ff922e;
+  margin-right: 3px;
+}
+
+/* BUTTONS */
+.cp-retry {
+  width: 100%;
+  margin-top: 16px;
+  border: 2px solid #ffd6c4;
+  cursor: pointer;
+  background: #fff;
+  color: #ff5a4d;
+  font-family: 'Jua', sans-serif;
+  font-size: 17px;
+  padding: 14px;
+  border-radius: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.cp-verify {
+  width: 100%;
+  margin-top: 16px;
+  border: none;
+  cursor: pointer;
+  background: #ff5a4d;
+  color: #fff;
+  font-family: 'Jua', sans-serif;
+  font-size: 17px;
+  padding: 15px;
+  border-radius: 16px;
+  box-shadow: 0 14px 26px -8px rgba(255, 90, 77, 0.6);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.cp-btn-icon {
+  font-size: 19px;
+}
+
+/* SUCCESS */
+.cp-success {
+  text-align: center;
+  padding: 10px 6px 6px;
+}
+.cp-success-float {
+  display: inline-block;
+  position: relative;
+  animation: cpFloat 4s ease-in-out infinite;
+  margin-bottom: 16px;
+}
+.cp-success-img {
+  width: 112px;
+  height: 112px;
+  border-radius: 50%;
+  /* 떠다니는 마스코트 그림자 제거 */
+}
+.cp-success-seal {
+  position: absolute;
+  bottom: 0;
+  right: -4px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 16px -6px rgba(0, 0, 0, 0.2);
+  animation: cpPop 0.4s ease;
+}
+.cp-success-seal-icon {
+  font-size: 25px;
+  color: #17b08c;
+}
+.cp-success-title {
+  font-family: 'Jua', sans-serif;
+  font-size: 26px;
+  color: #3a3340;
+  margin: 0 0 6px;
+}
+.cp-success-sub {
+  margin: 0 0 22px;
+  font-size: 14px;
+  color: #8a8072;
+  font-weight: 600;
+  line-height: 1.6;
+}
+.cp-success-btn {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #17b08c;
+  color: #fff;
+  font-family: 'Jua', sans-serif;
+  font-size: 16px;
+  padding: 14px 28px;
+  border-radius: 16px;
+  box-shadow: 0 14px 26px -8px rgba(23, 176, 140, 0.6);
+}
+.cp-success-btn:hover {
+  background: #149478;
+}
+.cp-success-arrow {
+  font-size: 18px;
+}
+
+/* LOCKED */
+.cp-locked {
+  text-align: center;
+  padding: 10px 6px 6px;
+}
+.cp-locked-float {
+  display: inline-block;
+  position: relative;
+  margin-bottom: 16px;
+  animation: cpShake 0.5s ease;
+}
+.cp-locked-img {
+  width: 104px;
+  height: 104px;
+  border-radius: 50%;
+  box-shadow: 0 16px 30px -14px rgba(255, 90, 77, 0.5);
+  filter: saturate(0.85);
+}
+.cp-locked-badge {
+  position: absolute;
+  bottom: -2px;
+  right: -6px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 16px -6px rgba(0, 0, 0, 0.2);
+}
+.cp-locked-badge-icon {
+  font-size: 24px;
+  color: #ff922e;
+}
+.cp-locked-title {
+  font-family: 'Jua', sans-serif;
+  font-size: 23px;
+  color: #3a3340;
+  margin: 0 0 6px;
+}
+.cp-locked-sub {
+  margin: 0 0 22px;
+  font-size: 13.5px;
+  color: #8a8072;
+  font-weight: 600;
+  line-height: 1.6;
+}
+.cp-locked-btn {
+  border: none;
+  cursor: pointer;
+  background: #ff5a4d;
+  color: #fff;
+  font-family: 'Jua', sans-serif;
+  font-size: 15px;
+  padding: 14px 26px;
+  border-radius: 16px;
+  box-shadow: 0 14px 26px -8px rgba(255, 90, 77, 0.6);
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.cp-locked-btn:hover {
+  background: #f5493c;
+}
+.cp-locked-btn-icon {
+  font-size: 17px;
+}
+
+/* FOOTER */
+.cp-footer {
+  border-top: 2px solid #fff1e9;
+  padding: 13px 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.cp-foot-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10.5px;
+  font-weight: 800;
+  color: #c0b6a9;
+}
+.cp-foot-shield {
+  font-size: 13px;
+  color: #ffb43c;
+}
+.cp-foot-links {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.cp-foot-link {
+  text-decoration: none;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #b0a79b;
+}
+.cp-foot-link:hover {
+  color: #ff5a4d;
+}
+.cp-foot-dot {
+  color: #efe3d8;
+}
+
+/* risk chip under widget */
+.cp-risk {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin-top: 16px;
+}
+.cp-risk-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ffb43c;
+  animation: cpPulse 1.6s ease-in-out infinite;
+}
+.cp-risk-text {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #9b9086;
+}
+.cp-risk-b {
+  color: #c98a00;
+}
+
+/* ===== 정제(polish): 액션 버튼 hover 부상 + 탄력 눌림 (배경색 불변, 그림자/모션만) ===== */
+.cp-locked-btn,
+.cp-success-btn {
+  transition:
+    transform 0.2s cubic-bezier(0.34, 1.2, 0.5, 1),
+    box-shadow 0.2s ease,
+    filter 0.2s ease;
+}
+.cp-locked-btn:hover,
+.cp-success-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 12px -6px rgba(255, 90, 77, 0.28);
+}
+.cp-locked-btn:active,
+.cp-success-btn:active {
+  transform: translateY(0) scale(0.97);
+  box-shadow: 0 2px 6px -4px rgba(255, 90, 77, 0.28);
+  transition-duration: 0.09s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cp-locked-btn,
+  .cp-success-btn { transition: none; }
+  .cp-locked-btn:hover, .cp-locked-btn:active,
+  .cp-success-btn:hover, .cp-success-btn:active { transform: none; }
+}
+
+
+/* ===== 엘리베이션: 버튼 광택 (솔리드 컬러 버튼 상단 하이라이트, 배경색 불변) ===== */
+.cp-locked-btn,
+.cp-success-btn {
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0) 55%);
+}

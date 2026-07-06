@@ -1,0 +1,618 @@
+/* CatChap 전체학습 — handoff `CatChap 전체학습.dc.html` 원본 그대로 */
+
+.al-root {
+  min-height: 100vh;
+  background:
+    radial-gradient(1200px 600px at 82% -8%, #ffe9d6 0%, rgba(255, 233, 214, 0) 60%),
+    radial-gradient(900px 500px at 5% 10%, #e6f0ff 0%, rgba(230, 240, 255, 0) 55%),
+    #fff6ec;
+  padding-bottom: 60px;
+}
+
+/* ---------- NAV ---------- */
+
+.al-nav {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(12px);
+  border-bottom: 2px solid #ffe7dc;
+}
+
+.al-navinner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  gap: 26px;
+}
+
+.al-logo {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  text-decoration: none;
+}
+
+.al-logoimg {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  box-shadow: 0 6px 14px rgba(255, 90, 77, 0.3);
+}
+
+.al-logotext {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+}
+
+.al-logotitle {
+  font-family: 'Jua', sans-serif;
+  font-size: 25px;
+  color: #ff5a4d;
+  letter-spacing: -0.5px;
+}
+
+.al-logosub {
+  font-size: 11px;
+  color: #b7ada2;
+  font-weight: 600;
+  margin-top: 3px;
+}
+
+.al-menu {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 8px;
+}
+
+.al-navlink {
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 15.5px;
+  color: #6e6558;
+  padding: 9px 16px;
+  border-radius: 12px;
+}
+
+.al-navlink:hover {
+  background: #fff0e6;
+  color: #3a3340;
+}
+
+.al-navlink-active {
+  text-decoration: none;
+  font-weight: 800;
+  font-size: 15.5px;
+  color: #ff5a4d;
+  background: #ffe7e2;
+  padding: 9px 16px;
+  border-radius: 12px;
+}
+
+.al-navright {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.al-iconbtn {
+  width: 42px;
+  height: 42px;
+  border: none;
+  border-radius: 14px;
+  background: #fff1e9;
+  color: #8a8072;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.al-iconbtn:hover {
+  background: #ffe3d6;
+  color: #ff5a4d;
+}
+
+.al-iconbtn i {
+  font-size: 20px;
+}
+
+.al-bellbtn {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  border: none;
+  border-radius: 14px;
+  background: #fff1e9;
+  color: #8a8072;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.al-bellbtn:hover {
+  background: #ffe3d6;
+  color: #ff5a4d;
+}
+
+.al-bellbtn i {
+  font-size: 20px;
+}
+
+.al-belldot {
+  position: absolute;
+  top: 6px;
+  right: 7px;
+  width: 9px;
+  height: 9px;
+  background: #ff5a4d;
+  border-radius: 50%;
+  border: 2px solid #fff1e9;
+}
+
+.al-profile {
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  background: #fff;
+  border: 2px solid #ffe7dc;
+  padding: 5px 12px 5px 6px;
+  border-radius: 40px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+  cursor: pointer;
+}
+
+.al-profile:hover {
+  border-color: #ffb59e;
+}
+
+.al-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ffc24b, #ff8a5b);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Jua', sans-serif;
+  color: #fff;
+  font-size: 16px;
+}
+
+.al-profilename {
+  font-weight: 800;
+  font-size: 14px;
+  color: #3a3340;
+}
+
+/* ---------- HEADER ---------- */
+
+.al-header-section {
+  max-width: 1200px;
+  margin: 26px auto 0;
+  padding: 0 24px;
+}
+
+.al-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.al-header-left {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+.al-header-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: #ffe0db;
+  color: #ff5a4d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.al-header-icon i {
+  font-size: 26px;
+}
+
+.al-title {
+  font-family: 'Jua', sans-serif;
+  font-size: 32px;
+  color: #3a3340;
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+.al-subtitle {
+  margin: 4px 0 0;
+  color: #9b9086;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.al-stats {
+  display: flex;
+  gap: 12px;
+}
+
+.al-stat {
+  background: #fff;
+  border: 2px solid #ffede4;
+  border-radius: 18px;
+  padding: 12px 18px;
+  text-align: center;
+  box-shadow: 0 10px 22px -20px rgba(180, 120, 90, 0.5);
+}
+
+.al-stat-value {
+  font-family: 'Jua', sans-serif;
+  font-size: 22px;
+  line-height: 1;
+}
+
+.al-stat-level {
+  color: #ff922e;
+}
+
+.al-stat-pct {
+  color: #17b08c;
+}
+
+.al-stat-label {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #9b9086;
+  margin-top: 4px;
+}
+
+/* ---------- FILTER CHIPS ---------- */
+
+.al-chips {
+  display: flex;
+  gap: 9px;
+  flex-wrap: wrap;
+  margin-top: 22px;
+}
+
+.al-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  cursor: pointer;
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 800;
+  font-size: 13.5px;
+  padding: 10px 16px;
+  border-radius: 30px;
+  transition: all 0.18s;
+  min-height: 42px;
+}
+
+.al-chip i {
+  font-size: 16px;
+}
+
+.al-chip-on {
+  background: #ff5a4d;
+  color: #fff;
+  box-shadow: 0 8px 16px -8px rgba(255, 90, 77, 0.7);
+}
+
+.al-chip-off {
+  background: #fff;
+  color: #8a8072;
+  border: 2px solid #ffe7dc;
+}
+
+/* ---------- CATEGORY LIST ---------- */
+
+.al-cats {
+  max-width: 1200px;
+  margin: 24px auto 0;
+  padding: 0 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.al-cat {
+  background: #fff;
+  border: 2px solid #ffede4;
+  border-radius: 26px;
+  padding: 22px;
+  box-shadow: 0 16px 34px -26px rgba(180, 120, 90, 0.5);
+  display: grid;
+  grid-template-columns: 270px 1fr;
+  gap: 24px;
+  align-items: center;
+}
+
+/* left color panel */
+
+.al-panel {
+  position: relative;
+  overflow: hidden;
+  border-radius: 22px;
+  padding: 20px;
+  color: #fff;
+  background: linear-gradient(160deg, var(--al-c1), var(--al-c2));
+  box-shadow: 0 16px 30px -20px var(--al-sh);
+}
+
+.al-panel-orb {
+  position: absolute;
+  top: -24px;
+  right: -16px;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.al-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+}
+
+.al-panel-tag {
+  background: rgba(255, 255, 255, 0.26);
+  font-weight: 800;
+  font-size: 11.5px;
+  padding: 5px 11px;
+  border-radius: 20px;
+}
+
+.al-panel-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.22);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.al-panel-icon i {
+  font-size: 24px;
+}
+
+.al-panel-title {
+  font-family: 'Jua', sans-serif;
+  font-size: 23px;
+  margin: 16px 0 4px;
+  position: relative;
+}
+
+.al-panel-desc {
+  margin: 0 0 16px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 600;
+  position: relative;
+}
+
+.al-panel-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11.5px;
+  font-weight: 800;
+  margin-bottom: 6px;
+  position: relative;
+}
+
+.al-panel-donelabel {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.al-panel-track {
+  height: 9px;
+  background: rgba(255, 255, 255, 0.28);
+  border-radius: 20px;
+  overflow: hidden;
+  position: relative;
+}
+
+.al-panel-fill {
+  height: 100%;
+  background: #fff;
+  border-radius: 20px;
+}
+
+/* lessons */
+
+.al-lessons-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.al-lessons-label {
+  font-weight: 800;
+  font-size: 13.5px;
+  color: #8a8072;
+}
+
+.al-continue {
+  text-decoration: none;
+  font-weight: 800;
+  font-size: 13px;
+  color: #ff5a4d;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.al-continue i {
+  font-size: 13px;
+}
+
+.al-lessons {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 11px;
+}
+
+.al-ls {
+  border-radius: 16px;
+  padding: 13px;
+  min-height: 96px;
+  display: flex;
+  flex-direction: column;
+}
+
+.al-ls-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.al-ls-level {
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.al-ls-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.al-ls-icon i {
+  font-size: 14px;
+}
+
+.al-ls-name {
+  font-weight: 800;
+  font-size: 13.5px;
+  margin-top: 10px;
+  line-height: 1.3;
+}
+
+.al-ls-state {
+  font-size: 11px;
+  font-weight: 700;
+  margin-top: 5px;
+}
+
+/* lesson states — 원본 lessonStyle() 값 그대로 */
+
+.al-ls-done {
+  background: #f1faf6;
+  border: 2px solid #c9eedf;
+}
+
+.al-ls-done .al-ls-level,
+.al-ls-done .al-ls-state {
+  color: #5bb79b;
+}
+
+.al-ls-done .al-ls-icon {
+  background: #dff6ed;
+  color: #17b08c;
+}
+
+.al-ls-done .al-ls-name {
+  color: #2e7a64;
+}
+
+.al-ls-active {
+  background: #fff3ef;
+  border: 2px solid #ffcbbe;
+}
+
+.al-ls-active .al-ls-level,
+.al-ls-active .al-ls-state {
+  color: #ff7a5b;
+}
+
+.al-ls-active .al-ls-icon {
+  background: #ffe0d6;
+  color: #ff5a4d;
+}
+
+.al-ls-active .al-ls-name {
+  color: #c0402e;
+}
+
+.al-ls-lock {
+  background: #f6f2ec;
+  border: 2px dashed #e4dacc;
+}
+
+.al-ls-lock .al-ls-level,
+.al-ls-lock .al-ls-state {
+  color: #b7ada2;
+}
+
+.al-ls-lock .al-ls-icon {
+  background: #efe7da;
+  color: #b0a290;
+}
+
+.al-ls-lock .al-ls-name {
+  color: #a99d8d;
+}
+
+.al-ls-todo {
+  background: #faf7f1;
+  border: 2px solid #efe9e1;
+}
+
+.al-ls-todo .al-ls-level,
+.al-ls-todo .al-ls-state {
+  color: #b7ada2;
+}
+
+.al-ls-todo .al-ls-icon {
+  background: #f0eae0;
+  color: #c0b6a9;
+}
+
+.al-ls-todo .al-ls-name {
+  color: #7a7266;
+}
+
+/* ===== 정제(polish): 액션 버튼 hover 부상 + 탄력 눌림 (배경색 불변, 그림자/모션만) ===== */
+.al-bellbtn {
+  transition:
+    transform 0.2s cubic-bezier(0.34, 1.2, 0.5, 1),
+    box-shadow 0.2s ease,
+    filter 0.2s ease;
+}
+.al-bellbtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 12px -6px rgba(255, 90, 77, 0.28);
+}
+.al-bellbtn:active {
+  transform: translateY(0) scale(0.97);
+  box-shadow: 0 2px 6px -4px rgba(255, 90, 77, 0.28);
+  transition-duration: 0.09s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .al-bellbtn { transition: none; }
+  .al-bellbtn:hover, .al-bellbtn:active { transform: none; }
+}

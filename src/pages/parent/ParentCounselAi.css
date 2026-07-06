@@ -1,0 +1,534 @@
+/* handoff `CatChap 학부모 상담 AI.dc.html` — 원본 값 그대로 (접두사 pc-) */
+
+/* 원본 ccFloatSlow — 공용 animations.css에 없어 페이지 접두사 버전 */
+@keyframes pcFloatSlow {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-7px);
+  }
+}
+
+/* 원본 ccIn(translateY(10px))은 공용 ccIn(16px)과 값이 달라 접두사 버전 정의 */
+@keyframes pcIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.pc-bg {
+  background:
+    radial-gradient(1200px 600px at 82% -8%, #ede6ff 0%, rgba(237, 230, 255, 0) 60%),
+    radial-gradient(900px 500px at 5% 10%, #ffe4ee 0%, rgba(255, 228, 238, 0) 55%),
+    #fff6ec;
+  padding-bottom: 40px;
+}
+
+/* BODY */
+.pc-body {
+  max-width: 1200px;
+  margin: 24px auto 0;
+  padding: 0 24px;
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+/* LEFT: AI card + topics */
+.pc-aside {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: sticky;
+  top: 88px;
+}
+
+.pc-aicard {
+  background: linear-gradient(160deg, #8b6bff, #6e4bff);
+  border-radius: 26px;
+  padding: 24px;
+  color: #fff;
+  text-align: center;
+  box-shadow: 0 18px 36px -22px rgba(110, 75, 255, 0.7);
+}
+
+.pc-aicard-icon {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  animation: pcFloatSlow 3.5s ease-in-out infinite;
+  margin-bottom: 12px;
+}
+
+.pc-aicard-icon i {
+  font-size: 46px;
+}
+
+.pc-aicard-title {
+  font-family: 'Jua', sans-serif;
+  font-size: 22px;
+  margin: 0;
+}
+
+.pc-aicard-text {
+  margin: 6px 0 0;
+  font-size: 12.5px;
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 600;
+  line-height: 1.55;
+}
+
+.pc-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 6px 13px;
+  border-radius: 20px;
+  margin-top: 14px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.pc-statusdot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #7cffb0;
+}
+
+/* child context / switcher */
+.pc-childcard {
+  background: #fff;
+  border: 2px solid #f0e6ff;
+  border-radius: 22px;
+  padding: 16px 18px;
+  box-shadow: 0 12px 26px -22px rgba(110, 75, 255, 0.4);
+}
+
+.pc-childhead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 11px;
+}
+
+.pc-childlabel {
+  font-weight: 800;
+  font-size: 12px;
+  color: #9b9086;
+}
+
+.pc-childhint {
+  font-size: 11px;
+  font-weight: 700;
+  color: #b0a79b;
+}
+
+.pc-childlist {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pc-child {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  cursor: pointer;
+  border-radius: 16px;
+  padding: 10px 12px;
+  font-family: 'Pretendard', sans-serif;
+  transition: all 0.15s;
+  text-align: left;
+}
+
+.pc-child--on {
+  background: #f6f2ff;
+  border: 2px solid #8b6bff;
+}
+
+.pc-child--off {
+  background: #fff;
+  border: 2px solid #f0e6ff;
+}
+
+.pc-childavatar {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Jua', sans-serif;
+  color: #fff;
+  font-size: 18px;
+}
+
+.pc-childinfo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.3;
+  min-width: 0;
+}
+
+.pc-childname {
+  font-weight: 800;
+  font-size: 14px;
+  color: #3a3340;
+}
+
+.pc-childsub {
+  font-size: 11.5px;
+  color: #9b9086;
+  font-weight: 600;
+}
+
+.pc-childcheck {
+  margin-left: auto;
+  color: #8b6bff;
+  display: flex;
+}
+
+.pc-childcheck i {
+  font-size: 20px;
+}
+
+/* topics */
+.pc-topics {
+  background: #fff;
+  border: 2px solid #f0e6ff;
+  border-radius: 22px;
+  padding: 18px 20px;
+  box-shadow: 0 12px 26px -22px rgba(110, 75, 255, 0.4);
+}
+
+.pc-topicstitle {
+  font-weight: 800;
+  font-size: 13px;
+  color: #8a8072;
+  margin-bottom: 12px;
+}
+
+.pc-topiclist {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+
+.pc-topic {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #5a5248;
+}
+
+.pc-topicicon {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pc-topicicon i {
+  font-size: 17px;
+}
+
+.pc-ti1 {
+  background: #ede6ff;
+  color: #8b6bff;
+}
+
+.pc-ti2 {
+  background: #ffe3e9;
+  color: #ff5a6e;
+}
+
+.pc-ti3 {
+  background: #e6f0ff;
+  color: #2e7bff;
+}
+
+.pc-ti4 {
+  background: #dff6ed;
+  color: #17b08c;
+}
+
+/* notice */
+.pc-notice {
+  background: #f6f2ff;
+  border: 2px solid #e6dbff;
+  border-radius: 18px;
+  padding: 14px 16px;
+  display: flex;
+  gap: 10px;
+}
+
+.pc-noticeicon {
+  color: #8b6bff;
+  font-size: 19px;
+  flex-shrink: 0;
+}
+
+.pc-noticetext {
+  margin: 0;
+  font-size: 11.5px;
+  color: #6b5ab0;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+/* RIGHT: chat */
+.pc-chat {
+  background: #fff;
+  border: 2px solid #ffede4;
+  border-radius: 28px;
+  box-shadow: 0 18px 40px -28px rgba(180, 120, 90, 0.5);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  height: calc(100vh - 116px);
+  max-height: 820px;
+  position: sticky;
+  top: 92px;
+}
+
+.pc-chathead {
+  padding: 16px 22px;
+  border-bottom: 2px solid #f6eee4;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.pc-chatavatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #8b6bff, #6e4bff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pc-chatavatar i {
+  font-size: 21px;
+  color: #fff;
+}
+
+.pc-chatheadtext {
+  line-height: 1.2;
+}
+
+.pc-chatname {
+  font-family: 'Jua', sans-serif;
+  font-size: 17px;
+  color: #3a3340;
+}
+
+.pc-chatstatus {
+  font-size: 11.5px;
+  color: #17b08c;
+  font-weight: 800;
+}
+
+/* messages */
+.pc-msgs {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 24px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: #fbfaff;
+}
+
+.pc-daterow {
+  text-align: center;
+}
+
+.pc-datechip {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #c2b9ad;
+  background: #fff;
+  padding: 5px 13px;
+  border-radius: 20px;
+}
+
+.pc-msgrow {
+  display: flex;
+  gap: 10px;
+  animation: pcIn 0.25s ease;
+}
+
+.pc-msgrow-ai {
+  justify-content: flex-start;
+}
+
+.pc-msgrow-me {
+  justify-content: flex-end;
+}
+
+.pc-msgavatar {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #8b6bff, #6e4bff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: flex-end;
+}
+
+.pc-msgavatar i {
+  font-size: 18px;
+  color: #fff;
+}
+
+.pc-bubble {
+  max-width: 78%;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.65;
+  padding: 14px 17px;
+}
+
+.pc-bubble-ai {
+  background: #fff;
+  border: 2px solid #eee8fa;
+  color: #3a3340;
+  border-radius: 20px 20px 20px 6px;
+  box-shadow: 0 8px 18px -14px rgba(110, 75, 255, 0.4);
+}
+
+.pc-bubble-me {
+  background: linear-gradient(135deg, #9b7bff, #6e4bff);
+  color: #fff;
+  border-radius: 20px 20px 6px 20px;
+  box-shadow: 0 8px 18px -12px rgba(110, 75, 255, 0.6);
+}
+
+/* quick replies */
+.pc-chips {
+  padding: 14px 22px 4px;
+  display: flex;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+
+.pc-chip {
+  border: 2px solid #e6dbff;
+  background: #fff;
+  color: #5a5248;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 9px 15px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-family: 'Pretendard', sans-serif;
+  min-height: 40px;
+}
+
+.pc-chip:hover {
+  background: #f6f2ff;
+  border-color: #8b6bff;
+  color: #6e4bff;
+}
+
+/* input bar */
+.pc-inputbar {
+  padding: 14px 22px 20px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.pc-inputwrap {
+  flex: 1;
+  position: relative;
+}
+
+.pc-input {
+  width: 100%;
+  border: 2px solid #e6dbff;
+  background: #fbfaff;
+  border-radius: 16px;
+  padding: 14px 16px;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: #3a3340;
+  font-family: 'Pretendard', sans-serif;
+}
+
+.pc-input:focus {
+  border-color: #8b6bff;
+  outline: none;
+}
+
+.pc-send {
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 16px;
+  background: #8b6bff;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 20px -8px rgba(110, 75, 255, 0.7);
+}
+
+.pc-send:hover {
+  background: #7a5af0;
+}
+
+.pc-send i {
+  font-size: 22px;
+}
+
+
+/* ===== 엘리베이션: 카드 질감 고급화 (레이어드 웜 섀도우) ===== */
+.pc-aicard {
+  box-shadow:
+    0 1px 3px rgba(58, 51, 64, 0.05),
+    0 16px 34px -20px rgba(90, 60, 55, 0.2);
+}
+.pc-aicard {
+  transition:
+    box-shadow 0.28s ease,
+    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.pc-aicard:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 2px 6px rgba(58, 51, 64, 0.06),
+    0 24px 44px -22px rgba(90, 60, 55, 0.26);
+}
+@media (prefers-reduced-motion: reduce) {
+  .pc-aicard { transition: none; }
+  .pc-aicard:hover { transform: none; }
+}

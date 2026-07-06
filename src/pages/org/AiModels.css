@@ -1,0 +1,476 @@
+/* handoff CatChap AI모델.dc.html → AiModels (am- prefix) */
+
+/* 원본 ccPulse는 공용(animations.css) 값과 다름(opacity만) → 페이지 접두사 버전 */
+@keyframes amPulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+/* HEADER */
+.am-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.am-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #A7ABBB;
+  margin-bottom: 5px;
+}
+
+.am-breadcrumb a {
+  text-decoration: none;
+  color: #A7ABBB;
+}
+
+.am-breadcrumb i {
+  font-size: 11px;
+}
+
+.am-title {
+  font-family: 'Jua', sans-serif;
+  font-size: 26px;
+  color: #2E3040;
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+.am-subtitle {
+  margin: 5px 0 0;
+  color: #9195A6;
+  font-weight: 600;
+  font-size: 13.5px;
+}
+
+/* LIVE SYNC BAR */
+.am-syncBar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  background: linear-gradient(120deg, #12172B, #232A45);
+  border-radius: 18px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 14px 30px -22px rgba(20, 25, 50, 0.8);
+}
+
+.am-syncLive {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #fff;
+  font-weight: 800;
+  font-size: 13.5px;
+}
+
+.am-syncDot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #33E0A0;
+  box-shadow: 0 0 0 4px rgba(51, 224, 160, 0.25);
+  animation: amPulse 1.6s ease-in-out infinite;
+}
+
+.am-syncMeta {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #A6ADCB;
+}
+
+.am-syncMeta b {
+  color: #fff;
+}
+
+.am-syncRight {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.am-registry {
+  font-size: 12px;
+  font-weight: 700;
+  color: #8891B4;
+}
+
+.am-refreshBtn {
+  border: none;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-weight: 800;
+  font-size: 12.5px;
+  padding: 9px 15px;
+  border-radius: 11px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.am-refreshBtn:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.am-refreshBtn i {
+  font-size: 15px;
+}
+
+.am-spinning {
+  animation: ccSpin 0.7s linear;
+}
+
+/* MODEL CARDS */
+.am-modelGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.am-modelCard {
+  background: #fff;
+  border: 1px solid #ECEDF3;
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 10px 24px -20px rgba(60, 60, 110, 0.5);
+  display: flex;
+  flex-direction: column;
+}
+
+.am-modelHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.am-modelIcon {
+  width: 44px;
+  height: 44px;
+  border-radius: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.am-modelIcon i {
+  font-size: 24px;
+}
+
+.am-modelStatus {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 800;
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.am-modelStatus i {
+  font-size: 12px;
+}
+
+.am-statusOk {
+  background: #E1F5EC;
+  color: #158A6E;
+}
+
+.am-statusBeta {
+  background: #FFF3D6;
+  color: #C98A00;
+}
+
+.am-modelCat {
+  font-size: 11.5px;
+  font-weight: 800;
+  color: #9195A6;
+  margin-bottom: 3px;
+}
+
+.am-modelName {
+  font-family: 'Jua', sans-serif;
+  font-size: 19px;
+  color: #2E3040;
+  line-height: 1.15;
+}
+
+.am-modelProvider {
+  font-size: 12px;
+  font-weight: 600;
+  color: #8A8FA0;
+  margin-top: 3px;
+}
+
+.am-modelUse {
+  margin: 12px 0 16px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #5A5E70;
+  line-height: 1.55;
+}
+
+.am-modelFoot {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 13px;
+  border-top: 1px solid #F0F1F6;
+}
+
+.am-modelVersion {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: monospace;
+  font-weight: 800;
+  font-size: 12.5px;
+  color: #3A3D4D;
+  background: #F4F5F9;
+  padding: 5px 10px;
+  border-radius: 9px;
+}
+
+.am-modelVersion i {
+  font-size: 13px;
+  color: #8A8FA0;
+}
+
+.am-modelUpdated {
+  font-size: 11px;
+  font-weight: 700;
+  color: #A7ABBB;
+}
+
+/* CHANGELOG + PRINCIPLES */
+.am-bottomGrid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 16px;
+}
+
+.am-card {
+  background: #fff;
+  border: 1px solid #ECEDF3;
+  border-radius: 20px;
+  padding: 22px 24px;
+  box-shadow: 0 10px 24px -20px rgba(60, 60, 110, 0.5);
+}
+
+.am-cardHead {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 16px;
+}
+
+.am-cardHeadIcon {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: #EDE9FF;
+  color: #8B6BFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.am-cardHeadIcon i {
+  font-size: 18px;
+}
+
+.am-cardTitle {
+  font-family: 'Jua', sans-serif;
+  font-size: 17px;
+  color: #2E3040;
+  margin: 0;
+}
+
+.am-logList {
+  display: flex;
+  flex-direction: column;
+}
+
+.am-logItem {
+  display: flex;
+  gap: 13px;
+  padding: 12px 0;
+  border-bottom: 1px solid #F4F5F9;
+}
+
+.am-logDot {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-top: 6px;
+}
+
+.am-logBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.am-logHead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.am-logModel {
+  font-weight: 800;
+  font-size: 13px;
+  color: #2E3040;
+}
+
+.am-logVersion {
+  font-family: monospace;
+  font-size: 11.5px;
+  font-weight: 800;
+  color: #6A55C0;
+  background: #EDE9FF;
+  padding: 2px 8px;
+  border-radius: 7px;
+}
+
+.am-logNote {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #6B6F80;
+  margin-top: 3px;
+  line-height: 1.5;
+}
+
+.am-logWhen {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 700;
+  color: #A7ABBB;
+  white-space: nowrap;
+}
+
+.am-principles {
+  background: linear-gradient(150deg, #EAF9F2, #E6F0FF);
+  border: 1px solid #D6EAE0;
+  border-radius: 20px;
+  padding: 22px 24px;
+  box-shadow: 0 10px 24px -20px rgba(60, 120, 110, 0.4);
+}
+
+.am-principlesHead {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 14px;
+}
+
+.am-principlesIcon {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: #fff;
+  color: #17B08C;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.am-principlesIcon i {
+  font-size: 18px;
+}
+
+.am-principlesTitle {
+  font-family: 'Jua', sans-serif;
+  font-size: 17px;
+  color: #1F6E5A;
+  margin: 0;
+}
+
+.am-principleList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.am-principle {
+  display: flex;
+  gap: 10px;
+}
+
+.am-principle i {
+  font-size: 18px;
+  color: #17B08C;
+  flex-shrink: 0;
+}
+
+.am-principle span {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #3E5A52;
+  line-height: 1.5;
+}
+
+/* ===== 정제(polish): 액션 버튼 hover 부상 + 탄력 눌림 (배경색 불변, 그림자/모션만) ===== */
+.am-refreshBtn {
+  transition:
+    transform 0.2s cubic-bezier(0.34, 1.2, 0.5, 1),
+    box-shadow 0.2s ease,
+    filter 0.2s ease;
+}
+.am-refreshBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 12px -6px rgba(255, 90, 77, 0.28);
+}
+.am-refreshBtn:active {
+  transform: translateY(0) scale(0.97);
+  box-shadow: 0 2px 6px -4px rgba(255, 90, 77, 0.28);
+  transition-duration: 0.09s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .am-refreshBtn { transition: none; }
+  .am-refreshBtn:hover, .am-refreshBtn:active { transform: none; }
+}
+
+
+/* ===== 엘리베이션: 카드 질감 고급화 (레이어드 웜 섀도우) ===== */
+.am-card,
+.am-modelCard {
+  box-shadow:
+    0 1px 3px rgba(58, 51, 64, 0.05),
+    0 16px 34px -20px rgba(90, 60, 55, 0.2);
+}
+.am-card,
+.am-modelCard {
+  transition:
+    box-shadow 0.28s ease,
+    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.am-card:hover,
+.am-modelCard:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 2px 6px rgba(58, 51, 64, 0.06),
+    0 24px 44px -22px rgba(90, 60, 55, 0.26);
+}
+@media (prefers-reduced-motion: reduce) {
+  .am-card,.am-modelCard { transition: none; }
+  .am-card:hover,.am-modelCard:hover { transform: none; }
+}

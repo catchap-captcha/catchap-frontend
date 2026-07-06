@@ -1,0 +1,175 @@
+/* 학생 공통 풀 NAV — handoff `CatChap 학습 홈.dc.html` NAV 원본 그대로 */
+
+.sl-navbar {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(12px);
+  border-bottom: 2px solid #ffe7dc;
+}
+
+.sl-navinner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  gap: 26px;
+}
+
+.sl-logo {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.sl-logoimg {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  box-shadow: 0 6px 14px rgba(255, 90, 77, 0.3);
+}
+
+.sl-logotext {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+}
+
+.sl-logotitle {
+  font-family: 'Jua', sans-serif;
+  font-size: 25px;
+  color: #ff5a4d;
+  letter-spacing: -0.5px;
+}
+
+.sl-logosub {
+  font-size: 11px;
+  color: #b7ada2;
+  font-weight: 600;
+  margin-top: 3px;
+}
+
+.sl-menu {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 8px;
+}
+
+.sl-navlink {
+  text-decoration: none;
+  font-size: 15.5px;
+  padding: 9px 16px;
+  border-radius: 12px;
+  font-weight: 700;
+  color: #6e6558;
+}
+
+.sl-navlink.sl-active {
+  font-weight: 800;
+  color: #ff5a4d;
+  background: #ffe7e2;
+}
+
+.sl-navlink:hover,
+.sl-navlink.sl-active:hover {
+  background: #fff0e6;
+  color: #3a3340;
+}
+
+.sl-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sl-iconbtn {
+  width: 42px;
+  height: 42px;
+  border: none;
+  border-radius: 14px;
+  background: #fff1e9;
+  color: #8a8072;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.sl-iconbtn:hover {
+  background: #ffe3d6;
+  color: #ff5a4d;
+}
+
+.sl-iconbtn i {
+  font-size: 20px;
+}
+
+.sl-bell {
+  position: relative;
+}
+
+.sl-belldot {
+  position: absolute;
+  top: 6px;
+  right: 7px;
+  width: 9px;
+  height: 9px;
+  background: #ff5a4d;
+  border-radius: 50%;
+  border: 2px solid #fff1e9;
+}
+
+.sl-profile {
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  background: #ffffff;
+  border: 2px solid #ffe7dc;
+  padding: 5px 12px 5px 6px;
+  border-radius: 40px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.sl-profile:hover {
+  border-color: #ff5a4d;
+}
+
+.sl-avatar {
+  position: relative;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sl-avatarimg {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+}
+
+.sl-hat {
+  position: absolute;
+  top: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 14px;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.15));
+}
+
+.sl-profilename {
+  font-weight: 800;
+  font-size: 14px;
+  color: #3a3340;
+}

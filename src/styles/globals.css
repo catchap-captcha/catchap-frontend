@@ -1,0 +1,99 @@
+@import '@phosphor-icons/web/regular';
+@import '@phosphor-icons/web/bold';
+@import '@phosphor-icons/web/fill';
+@import './tokens.css';
+@import './animations.css';
+@import './polish.css';
+@import './reveal.css';
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: 'kern' 1;
+}
+
+button {
+  font-family: inherit;
+}
+
+input,
+select,
+textarea {
+  font-family: inherit;
+}
+
+a {
+  color: inherit;
+}
+
+/* ===== 학생 설정 화면 효과 (StudentSettingsProvider가 html[data-cc-*]로 제어) ===== */
+
+/* 움직임 줄이기 — 모든 애니메이션/트랜지션 정지 */
+html[data-cc-reduce='1'] *,
+html[data-cc-reduce='1'] *::before,
+html[data-cc-reduce='1'] *::after {
+  animation: none !important;
+  transition: none !important;
+}
+
+/* 화면 효과 오버레이 (포인터 통과) — 눈 보호/어두운 화면/색약 보정 조합 */
+.cc-screen-fx {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483600; /* 모달·오버레이 위 (눈 휴식 팝업보다 위) */
+  pointer-events: none;
+}
+
+/* 눈 보호 모드: 따뜻한 색 틴트 */
+html[data-cc-eye='1'] .cc-screen-fx {
+  background: rgba(255, 168, 60, 0.07);
+}
+
+/* 색약 친화 표시: 대비·채도 보정 (backdrop-filter — fixed 요소를 깨지 않음) */
+html[data-cc-color='1'] .cc-screen-fx {
+  backdrop-filter: contrast(1.12) saturate(1.25);
+}
+
+/* 눈 보호 + 색약 동시 */
+html[data-cc-eye='1'][data-cc-color='1'] .cc-screen-fx {
+  background: rgba(255, 168, 60, 0.07);
+  backdrop-filter: contrast(1.12) saturate(1.25);
+}
+
+/* ===== 어두운 화면: 다크 모드 (색 반전 + 색상환 보정 — 배경 어둡게/글자 밝게, 브랜드 색감 유지) ===== */
+html[data-cc-dark='1'] {
+  background: #0e0c11; /* 오버스크롤 영역 */
+}
+
+html[data-cc-dark='1'] .cc-screen-fx {
+  backdrop-filter: invert(0.92) hue-rotate(180deg);
+}
+
+/* 다크 + 눈 보호: 반전 후 따뜻한 톤 추가 */
+html[data-cc-dark='1'][data-cc-eye='1'] .cc-screen-fx {
+  background: transparent;
+  backdrop-filter: invert(0.92) hue-rotate(180deg) sepia(0.18);
+}
+
+/* 다크 + 색약 */
+html[data-cc-dark='1'][data-cc-color='1'] .cc-screen-fx {
+  backdrop-filter: invert(0.92) hue-rotate(180deg) contrast(1.12) saturate(1.25);
+}
+
+/* 다크 + 눈 보호 + 색약 */
+html[data-cc-dark='1'][data-cc-eye='1'][data-cc-color='1'] .cc-screen-fx {
+  background: transparent;
+  backdrop-filter: invert(0.92) hue-rotate(180deg) sepia(0.18) contrast(1.12) saturate(1.25);
+}

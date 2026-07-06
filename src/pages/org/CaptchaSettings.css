@@ -1,0 +1,507 @@
+/* handoff CatChap 캡차설정.dc.html → CaptchaSettings (cs- prefix) */
+
+/* 원본 ccIn은 공용(animations.css) 값과 다름(translateY(6px)) → 페이지 접두사 버전 */
+@keyframes csIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* HEADER */
+.cs-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.cs-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #A7ABBB;
+  margin-bottom: 5px;
+}
+
+.cs-breadcrumb a {
+  text-decoration: none;
+  color: #A7ABBB;
+}
+
+.cs-breadcrumb i {
+  font-size: 11px;
+}
+
+.cs-title {
+  font-family: 'Jua', sans-serif;
+  font-size: 26px;
+  color: #2E3040;
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+.cs-subtitle {
+  margin: 5px 0 0;
+  color: #9195A6;
+  font-weight: 600;
+  font-size: 13.5px;
+}
+
+.cs-saveBtn {
+  border: none;
+  cursor: pointer;
+  background: #FF5A4D;
+  color: #fff;
+  font-weight: 800;
+  font-size: 13px;
+  padding: 11px 18px;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+  box-shadow: 0 8px 18px -8px rgba(255, 90, 77, 0.6);
+}
+
+.cs-saveBtn:hover {
+  background: #F5493C;
+}
+
+.cs-saveBtn i {
+  font-size: 16px;
+}
+
+/* SUMMARY BAR */
+.cs-summary {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  background: linear-gradient(120deg, #12172B, #232A45);
+  border-radius: 16px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 14px 30px -22px rgba(20, 25, 50, 0.8);
+}
+
+.cs-summaryMain {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #fff;
+  font-weight: 800;
+  font-size: 14px;
+}
+
+.cs-summaryMain i {
+  font-size: 18px;
+  color: #FF8A5B;
+}
+
+.cs-summaryHint {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #A6ADCB;
+}
+
+/* LAYOUT */
+.cs-grid {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 20px;
+  align-items: start;
+}
+
+/* CAPTCHA TYPE LIST */
+.cs-typeList {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.cs-typeCard {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background: #fff;
+  border: 2px solid #ECEDF3;
+  border-radius: 18px;
+  padding: 18px 20px;
+  box-shadow: 0 10px 24px -20px rgba(60, 60, 110, 0.5);
+  transition: border-color 0.15s;
+  opacity: 0.62;
+}
+
+.cs-typeCardOn {
+  border: 2px solid #FFD9D2;
+  opacity: 1;
+}
+
+.cs-typeIcon {
+  width: 52px;
+  height: 52px;
+  border-radius: 15px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cs-typeIcon i {
+  font-size: 28px;
+}
+
+.cs-typeBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.cs-typeNameRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cs-typeName {
+  font-family: 'Jua', sans-serif;
+  font-size: 17px;
+  color: #2E3040;
+}
+
+.cs-diff {
+  font-weight: 800;
+  font-size: 10.5px;
+  padding: 3px 9px;
+  border-radius: 20px;
+}
+
+.cs-diffEasy {
+  background: #E1F5EC;
+  color: #158A6E;
+}
+
+.cs-diffNormal {
+  background: #E6F0FF;
+  color: #2E7BFF;
+}
+
+.cs-diffHard {
+  background: #FFF3D6;
+  color: #C98A00;
+}
+
+.cs-typeDesc {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #8A8FA0;
+  margin-top: 3px;
+  line-height: 1.5;
+}
+
+.cs-switch {
+  position: relative;
+  flex-shrink: 0;
+  width: 50px;
+  height: 28px;
+  border: none;
+  cursor: pointer;
+  border-radius: 20px;
+  padding: 0;
+  transition: background 0.18s;
+  background: #D6D2E2;
+}
+
+.cs-switchOn {
+  background: #FF5A4D;
+}
+
+.cs-knob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #fff;
+  transition: left 0.18s;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.cs-switchOn .cs-knob {
+  left: 25px;
+}
+
+.cs-warn {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  background: #FFF8ED;
+  border: 1px solid #FFE6BE;
+  border-radius: 14px;
+  padding: 13px 15px;
+}
+
+.cs-warn i {
+  color: #C98A00;
+  font-size: 17px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.cs-warn span {
+  font-size: 12px;
+  font-weight: 600;
+  color: #9B7A2E;
+  line-height: 1.55;
+}
+
+/* SETTINGS PANEL */
+.cs-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: sticky;
+  top: 24px;
+}
+
+.cs-panelCard {
+  background: #fff;
+  border: 1px solid #ECEDF3;
+  border-radius: 20px;
+  padding: 22px;
+  box-shadow: 0 10px 24px -20px rgba(60, 60, 110, 0.5);
+}
+
+.cs-panelTitle {
+  font-family: 'Jua', sans-serif;
+  font-size: 16px;
+  color: #2E3040;
+  margin: 0 0 4px;
+}
+
+.cs-panelSub {
+  margin: 0 0 14px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #9195A6;
+  line-height: 1.5;
+}
+
+.cs-countRow {
+  display: flex;
+  gap: 7px;
+}
+
+.cs-countChip {
+  flex: 1;
+  border: none;
+  font-family: 'Jua', sans-serif;
+  font-size: 16px;
+  padding: 11px 0;
+  border-radius: 12px;
+  transition: all 0.15s;
+  background: #F4F5F9;
+  color: #6B6F80;
+  cursor: pointer;
+}
+
+.cs-countChipOn {
+  background: #FF5A4D;
+  color: #fff;
+  box-shadow: 0 6px 14px -8px rgba(255, 90, 77, 0.6);
+}
+
+.cs-countChipOff {
+  background: #F4F5F9;
+  color: #CFCEDB;
+  cursor: not-allowed;
+}
+
+.cs-shuffleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid #F0F1F6;
+}
+
+.cs-shuffleTitle {
+  font-weight: 800;
+  font-size: 13px;
+  color: #2E3040;
+}
+
+.cs-shuffleSub {
+  font-size: 11px;
+  font-weight: 600;
+  color: #9195A6;
+  margin-top: 2px;
+}
+
+/* PREVIEW */
+.cs-previewHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.cs-previewTitle {
+  font-family: 'Jua', sans-serif;
+  font-size: 16px;
+  color: #2E3040;
+  margin: 0;
+}
+
+.cs-rerollBtn {
+  border: 1px solid #E4E6EF;
+  cursor: pointer;
+  background: #fff;
+  color: #6B6F80;
+  font-weight: 800;
+  font-size: 11.5px;
+  padding: 6px 11px;
+  border-radius: 9px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.cs-rerollBtn:hover {
+  background: #F6F7FB;
+  color: #FF5A4D;
+}
+
+.cs-rerollBtn i {
+  font-size: 14px;
+}
+
+.cs-previewList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cs-previewItem {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  background: #FBFAFE;
+  border: 1px solid #EFEDF5;
+  border-radius: 13px;
+  padding: 11px 13px;
+  animation: csIn 0.2s ease;
+}
+
+.cs-previewOrder {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #FF5A4D;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Jua', sans-serif;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.cs-previewIcon {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cs-previewIcon i {
+  font-size: 19px;
+}
+
+.cs-previewName {
+  font-weight: 800;
+  font-size: 13px;
+  color: #2E3040;
+}
+
+.cs-previewDiff {
+  margin-left: auto;
+}
+
+.cs-previewNote {
+  margin: 14px 0 0;
+  font-size: 11px;
+  color: #B7BBCB;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+/* ===== 정제(polish): 액션 버튼 hover 부상 + 탄력 눌림 (배경색 불변, 그림자/모션만) ===== */
+.cs-rerollBtn,
+.cs-saveBtn {
+  transition:
+    transform 0.2s cubic-bezier(0.34, 1.2, 0.5, 1),
+    box-shadow 0.2s ease,
+    filter 0.2s ease;
+}
+.cs-rerollBtn:hover,
+.cs-saveBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 12px -6px rgba(255, 90, 77, 0.28);
+}
+.cs-rerollBtn:active,
+.cs-saveBtn:active {
+  transform: translateY(0) scale(0.97);
+  box-shadow: 0 2px 6px -4px rgba(255, 90, 77, 0.28);
+  transition-duration: 0.09s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cs-rerollBtn,
+  .cs-saveBtn { transition: none; }
+  .cs-rerollBtn:hover, .cs-rerollBtn:active,
+  .cs-saveBtn:hover, .cs-saveBtn:active { transform: none; }
+}
+
+
+/* ===== 엘리베이션: 카드 질감 고급화 (레이어드 웜 섀도우) ===== */
+.cs-panelCard,
+.cs-typeCard {
+  box-shadow:
+    0 1px 3px rgba(58, 51, 64, 0.05),
+    0 16px 34px -20px rgba(90, 60, 55, 0.2);
+}
+.cs-panelCard,
+.cs-typeCard {
+  transition:
+    box-shadow 0.28s ease,
+    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.cs-typeCard:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 2px 6px rgba(58, 51, 64, 0.06),
+    0 24px 44px -22px rgba(90, 60, 55, 0.26);
+}
+@media (prefers-reduced-motion: reduce) {
+  .cs-panelCard,.cs-typeCard { transition: none; }
+  .cs-typeCard:hover { transform: none; }
+}
+
+
+/* ===== 엘리베이션: 버튼 광택 (솔리드 컬러 버튼 상단 하이라이트, 배경색 불변) ===== */
+.cs-saveBtn {
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0) 55%);
+}

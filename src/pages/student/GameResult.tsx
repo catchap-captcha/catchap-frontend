@@ -1,0 +1,382 @@
+import { useEffect, useState, type CSSProperties } from 'react';
+import CountUp from '../../components/motion/CountUp';
+import { Link, useSearchParams } from 'react-router-dom';
+import { PATHS } from '../../routes/paths';
+import { useAuth } from '../../hooks/useAuth';
+import { studentApi } from '../../api/students';
+import mascot from '../../assets/characters/catchap-logo.png';
+import './GameResult.css';
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+interface ResultEntry {
+  solid: string;
+  soft: string;
+  cleared: number;
+  correct: number;
+  /** API도 '+150' 형태의 문자열 */
+  score: string;
+  time: string;
+  streak: number;
+  ai: string;
+  /** 문제 수 — API total, 미제공 시 5 */
+  total?: number;
+}
+
+// TODO(api): studentApi.result() 실패 시 원본 SUBJECTS 하드코딩 데이터 유지
+const FALLBACK: Record<string, ResultEntry> = {
+  '국어': { solid: '#FF5A4D', soft: '#FFE0DB', cleared: 5, correct: 5, score: '+150', time: '2:40', streak: 5, ai: '낱말을 정말 잘 찾았어요! 그림을 천천히 보고 고르는 습관이 멋져요. 이제 국어 모든 단계를 마스터했네요! 🐾' },
+  '영어': { solid: '#FF922E', soft: '#FFEDD6', cleared: 3, correct: 4, score: '+90', time: '2:10', streak: 3, ai: '영어 단어를 척척 맞혔어요! 알파벳 소리를 떠올리면 더 쉬워요. 다음 단계도 잘 해낼 거예요! 🐾' },
+  '수학': { solid: '#17B08C', soft: '#DFF6EE', cleared: 5, correct: 5, score: '+160', time: '3:05', streak: 5, ai: '수 세기가 아주 정확했어요! 하나씩 짚으며 세는 방법이 완벽했어요. 수학 전 단계 클리어! 🐾' },
+  '과학': { solid: '#2E7BFF', soft: '#E1EDFF', cleared: 2, correct: 4, score: '+95', time: '2:20', streak: 3, ai: '관찰을 참 잘했어요! 무겁고 가벼운 걸 잘 구분했어요. 다음엔 더 어려운 관찰에 도전해봐요! 🐾' },
+  '역사': { solid: '#8B6BFF', soft: '#EAE2FF', cleared: 1, correct: 4, score: '+80', time: '2:05', streak: 3, ai: '옛날 이야기를 잘 기억하고 있네요! 세종대왕님 이야기, 아주 멋지게 맞혔어요. 다음 단계로 가볼까요? 🐾' },
+  '생활': { solid: '#FF6DA6', soft: '#FFE3EF', cleared: 1, correct: 4, score: '+110', time: '2:35', streak: 4, ai: '안전 규칙을 잘 지켰어요! 멈추고, 살피고, 건너기 — 참 잘 기억했어요. 다음 단계도 안전하게! 🐾' },
+};
+
+const MAP: Record<string, { color: string; soft: string; icon: string }> = {
+  '국어': { color: '#FF5A4D', soft: '#FFE0DB', icon: 'ph-fill ph-book-open' },
+  '영어': { color: '#FF922E', soft: '#FFEDD6', icon: 'ph-fill ph-translate' },
+  '수학': { color: '#17B08C', soft: '#DFF6EE', icon: 'ph-fill ph-plus-minus' },
+  '과학': { color: '#2E7BFF', soft: '#E1EDFF', icon: 'ph-fill ph-flask' },
+  '역사': { color: '#8B6BFF', soft: '#EAE2FF', icon: 'ph-fill ph-scroll' },
+  '생활': { color: '#FF6DA6', soft: '#FFE3EF', icon: 'ph-fill ph-house-line' },
+};
+
+const ORDER = ['국어', '영어', '수학', '과학', '역사', '생활'];
+
+// TODO(api): 오늘 완료한 과목 — API 실패 시 원본 TODAY_DONE 유지
+const TODAY_DONE = ['국어', '영어', '수학'];
+
+const CONFETTI = [
+  { left: '6%', bg: '#FF5A4D', delay: '0s' },
+  { left: '14%', bg: '#FFB43C', delay: '.5s' },
+  { left: '22%', bg: '#33C892', delay: '1.1s' },
+  { left: '31%', bg: '#2E7BFF', delay: '.3s' },
+  { left: '39%', bg: '#FF6DA6', delay: '1.6s' },
+  { left: '47%', bg: '#8B6BFF', delay: '.8s' },
+  { left: '55%', bg: '#FFB43C', delay: '.2s' },
+  { left: '63%', bg: '#FF5A4D', delay: '1.3s' },
+  { left: '71%', bg: '#17B08C', delay: '.6s' },
+  { left: '79%', bg: '#2E7BFF', delay: '1.9s' },
+  { left: '87%', bg: '#FF6DA6', delay: '1s' },
+  { left: '94%', bg: '#FFB43C', delay: '.4s' },
+];
+
+export default function GameResult() {
+  const { me } = useAuth();
+  const [apiNick, setApiNick] = useState<string | null>(null);
+  const name = (me?.name ?? apiNick ?? '하은').trim() || '하은';
+  const [searchParams] = useSearchParams();
+
+  /* 원본 componentDidMount: ?subject= 쿼리 → 없으면 hash → 기본 국어 */
+  const [subjectKey] = useState(() => {
+    try {
+      const q = searchParams.get('subject');
+      if (q && FALLBACK[q]) return q;
+      if (window.location.hash) {
+        const h = decodeURIComponent(window.location.hash.slice(1));
+        if (FALLBACK[h]) return h;
+      }
+    } catch {
+      /* 원본과 동일: 파싱 실패 무시 */
+    }
+    return '국어';
+  });
+
+  const [data, setData] = useState<Record<string, ResultEntry>>(FALLBACK);
+  const [todayDone, setTodayDone] = useState<string[]>(TODAY_DONE);
+  const [order, setOrder] = useState<string[]>(ORDER);
+
+  useEffect(() => {
+    let mounted = true;
+    studentApi
+      .result(subjectKey)
+      .then((d: any) => {
+        if (!mounted || !d) return;
+        /* GET /students/me/result 응답: score는 '+150' 문자열, AI 코멘트 필드명은 ai */
+        setData((prev) => {
+          const cur = prev[subjectKey] ?? prev['국어'];
+          return {
+            ...prev,
+            [subjectKey]: {
+              ...cur,
+              cleared: typeof d.cleared === 'number' ? d.cleared : cur.cleared,
+              correct: typeof d.correct === 'number' ? d.correct : cur.correct,
+              score: typeof d.score === 'string' ? d.score : cur.score,
+              time: typeof d.time === 'string' ? d.time : cur.time,
+              streak: typeof d.streak === 'number' ? d.streak : cur.streak,
+              ai: typeof d.ai === 'string' ? d.ai : typeof d.ai_comment === 'string' ? d.ai_comment : cur.ai,
+              total: typeof d.total === 'number' ? d.total : cur.total,
+            },
+          };
+        });
+        if (Array.isArray(d.today_done)) {
+          setTodayDone(d.today_done.filter((k: any) => typeof k === 'string'));
+        }
+        /* 오늘의 학습 지도 과목 순서 — 스타일(MAP)에 있는 과목만 반영 */
+        if (Array.isArray(d.subject_order)) {
+          const so = d.subject_order.filter((k: any) => typeof k === 'string' && MAP[k]);
+          if (so.length) setOrder(so);
+        }
+        if (typeof d.nickname === 'string' && d.nickname) setApiNick(d.nickname);
+      })
+      .catch(() => {
+        // TODO(api): 백엔드 미구현/실패 시 FALLBACK 유지
+      });
+    return () => {
+      mounted = false;
+    };
+  }, [subjectKey]);
+
+  const s = data[subjectKey] ?? data['국어'];
+  const total = s.total ?? 5;
+
+  /* ---- 오늘의 학습 지도 (원본 renderVals 그대로) ---- */
+  const doneSet: Record<string, boolean> = {};
+  todayDone.forEach((k) => {
+    doneSet[k] = true;
+  });
+  doneSet[subjectKey] = true; // 방금 완료한 과목은 항상 완료
+  const doneCount = order.filter((k) => doneSet[k]).length;
+  const allDoneToday = doneCount >= order.length;
+  const nextUndone = order.find((k) => !doneSet[k]) || null;
+
+  const pct = Math.round((s.correct / total) * 100);
+  const circ = 339.29;
+  const offset = (circ * (1 - pct / 100)).toFixed(2);
+
+  const review = Array.from({ length: total }, (_, i) => i + 1 > s.correct);
+
+  const gameHref = `${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(subjectKey)}`;
+  const primaryHref = allDoneToday
+    ? PATHS.STUDENT_HOME
+    : `${PATHS.STUDENT_CHAPTERS}?subject=${encodeURIComponent(nextUndone || subjectKey)}`;
+
+  const themeVars = { '--gr-solid': s.solid, '--gr-soft': s.soft } as CSSProperties;
+
+  return (
+    <div className="gr-root" style={themeVars}>
+      {/* CONFETTI */}
+      <div className="gr-confetti-layer">
+        {CONFETTI.map((c, i) => (
+          <span
+            key={i}
+            className="gr-confetti"
+            style={{ left: c.left, background: c.bg, animationDelay: c.delay }}
+          />
+        ))}
+      </div>
+
+      <div className="gr-content">
+        {/* HERO */}
+        <div className="gr-hero">
+          <div className="gr-herochip">
+            <i className="ph-fill ph-confetti" />
+            {allDoneToday ? '오늘의 학습 끝!' : `${subjectKey} 완료!`}
+          </div>
+          <div className="gr-mascotwrap">
+            <img src={mascot} alt="마스코트" className="gr-mascotimg" />
+            <span className="gr-trophy">
+              <i className="ph-fill ph-trophy" />
+            </span>
+          </div>
+          <h1 className="gr-title">참 잘했어요, {name}! 🎉</h1>
+          <p className="gr-herosub">
+            {allDoneToday
+              ? `오늘 하루 학습을 다 마쳤어요! 여섯 과목을 모두 끝낸 ${name}, 정말 대단해요 🏆`
+              : `${subjectKey} 챕터를 멋지게 끝냈어요. 오늘도 한 뼘 더 자랐네요!`}
+          </p>
+        </div>
+
+        {/* SCORE CARD */}
+        <div className="gr-scorecard">
+          <div className="gr-ringwrap">
+            <svg width="180" height="180" viewBox="0 0 120 120" className="gr-ringsvg">
+              <circle cx="60" cy="60" r="54" fill="none" stroke="#FFEDE4" strokeWidth="12" />
+              <circle
+                cx="60"
+                cy="60"
+                r="54"
+                fill="none"
+                strokeWidth="12"
+                strokeLinecap="round"
+                strokeDasharray="339.29"
+                className="gr-ringfg"
+                style={{ '--dash': offset, strokeDashoffset: offset } as CSSProperties}
+              />
+            </svg>
+            <div className="gr-ringcenter">
+              <div className="gr-pct">
+                {pct}
+                <span>%</span>
+              </div>
+              <div className="gr-pctlabel">정답률</div>
+            </div>
+          </div>
+          <div className="gr-stats">
+            <div className="gr-stat">
+              <span className="gr-staticon gr-staticon-correct">
+                <i className="ph-fill ph-check-circle" />
+              </span>
+              <div>
+                <div className="gr-statnum">
+                  <CountUp value={s.correct} />
+                  <span>/{total}</span>
+                </div>
+                <div className="gr-statlabel">맞힌 문제</div>
+              </div>
+            </div>
+            <div className="gr-stat">
+              <span className="gr-staticon gr-staticon-score">
+                <i className="ph-fill ph-star" />
+              </span>
+              <div>
+                <div className="gr-statnum"><CountUp value={s.score} /></div>
+                <div className="gr-statlabel">획득 점수</div>
+              </div>
+            </div>
+            <div className="gr-stat">
+              <span className="gr-staticon gr-staticon-time">
+                <i className="ph-fill ph-clock" />
+              </span>
+              <div>
+                <div className="gr-statnum">{s.time}</div>
+                <div className="gr-statlabel">걸린 시간</div>
+              </div>
+            </div>
+            <div className="gr-stat">
+              <span className="gr-staticon gr-staticon-streak">
+                <i className="ph-fill ph-fire" />
+              </span>
+              <div>
+                <div className="gr-statnum"><CountUp value={s.streak} /></div>
+                <div className="gr-statlabel">최고 연속 정답</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* TODAY MAP (6과목) */}
+        <div className="gr-mapcard">
+          <div className="gr-maphead">
+            <div className="gr-maphead-left">
+              <span className="gr-mapicon">
+                <i className="ph-fill ph-map-trifold" />
+              </span>
+              <div>
+                <h3 className="gr-maptitle">오늘의 학습 지도</h3>
+                <p className="gr-mapsub">6과목 중 {doneCount}개 완료</p>
+              </div>
+            </div>
+            <span
+              className="gr-todaybadge"
+              style={{
+                background: allDoneToday ? '#DFF6ED' : s.soft,
+                color: allDoneToday ? '#17B08C' : s.solid,
+              }}
+            >
+              <i className={allDoneToday ? 'ph-fill ph-check-circle' : 'ph-fill ph-flag'} />
+              {allDoneToday ? '오늘의 학습 끝! 🎉' : `남은 과목 ${order.length - doneCount}개`}
+            </span>
+          </div>
+          <div className="gr-mapnodes">
+            {order.map((subject, i) => {
+              const m = MAP[subject];
+              const isHero = subject === subjectKey;
+              const isDone = !!doneSet[subject] && !isHero;
+              return (
+                <div key={subject} className="gr-mapnode">
+                  <div
+                    className="gr-mapline"
+                    style={{
+                      borderTopColor: doneSet[subject] ? m.color : '#E4DCD0',
+                      display: i === 0 ? 'none' : 'block',
+                    }}
+                  />
+                  {isHero ? (
+                    <div
+                      className="gr-node gr-node-hero"
+                      style={{
+                        background: m.color,
+                        boxShadow: `0 0 0 5px ${m.soft}, 0 12px 22px -8px ${m.color}`,
+                      }}
+                    >
+                      <i className="ph-fill ph-trophy" />
+                    </div>
+                  ) : isDone ? (
+                    <div className="gr-node gr-node-done" style={{ background: m.color }}>
+                      <i className="ph-fill ph-check" />
+                    </div>
+                  ) : (
+                    <div className="gr-node gr-node-todo">
+                      <i className={m.icon} />
+                    </div>
+                  )}
+                  <span
+                    className="gr-maplabel"
+                    style={{ color: isHero ? m.color : isDone ? '#5A5248' : '#B0A79B' }}
+                  >
+                    {subject}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* AI COMMENT */}
+        <div className="gr-aicard">
+          <div className="gr-aihead">
+            <div className="gr-aiavatar">
+              <i className="ph-fill ph-robot" />
+            </div>
+            <div>
+              <div className="gr-ainame">AI 선생님 냥냥이</div>
+              <div className="gr-airole">오늘의 한마디</div>
+            </div>
+          </div>
+          <p className="gr-aitext">{s.ai}</p>
+          <Link to={PATHS.STUDENT_AI_TEACHER} className="gr-ailink">
+            AI 선생님과 더 이야기하기 <i className="ph-bold ph-arrow-right" />
+          </Link>
+        </div>
+
+        {/* QUESTION REVIEW (5문제) */}
+        <div className="gr-reviewcard">
+          <div className="gr-reviewhead">
+            <h3 className="gr-reviewtitle">문제 다시 보기</h3>
+            <Link to={PATHS.STUDENT_WRONG_NOTES} className="gr-wronglink">
+              오답만 모아보기 →
+            </Link>
+          </div>
+          <div className="gr-reviewchips">
+            {review.map((isWrong, i) => (
+              <span
+                key={i}
+                className={`gr-reviewchip ${isWrong ? 'gr-reviewchip-wrong' : 'gr-reviewchip-ok'}`}
+              >
+                <i className={isWrong ? 'ph-fill ph-x' : 'ph-fill ph-check'} />
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {/* ACTIONS */}
+        <div className="gr-actions">
+          <Link to={gameHref} className="gr-btn-secondary">
+            <i className="ph-fill ph-arrow-counter-clockwise" />
+            다시 하기
+          </Link>
+          <Link to={PATHS.STUDENT_ALL_LEARNING} className="gr-btn-secondary">
+            <i className="ph-fill ph-squares-four" />
+            다른 학습 하기
+          </Link>
+          <Link to={primaryHref} className="gr-btn-primary">
+            <i className={allDoneToday ? 'ph-fill ph-house' : 'ph-fill ph-arrow-right'} />
+            {allDoneToday ? '홈으로 가기' : '다음 과목 하러 가기'}
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}

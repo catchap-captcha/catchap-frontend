@@ -1,0 +1,20 @@
+/* 페이지 진입 페이드 — opacity만(transform 없음) → sticky 내비/ fixed 모달 영향 0.
+   both: 시작 프레임(opacity:0) 적용해 첫 렌더 깜빡임 방지. */
+@keyframes ccPageEnter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.cc-page-enter {
+  animation: ccPageEnter 0.32s ease both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cc-page-enter {
+    animation: none;
+  }
+}

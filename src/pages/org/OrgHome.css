@@ -1,0 +1,827 @@
+/* handoff CatChap 기관.dc.html → OrgHome (oh- prefix) */
+
+.oh-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 22px;
+}
+
+.oh-title {
+  font-family: 'Jua', sans-serif;
+  font-size: 26px;
+  color: #2E3040;
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+.oh-subtitle {
+  margin: 5px 0 0;
+  color: #9195A6;
+  font-weight: 600;
+  font-size: 13.5px;
+}
+
+.oh-headerRight {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.oh-periodBox {
+  display: flex;
+  background: #fff;
+  border: 1px solid #ECEDF3;
+  border-radius: 11px;
+  padding: 4px;
+  gap: 2px;
+}
+
+.oh-periodBtn {
+  border: none;
+  cursor: pointer;
+  font-size: 12.5px;
+  padding: 7px 13px;
+  border-radius: 8px;
+  transition: all 0.15s;
+  background: transparent;
+  color: #8A8FA0;
+  font-weight: 700;
+}
+
+.oh-periodBtn.oh-on {
+  background: #FF5A4D;
+  color: #fff;
+  font-weight: 800;
+}
+
+.oh-exportBtn {
+  border: none;
+  cursor: pointer;
+  background: #2E3040;
+  color: #fff;
+  font-weight: 800;
+  font-size: 13px;
+  padding: 9px 16px;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.oh-exportBtn:hover {
+  background: #1F2130;
+}
+
+.oh-exportBtn i {
+  font-size: 16px;
+}
+
+/* KPI */
+.oh-kpiRow {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.oh-kpiCard {
+  background: #fff;
+  border: 1px solid #ECEDF3;
+  border-radius: 18px;
+  padding: 16px 16px;
+  box-shadow: 0 10px 24px -20px rgba(60, 60, 110, 0.5);
+}
+
+.oh-kpiIcon {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.oh-kpiIcon i {
+  font-size: 18px;
+}
+
+.oh-kpiValue {
+  font-family: 'Jua', sans-serif;
+  font-size: 24px;
+  color: #2E3040;
+  line-height: 1;
+}
+
+.oh-kpiUnit {
+  font-size: 13px;
+  color: #B7BBCB;
+}
+
+.oh-kpiLabel {
+  font-weight: 700;
+  font-size: 11.5px;
+  color: #9195A6;
+  margin-top: 4px;
+}
+
+/* CHARTS ROW 1 */
+.oh-row1 {
+  display: grid;
+  grid-template-columns: 1.7fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.oh-card {
+  background: #fff;
+  border: 1px solid #ECEDF3;
+  border-radius: 20px;
+  padding: 22px 24px;
+  box-shadow: 0 10px 24px -20px rgba(60, 60, 110, 0.5);
+}
+
+.oh-lineHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 6px;
+}
+
+.oh-cardTitle {
+  font-family: 'Jua', sans-serif;
+  font-size: 17px;
+  color: #2E3040;
+  margin: 0;
+}
+
+.oh-lineSub {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: #9195A6;
+  font-weight: 600;
+}
+
+.oh-legend {
+  display: flex;
+  gap: 14px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #8A8FA0;
+  flex-shrink: 0;
+}
+
+.oh-legendItem {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+
+.oh-legendDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.oh-lineSvg {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  margin-top: 4px;
+}
+
+.oh-axisRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  font-weight: 700;
+  color: #B7BBCB;
+  margin-top: 6px;
+  padding: 0 40px 0 44px;
+}
+
+.oh-axisItem {
+  flex: 1;
+  text-align: center;
+}
+
+.oh-lineStats {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+  border-top: 1px solid #F0F1F6;
+  padding-top: 16px;
+}
+
+.oh-lineStat {
+  flex: 1;
+  text-align: center;
+}
+
+.oh-lineStatLabel {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #9195A6;
+  margin-bottom: 3px;
+}
+
+.oh-lineStatValue {
+  font-family: 'Jua', sans-serif;
+  font-size: 19px;
+}
+
+/* donut */
+.oh-donutTitle {
+  font-family: 'Jua', sans-serif;
+  font-size: 17px;
+  color: #2E3040;
+  margin: 0 0 4px;
+}
+
+.oh-donutSub {
+  margin: 0 0 16px;
+  font-size: 12px;
+  color: #9195A6;
+  font-weight: 600;
+}
+
+.oh-donutBody {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.oh-donut {
+  position: relative;
+  width: 130px;
+  height: 130px;
+  flex-shrink: 0;
+  border-radius: 50%;
+}
+
+.oh-donutHole {
+  position: absolute;
+  inset: 22px;
+  background: #fff;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.oh-donutValue {
+  font-family: 'Jua', sans-serif;
+  font-size: 24px;
+  color: #2E3040;
+  line-height: 1;
+}
+
+.oh-donutLabel {
+  font-size: 10px;
+  font-weight: 700;
+  color: #9195A6;
+}
+
+.oh-donutList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+}
+
+.oh-donutRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12.5px;
+  font-weight: 800;
+  color: #3A3D4D;
+}
+
+.oh-donutKey {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.oh-donutDot {
+  width: 9px;
+  height: 9px;
+  border-radius: 3px;
+}
+
+.oh-donutNote {
+  margin: 16px 0 0;
+  font-size: 11px;
+  color: #B7BBCB;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+/* CHARTS ROW 2 */
+.oh-row2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.oh-barHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.oh-barTitle {
+  font-family: 'Jua', sans-serif;
+  font-size: 17px;
+  color: #2E3040;
+  margin: 0 0 4px;
+}
+
+.oh-barSub {
+  margin: 0 0 18px;
+  font-size: 12px;
+  color: #9195A6;
+  font-weight: 600;
+}
+
+.oh-barToggle {
+  flex-shrink: 0;
+  border: 1px solid #ECEDF3;
+  background: #fff;
+  color: #6B6F80;
+  font-weight: 800;
+  font-size: 12px;
+  padding: 7px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.oh-barToggle:hover {
+  background: #F6F7FB;
+  color: #2E3040;
+}
+
+.oh-barToggle i {
+  font-size: 14px;
+}
+
+.oh-barViewport {
+  overflow: hidden;
+}
+
+.oh-barTrack {
+  display: flex;
+  transition: transform 0.42s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.oh-barPage {
+  flex: 0 0 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  height: 150px;
+}
+
+.oh-barCol {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.oh-barStack {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  height: 130px;
+}
+
+.oh-barBlock {
+  width: 100%;
+  background: #FF5A4D;
+}
+
+.oh-barFail {
+  width: 100%;
+  background: #FFB43C;
+}
+
+.oh-barPass {
+  width: 100%;
+  background: #17B08C;
+  border-radius: 0 0 6px 6px;
+}
+
+.oh-barLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: #9195A6;
+}
+
+.oh-barLegend {
+  display: flex;
+  gap: 16px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #8A8FA0;
+  margin-top: 14px;
+  justify-content: center;
+}
+
+.oh-barLegendItem {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.oh-barLegendDot {
+  width: 9px;
+  height: 9px;
+  border-radius: 3px;
+}
+
+/* reason bars */
+.oh-reasonList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.oh-reasonHead {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 800;
+  color: #3A3D4D;
+  margin-bottom: 7px;
+}
+
+.oh-reasonTrack {
+  height: 12px;
+  background: #F4F5F9;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.oh-reasonFill {
+  height: 100%;
+  border-radius: 20px;
+}
+
+/* AGE CARDS */
+.oh-ageHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 24px 0 14px;
+}
+
+.oh-ageTitle {
+  font-family: 'Jua', sans-serif;
+  font-size: 19px;
+  color: #2E3040;
+  margin: 0;
+}
+
+.oh-moreBtn {
+  border: 1px solid #ECEDF3;
+  background: #fff;
+  color: #6B6F80;
+  font-weight: 800;
+  font-size: 12.5px;
+  padding: 8px 14px;
+  border-radius: 11px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.oh-moreBtn:hover {
+  background: #F6F7FB;
+  color: #2E3040;
+}
+
+.oh-moreBtn i {
+  font-size: 15px;
+}
+
+.oh-gradeGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.oh-gradeCard {
+  background: #fff;
+  border: 1px solid #ECEDF3;
+  border-top: 4px solid var(--oh-grade-c);
+  border-radius: 18px;
+  padding: 20px 22px;
+  box-shadow: 0 10px 24px -20px rgba(60, 60, 110, 0.5);
+}
+
+.oh-gradeHead {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 16px;
+}
+
+.oh-gradeIcon {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.oh-gradeIcon i {
+  font-size: 19px;
+}
+
+.oh-gradeName {
+  font-weight: 800;
+  font-size: 14.5px;
+  color: #2E3040;
+}
+
+.oh-gradeCount {
+  font-size: 11px;
+  color: #9195A6;
+  font-weight: 600;
+}
+
+.oh-gradeStats {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.oh-gradeStat {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #6B6F80;
+}
+
+.oh-gradeStat b {
+  color: #2E3040;
+}
+
+.oh-gradeStat b.oh-wrong {
+  color: #FF5A6E;
+}
+
+/* STUDENT TABLE + API */
+.oh-bottomGrid {
+  display: grid;
+  grid-template-columns: 1.7fr 1fr;
+  gap: 16px;
+}
+
+.oh-tableHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.oh-tableLink {
+  text-decoration: none;
+  font-weight: 800;
+  font-size: 12.5px;
+  color: #FF5A4D;
+}
+
+.oh-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.oh-table thead tr {
+  text-align: left;
+  font-size: 11.5px;
+  color: #9195A6;
+  font-weight: 800;
+}
+
+.oh-table th {
+  padding: 0 0 10px;
+}
+
+.oh-table tbody {
+  font-size: 13px;
+  color: #3A3D4D;
+  font-weight: 600;
+}
+
+.oh-table tbody tr {
+  border-top: 1px solid #F0F1F6;
+}
+
+.oh-table tbody td:first-child {
+  padding: 12px 0;
+}
+
+.oh-acc {
+  font-weight: 800;
+}
+
+.oh-riskBadge {
+  font-weight: 800;
+  font-size: 11px;
+  padding: 3px 9px;
+  border-radius: 20px;
+}
+
+.oh-riskLow {
+  background: #E1F5EC;
+  color: #17B08C;
+}
+
+.oh-riskWarn {
+  background: #FFF3D6;
+  color: #C98A00;
+}
+
+/* api widget */
+.oh-apiTitle {
+  font-family: 'Jua', sans-serif;
+  font-size: 17px;
+  color: #2E3040;
+  margin: 0 0 16px;
+}
+
+.oh-apiStatus {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  background: #F0FBF6;
+  border-radius: 12px;
+  padding: 11px 13px;
+  margin-bottom: 14px;
+}
+
+.oh-apiStatusDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #17B08C;
+  box-shadow: 0 0 0 4px rgba(23, 176, 140, 0.15);
+}
+
+.oh-apiStatusText {
+  font-weight: 800;
+  font-size: 13px;
+  color: #158A6E;
+}
+
+.oh-apiList {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+}
+
+.oh-apiRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12.5px;
+}
+
+.oh-apiKey {
+  color: #8A8FA0;
+  font-weight: 700;
+}
+
+.oh-apiVal {
+  color: #3A3D4D;
+  font-weight: 800;
+}
+
+.oh-apiValMono {
+  font-family: monospace;
+  color: #3A3D4D;
+  font-weight: 700;
+}
+
+.oh-apiValDomain {
+  color: #3A3D4D;
+  font-weight: 700;
+}
+
+.oh-apiValGood {
+  color: #17B08C;
+  font-weight: 800;
+}
+
+.oh-apiManageBtn {
+  border: none;
+  cursor: pointer;
+  background: #F6F7FB;
+  color: #3A3D4D;
+  font-weight: 800;
+  font-size: 13px;
+  padding: 11px;
+  border-radius: 12px;
+  width: 100%;
+  margin-top: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+
+.oh-apiManageBtn:hover {
+  background: #ECEDF3;
+}
+
+.oh-apiManageBtn i {
+  font-size: 16px;
+}
+
+/* ===== 정제(polish): 액션 버튼 hover 부상 + 탄력 눌림 (배경색 불변, 그림자/모션만) ===== */
+.oh-apiManageBtn,
+.oh-exportBtn,
+.oh-moreBtn,
+.oh-periodBtn {
+  transition:
+    transform 0.2s cubic-bezier(0.34, 1.2, 0.5, 1),
+    box-shadow 0.2s ease,
+    filter 0.2s ease;
+}
+.oh-apiManageBtn:hover,
+.oh-exportBtn:hover,
+.oh-moreBtn:hover,
+.oh-periodBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 12px -6px rgba(255, 90, 77, 0.28);
+}
+.oh-apiManageBtn:active,
+.oh-exportBtn:active,
+.oh-moreBtn:active,
+.oh-periodBtn:active {
+  transform: translateY(0) scale(0.97);
+  box-shadow: 0 2px 6px -4px rgba(255, 90, 77, 0.28);
+  transition-duration: 0.09s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .oh-apiManageBtn,
+  .oh-exportBtn,
+  .oh-moreBtn,
+  .oh-periodBtn { transition: none; }
+  .oh-apiManageBtn:hover, .oh-apiManageBtn:active,
+  .oh-exportBtn:hover, .oh-exportBtn:active,
+  .oh-moreBtn:hover, .oh-moreBtn:active,
+  .oh-periodBtn:hover, .oh-periodBtn:active { transform: none; }
+}
+
+
+/* ===== 엘리베이션: 카드 질감 고급화 (레이어드 웜 섀도우) ===== */
+.oh-card,
+.oh-gradeCard,
+.oh-kpiCard {
+  box-shadow:
+    0 1px 3px rgba(58, 51, 64, 0.05),
+    0 16px 34px -20px rgba(90, 60, 55, 0.2);
+}
+.oh-card,
+.oh-gradeCard,
+.oh-kpiCard {
+  transition:
+    box-shadow 0.28s ease,
+    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.oh-card:hover,
+.oh-gradeCard:hover,
+.oh-kpiCard:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 2px 6px rgba(58, 51, 64, 0.06),
+    0 24px 44px -22px rgba(90, 60, 55, 0.26);
+}
+@media (prefers-reduced-motion: reduce) {
+  .oh-card,.oh-gradeCard,.oh-kpiCard { transition: none; }
+  .oh-card:hover,.oh-gradeCard:hover,.oh-kpiCard:hover { transform: none; }
+}
+
+
+/* ===== 엘리베이션: 버튼 광택 (솔리드 컬러 버튼 상단 하이라이트, 배경색 불변) ===== */
+.oh-exportBtn {
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0) 55%);
+}

@@ -1,0 +1,633 @@
+/* 게임화면 — handoff `CatChap 게임화면.dc.html` 원본 그대로 (gs- 접두사) */
+
+/* 원본 ccFloat: translateY(-10px) rotate(±1deg) — 공용과 다름 → 접두사 정의 */
+@keyframes gsFloat {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-1deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(1deg);
+  }
+}
+
+@keyframes gsBounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.gs-root {
+  min-height: 100vh;
+  background:
+    radial-gradient(1100px 560px at 80% -10%, #ffe4d0 0%, rgba(255, 228, 208, 0) 60%),
+    radial-gradient(900px 500px at 8% 8%, #ffe0e4 0%, rgba(255, 224, 228, 0) 55%),
+    #fff6ec;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Pretendard', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* TOP BAR */
+.gs-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(12px);
+  border-bottom: 2px solid #ffe7dc;
+}
+
+.gs-topbar-inner {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.gs-quit {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #8a8072;
+  font-weight: 800;
+  font-size: 14px;
+  padding: 9px 15px;
+  border-radius: 13px;
+  background: #fff1e9;
+}
+
+.gs-quit:hover {
+  background: #ffe3d6;
+  color: #ff5a4d;
+}
+
+.gs-quit i {
+  font-size: 16px;
+}
+
+.gs-gamehead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.gs-gameicon {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: var(--gs-soft);
+  color: var(--gs-solid);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gs-gameicon i {
+  font-size: 22px;
+}
+
+.gs-gametext {
+  line-height: 1.15;
+}
+
+.gs-gametitle {
+  font-family: 'Jua', sans-serif;
+  font-size: 18px;
+  color: #3a3340;
+}
+
+.gs-gamesub {
+  font-size: 11.5px;
+  color: #b0a79b;
+  font-weight: 700;
+}
+
+.gs-progress {
+  flex: 1;
+  max-width: 340px;
+  margin: 0 6px;
+}
+
+.gs-progress-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11.5px;
+  font-weight: 800;
+  color: #9b9086;
+  margin-bottom: 6px;
+}
+
+.gs-progress-pct {
+  color: var(--gs-solid);
+}
+
+.gs-progress-track {
+  height: 11px;
+  background: #ffe7dc;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.gs-progress-fill {
+  height: 100%;
+  background: var(--gs-prog-grad);
+  border-radius: 20px;
+  transition: width 0.4s ease;
+}
+
+.gs-scorechip {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #fff3d6;
+  padding: 7px 13px;
+  border-radius: 20px;
+}
+
+.gs-scorechip i {
+  font-size: 16px;
+  color: #f0a400;
+}
+
+.gs-scorechip span {
+  font-family: 'Jua', sans-serif;
+  font-size: 16px;
+  color: #b07e1e;
+}
+
+/* SUBJECT SWITCHER */
+.gs-tabs {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 0 24px 12px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.gs-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 800;
+  font-size: 12.5px;
+  padding: 6px 13px;
+  border-radius: 18px;
+}
+
+.gs-tab i {
+  font-size: 15px;
+}
+
+/* 활성 탭 background/box-shadow는 과목 solid 색 → inline style */
+.gs-tab-active {
+  border: 2px solid transparent;
+  color: #fff;
+}
+
+.gs-tab-inactive {
+  border: 2px solid #f0e6dc;
+  background: #fff;
+  color: #9b9086;
+}
+
+/* PLAY AREA */
+.gs-play {
+  flex: 1;
+  max-width: 1320px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 26px 24px 32px;
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 26px;
+  align-items: stretch;
+  grid-template-rows: minmax(0, 1fr);
+}
+
+.gs-main {
+  background: #fff;
+  border: 2px solid #ffede4;
+  border-radius: 30px;
+  padding: 26px 28px;
+  box-shadow: 0 22px 46px -28px rgba(180, 120, 90, 0.5);
+  display: flex;
+  flex-direction: column;
+}
+
+.gs-main-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.gs-catchip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--gs-soft);
+  color: var(--gs-solid);
+  font-weight: 800;
+  font-size: 12.5px;
+  padding: 6px 13px;
+  border-radius: 20px;
+}
+
+.gs-catchip i {
+  font-size: 14px;
+}
+
+.gs-guard {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #f1fbf6;
+  border: 1.5px solid #c8eedd;
+  padding: 6px 12px;
+  border-radius: 20px;
+}
+
+.gs-guard-dotwrap {
+  position: relative;
+  width: 8px;
+  height: 8px;
+}
+
+/* ccPulse는 공용 animations.css 값과 동일 → 재사용 */
+.gs-guard-dot {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: #17b08c;
+  animation: ccPulse 1.6s ease-in-out infinite;
+}
+
+.gs-guard-label {
+  font-size: 11px;
+  font-weight: 800;
+  color: #0e8f6e;
+}
+
+.gs-question {
+  font-family: 'Jua', sans-serif;
+  font-size: 28px;
+  color: #3a3340;
+  margin: 0 0 4px;
+  letter-spacing: -0.5px;
+}
+
+.gs-subline {
+  margin: 0 0 20px;
+  font-size: 14.5px;
+  color: #9b9086;
+  font-weight: 600;
+}
+
+.gs-subhi {
+  color: var(--gs-solid);
+  font-weight: 800;
+}
+
+/* CAPTCHA API MOUNT SLOT */
+.gs-mount {
+  position: relative;
+  flex: 1;
+  min-height: 360px;
+  border: 2px dashed var(--gs-dash);
+  border-radius: 26px;
+  background: var(--gs-slot-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.gs-mount-tagleft {
+  position: absolute;
+  top: 14px;
+  left: 16px;
+  font-size: 10.5px;
+  font-weight: 800;
+  color: #c0b6a9;
+  background: rgba(255, 255, 255, 0.7);
+  padding: 4px 9px;
+  border-radius: 8px;
+}
+
+.gs-mount-tagright {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  font-size: 10.5px;
+  font-weight: 800;
+  color: var(--gs-solid);
+  background: rgba(255, 255, 255, 0.7);
+  padding: 4px 9px;
+  border-radius: 8px;
+}
+
+.gs-mount-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  text-align: center;
+  padding: 32px 24px;
+}
+
+.gs-mount-icon {
+  width: 88px;
+  height: 88px;
+  border-radius: 26px;
+  background: var(--gs-soft);
+  color: var(--gs-solid);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: gsBounce 2.6s ease-in-out infinite;
+}
+
+.gs-mount-icon i {
+  font-size: 44px;
+}
+
+.gs-mount-title {
+  font-family: 'Jua', sans-serif;
+  font-size: 20px;
+  color: #3a3340;
+}
+
+.gs-mount-desc {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #a79e92;
+  line-height: 1.65;
+  max-width: 400px;
+}
+
+.gs-mount-desc code {
+  font-family: monospace;
+  color: #ff5a4d;
+}
+
+/* SIDE PANEL */
+.gs-side {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.gs-mascotcard {
+  background: var(--gs-mascot-grad);
+  border-radius: 26px;
+  padding: 22px 20px;
+  text-align: center;
+  box-shadow: 0 16px 32px -22px rgba(140, 90, 70, 0.5);
+}
+
+.gs-mascotfloat {
+  animation: gsFloat 4s ease-in-out infinite;
+  margin-bottom: 12px;
+}
+
+.gs-mascotimg {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  /* 떠다니는 요소 그림자 제거 */
+}
+
+.gs-cheer {
+  font-family: 'Jua', sans-serif;
+  font-size: 15px;
+  color: #4a2e2a;
+  line-height: 1.45;
+}
+
+.gs-card {
+  background: #fff;
+  border: 2px solid #ffede4;
+  border-radius: 24px;
+  padding: 18px 20px;
+  box-shadow: 0 12px 26px -22px rgba(180, 120, 90, 0.5);
+}
+
+.gs-card-title {
+  font-weight: 800;
+  font-size: 13px;
+  color: #8a8072;
+  margin-bottom: 12px;
+}
+
+.gs-statlist {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+
+.gs-statrow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #5a5248;
+}
+
+.gs-staticon {
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gs-staticon i {
+  font-size: 17px;
+}
+
+.gs-staticon-ok {
+  background: #dff6ed;
+  color: #17b08c;
+}
+
+.gs-staticon-no {
+  background: #ffe3e9;
+  color: #ff5a6e;
+}
+
+.gs-staticon-streak {
+  background: #fff3d6;
+  color: #f0a400;
+}
+
+.gs-statval {
+  margin-left: auto;
+  font-family: 'Jua', sans-serif;
+}
+
+.gs-statval-ok {
+  color: #17b08c;
+}
+
+.gs-statval-no {
+  color: #ff5a6e;
+}
+
+.gs-statval-streak {
+  color: #f0a400;
+}
+
+.gs-reward-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 13px;
+}
+
+.gs-reward-title {
+  font-weight: 800;
+  font-size: 13px;
+  color: #8a8072;
+}
+
+.gs-reward-sticker {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--gs-solid);
+  font-weight: 800;
+  font-size: 12px;
+}
+
+.gs-reward-sticker i {
+  font-size: 15px;
+}
+
+.gs-reward-slots {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.gs-reward-slot {
+  flex: 1;
+  aspect-ratio: 1;
+  border-radius: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gs-reward-slot i {
+  font-size: 18px;
+}
+
+.gs-reward-slot-on {
+  background: var(--gs-soft);
+  color: var(--gs-solid);
+}
+
+.gs-reward-slot-off {
+  background: #f5efe8;
+  color: #ded4c7;
+}
+
+.gs-reward-msg {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #7a7266;
+  line-height: 1.5;
+  text-align: center;
+}
+
+/* BOTTOM ACTION BAR */
+.gs-bottombar {
+  position: sticky;
+  bottom: 0;
+  z-index: 50;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(12px);
+  border-top: 2px solid #ffe7dc;
+}
+
+.gs-bottombar-inner {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.gs-status {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #9b9086;
+}
+
+.gs-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 12px;
+}
+
+.gs-confirm {
+  border: none;
+  background: var(--gs-solid);
+  color: #fff;
+  font-family: 'Jua', sans-serif;
+  font-size: 17px;
+  padding: 13px 34px;
+  border-radius: 15px;
+  cursor: pointer;
+  box-shadow: 0 12px 24px -8px var(--gs-solid);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+}
+
+.gs-confirm i {
+  font-size: 18px;
+}
+
+
+/* ===== 엘리베이션: 카드 질감 고급화 (레이어드 웜 섀도우) ===== */
+.gs-card,
+.gs-mascotcard {
+  box-shadow:
+    0 1px 3px rgba(58, 51, 64, 0.05),
+    0 16px 34px -20px rgba(90, 60, 55, 0.2);
+}
+.gs-card,
+.gs-mascotcard {
+  transition:
+    box-shadow 0.28s ease,
+    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.gs-card:hover,
+.gs-mascotcard:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 2px 6px rgba(58, 51, 64, 0.06),
+    0 24px 44px -22px rgba(90, 60, 55, 0.26);
+}
+@media (prefers-reduced-motion: reduce) {
+  .gs-card,.gs-mascotcard { transition: none; }
+  .gs-card:hover,.gs-mascotcard:hover { transform: none; }
+}

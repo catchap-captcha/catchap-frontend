@@ -1,0 +1,724 @@
+/* CatChap 나의기록 — handoff `CatChap 나의기록.dc.html` 원본 inline style 그대로 */
+
+.mr-root {
+  min-height: 100vh;
+  background:
+    radial-gradient(1200px 600px at 82% -8%, #ffe9d6 0%, rgba(255, 233, 214, 0) 60%),
+    radial-gradient(900px 500px at 5% 10%, #e6f0ff 0%, rgba(230, 240, 255, 0) 55%),
+    #fff6ec;
+  padding-bottom: 60px;
+}
+
+.mr-section {
+  max-width: 1200px;
+  margin: 18px auto 0;
+  padding: 0 24px;
+}
+
+/* HEADER */
+.mr-header {
+  margin: 26px auto 0;
+}
+
+.mr-headrow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.mr-headleft {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+.mr-headicon {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: #e1f5ec;
+  color: #17b08c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mr-headicon i {
+  font-size: 26px;
+}
+
+.mr-title {
+  font-family: 'Jua', sans-serif;
+  font-size: 32px;
+  color: #3a3340;
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+.mr-subtitle {
+  margin: 4px 0 0;
+  color: #9b9086;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.mr-reportbtn {
+  border: 2px solid #ffd3c7;
+  background: #fff;
+  color: #ff5a4d;
+  font-weight: 800;
+  font-size: 14px;
+  padding: 12px 18px;
+  border-radius: 14px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 46px;
+}
+
+.mr-reportbtn:hover {
+  background: #fff3ef;
+}
+
+.mr-reportbtn i {
+  font-size: 18px;
+}
+
+/* STAT ROW */
+.mr-stats {
+  margin: 22px auto 0;
+}
+
+.mr-statgrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.mr-stat {
+  background: #fff;
+  border: 2px solid #ffede4;
+  border-radius: 22px;
+  padding: 20px;
+  box-shadow: 0 14px 30px -24px rgba(180, 120, 90, 0.5);
+}
+
+.mr-staticon {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.mr-staticon i {
+  font-size: 25px;
+}
+
+.mr-staticon-fire {
+  background: #ffede0;
+  color: #ff922e;
+}
+
+.mr-staticon-clock {
+  background: #e6f0ff;
+  color: #2e7bff;
+}
+
+.mr-staticon-puzzle {
+  background: #ede6ff;
+  color: #8b6bff;
+}
+
+.mr-staticon-target {
+  background: #e1f5ec;
+  color: #17b08c;
+}
+
+.mr-statval {
+  font-family: 'Jua', sans-serif;
+  font-size: 32px;
+  color: #3a3340;
+  line-height: 1;
+}
+
+.mr-statunit {
+  font-size: 16px;
+  color: #b7ada2;
+}
+
+.mr-statlabel {
+  font-weight: 700;
+  font-size: 13px;
+  color: #9b9086;
+  margin-top: 6px;
+}
+
+.mr-stathl {
+  color: #17b08c;
+  font-weight: 800;
+}
+
+/* 2단 카드 행 */
+.mr-row2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+.mr-card {
+  background: #fff;
+  border: 2px solid #ffede4;
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: 0 14px 30px -24px rgba(180, 120, 90, 0.5);
+}
+
+.mr-h3 {
+  font-family: 'Jua', sans-serif;
+  font-size: 19px;
+  color: #3a3340;
+  margin: 0;
+}
+
+/* 최근 4주 학습량 */
+.mr-weekhead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.mr-weekchip {
+  font-weight: 800;
+  font-size: 12.5px;
+  color: #17b08c;
+  background: #e1f5ec;
+  padding: 6px 12px;
+  border-radius: 20px;
+}
+
+.mr-bars {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  height: 170px;
+}
+
+.mr-barcol {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 9px;
+  height: 100%;
+  justify-content: flex-end;
+}
+
+.mr-barval {
+  font-size: 11px;
+  font-weight: 800;
+  color: #b0a79b;
+}
+
+.mr-bar {
+  width: 100%;
+  background: linear-gradient(180deg, #ffc98a, #ffb43c);
+  border-radius: 10px;
+  transition: height 0.5s ease;
+}
+
+.mr-bar-now {
+  background: linear-gradient(180deg, #ff8a5b, #ff5a4d);
+}
+
+.mr-barlabel {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #9b9086;
+}
+
+/* 7월 학습 달력 */
+.mr-calhead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.mr-calcount {
+  font-weight: 700;
+  font-size: 12px;
+  color: #9b9086;
+}
+
+.mr-dowgrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.mr-dow {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 800;
+  color: #c2b9ad;
+}
+
+.mr-calgrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.mr-dayblank {
+  height: 34px;
+}
+
+.mr-day {
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.mr-day-today {
+  border: 2px solid #ff922e;
+  color: #ff922e;
+  background: #fff3e6;
+}
+
+.mr-day-on {
+  background: #ff5a4d;
+  color: #fff;
+}
+
+.mr-day-off {
+  background: #ffe9e0;
+  color: #c2a99c;
+}
+
+.mr-legend {
+  display: flex;
+  gap: 14px;
+  margin-top: 16px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #9b9086;
+}
+
+.mr-legenditem {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.mr-sw {
+  width: 13px;
+  height: 13px;
+  border-radius: 4px;
+}
+
+.mr-sw-on {
+  background: #ff5a4d;
+}
+
+.mr-sw-off {
+  background: #ffe0d6;
+}
+
+.mr-sw-today {
+  border: 2px solid #ff922e;
+}
+
+/* 놀이별 실력 */
+.mr-mhead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0 0 18px;
+}
+
+.mr-goal {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #9b9086;
+}
+
+.mr-goaltick {
+  width: 2px;
+  height: 14px;
+  background: rgba(90, 82, 72, 0.45);
+}
+
+.mr-mlist {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.mr-mrow {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 8px;
+}
+
+.mr-micon {
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mr-micon i {
+  font-size: 16px;
+}
+
+.mr-mname {
+  font-weight: 800;
+  font-size: 13.5px;
+  color: #4a4438;
+}
+
+.mr-trend {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 20px;
+}
+
+.mr-trend i {
+  font-size: 12px;
+}
+
+.mr-trend-up {
+  background: #dff6ed;
+  color: #17b08c;
+}
+
+.mr-trend-down {
+  background: #ffe3e9;
+  color: #ff5a6e;
+}
+
+.mr-mpct {
+  margin-left: auto;
+  font-family: 'Jua', sans-serif;
+  font-size: 16px;
+}
+
+.mr-mbar {
+  position: relative;
+  height: 12px;
+  background: #f4efe8;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.mr-mfill {
+  height: 100%;
+  border-radius: 20px;
+}
+
+.mr-mmark {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 80%;
+  width: 2px;
+  background: rgba(90, 82, 72, 0.45);
+}
+
+.mr-msolved {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #a79e92;
+  margin-top: 6px;
+}
+
+/* 정답률 흐름 */
+.mr-acccard {
+  display: flex;
+  flex-direction: column;
+}
+
+.mr-acchead {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.mr-accsub {
+  margin: 4px 0 0;
+  font-size: 12.5px;
+  color: #9b9086;
+  font-weight: 600;
+}
+
+.mr-accchip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 6px 12px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.mr-accchip i {
+  font-size: 14px;
+}
+
+.mr-accchip-up {
+  color: #17b08c;
+  background: #dff6ed;
+}
+
+.mr-accchip-down {
+  color: #ff5a6e;
+  background: #ffe3e9;
+}
+
+.mr-tabs {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.mr-tab {
+  cursor: pointer;
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 700;
+  font-size: 12.5px;
+  padding: 7px 13px;
+  border-radius: 20px;
+  border: 2px solid #f0e6dc;
+  background: #fff;
+  color: #9b9086;
+}
+
+.mr-tab-on {
+  font-weight: 800;
+  border: 2px solid transparent;
+  color: #fff;
+}
+
+.mr-chartwrap {
+  width: 100%;
+}
+
+.mr-accsvg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.mr-sessions {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  margin-top: 16px;
+}
+
+.mr-sess {
+  flex: 1;
+  text-align: center;
+}
+
+.mr-sesslabel {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #b0a79b;
+  margin-bottom: 4px;
+}
+
+.mr-sessval {
+  font-family: 'Jua', sans-serif;
+  font-size: 15px;
+}
+
+.mr-accdesc {
+  margin-top: 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  background: #fffaf3;
+  border-radius: 16px;
+  padding: 14px 15px;
+}
+
+.mr-accdescicon {
+  font-size: 17px;
+  color: #17b08c;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.mr-accdesctext {
+  margin: 0;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #7a7266;
+  line-height: 1.6;
+}
+
+/* 최근 학습 기록 */
+.mr-rhead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.mr-badgelink {
+  text-decoration: none;
+  font-weight: 800;
+  font-size: 13.5px;
+  color: #ff5a4d;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.mr-badgelink i {
+  font-size: 13px;
+}
+
+.mr-alist {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+
+.mr-act {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 16px;
+  background: #fffaf3;
+  border-radius: 16px;
+}
+
+.mr-acticon {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mr-acticon i {
+  font-size: 22px;
+}
+
+.mr-actbody {
+  flex: 1;
+  min-width: 0;
+}
+
+.mr-acttitle {
+  font-weight: 800;
+  font-size: 14px;
+  color: #3a3340;
+}
+
+.mr-actsub {
+  font-size: 12px;
+  font-weight: 600;
+  color: #9b9086;
+  margin-top: 2px;
+}
+
+.mr-actbadge {
+  font-size: 11.5px;
+  font-weight: 800;
+  padding: 5px 11px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.mr-actok {
+  background: #dff6ed;
+  color: #17b08c;
+}
+
+.mr-actmid {
+  background: #fff3d6;
+  color: #c88a00;
+}
+
+.mr-acttime {
+  font-size: 12px;
+  font-weight: 700;
+  color: #c2b9ad;
+  white-space: nowrap;
+}
+
+/* ===== 정제(polish): 액션 버튼 hover 부상 + 탄력 눌림 (배경색 불변, 그림자/모션만) ===== */
+.mr-reportbtn {
+  transition:
+    transform 0.2s cubic-bezier(0.34, 1.2, 0.5, 1),
+    box-shadow 0.2s ease,
+    filter 0.2s ease;
+}
+.mr-reportbtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 12px -6px rgba(255, 90, 77, 0.28);
+}
+.mr-reportbtn:active {
+  transform: translateY(0) scale(0.97);
+  box-shadow: 0 2px 6px -4px rgba(255, 90, 77, 0.28);
+  transition-duration: 0.09s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .mr-reportbtn { transition: none; }
+  .mr-reportbtn:hover, .mr-reportbtn:active { transform: none; }
+}
+
+
+/* ===== 엘리베이션: 카드 질감 고급화 (레이어드 웜 섀도우) ===== */
+.mr-card {
+  box-shadow:
+    0 1px 3px rgba(58, 51, 64, 0.05),
+    0 16px 34px -20px rgba(90, 60, 55, 0.2);
+}
+.mr-card {
+  transition:
+    box-shadow 0.28s ease,
+    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.mr-card:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 2px 6px rgba(58, 51, 64, 0.06),
+    0 24px 44px -22px rgba(90, 60, 55, 0.26);
+}
+@media (prefers-reduced-motion: reduce) {
+  .mr-card { transition: none; }
+  .mr-card:hover { transform: none; }
+}

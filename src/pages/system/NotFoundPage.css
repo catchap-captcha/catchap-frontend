@@ -1,0 +1,258 @@
+/* Page-specific keyframes from handoff (original names ccFloat/ccPawWiggle/ccTwinkle) */
+@keyframes nfFloat {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-2deg);
+  }
+  50% {
+    transform: translateY(-14px) rotate(2deg);
+  }
+}
+
+@keyframes nfPawWiggle {
+  0%,
+  100% {
+    transform: rotate(-8deg);
+  }
+  50% {
+    transform: rotate(8deg);
+  }
+}
+
+@keyframes nfTwinkle {
+  0%,
+  100% {
+    opacity: .3;
+    transform: scale(.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
+
+.nf-page {
+  min-height: 100vh;
+  background: radial-gradient(1100px 560px at 82% -10%, #FFE0E4 0%, rgba(255, 224, 228, 0) 60%), radial-gradient(900px 520px at 6% 100%, #FFEFD6 0%, rgba(255, 239, 214, 0) 55%), #FFF6EC;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* decorative shapes */
+.nf-shape-square {
+  position: absolute;
+  top: 14%;
+  left: 12%;
+  width: 80px;
+  height: 80px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.45);
+  transform: rotate(-14deg);
+  filter: blur(1px);
+}
+.nf-shape-circle {
+  position: absolute;
+  bottom: 18%;
+  right: 14%;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(255, 180, 160, 0.35);
+}
+.nf-star-1 {
+  position: absolute;
+  top: 20%;
+  right: 22%;
+  font-size: 26px;
+  color: #FFC24B;
+  animation: nfTwinkle 2.6s ease-in-out infinite;
+}
+.nf-star-2 {
+  position: absolute;
+  bottom: 26%;
+  left: 20%;
+  font-size: 20px;
+  color: #FF93BE;
+  animation: nfTwinkle 2.6s ease-in-out infinite .8s;
+}
+
+.nf-card {
+  width: 100%;
+  max-width: 520px;
+  text-align: center;
+  animation: ccIn .5s ease;
+  position: relative;
+  z-index: 2;
+}
+
+/* 4 🐾 4 */
+.nf-code-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-bottom: 8px;
+}
+.nf-digit {
+  font-family: 'Jua', sans-serif;
+  font-size: 120px;
+  line-height: 1;
+  color: #FF5A4D;
+  text-shadow: 0 12px 0 rgba(255, 90, 77, 0.15);
+}
+.nf-mascot-wrap {
+  position: relative;
+  animation: nfFloat 4.5s ease-in-out infinite;
+}
+.nf-mascot {
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  /* 떠다니는 요소 그림자 제거 */
+}
+.nf-mascot-badge {
+  position: absolute;
+  bottom: 0;
+  right: -6px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* 떠다니는 요소 그림자 제거 */
+}
+.nf-mascot-badge-icon {
+  font-size: 24px;
+  color: #FF922E;
+}
+
+.nf-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: #FFE7E2;
+  color: #C0402E;
+  font-weight: 800;
+  font-size: 12.5px;
+  padding: 8px 15px;
+  border-radius: 20px;
+  margin-bottom: 16px;
+}
+.nf-pill-icon {
+  font-size: 15px;
+}
+
+.nf-title {
+  font-family: 'Jua', sans-serif;
+  font-size: 32px;
+  color: #3A3340;
+  margin: 0 0 10px;
+  letter-spacing: -.5px;
+}
+.nf-desc {
+  margin: 0 auto 30px;
+  max-width: 400px;
+  font-size: 15.5px;
+  color: #8A8072;
+  font-weight: 600;
+  line-height: 1.65;
+}
+
+/* actions */
+.nf-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.nf-btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  border: none;
+  background: #FF5A4D;
+  color: #fff;
+  font-family: 'Jua', sans-serif;
+  font-size: 17px;
+  padding: 15px 30px;
+  border-radius: 16px;
+  box-shadow: 0 14px 28px -10px rgba(255, 90, 77, 0.6);
+}
+.nf-btn-back:hover {
+  background: #F5493C;
+}
+.nf-btn-back-icon {
+  font-size: 20px;
+}
+.nf-link-search {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  border: 2px solid #FFE0D6;
+  background: #fff;
+  color: #8A8072;
+  font-family: 'Jua', sans-serif;
+  font-size: 17px;
+  padding: 13px 26px;
+  border-radius: 16px;
+}
+.nf-link-search:hover {
+  background: #FFF6EE;
+  color: #FF5A4D;
+}
+.nf-link-search-icon {
+  font-size: 19px;
+}
+
+.nf-error-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 30px;
+}
+.nf-error-icon {
+  font-size: 15px;
+  color: #B0A79B;
+}
+.nf-error-text {
+  font-size: 12px;
+  font-weight: 700;
+  color: #B0A79B;
+}
+
+/* ===== 정제(polish): 액션 버튼 hover 부상 + 탄력 눌림 (배경색 불변, 그림자/모션만) ===== */
+.nf-btn-back {
+  transition:
+    transform 0.2s cubic-bezier(0.34, 1.2, 0.5, 1),
+    box-shadow 0.2s ease,
+    filter 0.2s ease;
+}
+.nf-btn-back:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 12px -6px rgba(255, 90, 77, 0.28);
+}
+.nf-btn-back:active {
+  transform: translateY(0) scale(0.97);
+  box-shadow: 0 2px 6px -4px rgba(255, 90, 77, 0.28);
+  transition-duration: 0.09s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .nf-btn-back { transition: none; }
+  .nf-btn-back:hover, .nf-btn-back:active { transform: none; }
+}
+
+
+/* ===== 엘리베이션: 버튼 광택 (솔리드 컬러 버튼 상단 하이라이트, 배경색 불변) ===== */
+.nf-btn-back {
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0) 55%);
+}

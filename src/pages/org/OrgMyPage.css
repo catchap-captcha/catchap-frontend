@@ -1,0 +1,1526 @@
+/* handoff CatChap 기관 마이페이지.dc.html → OrgMyPage (om- prefix) */
+
+/* 원본 ccToast는 공용(animations.css) 값과 다름(translate(-50%,12px)) → 페이지 접두사 버전 */
+@keyframes omToast {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 12px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+/* HEADER */
+.om-header {
+  margin-bottom: 20px;
+}
+
+.om-title {
+  font-family: 'Jua', sans-serif;
+  font-size: 26px;
+  color: #2E3040;
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+.om-subtitle {
+  margin: 5px 0 0;
+  color: #9195A6;
+  font-weight: 600;
+  font-size: 13.5px;
+}
+
+/* TAB BAR */
+.om-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+}
+
+.om-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 800;
+  font-size: 13.5px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  transition: all 0.15s;
+  background: #fff;
+  color: #6B6F80;
+  border: 1px solid #ECEDF3;
+}
+
+.om-tab i {
+  font-size: 17px;
+}
+
+.om-tabOn {
+  border: none;
+  background: #2E3040;
+  color: #fff;
+  box-shadow: 0 8px 18px -10px rgba(46, 48, 64, 0.7);
+}
+
+.om-body {
+  max-width: 940px;
+}
+
+/* CARD */
+.om-card {
+  background: #fff;
+  border: 1px solid #ECEDF3;
+  border-radius: 20px;
+  padding: 22px 24px;
+  box-shadow: 0 10px 24px -20px rgba(60, 60, 110, 0.5);
+}
+
+.om-cardPad26 {
+  padding: 26px;
+}
+
+.om-mb16 {
+  margin-bottom: 16px;
+}
+
+.om-cardTitle {
+  font-family: 'Jua', sans-serif;
+  font-size: 17px;
+  color: #2E3040;
+}
+
+/* ORG INFO */
+.om-orgHead {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.om-orgAvatar {
+  width: 66px;
+  height: 66px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #FFC24B, #FF8A5B);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  box-shadow: 0 12px 24px -12px rgba(255, 138, 91, 0.7);
+}
+
+.om-orgAvatar i {
+  font-size: 32px;
+}
+
+.om-orgName {
+  font-family: 'Jua', sans-serif;
+  font-size: 21px;
+  color: #2E3040;
+}
+
+.om-orgBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 6px;
+  background: #FFF0EE;
+  color: #B5453B;
+  font-weight: 800;
+  font-size: 12px;
+  padding: 4px 11px;
+  border-radius: 20px;
+}
+
+.om-orgBadge i {
+  font-size: 13px;
+}
+
+.om-formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.om-colSpan {
+  grid-column: 1 / -1;
+}
+
+.om-label {
+  display: block;
+  font-weight: 800;
+  font-size: 12.5px;
+  color: #8A8FA0;
+  margin-bottom: 7px;
+}
+
+.om-input {
+  width: 100%;
+  border: 1.5px solid #E4E6EE;
+  background: #FAFBFD;
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #2E3040;
+  font-family: 'Pretendard', sans-serif;
+}
+
+.om-input:focus {
+  border-color: #FF5A4D;
+  outline: none;
+}
+
+.om-codeBox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1.5px solid #FFD9D2;
+  background: #FFF6F4;
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+
+.om-codeBox > i {
+  font-size: 18px;
+  color: #FF5A4D;
+}
+
+.om-codeValue {
+  font-weight: 800;
+  font-size: 14.5px;
+  color: #2E3040;
+  font-family: monospace;
+  letter-spacing: 0.5px;
+}
+
+.om-codeRemain {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #fff;
+  border: 1px solid #FFD9D2;
+  color: #B5453B;
+  font-weight: 800;
+  font-size: 11px;
+  padding: 3px 9px;
+  border-radius: 20px;
+}
+
+.om-codeRemain i {
+  font-size: 12px;
+}
+
+.om-codeHint {
+  font-size: 12px;
+  font-weight: 700;
+  color: #9195A6;
+}
+
+.om-codeVerified {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #FFF0EE;
+  color: #B5453B;
+  font-weight: 800;
+  font-size: 10.5px;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.om-codeVerified i {
+  font-size: 12px;
+}
+
+.om-formFoot {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+.om-saveOrgBtn {
+  border: none;
+  cursor: pointer;
+  background: #2E3040;
+  color: #fff;
+  font-weight: 800;
+  font-size: 14px;
+  padding: 12px 24px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.om-saveOrgBtn:hover {
+  background: #1F2130;
+}
+
+.om-saveOrgBtn i {
+  font-size: 17px;
+}
+
+/* PLAN HERO */
+.om-planHero {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(120deg, #2E3040, #3D4058);
+  border-radius: 20px;
+  padding: 26px;
+  color: #fff;
+  margin-bottom: 16px;
+  box-shadow: 0 16px 34px -22px rgba(46, 48, 64, 0.8);
+}
+
+.om-planHeroCircle {
+  position: absolute;
+  top: -40px;
+  right: -10px;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: rgba(255, 90, 77, 0.18);
+}
+
+.om-planHeroBody {
+  position: relative;
+}
+
+.om-planBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #FF5A4D;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-weight: 800;
+  font-size: 12.5px;
+}
+
+.om-planBadge i {
+  font-size: 14px;
+}
+
+.om-planPrice {
+  font-family: 'Jua', sans-serif;
+  font-size: 28px;
+  margin-top: 14px;
+}
+
+.om-planUnit {
+  font-size: 14px;
+  font-weight: 600;
+  opacity: 0.8;
+}
+
+.om-planSub {
+  font-size: 13px;
+  opacity: 0.85;
+  margin-top: 6px;
+  font-weight: 600;
+}
+
+.om-planHeroBtns {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.om-planChangeBtn {
+  border: none;
+  cursor: pointer;
+  background: #fff;
+  color: #2E3040;
+  font-weight: 800;
+  font-size: 14px;
+  padding: 11px 20px;
+  border-radius: 12px;
+}
+
+.om-planChangeBtn:hover {
+  background: #F0F1F6;
+}
+
+.om-planBillBtn {
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  background: transparent;
+  color: #fff;
+  font-weight: 800;
+  font-size: 14px;
+  padding: 10px 18px;
+  border-radius: 12px;
+}
+
+.om-planBillBtn:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* usage */
+.om-usageTitle {
+  font-family: 'Jua', sans-serif;
+  font-size: 17px;
+  color: #2E3040;
+  margin-bottom: 16px;
+}
+
+.om-usageList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.om-usageHead {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 800;
+  color: #3A3D4D;
+  margin-bottom: 7px;
+}
+
+.om-usageTrack {
+  height: 10px;
+  background: #F4F5F9;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.om-usageFill {
+  height: 100%;
+  border-radius: 20px;
+}
+
+/* tiers */
+.om-tiersHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.om-cycleBox {
+  display: flex;
+  background: #fff;
+  border: 1px solid #ECEDF3;
+  border-radius: 11px;
+  padding: 4px;
+  gap: 2px;
+}
+
+.om-cycleBtn {
+  border: none;
+  cursor: pointer;
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 800;
+  font-size: 12.5px;
+  padding: 7px 13px;
+  border-radius: 8px;
+  transition: all 0.15s;
+  background: transparent;
+  color: #8A8FA0;
+}
+
+.om-cycleBtnOn {
+  background: #2E3040;
+  color: #fff;
+}
+
+.om-tierGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.om-tierCard {
+  position: relative;
+  background: #fff;
+  border-radius: 18px;
+  padding: 22px 20px;
+  box-shadow: 0 10px 24px -20px rgba(60, 60, 110, 0.5);
+  border: 1px solid #ECEDF3;
+}
+
+.om-tierCardCurrent {
+  border: 2px solid #FF5A4D;
+}
+
+.om-tierCurrentBadge {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: #FFF0EE;
+  color: #B5453B;
+  font-weight: 800;
+  font-size: 10.5px;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.om-tierName {
+  font-family: 'Jua', sans-serif;
+  font-size: 18px;
+  color: #2E3040;
+}
+
+.om-tierPrice {
+  font-family: 'Jua', sans-serif;
+  font-size: 23px;
+  color: #2E3040;
+  margin-top: 10px;
+}
+
+.om-tierPriceUnit {
+  font-size: 12px;
+  color: #9195A6;
+  font-weight: 600;
+  font-family: 'Pretendard';
+}
+
+.om-tierFeats {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin: 16px 0 18px;
+}
+
+.om-tierFeat {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #5B5F70;
+}
+
+.om-tierFeat i {
+  font-size: 15px;
+  color: #17B08C;
+}
+
+.om-tierBtn {
+  width: 100%;
+  border: none;
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 800;
+  font-size: 13px;
+  padding: 11px;
+  border-radius: 11px;
+  cursor: pointer;
+  background: #2E3040;
+  color: #fff;
+}
+
+.om-tierBtnDisabled {
+  background: #F0F1F6;
+  color: #9195A6;
+  cursor: default;
+}
+
+.om-tierBtnBlocked {
+  background: #fff;
+  border: 1.5px solid #E4E6EE;
+  color: #B7BBCB;
+  cursor: pointer;
+}
+
+/* PAYMENT METHODS */
+.om-payHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.om-addCardBtn {
+  border: 1.5px dashed #D6D9E4;
+  background: #F6F7FB;
+  color: #2E3040;
+  font-weight: 800;
+  font-size: 13px;
+  padding: 9px 15px;
+  border-radius: 11px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.om-addCardBtn:hover {
+  background: #EEF0F6;
+}
+
+.om-addCardBtn i {
+  font-size: 15px;
+}
+
+.om-cardList {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+
+.om-payRow {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: #FAFBFD;
+  border: 1px solid #ECEDF3;
+}
+
+.om-payRowMt {
+  margin-top: 11px;
+}
+
+.om-cardChip {
+  width: 46px;
+  height: 38px;
+  border-radius: 9px;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, #2E3040, #4A4E63);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.om-cardChip i {
+  font-size: 20px;
+}
+
+.om-payBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.om-payNameRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.om-payName {
+  font-weight: 800;
+  font-size: 13.5px;
+  color: #2E3040;
+}
+
+.om-primaryBadge {
+  background: #E1F5EC;
+  color: #158A6E;
+  font-weight: 800;
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+
+.om-payExp {
+  font-size: 12px;
+  font-weight: 600;
+  color: #9195A6;
+}
+
+.om-manageBtn {
+  border: 1px solid #E4E6EE;
+  background: #fff;
+  color: #6B6F80;
+  font-weight: 800;
+  font-size: 12.5px;
+  padding: 8px 13px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.om-manageBtn:hover {
+  background: #F6F7FB;
+}
+
+.om-autopayIcon {
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  flex-shrink: 0;
+  background: #E6F0FF;
+  color: #2E7BFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.om-autopayIcon i {
+  font-size: 19px;
+}
+
+/* switch (sw 46x26 / dot 20) */
+.om-switch {
+  position: relative;
+  width: 46px;
+  height: 26px;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background 0.18s;
+  flex-shrink: 0;
+  background: #D6D9E4;
+  padding: 0;
+}
+
+.om-switchOn {
+  background: #17B08C;
+}
+
+.om-switchDot {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  transition: left 0.18s;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
+}
+
+.om-switchOn .om-switchDot {
+  left: 23px;
+}
+
+/* tax invoice */
+.om-taxTitle {
+  font-family: 'Jua', sans-serif;
+  font-size: 17px;
+  color: #2E3040;
+  margin-bottom: 6px;
+}
+
+.om-taxSub {
+  margin: 0 0 16px;
+  font-size: 12.5px;
+  color: #9195A6;
+  font-weight: 600;
+}
+
+.om-taxFoot {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 18px;
+}
+
+.om-taxSaveBtn {
+  border: none;
+  cursor: pointer;
+  background: #2E3040;
+  color: #fff;
+  font-weight: 800;
+  font-size: 14px;
+  padding: 11px 20px;
+  border-radius: 12px;
+}
+
+.om-taxSaveBtn:hover {
+  background: #1F2130;
+}
+
+/* INVOICES */
+.om-invoiceTitle {
+  font-family: 'Jua', sans-serif;
+  font-size: 17px;
+  color: #2E3040;
+  margin-bottom: 16px;
+}
+
+.om-invoiceHead {
+  display: grid;
+  grid-template-columns: 1.1fr 1.6fr 1fr 0.9fr 1.1fr;
+  gap: 8px;
+  padding: 0 6px 10px;
+  border-bottom: 1px solid #ECEDF3;
+  font-size: 11.5px;
+  font-weight: 800;
+  color: #A7ABBB;
+}
+
+.om-invoiceHeadRight {
+  text-align: right;
+}
+
+.om-invoiceRow {
+  display: grid;
+  grid-template-columns: 1.1fr 1.6fr 1fr 0.9fr 1.1fr;
+  gap: 8px;
+  align-items: center;
+  padding: 14px 6px;
+  border-bottom: 1px solid #F2F3F8;
+}
+
+.om-invoiceDate {
+  font-weight: 700;
+  font-size: 13px;
+  color: #3A3D4D;
+}
+
+.om-invoiceItem {
+  font-weight: 600;
+  font-size: 12.5px;
+  color: #6B6F80;
+}
+
+.om-invoiceAmount {
+  font-weight: 800;
+  font-size: 13.5px;
+  color: #2E3040;
+}
+
+.om-invoiceStatus {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #E1F5EC;
+  color: #158A6E;
+  font-weight: 800;
+  font-size: 10.5px;
+  padding: 3px 9px;
+  border-radius: 20px;
+}
+
+.om-invoiceStatus i {
+  font-size: 12px;
+}
+
+.om-invoiceBtns {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.om-invoiceBtn {
+  border: 1px solid #E4E6EE;
+  background: #fff;
+  color: #6B6F80;
+  font-weight: 800;
+  font-size: 11.5px;
+  padding: 6px 10px;
+  border-radius: 9px;
+  cursor: pointer;
+}
+
+.om-invoiceBtn:hover {
+  background: #F6F7FB;
+}
+
+/* ADMINS */
+.om-adminsHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.om-adminsSub {
+  margin: 3px 0 0;
+  font-size: 12.5px;
+  color: #9195A6;
+  font-weight: 600;
+}
+
+.om-inviteBtn {
+  border: none;
+  background: #2E3040;
+  color: #fff;
+  font-weight: 800;
+  font-size: 13px;
+  padding: 9px 15px;
+  border-radius: 11px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.om-inviteBtn:hover {
+  background: #1F2130;
+}
+
+.om-inviteBtn i {
+  font-size: 15px;
+}
+
+.om-adminList {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  margin-top: 14px;
+}
+
+.om-adminAvatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Jua', sans-serif;
+  font-size: 16px;
+  color: #fff;
+}
+
+.om-adminName {
+  font-weight: 800;
+  font-size: 13.5px;
+  color: #2E3040;
+}
+
+.om-adminEmail {
+  font-size: 12px;
+  font-weight: 600;
+  color: #9195A6;
+}
+
+.om-roleBadge {
+  font-weight: 800;
+  font-size: 11px;
+  padding: 5px 11px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.om-permBtn {
+  border: 1px solid #E4E6EE;
+  background: #fff;
+  color: #6B6F80;
+  font-weight: 800;
+  font-size: 12px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.om-permBtn:hover {
+  background: #F6F7FB;
+}
+
+/* SECURITY */
+.om-secTitle {
+  font-family: 'Jua', sans-serif;
+  font-size: 17px;
+  color: #2E3040;
+  margin-bottom: 6px;
+}
+
+.om-secSub {
+  margin: 0 0 18px;
+  font-size: 12.5px;
+  color: #9195A6;
+  font-weight: 600;
+}
+
+.om-pwFields {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  max-width: 440px;
+}
+
+.om-pwFoot {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+.om-pwBtn {
+  border: none;
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 800;
+  font-size: 14px;
+  padding: 12px 22px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+  background: #2E3040;
+  color: #fff;
+}
+
+.om-pwBtn i {
+  font-size: 16px;
+}
+
+.om-pwBtnOff {
+  cursor: not-allowed;
+  background: #EEF0F6;
+  color: #B7BBCB;
+}
+
+.om-secListTitle {
+  font-family: 'Jua', sans-serif;
+  font-size: 17px;
+  color: #2E3040;
+  margin-bottom: 14px;
+}
+
+.om-secRow {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: #FAFBFD;
+  border: 1px solid #ECEDF3;
+}
+
+.om-secRowMb {
+  margin-bottom: 11px;
+}
+
+.om-secIcon {
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.om-secIcon i {
+  font-size: 20px;
+}
+
+.om-secIcon2fa {
+  background: #E1F5EC;
+  color: #17B08C;
+}
+
+.om-secIconDevices {
+  background: #FFF3D6;
+  color: #F0A400;
+}
+
+.om-secRowTitle {
+  font-weight: 800;
+  font-size: 13.5px;
+  color: #2E3040;
+}
+
+.om-secRowSub {
+  font-size: 12px;
+  font-weight: 600;
+  color: #9195A6;
+}
+
+.om-logoutAllBtn {
+  border: 1px solid #FFD9D2;
+  background: #fff;
+  color: #E0475E;
+  font-weight: 800;
+  font-size: 12px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.om-logoutAllBtn:hover {
+  background: #FFF0F0;
+}
+
+/* MODALS */
+.om-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 96;
+  background: rgba(46, 48, 64, 0.55);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.om-warnModal {
+  width: 100%;
+  max-width: 400px;
+  background: #fff;
+  border-radius: 22px;
+  padding: 30px 26px 24px;
+  box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.4);
+  /* 원본은 모달에도 ccToast(translate(-50%,…)) keyframes를 그대로 사용 */
+  animation: omToast 0.28s ease;
+  text-align: center;
+}
+
+.om-warnIcon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #FFF0F0;
+  color: #E0475E;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+}
+
+.om-warnIcon i {
+  font-size: 30px;
+}
+
+.om-warnTitle {
+  font-family: 'Jua', sans-serif;
+  font-size: 21px;
+  color: #2E3040;
+  margin: 0 0 8px;
+}
+
+.om-warnText {
+  margin: 0 0 22px;
+  font-size: 13.5px;
+  color: #8A8FA0;
+  font-weight: 600;
+  line-height: 1.6;
+}
+
+.om-warnOkBtn {
+  width: 100%;
+  border: none;
+  background: #2E3040;
+  color: #fff;
+  font-weight: 800;
+  font-size: 15px;
+  padding: 13px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-family: 'Pretendard', sans-serif;
+}
+
+.om-warnOkBtn:hover {
+  background: #1F2130;
+}
+
+/* payment modal */
+.om-payModal {
+  width: 100%;
+  max-width: 420px;
+  background: #fff;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.4);
+  animation: omToast 0.28s ease;
+}
+
+.om-payModalHead {
+  background: linear-gradient(120deg, #2E3040, #3D4058);
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.om-payModalHeadIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.om-payModalHeadIcon i {
+  font-size: 22px;
+  color: #fff;
+}
+
+.om-payModalHeadText {
+  line-height: 1.2;
+}
+
+.om-payModalTitle {
+  font-family: 'Jua', sans-serif;
+  font-size: 19px;
+  color: #fff;
+}
+
+.om-payModalSub {
+  font-size: 11.5px;
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 600;
+}
+
+.om-payModalBody {
+  padding: 24px;
+}
+
+.om-payInfo {
+  background: #FAFBFD;
+  border: 1px solid #ECEDF3;
+  border-radius: 14px;
+  padding: 16px 18px;
+}
+
+.om-payInfoRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.om-payInfoKey {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #9195A6;
+}
+
+.om-payInfoVal {
+  font-weight: 800;
+  font-size: 14px;
+  color: #2E3040;
+}
+
+.om-payInfoTotal {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 10px;
+  border-top: 1px dashed #E4E6EE;
+}
+
+.om-payAmount {
+  font-family: 'Jua', sans-serif;
+  font-size: 20px;
+  color: #FF5A4D;
+}
+
+.om-payCard {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 13px 15px;
+  border-radius: 12px;
+  background: #FAFBFD;
+  border: 1px solid #ECEDF3;
+  margin-top: 12px;
+}
+
+.om-payCardChip {
+  width: 40px;
+  height: 32px;
+  border-radius: 8px;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, #2E3040, #4A4E63);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.om-payCardChip i {
+  font-size: 17px;
+}
+
+.om-payCardBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.om-payCardName {
+  font-weight: 800;
+  font-size: 12.5px;
+  color: #2E3040;
+}
+
+.om-payCardSub {
+  font-size: 11px;
+  font-weight: 600;
+  color: #9195A6;
+}
+
+.om-paySecure {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 12px;
+  color: #9195A6;
+}
+
+.om-paySecure i {
+  font-size: 14px;
+}
+
+.om-paySecure span {
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.om-payBtns {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.om-payCancelBtn {
+  flex: 1;
+  border: 1.5px solid #E4E6EE;
+  background: #fff;
+  color: #6B6F80;
+  font-weight: 800;
+  font-size: 15px;
+  padding: 13px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-family: 'Pretendard', sans-serif;
+}
+
+.om-payCancelBtn:hover {
+  background: #F6F7FB;
+}
+
+.om-payConfirmBtn {
+  flex: 1.4;
+  border: none;
+  background: #FF5A4D;
+  color: #fff;
+  font-family: 'Jua', sans-serif;
+  font-size: 15px;
+  padding: 13px;
+  border-radius: 12px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+
+.om-payConfirmBtn:hover {
+  background: #F5493C;
+}
+
+.om-payConfirmBtn i {
+  font-size: 18px;
+}
+
+/* logout modal */
+.om-logoutBtns {
+  display: flex;
+  gap: 10px;
+}
+
+.om-logoutCancelBtn {
+  flex: 1;
+  border: 1.5px solid #E4E6EE;
+  background: #fff;
+  color: #6B6F80;
+  font-weight: 800;
+  font-size: 15px;
+  padding: 13px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-family: 'Pretendard', sans-serif;
+}
+
+.om-logoutCancelBtn:hover {
+  background: #F6F7FB;
+}
+
+.om-logoutConfirmBtn {
+  flex: 1;
+  border: none;
+  background: #E0475E;
+  color: #fff;
+  font-family: 'Jua', sans-serif;
+  font-size: 15px;
+  padding: 13px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.om-logoutConfirmBtn:hover {
+  background: #CE3A4F;
+}
+
+/* TOAST */
+.om-toast {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 95;
+  background: #2E3040;
+  color: #fff;
+  padding: 14px 22px;
+  border-radius: 14px;
+  box-shadow: 0 20px 40px -14px rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  animation: omToast 0.3s ease;
+}
+
+.om-toast i {
+  font-size: 20px;
+  color: #33E0A0;
+}
+
+.om-toast span {
+  font-weight: 800;
+  font-size: 14px;
+}
+
+/* ===== 정제(polish): 액션 버튼 hover 부상 + 탄력 눌림 (배경색 불변, 그림자/모션만) ===== */
+.om-addCardBtn,
+.om-cycleBtn,
+.om-inviteBtn,
+.om-invoiceBtn,
+.om-logoutAllBtn,
+.om-logoutCancelBtn,
+.om-logoutConfirmBtn,
+.om-manageBtn,
+.om-payCancelBtn,
+.om-payConfirmBtn,
+.om-permBtn,
+.om-planBillBtn,
+.om-planChangeBtn,
+.om-pwBtn,
+.om-saveOrgBtn,
+.om-taxSaveBtn,
+.om-tierBtn,
+.om-warnOkBtn {
+  transition:
+    transform 0.2s cubic-bezier(0.34, 1.2, 0.5, 1),
+    box-shadow 0.2s ease,
+    filter 0.2s ease;
+}
+.om-addCardBtn:hover,
+.om-cycleBtn:hover,
+.om-inviteBtn:hover,
+.om-invoiceBtn:hover,
+.om-logoutAllBtn:hover,
+.om-logoutCancelBtn:hover,
+.om-logoutConfirmBtn:hover,
+.om-manageBtn:hover,
+.om-payCancelBtn:hover,
+.om-payConfirmBtn:hover,
+.om-permBtn:hover,
+.om-planBillBtn:hover,
+.om-planChangeBtn:hover,
+.om-pwBtn:hover,
+.om-saveOrgBtn:hover,
+.om-taxSaveBtn:hover,
+.om-tierBtn:hover,
+.om-warnOkBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 12px -6px rgba(255, 90, 77, 0.28);
+}
+.om-addCardBtn:active,
+.om-cycleBtn:active,
+.om-inviteBtn:active,
+.om-invoiceBtn:active,
+.om-logoutAllBtn:active,
+.om-logoutCancelBtn:active,
+.om-logoutConfirmBtn:active,
+.om-manageBtn:active,
+.om-payCancelBtn:active,
+.om-payConfirmBtn:active,
+.om-permBtn:active,
+.om-planBillBtn:active,
+.om-planChangeBtn:active,
+.om-pwBtn:active,
+.om-saveOrgBtn:active,
+.om-taxSaveBtn:active,
+.om-tierBtn:active,
+.om-warnOkBtn:active {
+  transform: translateY(0) scale(0.97);
+  box-shadow: 0 2px 6px -4px rgba(255, 90, 77, 0.28);
+  transition-duration: 0.09s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .om-addCardBtn,
+  .om-cycleBtn,
+  .om-inviteBtn,
+  .om-invoiceBtn,
+  .om-logoutAllBtn,
+  .om-logoutCancelBtn,
+  .om-logoutConfirmBtn,
+  .om-manageBtn,
+  .om-payCancelBtn,
+  .om-payConfirmBtn,
+  .om-permBtn,
+  .om-planBillBtn,
+  .om-planChangeBtn,
+  .om-pwBtn,
+  .om-saveOrgBtn,
+  .om-taxSaveBtn,
+  .om-tierBtn,
+  .om-warnOkBtn { transition: none; }
+  .om-addCardBtn:hover, .om-addCardBtn:active,
+  .om-cycleBtn:hover, .om-cycleBtn:active,
+  .om-inviteBtn:hover, .om-inviteBtn:active,
+  .om-invoiceBtn:hover, .om-invoiceBtn:active,
+  .om-logoutAllBtn:hover, .om-logoutAllBtn:active,
+  .om-logoutCancelBtn:hover, .om-logoutCancelBtn:active,
+  .om-logoutConfirmBtn:hover, .om-logoutConfirmBtn:active,
+  .om-manageBtn:hover, .om-manageBtn:active,
+  .om-payCancelBtn:hover, .om-payCancelBtn:active,
+  .om-payConfirmBtn:hover, .om-payConfirmBtn:active,
+  .om-permBtn:hover, .om-permBtn:active,
+  .om-planBillBtn:hover, .om-planBillBtn:active,
+  .om-planChangeBtn:hover, .om-planChangeBtn:active,
+  .om-pwBtn:hover, .om-pwBtn:active,
+  .om-saveOrgBtn:hover, .om-saveOrgBtn:active,
+  .om-taxSaveBtn:hover, .om-taxSaveBtn:active,
+  .om-tierBtn:hover, .om-tierBtn:active,
+  .om-warnOkBtn:hover, .om-warnOkBtn:active { transform: none; }
+}
+
+
+/* ===== 엘리베이션: 카드 질감 고급화 (레이어드 웜 섀도우) ===== */
+.om-tierCard {
+  box-shadow:
+    0 1px 3px rgba(58, 51, 64, 0.05),
+    0 16px 34px -20px rgba(90, 60, 55, 0.2);
+}
+.om-tierCard {
+  transition:
+    box-shadow 0.28s ease,
+    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.om-tierCard:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 2px 6px rgba(58, 51, 64, 0.06),
+    0 24px 44px -22px rgba(90, 60, 55, 0.26);
+}
+@media (prefers-reduced-motion: reduce) {
+  .om-tierCard { transition: none; }
+  .om-tierCard:hover { transform: none; }
+}
+
+
+/* ===== 엘리베이션: 버튼 광택 (솔리드 컬러 버튼 상단 하이라이트, 배경색 불변) ===== */
+.om-inviteBtn,
+.om-logoutConfirmBtn,
+.om-payConfirmBtn,
+.om-pwBtn,
+.om-saveOrgBtn,
+.om-taxSaveBtn,
+.om-tierBtn,
+.om-warnOkBtn {
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0) 55%);
+}

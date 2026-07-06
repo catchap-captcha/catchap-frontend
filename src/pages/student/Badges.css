@@ -1,0 +1,582 @@
+/* CatChap 배지 — handoff `CatChap 배지.dc.html` 원본 inline style 그대로 */
+
+/* 원본 helmet의 ccFloat/ccShine — 공용 animations.css에 없는 페이지 전용 keyframes라 bd- 접두사로 정의 */
+@keyframes bdFloat {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-3deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(3deg);
+  }
+}
+
+/* 원본 helmet에 정의되어 있으나 마크업에서 미사용 — 원본 보존용 */
+@keyframes bdShine {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.bd-root {
+  min-height: 100vh;
+  background:
+    radial-gradient(1200px 600px at 82% -8%, #fff3d6 0%, rgba(255, 243, 214, 0) 60%),
+    radial-gradient(900px 500px at 5% 10%, #ffe9d6 0%, rgba(255, 233, 214, 0) 55%),
+    #fff6ec;
+  padding-bottom: 60px;
+}
+
+.bd-section {
+  max-width: 1160px;
+  margin: 18px auto 0;
+  padding: 0 24px;
+}
+
+/* NAV (원본 배지 NAV — max-width 1160, 알림 버튼 없음) */
+.bd-navbar {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(12px);
+  border-bottom: 2px solid #ffe7dc;
+}
+
+.bd-navinner {
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  gap: 26px;
+}
+
+.bd-logo {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  text-decoration: none;
+}
+
+.bd-logoimg {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  box-shadow: 0 6px 14px rgba(255, 90, 77, 0.3);
+}
+
+.bd-logotext {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+}
+
+.bd-logotitle {
+  font-family: 'Jua', sans-serif;
+  font-size: 25px;
+  color: #ff5a4d;
+  letter-spacing: -0.5px;
+}
+
+.bd-logosub {
+  font-size: 11px;
+  color: #b7ada2;
+  font-weight: 600;
+  margin-top: 3px;
+}
+
+.bd-menu {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 8px;
+}
+
+.bd-navlink {
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 15.5px;
+  color: #6e6558;
+  padding: 9px 16px;
+  border-radius: 12px;
+}
+
+.bd-navlink:hover {
+  background: #fff0e6;
+  color: #3a3340;
+}
+
+.bd-navright {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bd-iconbtn {
+  width: 42px;
+  height: 42px;
+  border: none;
+  border-radius: 14px;
+  background: #fff1e9;
+  color: #8a8072;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.bd-iconbtn:hover {
+  background: #ffe3d6;
+  color: #ff5a4d;
+}
+
+.bd-iconbtn i {
+  font-size: 20px;
+}
+
+.bd-profile {
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  background: #fff;
+  border: 2px solid #ffe7dc;
+  padding: 5px 12px 5px 6px;
+  border-radius: 40px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+  cursor: pointer;
+}
+
+.bd-profile:hover {
+  border-color: #ffb59e;
+}
+
+.bd-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ffc24b, #ff8a5b);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Jua', sans-serif;
+  color: #fff;
+  font-size: 16px;
+}
+
+.bd-profilename {
+  font-weight: 800;
+  font-size: 14px;
+  color: #3a3340;
+}
+
+/* HERO SHOWCASE */
+.bd-herowrap {
+  margin: 26px auto 0;
+}
+
+.bd-hero {
+  position: relative;
+  overflow: hidden;
+  border-radius: 30px;
+  background: linear-gradient(120deg, #ffb43c, #ff922e 55%, #ff7a5b);
+  padding: 34px 40px;
+  color: #fff;
+  box-shadow: 0 24px 46px -26px rgba(255, 150, 50, 0.7);
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  flex-wrap: wrap;
+}
+
+.bd-herocircle1 {
+  position: absolute;
+  top: -40px;
+  right: 120px;
+  width: 170px;
+  height: 170px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.bd-herocircle2 {
+  position: absolute;
+  bottom: -50px;
+  right: -20px;
+  width: 190px;
+  height: 190px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.bd-heroiconwrap {
+  position: relative;
+  z-index: 2;
+  flex-shrink: 0;
+}
+
+.bd-heroicon {
+  width: 130px;
+  height: 130px;
+  border-radius: 32px;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+animation: bdFloat 4.5s ease-in-out infinite;
+}
+
+.bd-heroicon i {
+  font-size: 70px;
+  color: #2e7bff;
+}
+
+.bd-herobody {
+  flex: 1;
+  min-width: 240px;
+  position: relative;
+  z-index: 2;
+}
+
+.bd-herochip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.24);
+  font-weight: 800;
+  font-size: 12.5px;
+  padding: 6px 13px;
+  border-radius: 20px;
+  margin-bottom: 12px;
+}
+
+.bd-herochip i {
+  font-size: 14px;
+}
+
+.bd-herotitle {
+  font-family: 'Jua', sans-serif;
+  font-size: 34px;
+  margin: 0 0 6px;
+  letter-spacing: -0.5px;
+}
+
+.bd-herodesc {
+  margin: 0 0 16px;
+  font-size: 14.5px;
+  color: rgba(255, 255, 255, 0.92);
+  font-weight: 600;
+  line-height: 1.55;
+  max-width: 420px;
+}
+
+.bd-herostats {
+  display: flex;
+  gap: 22px;
+  flex-wrap: wrap;
+}
+
+.bd-herostatval {
+  font-family: 'Jua', sans-serif;
+  font-size: 26px;
+}
+
+.bd-herostatunit {
+  font-size: 15px;
+  opacity: 0.8;
+}
+
+.bd-herostatlabel {
+  font-size: 12px;
+  font-weight: 700;
+  opacity: 0.85;
+}
+
+.bd-herodivider {
+  width: 2px;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* NEXT BADGE PROGRESS */
+.bd-next {
+  background: #fff;
+  border: 2px solid #ffede4;
+  border-radius: 24px;
+  padding: 22px 24px;
+  box-shadow: 0 14px 30px -24px rgba(180, 120, 90, 0.5);
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.bd-nexticon {
+  width: 60px;
+  height: 60px;
+  border-radius: 18px;
+  background: #f6f2ec;
+  border: 2px dashed #e4dacc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #b0a290;
+  flex-shrink: 0;
+}
+
+.bd-nexticon i {
+  font-size: 30px;
+}
+
+.bd-nextbody {
+  flex: 1;
+  min-width: 220px;
+}
+
+.bd-nexthead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.bd-nextname {
+  font-family: 'Jua', sans-serif;
+  font-size: 17px;
+  color: #3a3340;
+}
+
+.bd-nextchip {
+  font-size: 11.5px;
+  font-weight: 800;
+  color: #ff922e;
+  background: #ffede0;
+  padding: 3px 9px;
+  border-radius: 20px;
+}
+
+.bd-nextdesc {
+  margin: 0 0 9px;
+  font-size: 13px;
+  color: #9b9086;
+  font-weight: 600;
+}
+
+.bd-nextdesc b {
+  color: #ff5a4d;
+}
+
+.bd-nextbar {
+  height: 12px;
+  background: #f4efe8;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.bd-nextfill {
+  height: 100%;
+  width: 86%;
+  background: linear-gradient(90deg, #ffb43c, #ff922e);
+  border-radius: 20px;
+}
+
+.bd-nextcount {
+  font-family: 'Jua', sans-serif;
+  font-size: 24px;
+  color: #ff922e;
+}
+
+.bd-nextcount span {
+  font-size: 15px;
+  color: #c2b9ad;
+}
+
+/* FILTER */
+.bd-filterwrap {
+  margin: 22px auto 0;
+}
+
+.bd-filterrow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.bd-filterleft {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.bd-filtericon {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: #fff3d6;
+  color: #f0a400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bd-filtericon i {
+  font-size: 22px;
+}
+
+.bd-filtertitle {
+  font-family: 'Jua', sans-serif;
+  font-size: 24px;
+  color: #3a3340;
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+.bd-chips {
+  display: flex;
+  gap: 8px;
+}
+
+.bd-chip {
+  cursor: pointer;
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 800;
+  font-size: 13px;
+  padding: 9px 16px;
+  border-radius: 20px;
+  transition: all 0.18s;
+  min-height: 40px;
+  background: #fff;
+  color: #8a8072;
+  border: 2px solid #ffe7dc;
+}
+
+.bd-chip-on {
+  border: none;
+  background: #ff5a4d;
+  color: #fff;
+  box-shadow: 0 8px 16px -8px rgba(255, 90, 77, 0.7);
+}
+
+/* BADGE GRID */
+.bd-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.bd-badge {
+  position: relative;
+  border-radius: 22px;
+  padding: 22px 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform 0.2s ease;
+}
+
+.bd-badge-earned {
+  background: #fff;
+  border: 2px solid #ffede4;
+  box-shadow: 0 14px 30px -24px rgba(180, 120, 90, 0.5);
+  cursor: pointer;
+}
+
+.bd-badge-locked {
+  background: #faf7f1;
+  border: 2px dashed #e4dacc;
+}
+
+.bd-badgeicon {
+  position: relative;
+  width: 74px;
+  height: 74px;
+  border-radius: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bd-badgeicon > i {
+  font-size: 40px;
+}
+
+.bd-dot {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid #fff;
+}
+
+.bd-dot-lock {
+  background: #b0a290;
+}
+
+.bd-dot-lock i {
+  font-size: 12px;
+}
+
+.bd-dot-check {
+  background: #17b08c;
+}
+
+.bd-dot-check i {
+  font-size: 13px;
+}
+
+.bd-badgename {
+  font-family: 'Jua', sans-serif;
+  font-size: 16px;
+  color: #3a3340;
+  margin-top: 14px;
+  text-align: center;
+}
+
+.bd-badgename-locked {
+  color: #a99d8d;
+}
+
+.bd-badgedesc {
+  margin: 5px 0 0;
+  font-size: 11.5px;
+  color: #9b9086;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.45;
+}
+
+.bd-badgedesc-locked {
+  color: #b7ada2;
+}
+
+.bd-foot {
+  margin-top: 12px;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 5px 12px;
+  border-radius: 20px;
+}
+
+.bd-foot-earned {
+  background: #dff6ed;
+  color: #17b08c;
+}
+
+.bd-foot-locked {
+  background: #f0eae0;
+  color: #b0a290;
+}

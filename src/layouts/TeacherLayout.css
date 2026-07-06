@@ -1,0 +1,176 @@
+/* 선생님 콘솔 공통 사이드바 — CatChap 선생님.dc.html 원본 값 그대로 */
+.tl-root {
+  min-height: 100vh;
+  background: #f7f6fb;
+  display: flex;
+}
+
+.tl-side {
+  width: 236px;
+  flex-shrink: 0;
+  background: #fff;
+  border-right: 1px solid #ecebf3;
+  padding: 22px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+
+.tl-logo {
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px 18px;
+}
+
+.tl-logo img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  box-shadow: 0 5px 12px rgba(255, 90, 77, 0.3);
+}
+
+.tl-logo-text {
+  line-height: 1;
+}
+
+.tl-logo-name {
+  font-family: 'Jua', sans-serif;
+  font-size: 20px;
+  color: #ff5a4d;
+}
+
+.tl-logo-sub {
+  font-size: 10.5px;
+  color: #a7a4bb;
+  font-weight: 700;
+  margin-top: 3px;
+}
+
+.tl-prof {
+  text-decoration: none;
+  background: #f7f6fb;
+  border-radius: 12px;
+  padding: 11px 12px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 8px;
+}
+
+a.tl-prof:hover {
+  background: #eeedf6;
+}
+
+.tl-prof.tl-prof-active {
+  background: #ede9ff;
+  border: 1.5px solid #d8cefa;
+}
+
+.tl-prof-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, #8b6bff, #b08aff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-family: 'Jua', sans-serif;
+  font-size: 15px;
+}
+
+.tl-prof-info {
+  line-height: 1.2;
+  min-width: 0;
+}
+
+.tl-prof-name {
+  font-weight: 800;
+  font-size: 13px;
+  color: #2e2d40;
+  white-space: nowrap;
+}
+
+.tl-prof-sub {
+  font-size: 10.5px;
+  color: #a7a4bb;
+  font-weight: 600;
+}
+
+.tl-prof-active .tl-prof-sub {
+  color: #6a55c0;
+  font-weight: 700;
+}
+
+.tl-menu-link {
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 11px 12px;
+  border-radius: 11px;
+  color: #6a6980;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.tl-menu-link i {
+  font-size: 19px;
+}
+
+.tl-menu-link:hover {
+  background: #f7f6fb;
+  color: #2e2d40;
+}
+
+.tl-menu-link.tl-active {
+  background: #fff0ee;
+  color: #ff5a4d;
+  font-weight: 800;
+}
+
+.tl-menu-link.tl-active:hover {
+  background: #fff0ee;
+  color: #ff5a4d;
+}
+
+.tl-task {
+  margin-top: auto;
+  background: linear-gradient(150deg, #ede9ff, #f3eeff);
+  border-radius: 14px;
+  padding: 14px;
+}
+
+.tl-task-title {
+  font-weight: 800;
+  font-size: 12.5px;
+  color: #6a55c0;
+  margin-bottom: 4px;
+}
+
+.tl-task-desc {
+  font-size: 10.5px;
+  color: #8a85a8;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.tl-task-bar {
+  height: 6px;
+  background: #fff;
+  border-radius: 20px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.tl-task-fill {
+  height: 100%;
+  width: 73%;
+  background: #8b6bff;
+  border-radius: 20px;
+}

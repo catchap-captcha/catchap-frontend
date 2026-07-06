@@ -1,0 +1,381 @@
+/* handoff `CatChap 전체학생조회.dc.html` 포팅 — 전체 학생 조회 (main 영역, 원본 값 그대로) */
+.ts-main {
+  flex: 1;
+  min-width: 0;
+  padding: 24px 30px 44px;
+}
+
+/* HEADER */
+.ts-header {
+  margin-bottom: 20px;
+}
+
+.ts-crumbs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #a7a4bb;
+  margin-bottom: 5px;
+}
+
+.ts-crumb-link {
+  text-decoration: none;
+  color: #a7a4bb;
+}
+
+.ts-crumb-link:hover {
+  color: #8b6bff;
+}
+
+.ts-crumbs i {
+  font-size: 11px;
+}
+
+.ts-title {
+  font-family: 'Jua', sans-serif;
+  font-size: 26px;
+  color: #2e2d40;
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+.ts-subtitle {
+  margin: 5px 0 0;
+  color: #8f8ca6;
+  font-weight: 600;
+  font-size: 13.5px;
+}
+
+.ts-subtitle b {
+  color: #8b6bff;
+}
+
+/* FILTER BAR */
+.ts-filter-card {
+  background: #fff;
+  border: 1px solid #ecebf3;
+  border-radius: 18px;
+  padding: 18px 20px;
+  box-shadow: 0 10px 24px -20px rgba(60, 50, 110, 0.5);
+  margin-bottom: 16px;
+}
+
+.ts-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.ts-filter-label {
+  font-size: 11.5px;
+  font-weight: 800;
+  color: #8f8ca6;
+  margin-bottom: 8px;
+}
+
+.ts-chip-row {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
+.ts-chip {
+  border: none;
+  cursor: pointer;
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 800;
+  font-size: 13px;
+  padding: 8px 15px;
+  border-radius: 20px;
+  transition: all 0.12s;
+}
+
+.ts-chip-on {
+  background: #8b6bff;
+  color: #fff;
+  box-shadow: 0 8px 16px -8px rgba(139, 107, 255, 0.6);
+}
+
+.ts-chip-off {
+  background: #f4f3fa;
+  color: #6a6980;
+}
+
+.ts-divider {
+  width: 1px;
+  align-self: stretch;
+  background: #ecebf3;
+}
+
+.ts-search {
+  margin-left: auto;
+  position: relative;
+  min-width: 220px;
+}
+
+.ts-search i {
+  position: absolute;
+  left: 13px;
+  bottom: 11px;
+  color: #b7b4c8;
+  font-size: 16px;
+}
+
+.ts-search input {
+  width: 100%;
+  border: 2px solid #ecebf3;
+  background: #f7f6fb;
+  border-radius: 12px;
+  padding: 9px 12px 9px 36px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #2e2d40;
+  font-family: 'Pretendard', sans-serif;
+}
+
+.ts-search input:focus {
+  border-color: #8b6bff;
+  outline: none;
+  background: #fff;
+}
+
+/* RESULT SUMMARY */
+.ts-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #6a6980;
+}
+
+.ts-count-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #ede9ff;
+  color: #6a55c0;
+  font-weight: 800;
+  padding: 5px 12px;
+  border-radius: 20px;
+}
+
+.ts-count-pill i {
+  font-size: 15px;
+}
+
+/* GROUPED ROSTER */
+.ts-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ts-group-card {
+  background: #fff;
+  border: 1px solid #ecebf3;
+  border-radius: 20px;
+  padding: 20px 22px;
+  box-shadow: 0 10px 24px -20px rgba(60, 50, 110, 0.5);
+}
+
+.ts-group-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.ts-group-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ts-group-badge {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Jua', sans-serif;
+  font-size: 14px;
+}
+
+.ts-group-title {
+  font-family: 'Jua', sans-serif;
+  font-size: 17px;
+  color: #2e2d40;
+  margin: 0;
+}
+
+.ts-group-teacher {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #a7a4bb;
+}
+
+.ts-group-count {
+  font-size: 12px;
+  font-weight: 800;
+  color: #8f8ca6;
+}
+
+.ts-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.ts-table thead tr {
+  text-align: left;
+  font-size: 11.5px;
+  color: #8f8ca6;
+  font-weight: 800;
+}
+
+.ts-table th {
+  padding: 0 0 9px;
+}
+
+.ts-table tbody {
+  font-size: 13px;
+  color: #3a3849;
+  font-weight: 600;
+}
+
+.ts-table tbody tr {
+  border-top: 1px solid #f1f0f7;
+}
+
+.ts-cell-student {
+  padding: 11px 0;
+}
+
+.ts-student {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.ts-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Jua', sans-serif;
+  font-size: 12.5px;
+  color: #fff;
+}
+
+.ts-acc {
+  font-weight: 800;
+}
+
+.ts-weak {
+  background: #f4f3fa;
+  color: #5a5872;
+  font-weight: 700;
+  font-size: 11.5px;
+  padding: 3px 9px;
+  border-radius: 20px;
+}
+
+.ts-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 800;
+  font-size: 10.5px;
+  padding: 3px 9px;
+  border-radius: 20px;
+}
+
+.ts-tag i {
+  font-size: 12px;
+}
+
+.ts-tag-help {
+  background: #ffe3e9;
+  color: #e0475e;
+}
+
+.ts-tag-idle {
+  background: #fff3d6;
+  color: #b5720b;
+}
+
+.ts-tag-good {
+  background: #e1f5ec;
+  color: #158a6e;
+}
+
+/* EMPTY STATE */
+.ts-empty {
+  background: #fff;
+  border: 1px solid #ecebf3;
+  border-radius: 20px;
+  padding: 52px 24px;
+  text-align: center;
+  box-shadow: 0 10px 24px -20px rgba(60, 50, 110, 0.5);
+}
+
+.ts-empty-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 20px;
+  background: #f4f3fa;
+  color: #b7b4c8;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+
+.ts-empty-icon i {
+  font-size: 34px;
+}
+
+.ts-empty-title {
+  font-family: 'Jua', sans-serif;
+  font-size: 19px;
+  color: #2e2d40;
+  margin: 0 0 6px;
+}
+
+.ts-empty-text {
+  margin: 0;
+  font-size: 13px;
+  color: #8f8ca6;
+  font-weight: 600;
+}
+
+
+/* ===== 엘리베이션: 카드 질감 고급화 (레이어드 웜 섀도우) ===== */
+.ts-group-card {
+  box-shadow:
+    0 1px 3px rgba(58, 51, 64, 0.05),
+    0 16px 34px -20px rgba(90, 60, 55, 0.2);
+}
+.ts-group-card {
+  transition:
+    box-shadow 0.28s ease,
+    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.ts-group-card:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 2px 6px rgba(58, 51, 64, 0.06),
+    0 24px 44px -22px rgba(90, 60, 55, 0.26);
+}
+@media (prefers-reduced-motion: reduce) {
+  .ts-group-card { transition: none; }
+  .ts-group-card:hover { transform: none; }
+}

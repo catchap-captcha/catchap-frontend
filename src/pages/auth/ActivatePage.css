@@ -1,0 +1,110 @@
+/* 학생 코드 활성화 가입 — 아이 친화적, CatChap 코랄 톤 */
+@keyframes acFloat {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50% { transform: translateY(-12px) rotate(2deg); }
+}
+@keyframes acPop {
+  from { opacity: 0; transform: translateY(16px) scale(0.97); }
+  to { opacity: 1; transform: none; }
+}
+
+.ac-root {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(160deg, #ff7a5b 0%, #ff5a4d 55%, #ff4d77 100%);
+  font-family: 'Pretendard', system-ui, sans-serif;
+}
+.ac-blob { position: absolute; border-radius: 50%; background: rgba(255, 255, 255, 0.12); pointer-events: none; }
+.ac-blob1 { width: 340px; height: 340px; top: -80px; right: -60px; }
+.ac-blob2 { width: 300px; height: 300px; bottom: -90px; left: -70px; background: rgba(255, 255, 255, 0.1); }
+
+.ac-card {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 440px;
+  background: #fff;
+  border-radius: 34px;
+  padding: 40px 36px 32px;
+  box-shadow: 0 40px 80px -30px rgba(120, 30, 30, 0.5);
+  animation: acPop 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.ac-mascot-row { display: flex; justify-content: center; margin-bottom: 8px; }
+.ac-mascot {
+  width: 130px; height: 130px; border-radius: 50%;
+  background: #fff; padding: 6px;
+  animation: acFloat 4.5s ease-in-out infinite;
+}
+.ac-mascot img { width: 100%; height: 100%; border-radius: 50%; display: block; }
+
+.ac-steps { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 6px 0 18px; }
+.ac-stepdot {
+  width: 30px; height: 30px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Jua', sans-serif; font-size: 15px;
+  background: #ffe0d6; color: #ffab98; transition: all 0.3s;
+}
+.ac-stepdot--on { background: #ff5a4d; color: #fff; box-shadow: 0 6px 14px -6px rgba(255, 90, 77, 0.7); }
+.ac-stepline { width: 44px; height: 3px; border-radius: 3px; background: #ffe0d6; }
+
+.ac-title {
+  font-family: 'Jua', sans-serif; font-size: 28px; color: #3a3340;
+  text-align: center; margin: 0 0 8px; letter-spacing: -0.5px;
+}
+.ac-sub { text-align: center; color: #8a8072; font-weight: 600; font-size: 14px; margin: 0 0 24px; line-height: 1.6; }
+.ac-sub b { color: #ff5a4d; }
+
+.ac-lbl { display: block; font-weight: 800; font-size: 13px; color: #4a4438; margin: 14px 0 7px; }
+.ac-input, .ac-code-input {
+  width: 100%; border: 2px solid #ffe0d6; background: #fffbf6;
+  border-radius: 14px; padding: 14px 16px; font-size: 15px; font-weight: 700;
+  color: #3a3340; font-family: 'Pretendard', sans-serif;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+.ac-input:focus, .ac-code-input:focus {
+  outline: none; border-color: #ff5a4d; background: #fff;
+  box-shadow: 0 0 0 4px rgba(255, 90, 77, 0.1);
+}
+.ac-code-input {
+  text-align: center; font-family: 'JetBrains Mono', 'Consolas', monospace;
+  font-size: 22px; letter-spacing: 2px; color: #ff5a4d; padding: 18px 16px;
+}
+.ac-code-input::placeholder { color: #ffc4b4; letter-spacing: 2px; }
+
+.ac-err {
+  display: flex; align-items: center; gap: 7px; margin-top: 12px;
+  background: #fff2f2; color: #e23d3d; font-weight: 700; font-size: 13px;
+  padding: 10px 14px; border-radius: 12px;
+}
+
+.ac-primary {
+  width: 100%; margin-top: 22px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  background: linear-gradient(180deg, #ff6459, #ff5346); color: #fff;
+  font-family: 'Jua', sans-serif; font-size: 18px; letter-spacing: 0.3px;
+  padding: 15px; border-radius: 16px; border: none; cursor: pointer;
+  box-shadow: 0 12px 24px -10px rgba(255, 90, 77, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  transition: transform 0.2s cubic-bezier(0.34, 1.2, 0.5, 1), box-shadow 0.2s;
+}
+.ac-primary:hover { transform: translateY(-2px); box-shadow: 0 18px 30px -12px rgba(255, 90, 77, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.3); }
+.ac-primary:active { transform: translateY(0) scale(0.97); }
+.ac-primary:disabled { opacity: 0.6; cursor: default; }
+
+.ac-row { display: flex; gap: 10px; align-items: stretch; margin-top: 22px; }
+.ac-row .ac-primary { margin-top: 0; }
+.ac-primary--grow { flex: 1; }
+.ac-ghost {
+  background: #fff; border: 2px solid #ffe0d6; color: #8a8072;
+  font-weight: 800; font-size: 14px; padding: 0 22px; border-radius: 16px; cursor: pointer;
+}
+.ac-ghost:hover { background: #fff7f3; color: #ff5a4d; border-color: #ffc9b8; }
+
+.ac-foot { text-align: center; margin: 18px 0 0; color: #9b9086; font-weight: 600; font-size: 13.5px; }
+.ac-link { color: #ff5a4d; font-weight: 800; text-decoration: none; }
+.ac-link:hover { text-decoration: underline; }

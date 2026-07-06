@@ -1,0 +1,459 @@
+/* handoff CatChap 보안정책.dc.html → SecurityPolicy (sy- prefix) */
+
+/* HEADER */
+.sy-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.sy-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #A7ABBB;
+  margin-bottom: 5px;
+}
+
+.sy-breadcrumb a {
+  text-decoration: none;
+  color: #A7ABBB;
+}
+
+.sy-breadcrumb a:hover {
+  color: #FF5A4D;
+}
+
+.sy-breadcrumb i {
+  font-size: 11px;
+}
+
+.sy-title {
+  font-family: 'Jua', sans-serif;
+  font-size: 26px;
+  color: #2E3040;
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+.sy-subtitle {
+  margin: 5px 0 0;
+  color: #9195A6;
+  font-weight: 600;
+  font-size: 13.5px;
+}
+
+.sy-pdfBtn {
+  border: none;
+  cursor: pointer;
+  background: #2E3040;
+  color: #fff;
+  font-weight: 800;
+  font-size: 13px;
+  padding: 10px 16px;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+}
+
+.sy-pdfBtn:hover {
+  background: #1F2130;
+}
+
+.sy-pdfBtn i {
+  font-size: 16px;
+}
+
+/* STATUS ROW */
+.sy-statusRow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.sy-statusCard {
+  background: #fff;
+  border: 1px solid #ECEDF3;
+  border-radius: 18px;
+  padding: 16px 18px;
+  box-shadow: 0 10px 24px -20px rgba(60, 60, 110, 0.5);
+}
+
+.sy-statusIcon {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.sy-statusIcon i {
+  font-size: 18px;
+}
+
+.sy-statusValue {
+  font-family: 'Jua', sans-serif;
+  font-size: 17px;
+  color: #2E3040;
+  line-height: 1;
+}
+
+.sy-statusUnit {
+  font-size: 12px;
+  color: #B7BBCB;
+}
+
+.sy-statusLabel {
+  font-weight: 700;
+  font-size: 11.5px;
+  color: #9195A6;
+  margin-top: 5px;
+}
+
+/* LAYOUT */
+.sy-grid {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 20px;
+  align-items: start;
+}
+
+/* POLICY BODY */
+.sy-policy {
+  background: #fff;
+  border: 1px solid #ECEDF3;
+  border-radius: 20px;
+  padding: 8px 8px 28px;
+  box-shadow: 0 10px 24px -20px rgba(60, 60, 110, 0.5);
+}
+
+.sy-tabs {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  padding: 12px 14px;
+  border-bottom: 1px solid #F0F1F6;
+  position: sticky;
+  top: 0;
+  background: #fff;
+  border-radius: 20px 20px 0 0;
+  z-index: 2;
+}
+
+.sy-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  cursor: pointer;
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 800;
+  font-size: 13px;
+  padding: 9px 15px;
+  border-radius: 11px;
+  transition: all 0.15s;
+  background: #F4F5F9;
+  color: #6B6F80;
+}
+
+.sy-tab i {
+  font-size: 15px;
+}
+
+.sy-tabOn {
+  background: #FF5A4D;
+  color: #fff;
+  box-shadow: 0 6px 14px -8px rgba(255, 90, 77, 0.6);
+}
+
+.sy-doc {
+  padding: 24px 26px 0;
+}
+
+.sy-docTitle {
+  font-family: 'Jua', sans-serif;
+  font-size: 21px;
+  color: #2E3040;
+  margin: 0 0 4px;
+}
+
+.sy-docIntro {
+  margin: 0 0 22px;
+  font-size: 12.5px;
+  color: #9195A6;
+  font-weight: 600;
+  line-height: 1.55;
+}
+
+.sy-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.sy-section {
+  display: flex;
+  gap: 14px;
+}
+
+.sy-sectionNo {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: #FFF0EE;
+  color: #FF5A4D;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Jua', sans-serif;
+  font-size: 14px;
+}
+
+.sy-sectionBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.sy-sectionHeading {
+  font-weight: 800;
+  font-size: 14.5px;
+  color: #2E3040;
+  margin: 4px 0 8px;
+}
+
+.sy-sectionText {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: #5A5E70;
+  line-height: 1.7;
+}
+
+.sy-sectionList {
+  margin: 10px 0 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sy-sectionList li {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #6B6F80;
+  line-height: 1.55;
+}
+
+/* SIDE INFO */
+.sy-side {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: sticky;
+  top: 24px;
+}
+
+.sy-sideCard {
+  background: #fff;
+  border: 1px solid #ECEDF3;
+  border-radius: 20px;
+  padding: 20px 22px;
+  box-shadow: 0 10px 24px -20px rgba(60, 60, 110, 0.5);
+}
+
+.sy-sideHead {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 14px;
+}
+
+.sy-sideHeadIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: #E6F0FF;
+  color: #2E7BFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sy-sideHeadIcon i {
+  font-size: 17px;
+}
+
+.sy-sideTitle {
+  font-family: 'Jua', sans-serif;
+  font-size: 15px;
+  color: #2E3040;
+  margin: 0;
+}
+
+.sy-officerList {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  font-size: 12.5px;
+}
+
+.sy-officerRow {
+  display: flex;
+  justify-content: space-between;
+}
+
+.sy-officerKey {
+  color: #9195A6;
+  font-weight: 700;
+}
+
+.sy-officerVal {
+  color: #3A3D4D;
+  font-weight: 800;
+}
+
+.sy-officerValLight {
+  color: #3A3D4D;
+  font-weight: 700;
+}
+
+.sy-officerMono {
+  color: #3A3D4D;
+  font-weight: 700;
+  font-family: monospace;
+}
+
+.sy-docsTitle {
+  font-family: 'Jua', sans-serif;
+  font-size: 15px;
+  color: #2E3040;
+  margin: 0 0 12px;
+}
+
+.sy-docLinks {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sy-docLink {
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 12px;
+  border-radius: 11px;
+  background: #FBFAFE;
+  border: 1px solid #F0EEF7;
+  font-weight: 700;
+  font-size: 12.5px;
+  color: #3A3D4D;
+}
+
+.sy-docLink:hover {
+  background: #F4F5F9;
+}
+
+.sy-docLinkIcon {
+  font-size: 16px;
+}
+
+.sy-docLinkArrow {
+  font-size: 12px;
+  margin-left: auto;
+  color: #B7BBCB;
+}
+
+.sy-childCard {
+  background: linear-gradient(150deg, #FFF3D6, #FFF8ED);
+  border: 1px solid #FFE6BE;
+  border-radius: 20px;
+  padding: 18px 20px;
+}
+
+.sy-childHead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 7px;
+}
+
+.sy-childHead i {
+  font-size: 18px;
+  color: #C98A00;
+}
+
+.sy-childTitle {
+  font-weight: 800;
+  font-size: 13px;
+  color: #9B7A2E;
+}
+
+.sy-childText {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #9B7A2E;
+  line-height: 1.6;
+}
+
+/* ===== 정제(polish): 액션 버튼 hover 부상 + 탄력 눌림 (배경색 불변, 그림자/모션만) ===== */
+.sy-pdfBtn {
+  transition:
+    transform 0.2s cubic-bezier(0.34, 1.2, 0.5, 1),
+    box-shadow 0.2s ease,
+    filter 0.2s ease;
+}
+.sy-pdfBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 12px -6px rgba(255, 90, 77, 0.28);
+}
+.sy-pdfBtn:active {
+  transform: translateY(0) scale(0.97);
+  box-shadow: 0 2px 6px -4px rgba(255, 90, 77, 0.28);
+  transition-duration: 0.09s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .sy-pdfBtn { transition: none; }
+  .sy-pdfBtn:hover, .sy-pdfBtn:active { transform: none; }
+}
+
+
+/* ===== 엘리베이션: 카드 질감 고급화 (레이어드 웜 섀도우) ===== */
+.sy-sideCard {
+  box-shadow:
+    0 1px 3px rgba(58, 51, 64, 0.05),
+    0 16px 34px -20px rgba(90, 60, 55, 0.2);
+}
+.sy-sideCard {
+  transition:
+    box-shadow 0.28s ease,
+    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.sy-sideCard:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 2px 6px rgba(58, 51, 64, 0.06),
+    0 24px 44px -22px rgba(90, 60, 55, 0.26);
+}
+@media (prefers-reduced-motion: reduce) {
+  .sy-sideCard { transition: none; }
+  .sy-sideCard:hover { transform: none; }
+}
+
+
+/* ===== 엘리베이션: 버튼 광택 (솔리드 컬러 버튼 상단 하이라이트, 배경색 불변) ===== */
+.sy-pdfBtn {
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0) 55%);
+}

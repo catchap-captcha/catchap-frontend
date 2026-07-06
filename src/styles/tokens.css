@@ -1,0 +1,51 @@
+/* CatChap design tokens — extracted from Claude Design handoff (do not change values) */
+:root {
+  /* Brand */
+  --cc-brand: #ff5a4d;
+  --cc-brand-hover: #f5493c;
+  --cc-brand-grad: linear-gradient(135deg, #ff7a5b, #ff4d77);
+
+  /* Semantic */
+  --cc-success: #17b08c;
+  --cc-warning: #ff922e;
+  --cc-error: #e23d3d;
+  --cc-info: #2e7bff;
+  --cc-purple: #8b6bff;
+  --cc-pink: #ff6da6;
+  --cc-coin: #f0a400;
+
+  /* Text */
+  --cc-ink: #3a3340;
+  --cc-body: #5a5248;
+  --cc-muted: #8a8072;
+  --cc-faint: #9b9086;
+  --cc-hint: #b0a79b;
+
+  /* Surfaces */
+  --cc-bg-cream: #fff6ec;
+  --cc-bg-console-teacher: #f7f6fb;
+  --cc-bg-console-org: #f6f7fb;
+  --cc-bg-legal: #f3f0e9;
+  --cc-card-border: #ffede4;
+  --cc-line: #ffe7dc;
+  --cc-soft: #fff1e9;
+
+  /* Subject signature colors (전 화면 일관) */
+  --subject-korean: #ff5a4d;
+  --subject-korean-soft: #ffe0db;
+  --subject-english: #ff922e;
+  --subject-english-soft: #ffedd6;
+  --subject-math: #17b08c;
+  --subject-math-soft: #dff6ee;
+  --subject-science: #2e7bff;
+  --subject-science-soft: #e1edff;
+  --subject-history: #8b6bff;
+  --subject-history-soft: #eae2ff;
+  --subject-life: #ff6da6;
+  --subject-life-soft: #ffe3ef;
+
+  /* Fonts */
+  --font-display: 'Jua', sans-serif;
+  --font-body: 'Pretendard', system-ui, sans-serif;
+  --font-serif: 'Noto Serif KR', serif;
+}

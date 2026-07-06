@@ -1,0 +1,696 @@
+/* CatChap 가정안내.dc.html — 원본 inline style 값 그대로 (접두사 fn-) */
+
+/* 원본 helmet의 ccIn 변형(마크업 미사용이나 원본 정의 유지 — 공용 ccIn과 값 다름) */
+@keyframes fnIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* 원본 ccToast 변형(translateY 12px — 공용 ccToast는 14px) */
+@keyframes fnToast {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.fn-main {
+  flex: 1;
+  min-width: 0;
+  padding: 24px 30px 44px;
+}
+
+/* ── header ── */
+.fn-head {
+  margin-bottom: 20px;
+}
+
+.fn-crumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #a7a4bb;
+  margin-bottom: 5px;
+}
+
+.fn-crumb-link {
+  text-decoration: none;
+  color: #a7a4bb;
+}
+
+.fn-crumb-link:hover {
+  color: #ff5a4d;
+}
+
+.fn-crumb-caret {
+  font-size: 11px;
+}
+
+.fn-title {
+  font-family: 'Jua', sans-serif;
+  font-size: 26px;
+  color: #2e2d40;
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+.fn-subtitle {
+  margin: 5px 0 0;
+  color: #8f8ca6;
+  font-weight: 600;
+  font-size: 13.5px;
+}
+
+/* ── layout ── */
+.fn-grid {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 20px;
+  align-items: start;
+}
+
+.fn-card {
+  background: #fff;
+  border: 1px solid #ecebf3;
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 10px 24px -20px rgba(60, 50, 110, 0.5);
+}
+
+.fn-card-sent {
+  padding: 22px;
+}
+
+/* ── compose ── */
+.fn-label {
+  display: block;
+  font-weight: 800;
+  font-size: 13px;
+  color: #3a3950;
+  margin-bottom: 8px;
+}
+
+.fn-label-quick {
+  margin: 18px 0 8px;
+}
+
+.fn-search-wrap {
+  position: relative;
+  margin-bottom: 12px;
+}
+
+.fn-search-icon {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #b5b2c8;
+  font-size: 16px;
+}
+
+.fn-search-input {
+  width: 100%;
+  border: 2px solid #e6e4f0;
+  background: #fbfafe;
+  border-radius: 14px;
+  padding: 13px 15px 13px 42px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #2e2d40;
+  font-family: 'Pretendard', sans-serif;
+}
+
+.fn-search-input:focus {
+  border-color: #ff5a4d;
+  outline: none;
+}
+
+.fn-list {
+  max-height: 260px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 14px;
+  padding-right: 2px;
+}
+
+.fn-row {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  border: 2px solid #efedf5;
+  background: #fbfafe;
+  border-radius: 13px;
+  padding: 10px 12px;
+  transition: all 0.12s;
+  font-family: 'Pretendard', sans-serif;
+}
+
+.fn-row-on {
+  border: 2px solid #ff5a4d;
+  background: #fff0ee;
+}
+
+.fn-box {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #d6d2e2;
+  background: #fff;
+  color: #fff;
+}
+
+.fn-box-on {
+  border: 2px solid #ff5a4d;
+  background: #ff5a4d;
+}
+
+.fn-box i {
+  font-size: 13px;
+}
+
+.fn-all-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  background: linear-gradient(135deg, #ff7a7a, #ff5a6e);
+}
+
+.fn-all-avatar i {
+  font-size: 20px;
+}
+
+.fn-row-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Jua', sans-serif;
+  font-size: 15px;
+  color: #fff;
+}
+
+.fn-row-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.fn-row-name {
+  display: block;
+  font-weight: 800;
+  font-size: 13.5px;
+  color: #2e2d40;
+}
+
+.fn-row-sub {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #8f8ca6;
+  margin-top: 1px;
+}
+
+.fn-tag {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  font-weight: 800;
+  font-size: 10.5px;
+  padding: 3px 9px;
+  border-radius: 20px;
+}
+
+.fn-tag-linked {
+  background: #e1f5ec;
+  color: #158a6e;
+}
+
+.fn-tag-unlinked {
+  background: #fff3d6;
+  color: #c98a00;
+}
+
+.fn-empty {
+  text-align: center;
+  padding: 24px 10px;
+  color: #a7a4bb;
+  font-weight: 700;
+  font-size: 12.5px;
+}
+
+/* ── recipient ── */
+.fn-recipient {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-radius: 16px;
+  padding: 13px 15px;
+  border: 1px solid #e6e4f0;
+  background: #f8f7fb;
+}
+
+.fn-recipient-on {
+  border: 1px solid #dce9ff;
+  background: #f5f8ff;
+}
+
+.fn-rec-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Jua', sans-serif;
+  font-size: 16px;
+  color: #fff;
+}
+
+.fn-rec-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.fn-rec-name {
+  font-weight: 800;
+  font-size: 14px;
+  color: #2e2d40;
+}
+
+.fn-rec-sub {
+  font-size: 12px;
+  font-weight: 600;
+  color: #8f8ca6;
+}
+
+.fn-rec-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  font-weight: 800;
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: #f0eef3;
+  color: #9b98ae;
+}
+
+.fn-rec-tag-on {
+  background: #e1f5ec;
+  color: #158a6e;
+}
+
+.fn-rec-tag i {
+  font-size: 13px;
+}
+
+/* ── selected chips ── */
+.fn-chips {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+  background: #fbfafe;
+  border: 1px solid #efedf5;
+  border-radius: 13px;
+  padding: 11px 13px;
+  margin-top: 14px;
+}
+
+.fn-chips-count {
+  font-size: 11.5px;
+  font-weight: 800;
+  color: #8f8ca6;
+  margin-right: 2px;
+}
+
+.fn-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #fff0ee;
+  border: 1px solid #ffd9d2;
+  color: #c0402e;
+  font-weight: 800;
+  font-size: 12px;
+  padding: 5px 8px 5px 11px;
+  border-radius: 20px;
+}
+
+.fn-chip-x {
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: #c0402e;
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
+
+.fn-chip-x:hover {
+  color: #ff5a4d;
+}
+
+.fn-chip-x i {
+  font-size: 12px;
+}
+
+/* ── quick templates ── */
+.fn-tpls {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.fn-tpl {
+  border: 1px solid #e6e4f0;
+  cursor: pointer;
+  background: #fbfafe;
+  color: #5a5872;
+  font-weight: 800;
+  font-size: 12.5px;
+  padding: 8px 14px;
+  border-radius: 11px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.fn-tpl:hover {
+  background: #fff0ee;
+  color: #ff5a4d;
+  border-color: #ffd9d2;
+}
+
+.fn-tpl i {
+  font-size: 14px;
+}
+
+/* ── message ── */
+.fn-textarea {
+  width: 100%;
+  min-height: 130px;
+  resize: vertical;
+  border: 2px solid #e6e4f0;
+  background: #fbfafe;
+  border-radius: 14px;
+  padding: 14px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #2e2d40;
+  font-family: 'Pretendard', sans-serif;
+  line-height: 1.6;
+}
+
+.fn-textarea:focus {
+  border-color: #ff5a4d;
+  outline: none;
+}
+
+.fn-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+}
+
+.fn-count {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #b5b2c8;
+}
+
+.fn-channel {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #a7a4bb;
+}
+
+.fn-channel i {
+  font-size: 12px;
+  margin-right: 3px;
+}
+
+.fn-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.fn-clear {
+  border: 1px solid #e6e4f0;
+  cursor: pointer;
+  background: #fff;
+  color: #6a6980;
+  font-weight: 800;
+  font-size: 14px;
+  padding: 13px 18px;
+  border-radius: 14px;
+}
+
+.fn-clear:hover {
+  background: #f7f6fb;
+}
+
+.fn-send {
+  flex: 1;
+  border: none;
+  font-family: 'Jua', sans-serif;
+  font-size: 15px;
+  padding: 13px;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.fn-send i {
+  font-size: 17px;
+}
+
+.fn-send-on {
+  cursor: pointer;
+  background: #ff5a4d;
+  color: #fff;
+  box-shadow: 0 10px 22px -8px rgba(255, 90, 77, 0.6);
+}
+
+.fn-send-off {
+  cursor: not-allowed;
+  background: #f0eef3;
+  color: #b7b3c4;
+}
+
+.fn-blocked {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff3d6;
+  border-radius: 11px;
+  padding: 10px 13px;
+  margin-top: 12px;
+}
+
+.fn-blocked i {
+  color: #c98a00;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.fn-blocked span {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #9b7a2e;
+  line-height: 1.5;
+}
+
+/* ── sent list ── */
+.fn-sent-head {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 16px;
+}
+
+.fn-sent-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: #e6f0ff;
+  color: #2e7bff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fn-sent-badge i {
+  font-size: 17px;
+}
+
+.fn-sent-title {
+  font-family: 'Jua', sans-serif;
+  font-size: 16px;
+  color: #2e2d40;
+  margin: 0;
+}
+
+.fn-sent-list {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+
+.fn-sent-item {
+  border: 1px solid #f0eef7;
+  border-radius: 14px;
+  padding: 13px 15px;
+  background: #fbfafe;
+}
+
+.fn-sent-top {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 7px;
+}
+
+.fn-sent-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Jua', sans-serif;
+  font-size: 12px;
+  color: #fff;
+}
+
+.fn-sent-name {
+  font-weight: 800;
+  font-size: 13px;
+  color: #2e2d40;
+}
+
+.fn-sent-time {
+  margin-left: auto;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #b5b2c8;
+}
+
+.fn-sent-body {
+  margin: 0 0 8px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #5a5872;
+  line-height: 1.55;
+}
+
+.fn-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 800;
+  font-size: 10.5px;
+  padding: 3px 9px;
+  border-radius: 20px;
+}
+
+.fn-status i {
+  font-size: 12px;
+}
+
+.fn-status-read {
+  background: #e1f5ec;
+  color: #158a6e;
+}
+
+.fn-status-sent {
+  background: #e6f0ff;
+  color: #2e7bff;
+}
+
+/* ── toast ── */
+.fn-toast {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 95;
+  background: #2e2d40;
+  color: #fff;
+  padding: 14px 22px;
+  border-radius: 15px;
+  box-shadow: 0 20px 40px -14px rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  animation: fnToast 0.3s ease;
+}
+
+.fn-toast i {
+  font-size: 20px;
+  color: #33e0a0;
+}
+
+.fn-toast span {
+  font-weight: 800;
+  font-size: 14px;
+}
+
+
+/* ===== 엘리베이션: 카드 질감 고급화 (레이어드 웜 섀도우) ===== */
+.fn-card {
+  box-shadow:
+    0 1px 3px rgba(58, 51, 64, 0.05),
+    0 16px 34px -20px rgba(90, 60, 55, 0.2);
+}
+.fn-card {
+  transition:
+    box-shadow 0.28s ease,
+    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.fn-card:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 2px 6px rgba(58, 51, 64, 0.06),
+    0 24px 44px -22px rgba(90, 60, 55, 0.26);
+}
+@media (prefers-reduced-motion: reduce) {
+  .fn-card { transition: none; }
+  .fn-card:hover { transform: none; }
+}

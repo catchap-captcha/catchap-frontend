@@ -1,0 +1,573 @@
+/* handoff `CatChap 선생님.dc.html` 포팅 — 우리 학급 요약 (main 영역, 원본 값 그대로) */
+.th-main {
+  flex: 1;
+  min-width: 0;
+  padding: 24px 30px 44px;
+}
+
+/* HEADER */
+.th-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.th-title {
+  font-family: 'Jua', sans-serif;
+  font-size: 26px;
+  color: #2e2d40;
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+.th-subtitle {
+  margin: 5px 0 0;
+  color: #8f8ca6;
+  font-weight: 600;
+  font-size: 13.5px;
+}
+
+.th-subtitle b {
+  color: #ff5a4d;
+}
+
+.th-header-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.th-export-btn {
+  border: 1px solid #e6e4f0;
+  cursor: pointer;
+  background: #fff;
+  color: #5a5872;
+  font-weight: 800;
+  font-size: 13px;
+  padding: 9px 15px;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.th-export-btn:hover {
+  background: #f7f6fb;
+}
+
+.th-export-btn i {
+  font-size: 16px;
+}
+
+/* CLASS SWITCHER */
+.th-class-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.th-class-label {
+  font-weight: 800;
+  color: #8f8ca6;
+  font-size: 12.5px;
+}
+
+.th-chip {
+  border: none;
+  cursor: pointer;
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 800;
+  font-size: 12.5px;
+  padding: 8px 15px;
+  border-radius: 20px;
+  transition: all 0.15s;
+}
+
+.th-chip-on {
+  background: #ff5a4d;
+  color: #fff;
+  box-shadow: 0 6px 14px -8px rgba(255, 90, 77, 0.6);
+}
+
+.th-chip-off {
+  background: #fff;
+  color: #6a6980;
+  border: 1px solid #e6e4f0;
+}
+
+/* KPI ROW */
+.th-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.th-kpi-card {
+  background: #fff;
+  border: 1px solid #ecebf3;
+  border-radius: 18px;
+  padding: 18px;
+  box-shadow: 0 10px 24px -20px rgba(60, 50, 110, 0.5);
+}
+
+.th-kpi-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.th-kpi-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.th-kpi-icon i {
+  font-size: 19px;
+}
+
+.th-kpi-icon-red {
+  background: #fff0ee;
+  color: #ff5a4d;
+}
+
+.th-kpi-icon-green {
+  background: #e1f5ec;
+  color: #17b08c;
+}
+
+.th-kpi-icon-blue {
+  background: #e6f0ff;
+  color: #2e7bff;
+}
+
+.th-kpi-icon-amber {
+  background: #fff3d6;
+  color: #f0a400;
+}
+
+.th-kpi-badge {
+  font-size: 11px;
+  font-weight: 800;
+  color: #17b08c;
+  background: #e1f5ec;
+  padding: 3px 8px;
+  border-radius: 20px;
+}
+
+.th-kpi-value {
+  font-family: 'Jua', sans-serif;
+  font-size: 26px;
+  color: #2e2d40;
+  line-height: 1;
+}
+
+.th-kpi-unit {
+  font-size: 14px;
+  color: #b5b2c8;
+}
+
+.th-kpi-label {
+  font-weight: 700;
+  font-size: 12px;
+  color: #8f8ca6;
+  margin-top: 5px;
+}
+
+/* CHARTS ROW */
+.th-charts {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.th-card {
+  background: #fff;
+  border: 1px solid #ecebf3;
+  border-radius: 20px;
+  padding: 22px 24px;
+  box-shadow: 0 10px 24px -20px rgba(60, 50, 110, 0.5);
+}
+
+.th-chart-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.th-card-title {
+  font-family: 'Jua', sans-serif;
+  font-size: 17px;
+  color: #2e2d40;
+  margin: 0;
+}
+
+.th-chart-sub {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: #8f8ca6;
+  font-weight: 600;
+}
+
+.th-week-badge {
+  font-weight: 800;
+  font-size: 12px;
+  color: #17b08c;
+  background: #e1f5ec;
+  padding: 5px 11px;
+  border-radius: 20px;
+}
+
+.th-bars {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  height: 150px;
+}
+
+.th-bar-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  height: 100%;
+  justify-content: flex-end;
+}
+
+.th-bar-n {
+  font-size: 11px;
+  font-weight: 800;
+  color: #b5b2c8;
+}
+
+.th-bar-fill {
+  width: 100%;
+  border-radius: 8px 8px 4px 4px;
+}
+
+.th-bar-day {
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* per-game accuracy */
+.th-game-title {
+  font-family: 'Jua', sans-serif;
+  font-size: 17px;
+  color: #2e2d40;
+  margin: 0 0 4px;
+}
+
+.th-game-sub {
+  margin: 0 0 18px;
+  font-size: 12px;
+  color: #8f8ca6;
+  font-weight: 600;
+}
+
+.th-game-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.th-game-row-head {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12.5px;
+  font-weight: 800;
+  color: #3a3950;
+  margin-bottom: 6px;
+}
+
+.th-game-track {
+  height: 10px;
+  background: #f2f1f7;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.th-game-fill {
+  height: 100%;
+  border-radius: 20px;
+}
+
+/* ATTENTION LIST + TODO */
+.th-bottom {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 16px;
+}
+
+.th-att-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.th-att-head-left {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.th-att-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: #fff3d6;
+  color: #f0a400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.th-att-icon i {
+  font-size: 18px;
+}
+
+.th-att-all {
+  text-decoration: none;
+  font-weight: 800;
+  font-size: 12.5px;
+  color: #ff5a4d;
+}
+
+.th-att-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.th-att-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: #fbfafe;
+  border: 1px solid #f0eef7;
+}
+
+.th-att-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Jua', sans-serif;
+  font-size: 16px;
+  color: #fff;
+}
+
+.th-att-info {
+  min-width: 0;
+  flex: 1;
+}
+
+.th-att-name {
+  font-weight: 800;
+  font-size: 13.5px;
+  color: #2e2d40;
+}
+
+.th-att-note {
+  font-size: 12px;
+  font-weight: 600;
+  color: #8f8ca6;
+}
+
+.th-att-tag {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 5px 11px;
+  border-radius: 20px;
+  flex-shrink: 0;
+}
+
+.th-assign-btn {
+  border: 1px solid #e6e4f0;
+  background: #fff;
+  color: #6a6980;
+  font-weight: 800;
+  font-size: 12px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.th-assign-btn:hover {
+  background: #f7f6fb;
+}
+
+/* TODO */
+.th-todo-title {
+  font-family: 'Jua', sans-serif;
+  font-size: 17px;
+  color: #2e2d40;
+  margin: 0 0 14px;
+}
+
+.th-todo-list {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+
+.th-todo-row {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 11px 12px;
+  border-radius: 12px;
+}
+
+.th-todo-done {
+  background: #f1fbf7;
+}
+
+.th-todo-open {
+  background: #fbfafe;
+  border: 1px solid #f0eef7;
+}
+
+.th-todo-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.th-todo-done .th-todo-icon {
+  background: #dff6ed;
+  color: #17b08c;
+}
+
+.th-todo-done .th-todo-icon i {
+  font-size: 15px;
+}
+
+.th-todo-open .th-todo-icon {
+  background: #fff0ee;
+  color: #ff5a4d;
+}
+
+.th-todo-open .th-todo-icon i {
+  font-size: 13px;
+}
+
+.th-todo-text-done {
+  font-size: 13px;
+  font-weight: 700;
+  color: #5b9b85;
+  text-decoration: line-through;
+}
+
+.th-todo-text {
+  font-size: 13px;
+  font-weight: 700;
+  color: #3a3950;
+}
+
+/* AI 요약 */
+.th-ai {
+  margin-top: 16px;
+  padding: 14px;
+  border-radius: 14px;
+  background: linear-gradient(150deg, #fff0ee, #fff6f0);
+}
+
+.th-ai-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.th-ai-head i {
+  font-size: 18px;
+  color: #ff5a4d;
+}
+
+.th-ai-label {
+  font-weight: 800;
+  font-size: 13px;
+  color: #c0402e;
+}
+
+.th-ai-text {
+  margin: 0;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #8a6a64;
+  line-height: 1.55;
+}
+
+/* ===== 정제(polish): 액션 버튼 hover 부상 + 탄력 눌림 (배경색 불변, 그림자/모션만) ===== */
+.th-assign-btn,
+.th-export-btn {
+  transition:
+    transform 0.2s cubic-bezier(0.34, 1.2, 0.5, 1),
+    box-shadow 0.2s ease,
+    filter 0.2s ease;
+}
+.th-assign-btn:hover,
+.th-export-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 12px -6px rgba(255, 90, 77, 0.28);
+}
+.th-assign-btn:active,
+.th-export-btn:active {
+  transform: translateY(0) scale(0.97);
+  box-shadow: 0 2px 6px -4px rgba(255, 90, 77, 0.28);
+  transition-duration: 0.09s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .th-assign-btn,
+  .th-export-btn { transition: none; }
+  .th-assign-btn:hover, .th-assign-btn:active,
+  .th-export-btn:hover, .th-export-btn:active { transform: none; }
+}
+
+
+/* ===== 엘리베이션: 카드 질감 고급화 (레이어드 웜 섀도우) ===== */
+.th-card,
+.th-kpi-card {
+  box-shadow:
+    0 1px 3px rgba(58, 51, 64, 0.05),
+    0 16px 34px -20px rgba(90, 60, 55, 0.2);
+}
+.th-card,
+.th-kpi-card {
+  transition:
+    box-shadow 0.28s ease,
+    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.th-card:hover,
+.th-kpi-card:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 2px 6px rgba(58, 51, 64, 0.06),
+    0 24px 44px -22px rgba(90, 60, 55, 0.26);
+}
+@media (prefers-reduced-motion: reduce) {
+  .th-card,.th-kpi-card { transition: none; }
+  .th-card:hover,.th-kpi-card:hover { transform: none; }
+}
