@@ -157,12 +157,17 @@ export default function GameScreen() {
     setLiveSel(null);
     setLiveResult(null);
     setLiveStats({ correct: 0, wrong: 0, streak: 0 });
+    setLiveDay(null);
+    // ?day=N 이면 그 일차 커리큘럼, 아니면 무작위 연습
+    const dayParam = searchParams.get('day');
+    const day = dayParam ? Number(dayParam) : undefined;
     studentApi
-      .gameSession(key)
+      .gameSession(key, day)
       .then((d: any) => {
         if (!on) return;
         if (d?.available && Array.isArray(d.questions) && d.questions.length > 0) {
           setLiveQs(d.questions);
+          if (day) setLiveDay({ day, topic: d.topic ?? '', isReplay: !!d.is_replay });
         }
       })
       .catch(() => {
@@ -171,8 +176,9 @@ export default function GameScreen() {
     return () => {
       on = false;
     };
-  }, [key]);
+  }, [key, searchParams]);
 
+  const [liveDay, setLiveDay] = useState<{ day: number; topic: string; isReplay: boolean } | null>(null);
   const liveQ = liveQs ? liveQs[liveIdx] : null;
   const liveLast = liveQs ? liveIdx >= liveQs.length - 1 : false;
 
@@ -437,6 +443,13 @@ export default function GameScreen() {
             {liveQ ? (
               /* 실전 문항 (서버 발급·서버 채점 — 생활: capcha_service ms 문제은행) */
               <div className="gs-live">
+                {liveDay && (
+                  <div className={`gs-live-daybar${liveDay.isReplay ? ' gs-live-daybar--replay' : ''}`}>
+                    <i className={liveDay.isReplay ? 'ph-fill ph-arrow-counter-clockwise' : 'ph-fill ph-calendar-star'} />
+                    {liveDay.day}일차 · {liveDay.topic}
+                    {liveDay.isReplay ? ' · 복습(코인 없음)' : ' · 오늘 과제'}
+                  </div>
+                )}
                 <div className="gs-live-options">
                   {liveQ.options.map((o) => {
                     const isSel = liveSel === o.id;

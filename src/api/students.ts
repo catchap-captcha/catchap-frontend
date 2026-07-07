@@ -43,9 +43,15 @@ export const studentApi = {
   gameState: (subject: string) =>
     client.get<any>('/students/me/game-state', { params: { subject } }).then((r) => r.data),
 
-  /** 실전 게임 세션 — 서버 문항 발급(정답 미포함). 현재 생활 과목 지원 (ms 문제은행) */
-  gameSession: (subject: string, count = 5) =>
-    client.get<any>('/students/me/game-session', { params: { subject, count } }).then((r) => r.data),
+  /** 일일 교육과정 — 지난날(복습)·오늘(과제)·다음날(잠금·주제만) */
+  curriculum: (subject: string, back = 7, forward = 5) =>
+    client.get<any>('/students/me/curriculum', { params: { subject, back, forward } }).then((r) => r.data),
+  /** 특정 일차 상세 (미래는 잠금·주제만) */
+  curriculumDay: (subject: string, day: number) =>
+    client.get<any>('/students/me/curriculum/day', { params: { subject, day } }).then((r) => r.data),
+  /** 실전 게임 세션 — 서버 문항 발급(정답 미포함). day 지정 시 그 일차 커리큘럼 */
+  gameSession: (subject: string, day?: number, count = 5) =>
+    client.get<any>('/students/me/game-session', { params: { subject, day, count } }).then((r) => r.data),
   /** 실전 채점 — 서버 판정 + 학습기록 저장 */
   gameAnswer: (body: { question_id: string; option_id: string; last?: boolean; replay?: boolean }) =>
     client.post<any>('/students/me/game-answer', body).then((r) => r.data),

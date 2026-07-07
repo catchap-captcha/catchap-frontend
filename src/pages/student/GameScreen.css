@@ -726,3 +726,13 @@
 .gs-live-feedback--no { background: #FFEDEF; color: #D14559; }
 .gs-live-feedback i { font-size: 19px; }
 .gs-confirm--wait { opacity: 0.55; cursor: not-allowed; }
+
+/* 커리큘럼 일차 배너 (게임 상단) */
+.gs-live-daybar {
+  display: inline-flex; align-items: center; gap: 7px;
+  margin-bottom: 16px; padding: 8px 15px; border-radius: 20px;
+  font-size: 13.5px; font-weight: 800;
+  background: #FFE3EF; color: #D14584;
+}
+.gs-live-daybar i { font-size: 15px; }
+.gs-live-daybar--replay { background: #EDE6FF; color: #6A4FCC; }

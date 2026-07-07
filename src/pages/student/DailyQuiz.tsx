@@ -124,6 +124,17 @@ export default function DailyQuiz() {
   const name = (me?.name ?? '하은').trim() || '하은';
 
   const [data, setData] = useState<QuizData>(FALLBACK);
+  // 생활 교육과정 (일일 주제 순환 — 지난날 복습·오늘 과제·다음날 잠금)
+  const [curr, setCurr] = useState<{ today_day: number; days: any[] } | null>(null);
+
+  useEffect(() => {
+    studentApi
+      .curriculum('생활', 6, 4)
+      .then((d: any) => {
+        if (d?.available && Array.isArray(d.days)) setCurr({ today_day: d.today_day, days: d.days });
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -298,6 +309,61 @@ export default function DailyQuiz() {
           })}
         </div>
       </section>
+
+      {/* 생활 교육과정 — 매일 주제가 바뀌는 25문제(5단계). 지난날 복습 / 오늘 과제 / 다음날 잠금 */}
+      {curr && (
+        <section className="dq-sec-curric">
+          <div className="dq-curric">
+            <div className="dq-curric-head">
+              <div>
+                <h2 className="dq-curric-title">
+                  <i className="ph-fill ph-calendar-star" />생활 안전 교육과정
+                </h2>
+                <p className="dq-curric-sub">
+                  매일 다른 주제로 <b>25문제(5단계)</b>씩! 지난 날은 다시 풀 수 있고, 다음 날 주제는 미리 볼 수 있어요.
+                </p>
+              </div>
+            </div>
+            <div className="dq-curric-track">
+              {curr.days.map((d: any) => {
+                const inner = (
+                  <>
+                    <span className="dq-cur-day">{d.day}일차</span>
+                    <span className="dq-cur-topic">{d.topic}</span>
+                    <span className="dq-cur-meta">
+                      {d.status === 'future' ? (
+                        <><i className="ph-fill ph-lock-simple" />다음 날</>
+                      ) : d.playable_count > 0 ? (
+                        <><i className="ph-fill ph-play-circle" />{d.playable_count}문제</>
+                      ) : (
+                        <><i className="ph-fill ph-puzzle-piece" />위젯 준비중</>
+                      )}
+                    </span>
+                  </>
+                );
+                const cls = `dq-cur-day-card dq-cur-${d.status}${d.status !== 'future' && d.playable_count > 0 ? ' dq-cur-playable' : ''}`;
+                // 오늘/지난날 + 플레이 가능 → 게임으로. 미래·위젯전용 → 클릭 불가(주제만 표시)
+                if (d.status !== 'future' && d.playable_count > 0) {
+                  const replay = d.status === 'past' ? '&replay=1' : '';
+                  return (
+                    <Link key={d.day} to={`${PATHS.STUDENT_GAME}?subject=생활&day=${d.day}${replay}`} className={cls}>
+                      {inner}
+                      {d.status === 'today' && <span className="dq-cur-flag">오늘 과제</span>}
+                      {d.status === 'past' && <span className="dq-cur-flag dq-cur-flag--replay">복습</span>}
+                    </Link>
+                  );
+                }
+                return (
+                  <div key={d.day} className={cls} title={d.status === 'future' ? '다음 날 과제는 아직 열리지 않았어요' : '이 주제는 곧 만나요'}>
+                    {inner}
+                    {d.status === 'today' && <span className="dq-cur-flag">오늘</span>}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* STREAK / REWARD ROW */}
       <section className="dq-sec-streak">
