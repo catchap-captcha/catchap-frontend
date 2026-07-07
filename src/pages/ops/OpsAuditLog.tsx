@@ -36,6 +36,8 @@ const ACTION_META: Record<string, { label: string; icon: string; cls: string }> 
   // 운영자 — 문의 처리
   'inquiry.answer': { label: '문의 답변 발송', icon: 'ph-paper-plane-tilt', cls: 'ok' },
   'inquiry.resolve': { label: '문의 처리 완료', icon: 'ph-check-circle', cls: 'ok' },
+  // 운영자 — 행동 데이터 학습셋 관리
+  'behavior.dataset_mark': { label: '행동 데이터 학습셋 상태 변경', icon: 'ph-fingerprint', cls: 'neutral' },
 };
 
 function fmt(ts: string | null): string {

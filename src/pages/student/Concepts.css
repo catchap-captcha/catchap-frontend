@@ -1,12 +1,13 @@
 /* 개념설명 — handoff `CatChap 개념설명.dc.html` 원본 그대로 (접두사 cp-) */
 
+/* rotate는 비트맵 마스코트를 매 프레임 리샘플링해 번져 보임 → 이동만 남김 */
 @keyframes cpFloat {
   0%,
   100% {
-    transform: translateY(0) rotate(-1deg);
+    transform: translateY(0);
   }
   50% {
-    transform: translateY(-9px) rotate(1deg);
+    transform: translateY(-9px);
   }
 }
 
@@ -298,6 +299,7 @@
   height: 130px;
   border-radius: 50%;
 animation: cpFloat 4.5s ease-in-out infinite;
+  will-change: transform;
 }
 
 /* SUBJECT FILTER TABS */

@@ -1,12 +1,13 @@
 /* 로그인/회원가입 — handoff: CatChap 로그인.dc.html (값 원본 그대로) */
 
+/* rotate는 비트맵 로고를 매 프레임 리샘플링해 흰/빨강 경계가 번져 보임 → 이동만 남김 */
 @keyframes lgFloat {
   0%,
   100% {
-    transform: translateY(0) rotate(-1deg);
+    transform: translateY(0);
   }
   50% {
-    transform: translateY(-14px) rotate(1deg);
+    transform: translateY(-14px);
   }
 }
 
@@ -124,6 +125,8 @@
   gap: 12px;
   position: relative;
   z-index: 2;
+  /* 로고를 Link로 감싸면서 생긴 브라우저 기본 밑줄(검정 줄) 제거 */
+  text-decoration: none;
 }
 
 .lg-brand-logo {
@@ -163,6 +166,7 @@
 
 .lg-hero-mascot {
   animation: lgFloat 4.5s ease-in-out infinite;
+  will-change: transform;
   width: 180px;
   height: 180px;
   border-radius: 50%;
@@ -1527,6 +1531,7 @@
 
 .lg-cap-mascot-float {
   animation: lgFloat 4.5s ease-in-out infinite;
+  will-change: transform;
 }
 
 .lg-cap-mascot-float img {

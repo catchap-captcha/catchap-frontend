@@ -15,7 +15,10 @@ export function downloadBlob(filename: string, blob: Blob) {
 /** CSV 저장 — Excel 한글 호환을 위해 UTF-8 BOM 포함. rows[0]은 헤더. */
 export function downloadCSV(filename: string, rows: (string | number | null | undefined)[][]) {
   const esc = (v: string | number | null | undefined) => {
-    const s = v == null ? '' : String(v);
+    let s = v == null ? '' : String(v);
+    // 수식 인젝션 방어: 사용자 입력이 =HYPERLINK(...) 같은 셀로 들어와 Excel에서 실행되지 않게
+    // 선두 =,+,@ (및 숫자가 아닌 -) 앞에 ' 를 붙인다. 음수 등 순수 숫자는 그대로 둔다.
+    if (/^[=+@-]/.test(s) && (s === '' || isNaN(Number(s)))) s = `'${s}`;
     return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
   };
   const body = rows.map((r) => r.map(esc).join(',')).join('\r\n');

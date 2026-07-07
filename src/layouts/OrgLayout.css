@@ -34,7 +34,7 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  box-shadow: 0 5px 12px rgba(255, 90, 77, 0.3);
+  /* 로고 주변 빨간 번짐(red glow shadow) 제거 */
 }
 
 .ol-logoText {
@@ -303,4 +303,7 @@
   flex: 1;
   min-width: 0;
   padding: 24px 30px 44px;
+  /* 콘솔 본문 공통 폭 — 선생님 콘솔과 동일하게 제한해 넓은 화면에서도 레이아웃 일정 */
+  max-width: 1400px;
+  margin: 0 auto;
 }

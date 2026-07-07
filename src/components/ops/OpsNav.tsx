@@ -7,7 +7,9 @@ import mascot from '../../assets/characters/catchap-logo.png';
 const LINKS = [
   { to: PATHS.OPS_APPROVAL, icon: 'ph-buildings', label: '기관 승인' },
   { to: PATHS.OPS_ORGS, icon: 'ph-list-checks', label: '기관 목록' },
+  { to: PATHS.OPS_API_KEYS, icon: 'ph-key', label: 'API 발급' },
   { to: PATHS.OPS_INQUIRIES, icon: 'ph-chat-circle-dots', label: '문의 관리' },
+  { to: PATHS.OPS_BEHAVIOR, icon: 'ph-fingerprint', label: '행동 데이터' },
   { to: PATHS.OPS_LOGS, icon: 'ph-scroll', label: '감사 로그' },
 ];
 

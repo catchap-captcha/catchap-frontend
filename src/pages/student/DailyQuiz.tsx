@@ -392,10 +392,16 @@ export default function DailyQuiz() {
                       {d.done ? <i className="ph-bold ph-check" /> : isFuture ? <i className="ph-fill ph-lock-simple" /> : null}
                     </div>
                   );
+                  // 지난 요일 복습: 생활 커리큘럼 일차로 역산해 그 날 주제를 다시 푼다 (커리큘럼 없으면 무작위 연습)
+                  const pastDay = curr && todayIdx >= 0 ? curr.today_day - (todayIdx - i) : null;
+                  const replayHref =
+                    pastDay && pastDay >= 1
+                      ? `${PATHS.STUDENT_GAME}?subject=생활&day=${pastDay}&replay=1`
+                      : `${PATHS.STUDENT_GAME}?subject=생활&replay=1`;
                   return (
                     <div key={d.label} className="dq-day">
                       {isPast ? (
-                        <Link to={`${PATHS.STUDENT_GAME}?subject=국어&replay=1`} className="dq-dayreplay" title={`${d.label}요일 문제 다시 풀기 (복습 — 코인 없음)`}>
+                        <Link to={replayHref} className="dq-dayreplay" title={`${d.label}요일 문제 다시 풀기 (복습 — 코인 없음)`}>
                           {dot}
                         </Link>
                       ) : (

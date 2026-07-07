@@ -65,7 +65,9 @@ export const PATHS = {
   OPS_LOGIN: '/ops/login', // 숨겨진 운영자 전용 로그인 (공개 라우트, 링크 노출 안 함)
   OPS_APPROVAL: '/ops/approvals',
   OPS_ORGS: '/ops/orgs',
+  OPS_API_KEYS: '/ops/api-keys',
   OPS_INQUIRIES: '/ops/inquiries',
+  OPS_BEHAVIOR: '/ops/behavior',
   OPS_LOGS: '/ops/logs',
 
   // 기관 학생 관리 (학생 생성 + 가입코드 배부)

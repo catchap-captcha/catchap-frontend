@@ -15,12 +15,10 @@ interface StudentRow {
   invite_code: string | null; // 학부모 초대 코드
 }
 
-// 학교 발급 스타일 코드 생성 (데모 — 실제는 서버가 hash 저장 후 1회 노출)
+// 데모 행(실제 학생 아님) 전용 예시 초대코드 — 가입코드는 서버만 발급한다(위조 금지)
 const CH = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 const seg = (n: number) => Array.from({ length: n }, () => CH[Math.floor(Math.random() * CH.length)]).join('');
-const genJoin = () => `JOIN-${seg(4)}-${seg(4)}`;
 const genInvite = () => `LINK-${seg(4)}-${seg(4)}`;
-const genLoginId = (cls: string, i: number) => `${cls.toLowerCase().replace(/[^a-z0-9]/g, '')}-${String(i).padStart(3, '0')}`;
 
 const FALLBACK: StudentRow[] = [
   { id: 's1', nickname: '하은', login_id: 'haetsal-1-012', className: '1학년 2반', status: 'active', join_code: null, invite_code: 'LINK-7QX3-9K2M' },
@@ -42,6 +40,8 @@ export default function OrgStudents() {
   const [addCount, setAddCount] = useState(1);
   const [addNames, setAddNames] = useState(''); // 학생 실명 목록 (줄바꿈 구분, 교사·기관 화면 전용)
   const [issued, setIssued] = useState<{ login_id: string; join_code: string }[] | null>(null);
+  const [creating, setCreating] = useState(false);
+  const [createErr, setCreateErr] = useState('');
 
   const flash = (m: string) => {
     setToast(m);
@@ -62,7 +62,8 @@ export default function OrgStudents() {
     pending: rows.filter((r) => r.status === 'pending').length,
   };
 
-  // 학생 슬롯 생성 + 가입코드 발급 — 실백엔드 POST /orgs/{id}/students/register (실패 시 로컬 데모)
+  // 학생 슬롯 생성 + 가입코드 발급 — 실백엔드 POST /orgs/{id}/students/register.
+  // 서버 실패 시 가짜 코드를 만들지 않는다(위조 코드를 배부하면 아이들 전원 가입 실패).
   const createStudents = async () => {
     const orgId = me?.organization_id;
     // 실명 목록: 줄바꿈/쉼표 구분 → 슬롯 순서대로 매칭
@@ -70,15 +71,19 @@ export default function OrgStudents() {
       .split(/[\n,]/)
       .map((n) => n.trim())
       .filter(Boolean);
-    let made: StudentRow[] = [];
+    if (!orgId) {
+      setCreateErr('기관 정보를 불러오지 못해 가입 코드를 발급할 수 없어요. 다시 로그인한 뒤 시도해 주세요.');
+      return;
+    }
+    setCreating(true);
+    setCreateErr('');
     try {
-      if (!orgId) throw new Error('no org');
       const res = await orgApi.registerStudents(orgId, {
         count: addCount,
         class_label: addClass,
         names: names.length ? names : undefined,
       });
-      made = (res.issued ?? []).map(
+      const made: StudentRow[] = (res.issued ?? []).map(
         (it: { login_id: string; join_code: string; real_name?: string | null }, k: number) => ({
           id: `srv-${it.login_id}-${k}`,
           nickname: it.real_name ? `${it.real_name} (가입 대기)` : '(가입 대기)',
@@ -89,20 +94,17 @@ export default function OrgStudents() {
           invite_code: null,
         }),
       );
+      if (!made.length) {
+        setCreateErr('가입 코드가 발급되지 않았어요. 잠시 후 다시 시도해 주세요.');
+        return;
+      }
+      setRows((prev) => [...made, ...prev]);
+      setIssued(made.map((m) => ({ login_id: m.login_id, join_code: m.join_code! })));
     } catch {
-      const base = rows.filter((r) => r.className === addClass).length + 12;
-      made = Array.from({ length: addCount }, (_, k) => ({
-        id: `new-${Date.now()}-${k}`,
-        nickname: '(가입 대기)',
-        login_id: genLoginId(addClass.replace('학년 ', '-').replace('반', ''), base + k),
-        className: addClass,
-        status: 'pending' as const,
-        join_code: genJoin(),
-        invite_code: null,
-      }));
+      setCreateErr('가입 코드 발급에 실패했어요. 잠시 후 다시 시도해 주세요.');
+    } finally {
+      setCreating(false);
     }
-    setRows((prev) => [...made, ...prev]);
-    setIssued(made.map((m) => ({ login_id: m.login_id, join_code: m.join_code! })));
   };
 
   const isRealId = (id: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-/.test(id);
@@ -162,7 +164,7 @@ export default function OrgStudents() {
             <h1 className="os-title">학생 관리</h1>
             <p className="os-sub">학교가 학생 계정을 만들고, 학생별 <b>1회용 가입 코드</b>를 배부해요. 아이는 코드로 별명·비밀번호만 정하면 가입 완료.</p>
           </div>
-          <button className="os-addbtn" onClick={() => { setAddOpen(true); setIssued(null); }}>
+          <button className="os-addbtn" onClick={() => { setAddOpen(true); setIssued(null); setCreateErr(''); }}>
             <i className="ph-bold ph-user-plus" />학생 추가
           </button>
         </div>
@@ -252,9 +254,16 @@ export default function OrgStudents() {
                 <p className="os-names-hint">
                   실명은 <b>선생님·기관 화면에만</b> 보여요. 학생이 닉네임을 바꿔도 선생님은 실명으로 찾을 수 있어요.
                 </p>
+                {createErr && (
+                  <p className="os-names-hint" style={{ color: '#E23D3D' }}>
+                    <i className="ph-fill ph-warning-circle" /> {createErr}
+                  </p>
+                )}
                 <div className="os-modal-actions">
-                  <button className="os-btn-ghost" onClick={() => setAddOpen(false)}>취소</button>
-                  <button className="os-btn-primary" onClick={createStudents}><i className="ph-bold ph-ticket" />코드 발급</button>
+                  <button className="os-btn-ghost" onClick={() => setAddOpen(false)} disabled={creating}>취소</button>
+                  <button className="os-btn-primary" onClick={createStudents} disabled={creating}>
+                    <i className="ph-bold ph-ticket" />{creating ? '발급 중…' : '코드 발급'}
+                  </button>
                 </div>
               </>
             ) : (

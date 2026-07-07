@@ -1,0 +1,239 @@
+/* 운영 콘솔 · API 발급/관리 — OpsApproval.css 위에 얹는 전용 스타일 (ak- 프리픽스) */
+
+/* 제품 안내 카드 2개 */
+.ak-products {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  margin-bottom: 20px;
+}
+.ak-prod {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #fff;
+  border: 1.5px solid #fff0e8;
+  border-radius: 20px;
+  padding: 16px 18px;
+  box-shadow: 0 1px 3px rgba(58, 51, 64, 0.05), 0 16px 34px -22px rgba(90, 60, 55, 0.2);
+}
+.ak-prod-ic {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  flex-shrink: 0;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55), 0 5px 12px -5px rgba(120, 90, 70, 0.28);
+}
+.ak-prod--captcha .ak-prod-ic { background: #ffe0db; color: #ff5a4d; }
+.ak-prod--edu .ak-prod-ic { background: #efe9ff; color: #7a5bd6; }
+.ak-prod-name { font-family: 'Jua', sans-serif; font-size: 17px; color: #3a3340; }
+.ak-prod-blurb { font-weight: 700; font-size: 12.5px; color: #9b9086; margin-top: 3px; }
+
+/* 발급 폼 */
+.ak-form { margin-bottom: 30px; }
+.ak-form-title {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-family: 'Jua', sans-serif;
+  font-size: 19px;
+  color: #3a3340;
+  margin-bottom: 18px;
+}
+.ak-form-title i { color: #ff5a4d; }
+.ak-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px 18px;
+}
+.ak-field { display: flex; flex-direction: column; gap: 7px; }
+.ak-label { font-weight: 800; font-size: 13px; color: #6e6558; }
+.ak-opt { font-weight: 700; font-size: 11px; color: #b0a79b; margin-left: 4px; }
+.ak-select,
+.ak-input {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1.5px solid #ffe0d6;
+  border-radius: 12px;
+  background: #fffdfb;
+  padding: 11px 13px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  color: #3a3340;
+  transition: border-color 0.2s, background 0.2s;
+}
+.ak-select:focus,
+.ak-input:focus { outline: none; border-color: #ff5a4d; background: #fff; }
+.ak-hint { font-weight: 700; font-size: 12px; color: #9b9086; }
+.ak-form-actions { display: flex; justify-content: flex-end; margin-top: 20px; }
+
+/* 목록 헤더 */
+.ak-list-head {
+  font-family: 'Jua', sans-serif;
+  font-size: 20px;
+  color: #3a3340;
+  margin: 4px 0 16px;
+}
+
+/* 키 카드 */
+.ak-key-ic--captcha { background: #ffe0db !important; color: #ff5a4d !important; }
+.ak-key-ic--edu { background: #efe9ff !important; color: #7a5bd6 !important; }
+.ak-subject {
+  font-weight: 800;
+  font-size: 11.5px;
+  color: #17916f;
+  background: #e1f5ec;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+.ak-keyline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  margin-top: 4px;
+  background: #fffaf7;
+  border: 1.5px solid #fff0e8;
+  border-radius: 13px;
+}
+.ak-keyline-k {
+  font-weight: 800;
+  font-size: 11.5px;
+  color: #b0a79b;
+  flex-shrink: 0;
+}
+.ak-keyline-k--secret { color: #d98a00; }
+.ak-mono {
+  font-family: 'JetBrains Mono', 'Consolas', monospace;
+  font-size: 13.5px;
+  color: #3a3340;
+  word-break: break-all;
+  flex: 1;
+}
+.ak-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 1.5px solid #ffe0d6;
+  background: #fff;
+  color: #6e6558;
+  font-weight: 800;
+  font-size: 12.5px;
+  padding: 7px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.15s;
+}
+.ak-copy:hover { background: #fff5f0; color: #ff5a4d; border-color: #ffc9b8; transform: translateY(-1px); }
+.ak-copy--wide { width: 100%; justify-content: center; margin-top: 10px; }
+
+.ak-key-meta {
+  display: flex;
+  gap: 20px;
+  margin-top: 12px;
+  font-weight: 700;
+  font-size: 12.5px;
+  color: #9b9086;
+}
+
+/* 임베드 스니펫 */
+.ak-snippet {
+  margin-top: 14px;
+  padding: 14px 16px;
+  background: #2c2734;
+  border-radius: 14px;
+}
+.ak-snippet-h {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-weight: 800;
+  font-size: 12.5px;
+  color: #c9b8ff;
+  margin-bottom: 10px;
+}
+.ak-snippet-pre {
+  margin: 0;
+  font-family: 'JetBrains Mono', 'Consolas', monospace;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: #eef0ff;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+/* secret 1회 노출 모달 */
+.ak-modal-back {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background: rgba(40, 30, 45, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: ak-fade 0.2s ease;
+}
+@keyframes ak-fade { from { opacity: 0; } to { opacity: 1; } }
+.ak-modal {
+  width: 100%;
+  max-width: 520px;
+  background: #fff;
+  border-radius: 26px;
+  padding: 30px 30px 26px;
+  box-shadow: 0 30px 70px -20px rgba(60, 40, 55, 0.5);
+  animation: ak-pop 0.28s cubic-bezier(0.34, 1.3, 0.5, 1);
+}
+@keyframes ak-pop { from { transform: translateY(14px) scale(0.97); opacity: 0; } to { transform: none; opacity: 1; } }
+.ak-modal-ic { font-size: 46px; color: #17b08c; line-height: 1; text-align: center; }
+.ak-modal-title {
+  font-family: 'Jua', sans-serif;
+  font-size: 23px;
+  color: #3a3340;
+  text-align: center;
+  margin: 10px 0 14px;
+}
+.ak-modal-warn {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: #fff3d6;
+  border: 1.5px solid #ffe4a8;
+  border-radius: 14px;
+  padding: 12px 14px;
+  font-weight: 700;
+  font-size: 13px;
+  color: #a5730a;
+  line-height: 1.5;
+  margin-bottom: 18px;
+}
+.ak-modal-warn i { color: #e0a000; margin-top: 1px; }
+.ak-modal-field { margin-bottom: 14px; }
+.ak-modal-field .ak-keyline-k { display: block; margin-bottom: 7px; }
+.ak-modal-val {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: #fffaf7;
+  border: 1.5px solid #fff0e8;
+  border-radius: 13px;
+}
+.ak-modal-val--secret { background: #fffaf0; border-color: #ffe4a8; }
+.ak-modal-done { width: 100%; justify-content: center; margin-top: 8px; }
+
+/* 반응형 */
+@media (max-width: 720px) {
+  .ak-products,
+  .ak-grid { grid-template-columns: 1fr; }
+  .ak-keyline { flex-wrap: wrap; }
+  .ak-mono { flex-basis: 100%; }
+}

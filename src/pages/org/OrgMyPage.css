@@ -14,7 +14,8 @@
 
 /* HEADER */
 .om-header {
-  margin-bottom: 20px;
+  max-width: 940px;
+  margin: 0 auto 20px;
 }
 
 .om-title {
@@ -37,7 +38,8 @@
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
-  margin-bottom: 22px;
+  max-width: 940px;
+  margin: 0 auto 22px;
 }
 
 .om-tab {
@@ -69,6 +71,7 @@
 
 .om-body {
   max-width: 940px;
+  margin: 0 auto;
 }
 
 /* CARD */

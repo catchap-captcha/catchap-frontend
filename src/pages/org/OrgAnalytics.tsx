@@ -97,7 +97,8 @@ function buildChart(acc: number[], axis: string[], period: Period) {
   const owner = '기관 전체';
   const n = acc.length;
   const last = n - 1;
-  const mapY = (v: number) => Math.round(210 - (v - 50) * 3.72);
+  // 좌표는 플롯 영역(24~210) 안으로 클램프 — 범위 밖 값이 카드 밖으로 그려지지 않게
+  const mapY = (v: number) => Math.max(24, Math.min(210, Math.round(210 - (v - 50) * 3.72)));
   const xAt = (i: number) => (n === 1 ? 335 : Math.round(44 + i * (582 / (n - 1))));
   const avg = Math.round(acc.reduce((a, b) => a + b, 0) / n);
   const yticks = [100, 90, 80, 70, 60, 50].map((v) => {
@@ -108,7 +109,8 @@ function buildChart(acc: number[], axis: string[], period: Period) {
     const isLast = i === last;
     const cx = xAt(i);
     const cy = mapY(v);
-    return { cx, cy, r: isLast ? 6 : 5, stroke: isLast ? hot : theme, fill: isLast ? hot : theme, label: `${v}%`, ly: cy - 13 };
+    const lx = Math.min(Math.max(cx, 24), 612);
+    return { cx, cy, r: isLast ? 6 : 5, stroke: isLast ? hot : theme, fill: isLast ? hot : theme, label: `${v}%`, lx, ly: Math.max(cy - 13, 12) };
   });
   const linePts = acc.map((v, i) => `${xAt(i)},${mapY(v)}`).join(' ');
   const areaPts = `${linePts} ${xAt(last)},210 ${xAt(0)},210`;
@@ -535,14 +537,12 @@ export default function OrgAnalytics() {
             ))}
             <polygon points={chart.areaPts} fill="#17B08C" opacity={0.1} />
             <line x1={44} y1={chart.avgY} x2={626} y2={chart.avgY} stroke="#FFB43C" strokeWidth={2} strokeDasharray="7 6" />
-            <text x={622} y={chart.avgLabelY} textAnchor="end" fontSize={11.5} fontWeight={800} fill="#E0940A">
-              {chart.avgLabel}
-            </text>
+            {/* 평균 수치는 상단 배지(trendBadge)에 표시 — 차트 안 텍스트는 마지막 점 라벨과 겹쳐 제거 */}
             <polyline points={chart.linePts} fill="none" stroke="#17B08C" strokeWidth={3.5} strokeLinecap="round" strokeLinejoin="round" />
             {chart.points.map((p, i) => (
               <g key={i}>
                 <circle cx={p.cx} cy={p.cy} r={p.r} fill="#fff" stroke={p.stroke} strokeWidth={3} />
-                <text x={p.cx} y={p.ly} textAnchor="middle" fontSize={12.5} fontWeight={800} fill={p.fill}>
+                <text x={p.lx} y={p.ly} textAnchor="middle" fontSize={12.5} fontWeight={800} fill={p.fill}>
                   {p.label}
                 </text>
               </g>

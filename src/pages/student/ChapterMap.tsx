@@ -83,12 +83,24 @@ function mapProgress(d: any): { done: Record<string, number>; chapters: Record<s
   return { done, chapters };
 }
 
+/** 생활 일일 교육과정 일차 — 지난날(복습)·오늘(과제)·미래(잠금·주제 미리보기) */
+interface CurDay {
+  day: number;
+  topic: string;
+  status: 'past' | 'today' | 'future';
+  playable_count: number;
+  total: number;
+}
+
 export default function ChapterMap() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { toast, flash } = useToast(2400); // 원본 showToast: 2400ms
   const [apiDone, setApiDone] = useState<Record<string, number>>({});
   const [apiChapters, setApiChapters] = useState<Record<string, ChapterEntry[]>>({});
+  // 생활: 커리큘럼 일차 목록 (실전 플레이 연동 — 실패 시 null → 기존 챕터 데모 유지)
+  const [curDays, setCurDays] = useState<CurDay[] | null>(null);
+  const [curTodayDay, setCurTodayDay] = useState<number | null>(null);
 
   // 원본 componentDidMount 로직: ?subject= → #hash → 기본 '국어'
   let name = '국어';
@@ -105,7 +117,41 @@ export default function ChapterMap() {
   }
   const key = SUBJECTS[name] ? name : '국어';
   const s = SUBJECTS[key];
-  const list = apiChapters[key] ?? CHAPTERS[key];
+
+  // 생활 과목: 챕터 지도 대신 실제 일일 커리큘럼(주제 순환)을 노드로 렌더
+  useEffect(() => {
+    if (key !== '생활') {
+      setCurDays(null);
+      return;
+    }
+    let mounted = true;
+    studentApi
+      .curriculum('생활', 6, 3)
+      .then((d: any) => {
+        if (!mounted || !d?.available || !Array.isArray(d.days) || d.days.length === 0) return;
+        setCurDays(
+          d.days.map((x: any) => ({
+            day: Number(x.day),
+            topic: String(x.topic ?? ''),
+            status: x.status === 'past' || x.status === 'today' ? x.status : 'future',
+            playable_count: typeof x.playable_count === 'number' ? x.playable_count : 0,
+            total: typeof x.total === 'number' ? x.total : 0,
+          })),
+        );
+        setCurTodayDay(typeof d.today_day === 'number' ? d.today_day : null);
+      })
+      .catch(() => {
+        /* 실패 시 기존 챕터 데모 유지 */
+      });
+    return () => {
+      mounted = false;
+    };
+  }, [key]);
+
+  const isLife = key === '생활' && curDays !== null && curDays.length > 0;
+  const list: ChapterEntry[] = isLife
+    ? curDays.map((d) => ({ name: d.topic, count: d.playable_count || d.total }))
+    : (apiChapters[key] ?? CHAPTERS[key]);
 
   useEffect(() => {
     let mounted = true;
@@ -125,13 +171,34 @@ export default function ChapterMap() {
     };
   }, [key]);
 
-  const done = Math.max(0, Math.min(list.length, apiDone[key] ?? FALLBACK[key] ?? 0));
+  const done = isLife
+    ? curDays.filter((d) => d.status === 'past').length
+    : Math.max(0, Math.min(list.length, apiDone[key] ?? FALLBACK[key] ?? 0));
   const currentNum = Math.min(list.length, done + 1);
   const pct = Math.round((done / list.length) * 100);
-  const continueHref = `${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(key)}&chapter=${currentNum}`;
+  const continueHref = isLife
+    ? `${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(key)}&day=${curTodayDay ?? curDays[done]?.day ?? 1}`
+    : `${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(key)}&chapter=${currentNum}`;
   const conceptHref = `${PATHS.STUDENT_CONCEPTS}?tab=${encodeURIComponent(key)}`;
 
   const openChapter = (num: number, locked: boolean) => {
+    // 생활: 일차 커리큘럼으로 진입 — 지난날은 복습(replay), 미래 일차는 잠금(주제만 미리보기)
+    if (isLife) {
+      const d = curDays[num - 1];
+      if (!d) return;
+      if (d.status === 'future') {
+        flash(`이 주제는 ${d.day}일차에 열려요 — 「${d.topic}」 🐾`);
+        return;
+      }
+      if (d.playable_count === 0) {
+        flash('이 날 문제는 준비 중이에요 🐾');
+        return;
+      }
+      navigate(
+        `${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(key)}&day=${d.day}${d.status === 'past' ? '&replay=1' : ''}`,
+      );
+      return;
+    }
     if (locked) {
       flash('이전 챕터를 먼저 완료해봐요 🐾');
       return;
@@ -185,8 +252,10 @@ export default function ChapterMap() {
             </div>
             <div className="cm-hero-progress">
               <div className="cm-progress-head">
-                <span className="cm-progress-label">챕터 진행</span>
-                <span className="cm-progress-count">{list.length}챕터 중 {done}개 완료</span>
+                <span className="cm-progress-label">{isLife ? '교육과정 진행' : '챕터 진행'}</span>
+                <span className="cm-progress-count">
+                  {isLife ? `오늘은 ${curTodayDay ?? done + 1}일차 · 지난 ${done}일은 복습할 수 있어요` : `${list.length}챕터 중 ${done}개 완료`}
+                </span>
               </div>
               <div className="cm-progress-track">
                 <div className="cm-progress-fill" style={{ width: `${pct}%` }} />
@@ -204,13 +273,15 @@ export default function ChapterMap() {
             const isLocked = i > done;
             const state = isDone ? 'done' : isCurrent ? 'current' : 'locked';
             const nodeTitle = isDone
-              ? `${ch.name} · 다시 도전할 수 있어요`
+              ? `${ch.name} · ${isLife ? '복습할 수 있어요 (코인 없음)' : '다시 도전할 수 있어요'}`
               : isCurrent
-                ? `${ch.name} · 지금 도전해요`
-                : '이전 챕터를 먼저 완료해봐요';
+                ? `${ch.name} · ${isLife ? '오늘의 과제!' : '지금 도전해요'}`
+                : isLife
+                  ? `${ch.name} · 아직 잠겨 있어요 (주제 미리보기)`
+                  : '이전 챕터를 먼저 완료해봐요';
             const nodeIcon = isDone ? 'ph-fill ph-check-fat' : isCurrent ? 'ph-fill ph-star' : 'ph-fill ph-lock-simple';
             const pillIcon = isDone ? 'ph-fill ph-arrow-clockwise' : isCurrent ? 'ph-fill ph-play-circle' : 'ph-fill ph-moon-stars';
-            const pillText = isDone ? '다시 하기' : isCurrent ? '도전!' : '다음에 만나요';
+            const pillText = isDone ? (isLife ? '복습하기' : '다시 하기') : isCurrent ? (isLife ? '오늘 과제!' : '도전!') : '다음에 만나요';
 
             return (
               <div key={num} className="cm-row">
@@ -232,7 +303,9 @@ export default function ChapterMap() {
                 <div className={`cm-card cm-card-${state}`} onClick={() => openChapter(num, isLocked)}>
                   <div className="cm-card-body">
                     <div className="cm-card-tags">
-                      <span className={`cm-tag cm-tag-${state}`}>챕터 {num}</span>
+                      <span className={`cm-tag cm-tag-${state}`}>
+                        {isLife ? `${curDays[i]?.day ?? num}일차` : `챕터 ${num}`}
+                      </span>
                       {isDone && (
                         <span className="cm-stars">
                           <i className="ph-fill ph-star" />

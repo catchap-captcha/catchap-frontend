@@ -5,6 +5,13 @@
   display: flex;
 }
 
+/* 콘솔 본문 공통 폭 — 넓은 화면에서 무제한으로 늘어나지 않게 기관 콘솔(.ol-main)과 동일하게 제한 */
+.tl-root > main {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
 .tl-side {
   width: 236px;
   flex-shrink: 0;
@@ -31,7 +38,7 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  box-shadow: 0 5px 12px rgba(255, 90, 77, 0.3);
+  /* 로고 주변 빨간 번짐(red glow shadow) 제거 */
 }
 
 .tl-logo-text {

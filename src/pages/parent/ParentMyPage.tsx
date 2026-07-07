@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type ChangeEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import ParentLayout, { ParentBellLink } from '../../layouts/ParentLayout';
 import { PATHS } from '../../routes/paths';
@@ -133,6 +133,9 @@ export default function ParentMyPage() {
 
   const [logoutOpen, setLogoutOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [connectOpen, setConnectOpen] = useState(false);
+  const [connectCode, setConnectCode] = useState('');
+  const [connectError, setConnectError] = useState('');
   const [captchaOpen, setCaptchaOpen] = useState(false);
   const [tileVariant, setTileVariant] = useState(0);
   const [captchaPicked, setCaptchaPicked] = useState<number[]>([]);
@@ -183,47 +186,50 @@ export default function ParentMyPage() {
     }));
   }, [me]);
 
-  /* 자녀 목록 + 자녀별 설정(목표/시간제한) */
+  /* 자녀 목록 + 자녀별 설정(목표/시간제한) 로드 — 자녀 연결 후에도 재사용 */
+  const fetchChildren = useCallback(async (): Promise<ChildItem[] | null> => {
+    const rows = await parentApi.children();
+    if (!Array.isArray(rows)) return null;
+    const base = rows.map((r: any, i: number) => {
+      const code = r.student_code ?? '';
+      const meta = CHILD_META[code] ?? { age: '', goal: '-', goalMin: null, week: '-' };
+      const name = r.nickname ?? '';
+      return {
+        id: r.id ?? null,
+        name,
+        initial: [...(name || '학')][0],
+        code,
+        cls: r.class_name ?? '',
+        avatarBg: AVATAR_BGS[i % AVATAR_BGS.length],
+        age: r.age != null ? `${r.age}세` : meta.age,
+        goal: r.daily_goal != null ? `하루 ${r.daily_goal}분` : meta.goal,
+        goalMin: r.daily_goal ?? meta.goalMin,
+        week: r.week_count ? `${r.week_count} 학습` : meta.week,
+        limitOn: !!r.time_limit_enabled,
+      } as ChildItem;
+    });
+    return Promise.all(
+      base.map((c) =>
+        c.id
+          ? parentApi
+              .childSettings(c.id)
+              .then((s: any) => ({
+                ...c,
+                goal: s?.daily_goal != null ? `하루 ${s.daily_goal}분` : c.goal,
+                goalMin: s?.daily_goal ?? c.goalMin,
+                limitOn: s?.time_limit_enabled != null ? !!s.time_limit_enabled : c.limitOn,
+              }))
+              .catch(() => c)
+          : Promise.resolve(c),
+      ),
+    );
+  }, []);
+
   useEffect(() => {
     let cancelled = false;
-    parentApi
-      .children()
-      .then(async (rows) => {
-        if (!Array.isArray(rows)) return;
-        const base = rows.map((r: any, i: number) => {
-          const code = r.student_code ?? '';
-          const meta = CHILD_META[code] ?? { age: '', goal: '-', goalMin: null, week: '-' };
-          const name = r.nickname ?? '';
-          return {
-            id: r.id ?? null,
-            name,
-            initial: [...(name || '학')][0],
-            code,
-            cls: r.class_name ?? '',
-            avatarBg: AVATAR_BGS[i % AVATAR_BGS.length],
-            age: r.age != null ? `${r.age}세` : meta.age,
-            goal: r.daily_goal != null ? `하루 ${r.daily_goal}분` : meta.goal,
-            goalMin: r.daily_goal ?? meta.goalMin,
-            week: r.week_count ? `${r.week_count} 학습` : meta.week,
-            limitOn: !!r.time_limit_enabled,
-          } as ChildItem;
-        });
-        const detailed = await Promise.all(
-          base.map((c) =>
-            c.id
-              ? parentApi
-                  .childSettings(c.id)
-                  .then((s: any) => ({
-                    ...c,
-                    goal: s?.daily_goal != null ? `하루 ${s.daily_goal}분` : c.goal,
-                    goalMin: s?.daily_goal ?? c.goalMin,
-                    limitOn: s?.time_limit_enabled != null ? !!s.time_limit_enabled : c.limitOn,
-                  }))
-                  .catch(() => c)
-              : Promise.resolve(c),
-          ),
-        );
-        if (!cancelled) setChildren(detailed);
+    fetchChildren()
+      .then((detailed) => {
+        if (detailed && !cancelled) setChildren(detailed);
       })
       .catch(() => {
         /* TODO(api): 실패 시 원본 FALLBACK_CHILDREN 유지 */
@@ -231,7 +237,7 @@ export default function ParentMyPage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [fetchChildren]);
 
   /** 설정 blob 병합 저장 (settings/me) */
   const persistBlob = (patch: Record<string, any>) => {
@@ -295,17 +301,55 @@ export default function ParentMyPage() {
     parentApi
       .unlink(child.id ?? child.code)
       .then(() => {
+        // 서버가 실제로 해제한 뒤에만 목록에서 제거 (실패 시 목록에 남아 있는 모순 방지)
         setChildren((cs) => cs.filter((c) => c !== child));
         flash(`${child.name} 연결을 해제했어요`);
       })
       .catch(() => {
-        // TODO(api): 실패 시 원본 동작(토스트만, 목록 유지)
-        flash(`${child.name} 연결을 해제했어요`);
+        flash(`${child.name} 연결 해제에 실패했어요. 잠시 후 다시 시도해 주세요.`);
       });
   };
 
-  /* 원본: 자녀 연결 버튼은 토스트만 */
-  const connectChild = () => flash('자녀 연결 코드를 생성했어요');
+  /* 자녀 연결: 학교 발급 초대코드(LINK-XXXX-XXXX) 입력 → 실제 linkInvite 호출 */
+  const connectChild = () => {
+    setConnectOpen(true);
+    setConnectCode('');
+    setConnectError('');
+  };
+  const onConnectCodeChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setConnectCode(e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, '').slice(0, 14));
+    setConnectError('');
+  };
+  const confirmConnect = () => {
+    const c = connectCode.trim();
+    if (!c) return;
+    setConnectError('');
+    parentApi
+      .linkInvite(c)
+      .then(() => {
+        setConnectOpen(false);
+        flash('자녀를 연결했어요');
+        fetchChildren()
+          .then((detailed) => {
+            if (detailed) setChildren(detailed);
+          })
+          .catch(() => {});
+      })
+      .catch((err: any) => {
+        const st = err?.response?.status;
+        setConnectError(
+          st === 404
+            ? '초대코드가 올바르지 않아요. 다시 확인해 주세요.'
+            : st === 410
+              ? '만료되었거나 이미 다 사용된 초대코드예요.'
+              : st === 409
+                ? '이미 연결된 자녀예요.'
+                : st === 429
+                  ? '시도가 너무 많아요. 잠시 후 다시 시도해 주세요.'
+                  : '연결에 실패했어요. 초대코드를 다시 확인해 주세요.',
+        );
+      });
+  };
 
   /* 비밀번호 검증 — 원본 로직 그대로 */
   const okLen = newPw.length >= 8;
@@ -378,8 +422,8 @@ export default function ParentMyPage() {
       .exportData()
       .then(() => flash('데이터 준비 요청이 접수됐어요'))
       .catch(() => {
-        // TODO(api): 실패 시 원본 연출(토스트) 유지
-        flash('데이터 준비 요청이 접수됐어요');
+        // 요청이 유실됐는데 접수됐다고 안내하지 않는다
+        flash('데이터 준비 요청에 실패했어요. 잠시 후 다시 시도해 주세요.');
       });
   };
 
@@ -391,10 +435,15 @@ export default function ParentMyPage() {
         await logout();
         navigate(PATHS.HOME);
       })
-      .catch(() => {
-        // TODO(api): 실패 시 원본 토스트 문구
+      .catch((err: any) => {
         setDeleteOpen(false);
-        flash('계정 삭제는 고객센터 확인이 필요해요');
+        const st = err?.response?.status;
+        // 정책상 불가(권한/제약)와 일시적 오류를 구분해 안내
+        if (st === 403 || st === 409) {
+          flash('계정 삭제는 고객센터 확인이 필요해요. 담당자에게 문의해 주세요.');
+        } else {
+          flash('계정 삭제에 실패했어요. 잠시 후 다시 시도해 주세요.');
+        }
       });
   };
 
@@ -935,6 +984,42 @@ export default function ParentMyPage() {
               </button>
               <button className="pm-ok-btn pm-ok-btn--danger" onClick={confirmDelete}>
                 삭제
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* CONNECT CHILD MODAL */}
+      {connectOpen && (
+        <div className="pm-overlay pm-overlay--confirm" onClick={() => setConnectOpen(false)}>
+          <div className="pm-confirm" onClick={(e) => e.stopPropagation()}>
+            <div className="pm-confirm-ico">
+              <i className="ph-fill ph-link" />
+            </div>
+            <h2 className="pm-confirm-title">자녀 연결</h2>
+            <p className="pm-confirm-text">
+              학교에서 받은 초대코드(LINK-XXXX-XXXX)를 입력하면 자녀 계정이 연결돼요.
+            </p>
+            <input
+              value={connectCode}
+              onChange={onConnectCodeChange}
+              placeholder="LINK-XXXX-XXXX"
+              className="pm-input pm-input--strong"
+              style={{ textAlign: 'center', letterSpacing: 1, margin: '4px 0 10px' }}
+            />
+            {connectError && (
+              <div className="pm-mismatch" style={{ justifyContent: 'center', marginBottom: 8 }}>
+                <i className="ph-fill ph-warning-circle" />
+                <span>{connectError}</span>
+              </div>
+            )}
+            <div className="pm-confirm-btns">
+              <button className="pm-cancel-btn" onClick={() => setConnectOpen(false)}>
+                취소
+              </button>
+              <button className="pm-ok-btn" onClick={confirmConnect}>
+                연결하기
               </button>
             </div>
           </div>

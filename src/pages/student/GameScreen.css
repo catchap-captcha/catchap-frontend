@@ -725,6 +725,40 @@
 .gs-live-feedback--ok { background: #E1F5EC; color: #0E8A6D; }
 .gs-live-feedback--no { background: #FFEDEF; color: #D14559; }
 .gs-live-feedback i { font-size: 19px; }
+/* 복수선택(multi) — 안내 배너 + 제출 버튼 */
+.gs-live-multibar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: #E1EDFF;
+  color: #2E7BFF;
+  font-size: 13.5px;
+  font-weight: 800;
+}
+.gs-live-multibar i { font-size: 18px; }
+.gs-live-submit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 16px auto 0;
+  padding: 13px 28px;
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(150deg, #FF93BE, #FF6DA6);
+  color: #fff;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 10px 22px -12px rgba(255, 109, 166, 0.65);
+  transition: transform 0.12s ease, opacity 0.12s ease;
+}
+.gs-live-submit:hover:not(:disabled) { transform: translateY(-2px); }
+.gs-live-submit:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: none; }
 .gs-confirm--wait { opacity: 0.55; cursor: not-allowed; }
 
 /* 커리큘럼 일차 배너 (게임 상단) */

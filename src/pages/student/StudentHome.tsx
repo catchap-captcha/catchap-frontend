@@ -266,6 +266,8 @@ export default function StudentHome() {
   const lastCheer = useRef(-1);
   // 학부모 연동 알림 팝업 (미읽음 parent_link 알림이 있으면 1회 노출)
   const [linkNotice, setLinkNotice] = useState<{ id: string; title: string; message: string } | null>(null);
+  // 오늘의 생활 교육과정 과제 — '이어서 학습하기'를 실전 플레이로 연동 (실패 시 원본 데모 링크 유지)
+  const [lifeToday, setLifeToday] = useState<{ day: number; topic: string } | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -277,6 +279,19 @@ export default function StudentHome() {
       })
       .catch(() => {
         // TODO(api): 백엔드 미구현/실패 시 FALLBACK 유지
+      });
+    // 오늘의 생활 과제(커리큘럼) — HERO '이어서 학습하기' 실전 연동
+    studentApi
+      .curriculum('생활', 0, 0)
+      .then((d: any) => {
+        if (!mounted || !d?.available || !Array.isArray(d.days)) return;
+        const today = d.days.find((x: any) => x?.status === 'today');
+        if (today && typeof today.day === 'number') {
+          setLifeToday({ day: today.day, topic: String(today.topic ?? '') });
+        }
+      })
+      .catch(() => {
+        /* 실패 시 원본 데모 링크 유지 */
       });
     // 보호자 연동 알림: 안 읽은 parent_link 알림이 있으면 팝업으로 안내
     notificationApi
@@ -376,9 +391,17 @@ export default function StudentHome() {
             </div>
 
             <div className="sh-cta-row">
-              <Link to={`${PATHS.STUDENT_GAME}?subject=영어&chapter=2`} className="sh-cta-primary">
+              <Link
+                to={
+                  lifeToday
+                    ? `${PATHS.STUDENT_GAME}?subject=${encodeURIComponent('생활')}&day=${lifeToday.day}`
+                    : `${PATHS.STUDENT_GAME}?subject=영어&chapter=2`
+                }
+                className="sh-cta-primary"
+                title={lifeToday ? `오늘의 과제 · ${lifeToday.day}일차 「${lifeToday.topic}」` : undefined}
+              >
                 <i className="ph-fill ph-play-circle" />
-                이어서 학습하기
+                {lifeToday ? `오늘의 과제 시작하기` : '이어서 학습하기'}
               </Link>
               <Link to={PATHS.STUDENT_ALL_LEARNING} className="sh-cta-secondary">
                 전체 학습 보기
@@ -638,15 +661,15 @@ export default function StudentHome() {
             </div>
           </div>
           <div className="sh-footer-links">
-            <a href="#" className="sh-footer-link">
+            <Link to={PATHS.SUPPORT} className="sh-footer-link">
               이용안내
-            </a>
+            </Link>
             <Link to={PATHS.PRIVACY} className="sh-footer-link">
               개인정보 보호
             </Link>
-            <a href="#" className="sh-footer-link">
+            <Link to={PATHS.CONTACT} className="sh-footer-link">
               고객 지원
-            </a>
+            </Link>
           </div>
         </div>
         <p className="sh-footer-copy">

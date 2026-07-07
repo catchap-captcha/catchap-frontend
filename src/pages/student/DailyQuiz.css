@@ -1,13 +1,14 @@
 /* 오늘의퀴즈 — handoff `CatChap 오늘의퀴즈.dc.html` 원본 그대로 (dq- 접두사) */
 
 /* 원본 ccFloat: translateY(-10px) rotate(±2deg) — 공용과 다름 → 접두사 정의 */
+/* rotate는 비트맵 마스코트를 매 프레임 리샘플링해 번져 보임 → 이동만 남김 */
 @keyframes dqFloat {
   0%,
   100% {
-    transform: translateY(0) rotate(-2deg);
+    transform: translateY(0);
   }
   50% {
-    transform: translateY(-10px) rotate(2deg);
+    transform: translateY(-10px);
   }
 }
 
@@ -218,6 +219,7 @@
 .dq-heromascot {
   flex-shrink: 0;
   animation: dqFloat 4.5s ease-in-out infinite;
+  will-change: transform;
 }
 
 .dq-heromascot img {

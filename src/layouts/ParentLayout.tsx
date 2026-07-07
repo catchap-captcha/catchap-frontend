@@ -45,13 +45,13 @@ export default function ParentLayout({ bell, className, children }: ParentLayout
     <div className={'pl-root' + (className ? ` ${className}` : '')}>
       <div className="pl-nav">
         <div className="pl-nav-inner">
-          <div className="pl-logo">
+          <Link to={PATHS.PARENT_HOME} className="pl-logo" style={{ textDecoration: 'none', color: 'inherit' }}>
             <img src={mascot} alt="CatChap" />
             <div className="pl-logo-text">
               <span className="pl-logo-name">CatChap</span>
               <span className="pl-logo-sub">학부모 센터</span>
             </div>
-          </div>
+          </Link>
           <nav className="pl-menu">
             {menu.map((it) => (
               <Link

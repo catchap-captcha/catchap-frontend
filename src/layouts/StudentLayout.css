@@ -28,7 +28,7 @@
   width: 46px;
   height: 46px;
   border-radius: 50%;
-  box-shadow: 0 6px 14px rgba(255, 90, 77, 0.3);
+  /* 로고 주변 빨간 번짐(red glow shadow) 제거 */
 }
 
 .sl-logotext {

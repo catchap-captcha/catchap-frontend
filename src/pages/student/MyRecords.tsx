@@ -268,7 +268,8 @@ export default function MyRecords() {
   const plotW = CW - padL - padR;
   const plotH = CH - padT - padB;
   const X = (i: number) => padL + plotW * (i / (acc.length - 1));
-  const Y = (v: number) => padT + plotH * (1 - (v - yMin) / (yMax - yMin));
+  // 값을 y축 범위로 클램프 — 범위 밖 값이 플롯 밖으로 그려지지 않게
+  const Y = (v: number) => padT + plotH * (1 - (Math.min(yMax, Math.max(yMin, v)) - yMin) / (yMax - yMin));
   const baseY = Y(yMin);
   const lastI = acc.length - 1;
   const accAvg = Math.round(acc.reduce((a, b) => a + b, 0) / acc.length);
@@ -526,9 +527,7 @@ export default function MyRecords() {
                 strokeWidth={1.5}
                 strokeDasharray="5 4"
               />
-              <text x={CW - padR} y={accAvgY - 5} textAnchor="end" fontSize={10} fontWeight={800} fill="#E09400">
-                평균 {accAvg}%
-              </text>
+              {/* 평균 수치는 상단 칩(평균 XX% · 추세)에 표시 — 차트 안 텍스트는 점 라벨과 겹쳐 제거 */}
               <path d={accArea} fill="url(#mrAccGrad)" />
               <polyline
                 points={accPoly}
@@ -544,7 +543,7 @@ export default function MyRecords() {
                   <g key={i}>
                     <text
                       x={X(i)}
-                      y={Y(v) - 11}
+                      y={Math.max(Y(v) - 11, 11)}
                       textAnchor="middle"
                       fontSize={11}
                       fontWeight={800}

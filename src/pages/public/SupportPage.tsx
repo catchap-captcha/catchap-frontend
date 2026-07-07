@@ -23,9 +23,16 @@ const DATA = [
   { tag: '학습', q: '눈 보호 모드는 어떻게 켜나요?', a: '설정 페이지 또는 게임 화면 우측 상단의 눈 아이콘을 누르면 화면 톤이 따뜻하게 바뀌어 눈부심을 줄여줘요. 저녁 학습에 특히 도움이 됩니다.' },
 ];
 
+function isEmail(v: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+}
+
 export default function SupportPage() {
   const { me } = useAuth();
   const [open, setOpen] = useState(0);
+  const [sent, setSent] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [formError, setFormError] = useState('');
 
   const nameRef = useRef<HTMLInputElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
@@ -34,16 +41,38 @@ export default function SupportPage() {
 
   const displayName = me?.student?.nickname || me?.name || '하은';
 
-  const submitInquiry = () => {
-    // 원본에 제출 핸들러 없음 — API만 호출하고 UI 변화는 없음(실패도 조용히 무시)
-    inquiryApi
-      .submit({
+  const submitInquiry = async () => {
+    // 서버 성공/실패를 사용자에게 명확히 보여준다(조용히 삼키지 않음)
+    const name = (nameRef.current?.value ?? '').trim();
+    const email = (emailRef.current?.value ?? '').trim();
+    const content = (contentRef.current?.value ?? '').trim();
+    if (!name || !email || !isEmail(email) || !content) {
+      setFormError('이름·이메일·문의 내용을 모두 정확히 입력해 주세요.');
+      return;
+    }
+    setFormError('');
+    setSending(true);
+    try {
+      await inquiryApi.submit({
         inquiry_type: typeRef.current?.value ?? '',
-        name: nameRef.current?.value ?? '',
-        email: emailRef.current?.value ?? '',
-        content: contentRef.current?.value ?? '',
-      })
-      .catch(() => {});
+        name,
+        email,
+        content,
+      });
+      setSent(true);
+    } catch {
+      setFormError('문의 접수에 실패했어요. 잠시 후 다시 시도해 주세요.');
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const resetInquiry = () => {
+    setSent(false);
+    setFormError('');
+    if (nameRef.current) nameRef.current.value = '';
+    if (emailRef.current) emailRef.current.value = '';
+    if (contentRef.current) contentRef.current.value = '';
   };
 
   return (
@@ -159,24 +188,43 @@ export default function SupportPage() {
               <span className="sp-contact-head-icon"><i className="ph-fill ph-paper-plane-tilt" /></span>
               <h3 className="sp-contact-title">문의하기</h3>
             </div>
-            <label className="sp-label">이름</label>
-            <input ref={nameRef} type="text" placeholder="이름을 입력해 주세요" className="sp-input" />
-            <label className="sp-label">이메일</label>
-            <input ref={emailRef} type="email" placeholder="example@email.com" className="sp-input" />
-            <label className="sp-label">문의 유형</label>
-            <div className="sp-select-wrap">
-              <select ref={typeRef} className="sp-select">
-                <option>계정·로그인</option>
-                <option>학습·진도</option>
-                <option>결제·환불</option>
-                <option>기술 문제</option>
-                <option>기타</option>
-              </select>
-              <i className="ph-bold ph-caret-down sp-select-caret" />
-            </div>
-            <label className="sp-label">문의 내용</label>
-            <textarea ref={contentRef} placeholder="궁금한 내용을 자세히 적어주세요" rows={4} className="sp-textarea"></textarea>
-            <button onClick={submitInquiry} className="sp-submit-btn"><i className="ph-fill ph-paper-plane-right" />문의 보내기</button>
+            {sent ? (
+              <div style={{ textAlign: 'center', padding: '20px 4px' }}>
+                <span style={{ fontSize: 44, color: '#17B08C', lineHeight: 1 }}><i className="ph-fill ph-check-circle" /></span>
+                <div style={{ fontWeight: 700, fontSize: 18, margin: '12px 0 6px' }}>문의가 접수되었어요!</div>
+                <p style={{ color: '#6B6B76', fontSize: 14, marginBottom: 16 }}>영업일 기준 1일 이내에 입력해 주신 이메일로 답변드려요.</p>
+                <button onClick={resetInquiry} className="sp-submit-btn">새 문의 작성하기</button>
+              </div>
+            ) : (
+              <>
+                <label className="sp-label">이름</label>
+                <input ref={nameRef} type="text" placeholder="이름을 입력해 주세요" className="sp-input" />
+                <label className="sp-label">이메일</label>
+                <input ref={emailRef} type="email" placeholder="example@email.com" className="sp-input" />
+                <label className="sp-label">문의 유형</label>
+                <div className="sp-select-wrap">
+                  <select ref={typeRef} className="sp-select">
+                    <option>계정·로그인</option>
+                    <option>학습·진도</option>
+                    <option>결제·환불</option>
+                    <option>기술 문제</option>
+                    <option>기타</option>
+                  </select>
+                  <i className="ph-bold ph-caret-down sp-select-caret" />
+                </div>
+                <label className="sp-label">문의 내용</label>
+                <textarea ref={contentRef} placeholder="궁금한 내용을 자세히 적어주세요" rows={4} className="sp-textarea"></textarea>
+                {formError && (
+                  <div className="sp-form-error" style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#E23D3D', margin: '8px 0' }}>
+                    <i className="ph-fill ph-warning-circle" />
+                    <span>{formError}</span>
+                  </div>
+                )}
+                <button onClick={submitInquiry} disabled={sending} className="sp-submit-btn">
+                  <i className="ph-fill ph-paper-plane-right" />{sending ? '접수 중…' : '문의 보내기'}
+                </button>
+              </>
+            )}
           </div>
 
           <div className="sp-hours-card">

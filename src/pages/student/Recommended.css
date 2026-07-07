@@ -1,13 +1,14 @@
 /* 취약문제추천 — handoff `CatChap 취약문제추천.dc.html` 원본 그대로 (접두사 rc-) */
 
 /* 원본 ccFloat(rotate -2deg/+2deg, -10px) — 개념설명의 ccFloat과 값이 달라 접두사 버전 정의 */
+/* rotate는 비트맵 마스코트를 매 프레임 리샘플링해 번져 보임 → 이동만 남김 */
 @keyframes rcFloat {
   0%,
   100% {
-    transform: translateY(0) rotate(-2deg);
+    transform: translateY(0);
   }
   50% {
-    transform: translateY(-10px) rotate(2deg);
+    transform: translateY(-10px);
   }
 }
 
@@ -208,6 +209,7 @@
   flex-shrink: 0;
   position: relative;
   animation: rcFloat 4.5s ease-in-out infinite;
+  will-change: transform;
 }
 
 .rc-heromascot {

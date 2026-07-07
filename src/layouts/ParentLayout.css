@@ -14,7 +14,7 @@
 }
 
 .pl-nav-inner {
-  max-width: 1120px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 12px 24px;
   display: flex;
@@ -32,7 +32,7 @@
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  box-shadow: 0 6px 14px rgba(255, 90, 77, 0.3);
+  /* 로고 주변 빨간 번짐(red glow shadow) 제거 */
 }
 
 .pl-logo-text {

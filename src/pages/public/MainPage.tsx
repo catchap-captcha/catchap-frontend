@@ -302,7 +302,7 @@ export default function MainPage() {
             </div>
           </div>
           <div className="mn-footer-links">
-            <a href="#" className="mn-footer-link">서비스 소개</a>
+            <a href="#about" className="mn-footer-link">서비스 소개</a>
             <Link to={PATHS.PRIVACY} className="mn-footer-link">개인정보 보호</Link>
             <Link to={PATHS.TERMS} className="mn-footer-link">이용약관</Link>
           </div>

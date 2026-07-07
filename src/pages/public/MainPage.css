@@ -1,12 +1,13 @@
 /* CatChap 메인.dc.html 포팅 — 클래스 접두사 mn- */
 
+/* rotate는 비트맵 로고를 매 프레임 리샘플링해 흰/빨강 경계가 번져 보임 → 이동만 남김 */
 @keyframes mnFloat {
   0%,
   100% {
-    transform: translateY(0) rotate(-1.5deg);
+    transform: translateY(0);
   }
   50% {
-    transform: translateY(-16px) rotate(1.5deg);
+    transform: translateY(-16px);
   }
 }
 
@@ -49,7 +50,7 @@
   width: 46px;
   height: 46px;
   border-radius: 50%;
-  box-shadow: 0 6px 14px rgba(255, 90, 77, 0.3);
+  /* 로고 주변 빨간 번짐(red glow shadow) 제거 */
 }
 .mn-brand-name {
   font-family: 'Jua', sans-serif;
@@ -241,6 +242,7 @@
   position: relative;
   z-index: 2;
   animation: mnFloat 5s ease-in-out infinite;
+  will-change: transform;
   width: 320px;
   height: 320px;
   border-radius: 50%;

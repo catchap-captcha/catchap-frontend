@@ -66,13 +66,13 @@ export function StudentNav({
   return (
     <div className="sl-navbar">
       <div className="sl-navinner">
-        <div className="sl-logo">
+        <Link to={PATHS.STUDENT_HOME} className="sl-logo" style={{ textDecoration: 'none', color: 'inherit' }}>
           <img src={mascot} alt="CatChap" className="sl-logoimg" />
           <div className="sl-logotext">
             <span className="sl-logotitle">CatChap</span>
             <span className="sl-logosub">놀면서 배우는 캡챠 학습</span>
           </div>
-        </div>
+        </Link>
         <nav className="sl-menu">
           {onHomeClick ? (
             <a href="#" onClick={onHomeClick} className={cls('home')}>

@@ -3,11 +3,19 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
 import { studentApi } from '../../api/students';
 import { playSfx } from '../../utils/feedback';
+import { attachPointerTrace, type PointerTraceRecorder } from '../../utils/pointerTrace';
 import ScreenTimeReminder from '../../components/motion/ScreenTimeReminder';
+import CatchapWidget from '../../components/captcha/CatchapWidget';
 import mascot from '../../assets/characters/catchap-logo.png';
 import './GameScreen.css';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
+// 우리 앱을 교육형 API의 1st-party 소비처로 붙일 때 쓰는 위젯 설정 (미설정 시 폴백)
+const EDU_SITE_KEY = import.meta.env.VITE_CATCHAP_EDU_SITE_KEY as string | undefined;
+const WIDGET_API = `${
+  (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? 'http://localhost:8000'
+}/api/v1`;
 
 interface SubjectPreset {
   key: string;
@@ -129,12 +137,14 @@ export default function GameScreen() {
   // 복습 모드(?replay=1): 전날 다시풀기·완료 후 재도전 — 기록은 남지만 오늘의퀴즈 상태·코인 보상 없음
   const isReplay = searchParams.get('replay') === '1';
 
-  /* ===== 실전 모드 (서버 문항 + 서버 채점 — capcha_service ms 문제은행) =====
-     game-session available=true 인 과목(현재 생활)만 실문항 플레이.
-     아니면 기존 데모 슬롯 유지 (다른 과목은 팀원 캡차 통합 대기). */
+  /* ===== 실전 모드 (서버 문항 + 서버 채점 — capcha_service 과목별 문제은행) =====
+     game-session available=true 인 과목(생활=ms, 수학·과학=my, 역사=sw)만 실문항 플레이.
+     아니면 기존 데모 슬롯 유지 (국어·영어는 팀원 캡차 통합 대기).
+     type: 'single'(선택 즉시 채점) | 'multi'(복수 토글 후 제출 — 서버 집합 채점) */
   interface LiveQ {
     id: string;
     topic: string;
+    type: string;
     prompt: string;
     hint: string;
     options: { id: string; emoji: string; text: string }[];
@@ -142,9 +152,11 @@ export default function GameScreen() {
   const [liveQs, setLiveQs] = useState<LiveQ[] | null>(null);
   const [liveIdx, setLiveIdx] = useState(0);
   const [liveSel, setLiveSel] = useState<string | null>(null);
+  const [liveMultiSel, setLiveMultiSel] = useState<string[]>([]);
   const [liveResult, setLiveResult] = useState<{
     correct: boolean;
     answer_id: string;
+    answer_ids?: string[];
     answer_text: string;
     hint: string;
   } | null>(null);
@@ -155,6 +167,7 @@ export default function GameScreen() {
     setLiveQs(null);
     setLiveIdx(0);
     setLiveSel(null);
+    setLiveMultiSel([]);
     setLiveResult(null);
     setLiveStats({ correct: 0, wrong: 0, streak: 0 });
     setLiveDay(null);
@@ -182,11 +195,35 @@ export default function GameScreen() {
   const liveQ = liveQs ? liveQs[liveIdx] : null;
   const liveLast = liveQs ? liveIdx >= liveQs.length - 1 : false;
 
-  const pickLive = (optionId: string) => {
-    if (!liveQ || liveResult) return; // 채점 후 재선택 방지
-    setLiveSel(optionId);
+  /* 포인터 궤적 캡처 (#captcha-mount 영역) — 아동용 캡차 판정 모델의 행동 데이터.
+     live/폴백 모드에서 답 제출 시 behavior로 전송. 위젯 모드는 위젯 스크립트가 자체 캡처. */
+  const mountRef = useRef<HTMLDivElement | null>(null);
+  const tracerRef = useRef<PointerTraceRecorder | null>(null);
+  useEffect(() => {
+    if (!mountRef.current) return;
+    const rec = attachPointerTrace(mountRef.current);
+    tracerRef.current = rec;
+    return () => {
+      rec.detach();
+      tracerRef.current = null;
+    };
+  }, []);
+  /* 문항이 바뀌면 궤적·시각 기준 리셋 (과목 전환 포함) */
+  const questionShownAt = useRef(Date.now());
+  useEffect(() => {
+    tracerRef.current?.reset();
+    questionShownAt.current = Date.now();
+  }, [key, liveIdx, liveQs]);
+
+  const gradeLive = (payload: { option_id?: string; option_ids?: string[] }, onFail: () => void) => {
+    if (!liveQ) return;
+    const behavior = {
+      solve_time_ms: Math.max(0, Date.now() - questionShownAt.current),
+      retry_count: 0,
+      ...(tracerRef.current?.snapshot() ?? {}),
+    };
     studentApi
-      .gameAnswer({ question_id: liveQ.id, option_id: optionId, last: liveLast, replay: isReplay })
+      .gameAnswer({ question_id: liveQ.id, subject: key, ...payload, last: liveLast, replay: isReplay, behavior })
       .then((r: any) => {
         setLiveResult(r);
         playSfx(r.correct ? 'correct' : 'wrong');
@@ -196,18 +233,39 @@ export default function GameScreen() {
           streak: r.correct ? st.streak + 1 : 0,
         }));
       })
-      .catch(() => setLiveSel(null)); // 채점 실패 시 다시 선택 가능
+      .catch(onFail); // 채점 실패 시 다시 선택 가능
+  };
+
+  const pickLive = (optionId: string) => {
+    if (!liveQ || liveResult) return; // 채점 후 재선택 방지
+    if (liveQ.type === 'multi') {
+      // 복수선택: 토글만 — 제출은 별도 버튼
+      setLiveMultiSel((sel) =>
+        sel.includes(optionId) ? sel.filter((x) => x !== optionId) : [...sel, optionId],
+      );
+      return;
+    }
+    setLiveSel(optionId);
+    gradeLive({ option_id: optionId }, () => setLiveSel(null));
+  };
+
+  const submitLiveMulti = () => {
+    if (!liveQ || liveResult || liveMultiSel.length === 0) return;
+    gradeLive({ option_ids: liveMultiSel }, () => undefined);
   };
 
   const nextLive = () => {
     if (!liveQs) return;
     if (!liveResult) return; // 아직 안 풀었으면 이동 안 함
     if (liveLast) {
-      navigate(`${PATHS.STUDENT_RESULT}?subject=${encodeURIComponent(key)}`);
+      // 결과 화면에 day를 넘겨 '다시 하기'가 같은 일차 복습으로 이어지게 한다
+      const dayQ = liveDay ? `&day=${liveDay.day}` : '';
+      navigate(`${PATHS.STUDENT_RESULT}?subject=${encodeURIComponent(key)}${dayQ}`);
       return;
     }
     setLiveIdx((i) => i + 1);
     setLiveSel(null);
+    setLiveMultiSel([]);
     setLiveResult(null);
   };
 
@@ -218,8 +276,11 @@ export default function GameScreen() {
   }, [key]);
 
   /* 완료 클릭 → 실제 학습기록 저장(오늘의퀴즈 done·코인·진도·연속도전 반영) 후 결과로 이동.
-     저장 실패해도 결과 화면 이동은 원본 흐름 그대로 유지한다. */
+     저장 실패 시에는 결과/코인 화면으로 넘어가지 않고 실패를 노출한다(거짓 완료 금지). */
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState(false);
   const finishSession = () => {
+    if (saving) return;
     playSfx('correct');
     const solveMs = Math.max(0, Date.now() - startedAt.current);
     // 실제 정오답을 문항별로 기록 → 정답률 집계가 정확해짐(항상 correct 저장 문제 해소).
@@ -232,28 +293,40 @@ export default function GameScreen() {
     ];
     if (outcomes.length === 0) outcomes.push('correct'); // 데이터 없으면 최소 1건(완료 표시용)
 
+    setSaving(true);
+    setSaveError(false);
+    // 행동 데이터(포인터 궤적)는 세션 마지막 저장에만 1건 싣는다
+    const behavior = {
+      solve_time_ms: solveMs,
+      retry_count: 0,
+      ...(tracerRef.current?.snapshot() ?? {}),
+    };
+    // 저장 실패를 삼키지 않는다 — 하나라도 실패하면 체인이 reject → 결과 화면으로 넘기지 않음
     const chain = outcomes.reduce<Promise<unknown>>((prev, result, i) => {
       const last = i === outcomes.length - 1;
       return prev.then(() =>
-        studentApi
-          .saveAttempt({
-            subject: s.key,
-            result,
-            score: last ? (typeof s.score === 'number' ? s.score : 0) : 0,
-            solve_time_ms: last ? solveMs : 0,
-            retry_count: 0,
-            completed: last && !isReplay, // 마지막에만 오늘의퀴즈 완료 처리 (복습은 제외)
-            replay: isReplay, // 복습: 상태·코인 반영 안 함
-          })
-          .catch(() => {
-            /* 저장 실패해도 흐름 유지 */
-          }),
+        studentApi.saveAttempt({
+          subject: s.key,
+          result,
+          score: last ? (typeof s.score === 'number' ? s.score : 0) : 0,
+          solve_time_ms: last ? solveMs : 0,
+          retry_count: 0,
+          completed: last && !isReplay, // 마지막에만 오늘의퀴즈 완료 처리 (복습은 제외)
+          replay: isReplay, // 복습: 상태·코인 반영 안 함
+          ...(last ? { behavior } : {}),
+        }),
       );
     }, Promise.resolve());
 
-    chain.finally(() => {
-      navigate(`${PATHS.STUDENT_RESULT}?subject=${encodeURIComponent(s.key)}`);
-    });
+    chain
+      .then(() => {
+        navigate(`${PATHS.STUDENT_RESULT}?subject=${encodeURIComponent(s.key)}`);
+      })
+      .catch(() => {
+        // 저장 실패 → 완료/코인 화면으로 넘어가지 않고 재시도 유도
+        setSaving(false);
+        setSaveError(true);
+      });
   };
 
   useEffect(() => {
@@ -412,12 +485,20 @@ export default function GameScreen() {
             </span>
           </div>
 
-          <h1 className="gs-question">{liveQ ? liveQ.prompt : qd.q}</h1>
+          {/* 위젯이 붙는 경우(EDU_SITE_KEY && !liveQ) 실제 문제는 위젯이 보여주므로,
+              바깥 제목은 정적 문항 대신 게임 제목만 노출해 이중 질문을 피한다. */}
+          <h1 className="gs-question">
+            {liveQ ? liveQ.prompt : !liveQ && EDU_SITE_KEY ? s.gameTitle : qd.q}
+          </h1>
           <p className="gs-subline">
             {liveQ ? (
               <>
                 알맞은 <span className="gs-subhi">답 카드</span>를 눌러요.
                 {liveQ.topic && <span className="gs-livetopic">{liveQ.topic}</span>}
+              </>
+            ) : !liveQ && EDU_SITE_KEY ? (
+              <>
+                아래 <span className="gs-subhi">{s.key}</span> 문제를 풀어봐요.
               </>
             ) : (
               <>
@@ -431,6 +512,7 @@ export default function GameScreen() {
           {/* ▼▼▼ CAPTCHA API MOUNT SLOT — 실제 게임 챌린지가 이 컨테이너 안에 렌더링됩니다 ▼▼▼ */}
           <div
             id="captcha-mount"
+            ref={mountRef}
             data-captcha-slot="true"
             data-subject={s.key}
             data-question={liveQ ? liveIdx + 1 : s.current}
@@ -450,10 +532,17 @@ export default function GameScreen() {
                     {liveDay.isReplay ? ' · 복습(코인 없음)' : ' · 오늘 과제'}
                   </div>
                 )}
+                {liveQ.type === 'multi' && !liveResult && (
+                  <div className="gs-live-multibar">
+                    <i className="ph-fill ph-checks" /> 맞는 것을 <b>모두</b> 고르고 제출을 눌러요!
+                  </div>
+                )}
                 <div className="gs-live-options">
                   {liveQ.options.map((o) => {
-                    const isSel = liveSel === o.id;
-                    const isAns = liveResult && o.id === liveResult.answer_id;
+                    const isMulti = liveQ.type === 'multi';
+                    const isSel = isMulti ? liveMultiSel.includes(o.id) : liveSel === o.id;
+                    const answerIds = liveResult ? (liveResult.answer_ids ?? [liveResult.answer_id]) : [];
+                    const isAns = liveResult ? answerIds.includes(o.id) : false;
                     const cls = [
                       'gs-live-opt',
                       liveResult && isAns ? 'gs-live-opt--answer' : '',
@@ -472,6 +561,12 @@ export default function GameScreen() {
                     );
                   })}
                 </div>
+                {liveQ.type === 'multi' && !liveResult && (
+                  <button className="gs-live-submit" disabled={liveMultiSel.length === 0} onClick={submitLiveMulti}>
+                    <i className="ph-fill ph-paper-plane-tilt" /> 제출하기
+                    {liveMultiSel.length > 0 ? ` (${liveMultiSel.length}개 선택)` : ''}
+                  </button>
+                )}
                 {liveResult && (
                   <div className={`gs-live-feedback ${liveResult.correct ? 'gs-live-feedback--ok' : 'gs-live-feedback--no'}`}>
                     <i className={liveResult.correct ? 'ph-fill ph-confetti' : 'ph-fill ph-lightbulb'} />
@@ -481,6 +576,16 @@ export default function GameScreen() {
                   </div>
                 )}
               </div>
+            ) : EDU_SITE_KEY ? (
+              /* 1st-party 임베드 — 우리 앱이 교육형 API(위젯)를 직접 소비.
+                 과목별 챌린지 + 행동데이터 수집(behavior_summaries). 게임 화면 크기(full). */
+              <CatchapWidget
+                siteKey={EDU_SITE_KEY}
+                api={WIDGET_API}
+                subject={s.key}
+                size="full"
+                className="gs-mount-widget"
+              />
             ) : (
               <div className="gs-mount-body">
                 <span className="gs-mount-icon">
@@ -568,9 +673,18 @@ export default function GameScreen() {
                 <i className="ph-fill ph-arrow-right" />
               </button>
             ) : (
-              <button className="gs-confirm" onClick={finishSession}>
-                {isLast ? '결과 보기' : '다음 문제'} <i className="ph-fill ph-arrow-right" />
-              </button>
+              <div className="gs-finishwrap" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
+                {saveError && (
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: '#E23D3D', fontWeight: 700, fontSize: 13 }}>
+                    <i className="ph-fill ph-warning-circle" />
+                    저장에 실패했어요. 다시 시도해 주세요.
+                  </span>
+                )}
+                <button className="gs-confirm" onClick={finishSession} disabled={saving}>
+                  {saving ? '저장 중…' : saveError ? '다시 시도' : isLast ? '결과 보기' : '다음 문제'}{' '}
+                  <i className="ph-fill ph-arrow-right" />
+                </button>
+              </div>
             )}
           </div>
         </div>

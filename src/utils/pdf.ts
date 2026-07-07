@@ -14,7 +14,8 @@ export function canvasToPdf(filename: string, canvas: HTMLCanvasElement) {
     format: [w, h],
     hotfixes: ['px_scaling'],
   });
-  pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, w, h);
+  // JPEG(고품질)로 인코딩 — 무손실 PNG 대비 용량 대폭 감소(리포트/상장 시각 품질 유지, 한글 안전).
+  pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, w, h);
   pdf.save(filename);
 }
 
@@ -118,7 +119,8 @@ export function tableToPdf(filename: string, title: string, rows: Row[]) {
   const pdf = new jsPDF({ orientation: 'portrait', unit: 'px', format: [PAGE_W, PAGE_H], hotfixes: ['px_scaling'] });
   pages.forEach((c, i) => {
     if (i > 0) pdf.addPage([PAGE_W, PAGE_H], 'portrait');
-    pdf.addImage(c.toDataURL('image/png'), 'PNG', 0, 0, PAGE_W, PAGE_H);
+    // 표 페이지는 흰 배경+글자/선 위주라 JPEG로 충분(무손실 PNG는 페이지당 수 MB → 13MB급 비대).
+    pdf.addImage(c.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, PAGE_W, PAGE_H);
   });
   pdf.save(filename);
 }

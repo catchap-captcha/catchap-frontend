@@ -314,23 +314,23 @@ export default function ParentReports() {
     useApiTrend && Array.isArray(r.trend?.axis) && r.trend.axis.length === n
       ? (r.trend.axis as string[]).map(String)
       : AXIS;
-  const mapY = (v: number) => Math.round(200 - (v - 60) * 4);
+  // y축 50~100, 좌표는 플롯 영역(40~200) 안으로 클램프 — 낮은 값이 카드 밖으로 그려지지 않게
+  const mapY = (v: number) => Math.max(40, Math.min(200, Math.round(200 - (v - 50) * 3.2)));
   const xAt = (i: number) => Math.round(48 + i * (516 / (n - 1)));
-  const trendTicks = [100, 90, 80, 70, 60].map((v) => {
+  const trendTicks = [100, 90, 80, 70, 60, 50].map((v) => {
     const y = mapY(v);
     return { y, ty: y + 4, label: String(v) };
   });
   const trendPts = series.map((v, i) => xAt(i) + ',' + mapY(v)).join(' ');
-  const trendArea = trendPts + ' ' + xAt(n - 1) + ',206 ' + xAt(0) + ',206';
+  const trendArea = trendPts + ' ' + xAt(n - 1) + ',200 ' + xAt(0) + ',200';
   const trendClassPts = cseries.map((v, i) => xAt(i) + ',' + mapY(v)).join(' ');
-  const trendDots = series.map((v, i) => ({ cx: xAt(i), cy: mapY(v), label: v + '%', ly: mapY(v) - 11 }));
+  const trendDots = series.map((v, i) => ({ cx: xAt(i), cy: mapY(v), label: v + '%', ly: Math.max(mapY(v) - 11, 11) }));
   const trendAvgVal =
     useApiTrend && typeof r.trend?.avg === 'number'
       ? Math.round(r.trend.avg)
       : Math.round(series.reduce((a, b) => a + b, 0) / n);
   const trendAvg = trendAvgVal + '%';
   const trendAvgY = mapY(trendAvgVal);
-  const trendAvgLabelY = trendAvgY - 5;
   const latest = series[n - 1];
   const first = series[0];
   const delta = latest - first;
@@ -588,9 +588,7 @@ export default function ParentReports() {
                 strokeDasharray="5 5"
                 opacity="0.55"
               />
-              <text x="584" y={trendAvgLabelY} textAnchor="end" fontSize="10.5" fontWeight="800" fill="#158A6E">
-                평균 {trendAvg}
-              </text>
+              {/* 평균 수치는 범례(6주 평균)에 표시 — 차트 안 텍스트는 점 라벨과 겹쳐 제거 */}
               <polygon points={trendArea} fill="url(#ccTrendFill)" />
               <polyline
                 points={trendClassPts}

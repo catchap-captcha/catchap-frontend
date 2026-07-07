@@ -52,9 +52,17 @@ export const studentApi = {
   /** 실전 게임 세션 — 서버 문항 발급(정답 미포함). day 지정 시 그 일차 커리큘럼 */
   gameSession: (subject: string, day?: number, count = 5) =>
     client.get<any>('/students/me/game-session', { params: { subject, day, count } }).then((r) => r.data),
-  /** 실전 채점 — 서버 판정 + 학습기록 저장 */
-  gameAnswer: (body: { question_id: string; option_id: string; last?: boolean; replay?: boolean }) =>
-    client.post<any>('/students/me/game-answer', body).then((r) => r.data),
+  /** 실전 채점 — 서버 판정 + 학습기록 저장 (behavior: 포인터 궤적 등 행동 데이터)
+      subject: 문항이 속한 과목(뱅크 스코프) / multi 문항은 option_ids(집합 채점) */
+  gameAnswer: (body: {
+    question_id: string;
+    subject: string;
+    option_id?: string;
+    option_ids?: string[];
+    last?: boolean;
+    replay?: boolean;
+    behavior?: Record<string, unknown>;
+  }) => client.post<any>('/students/me/game-answer', body).then((r) => r.data),
 
   /** 개념 읽음 서버 동기화 */
   markConceptRead: (conceptId: string) =>

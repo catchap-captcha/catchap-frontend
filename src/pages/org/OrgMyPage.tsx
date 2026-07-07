@@ -4,6 +4,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { useToast } from '../../hooks/useToast';
 import { orgApi } from '../../api/org';
 import { settingsApi } from '../../api/settings';
+import { inquiryApi } from '../../api/misc';
 import OrgLayout from '../../layouts/OrgLayout';
 import './OrgMyPage.css';
 
@@ -192,6 +193,7 @@ export default function OrgMyPage() {
   const [invoices, setInvoices] = useState<OmInvoice[]>(FALLBACK_INVOICES);
   const [admins, setAdmins] = useState<OmAdmin[]>(FALLBACK_ADMINS);
   const [payState, setPayState] = useState<{ tier: Tier; cycle: Cycle } | null>(null);
+  const [payBusy, setPayBusy] = useState(false);
   const [warnText, setWarnText] = useState<string | null>(null);
   const [logoutOpen, setLogoutOpen] = useState(false);
   const [autopay, setAutopay] = useState(true);
@@ -302,45 +304,60 @@ export default function OrgMyPage() {
     );
   };
 
+  // 결제 백엔드가 아직 없어 요금제를 실제로 바꾸지 않는다(바뀐 척 위장 금지).
+  // 대신 '요금제 변경 문의'로 접수해 담당 매니저가 처리하도록 연결한다.
   const confirmPay = () => {
-    if (!payState) return;
+    if (!payState || payBusy) return;
     const { tier, cycle: payCycle } = payState;
-    // 결제 모달은 mock: 확인 시 로컬 상태 변경 + 토스트만 (원본 동작)
-    setPlan({ tier, cycle: payCycle });
-    setCycle(payCycle);
-    setPayState(null);
-    flash(`${tier} 요금제(${payCycle === 'year' ? '연 결제' : '월 결제'})로 변경됐어요`);
+    const cycleLabel = payCycle === 'year' ? '연 결제' : '월 결제';
+    setPayBusy(true);
+    inquiryApi
+      .submit({
+        inquiry_type: '계약·요금제 변경',
+        name: me?.name ?? '기관 관리자',
+        affiliation: org.name,
+        email: me?.email ?? 'unknown@catchap.io',
+        content: `요금제 변경을 요청합니다. 요청 요금제: ${tier}(${cycleLabel}). 현재 요금제: ${plan.tier}. 등록 학생 ${students}명.`,
+      })
+      .then(() => {
+        setPayState(null);
+        flash(`${tier} 요금제 변경 문의를 접수했어요. 담당 매니저가 이메일로 안내드려요.`);
+      })
+      .catch(() => flash('문의 접수에 실패했어요. 잠시 후 다시 시도해 주세요.'))
+      .finally(() => setPayBusy(false));
   };
 
   const saveOrg = () => {
-    if (orgId) {
-      // 백엔드 OrgUpdate 필드명(org_type/contact_*/address)으로 전송 — organizations 실테이블 UPDATE
-      orgApi
-        .update(orgId, {
-          name: org.name,
-          org_type: org.type,
-          contact_phone: org.phone,
-          contact_email: org.email,
-          address: org.addr,
-        })
-        .then(() => {
-          // 기관명 변경 시 상단(me.organization_name) 즉시 갱신
-          reloadMe();
-        })
-        .catch(() => {
-          // TODO(api): 실패해도 원본과 동일하게 저장 토스트 유지
-        });
+    if (!orgId) {
+      flash('기관 정보를 저장할 수 없어요. 다시 로그인한 뒤 시도해 주세요.');
+      return;
     }
-    flash('기관 정보가 저장됐어요');
+    // 백엔드 OrgUpdate 필드명(org_type/contact_*/address)으로 전송 — organizations 실테이블 UPDATE
+    orgApi
+      .update(orgId, {
+        name: org.name,
+        org_type: org.type,
+        contact_phone: org.phone,
+        contact_email: org.email,
+        address: org.addr,
+      })
+      .then(() => {
+        // 기관명 변경 시 상단(me.organization_name) 즉시 갱신
+        reloadMe();
+        flash('기관 정보가 저장됐어요');
+      })
+      .catch(() => flash('기관 정보 저장에 실패했어요. 잠시 후 다시 시도해 주세요.'));
   };
 
   const saveTax = () => {
-    if (orgId) {
-      orgApi.update(orgId, { business_number: bizNo }).catch(() => {
-        // TODO(api): 실패해도 원본과 동일하게 저장 토스트 유지
-      });
+    if (!orgId) {
+      flash('세금계산서 정보를 저장할 수 없어요. 다시 로그인한 뒤 시도해 주세요.');
+      return;
     }
-    flash('세금계산서 정보가 저장됐어요');
+    orgApi
+      .update(orgId, { business_number: bizNo })
+      .then(() => flash('세금계산서 정보가 저장됐어요'))
+      .catch(() => flash('세금계산서 정보 저장에 실패했어요. 잠시 후 다시 시도해 주세요.'));
   };
 
   const canChange =
@@ -388,8 +405,6 @@ export default function OrgMyPage() {
     { label: '학생 좌석', value: `${students} / ${seatMax}석`, w: `${seatPct}%`, color: '#2E7BFF' },
     { label: '선생님 좌석', value: `${teacherSeats.used} / ${teacherSeats.quota}석`, w: `${teacherPct}%`, color: '#8B6BFF' },
   ];
-
-  const defaultCard = cards.find((c) => c.primary) ?? cards[0];
 
   const payAmount = payState ? prices[payState.tier][payState.cycle] : '';
   const payCycleLabel = payState?.cycle === 'year' ? '연 결제' : '월 결제';
@@ -788,17 +803,17 @@ export default function OrgMyPage() {
         </div>
       )}
 
-      {/* PAYMENT MODAL (mock: 확인 시 토스트만) */}
+      {/* 요금제 변경 문의 모달 (결제 연동 준비 중 — 실제 결제/변경은 문의로 접수) */}
       {payState && (
         <div className="om-overlay" onClick={() => setPayState(null)}>
           <div className="om-payModal" onClick={(e) => e.stopPropagation()}>
             <div className="om-payModalHead">
               <div className="om-payModalHeadIcon">
-                <i className="ph-fill ph-credit-card" />
+                <i className="ph-fill ph-chat-circle-text" />
               </div>
               <div className="om-payModalHeadText">
-                <div className="om-payModalTitle">요금제 결제</div>
-                <div className="om-payModalSub">CatChap 기관 요금제 변경</div>
+                <div className="om-payModalTitle">요금제 변경 문의</div>
+                <div className="om-payModalSub">결제 연동은 준비 중이에요 · 문의로 접수돼요</div>
               </div>
             </div>
             <div className="om-payModalBody">
@@ -812,29 +827,19 @@ export default function OrgMyPage() {
                   <span className="om-payInfoVal">최대 {seatLabels[payState.tier]}</span>
                 </div>
                 <div className="om-payInfoTotal">
-                  <span className="om-payInfoKey">결제 금액</span>
+                  <span className="om-payInfoKey">예상 금액</span>
                   <span className="om-payAmount">{payAmount}</span>
                 </div>
               </div>
-              <div className="om-payCard">
-                <span className="om-payCardChip">
-                  <i className="ph-fill ph-credit-card" />
-                </span>
-                <div className="om-payCardBody">
-                  <div className="om-payCardName">{defaultCard?.name ?? '신한 법인카드 ···· 4821'}</div>
-                  <div className="om-payCardSub">기본 결제 수단</div>
-                </div>
-                <span className="om-primaryBadge">기본</span>
-              </div>
               <div className="om-paySecure">
-                <i className="ph-fill ph-lock-simple" />
-                <span>결제 정보는 안전하게 암호화되어 처리돼요.</span>
+                <i className="ph-fill ph-info" />
+                <span>온라인 결제는 준비 중이에요. 변경 요청을 접수하면 담당 매니저가 이메일로 안내드려요.</span>
               </div>
               <div className="om-payBtns">
-                <button className="om-payCancelBtn" onClick={() => setPayState(null)}>취소</button>
-                <button className="om-payConfirmBtn" onClick={confirmPay}>
-                  <i className="ph-fill ph-check-circle" />
-                  {payAmount} 결제하기
+                <button className="om-payCancelBtn" onClick={() => setPayState(null)} disabled={payBusy}>취소</button>
+                <button className="om-payConfirmBtn" onClick={confirmPay} disabled={payBusy}>
+                  <i className="ph-fill ph-paper-plane-tilt" />
+                  {payBusy ? '접수 중…' : '변경 문의 보내기'}
                 </button>
               </div>
             </div>

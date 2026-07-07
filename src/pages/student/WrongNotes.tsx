@@ -8,7 +8,7 @@ import './WrongNotes.css';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-type Cat = 'word' | 'num' | 'img' | 'safe';
+type Cat = 'word' | 'num' | 'img' | 'safe' | 'hist';
 type FilterKey = 'all' | Cat;
 
 interface WrongItem {
@@ -26,6 +26,7 @@ const CHIPS: { key: FilterKey; label: string; icon: string }[] = [
   { key: 'num', label: '수·연산', icon: 'ph-fill ph-plus-minus' },
   { key: 'img', label: '이미지 선택', icon: 'ph-fill ph-image' },
   { key: 'safe', label: '생활 안전', icon: 'ph-fill ph-shield-check' },
+  { key: 'hist', label: '역사·문화', icon: 'ph-fill ph-scroll' },
 ];
 
 /** subject: "다시 풀기" → 게임화면 `?subject=` 매핑 (HANDOFF_ROUTE_MAP의 깨진 링크 통일 규칙) */
@@ -34,6 +35,7 @@ const TAG: Record<Cat, { label: string; icon: string; c: string; bg: string; sub
   num: { label: '수·연산', icon: 'ph-fill ph-plus-minus', c: '#FF922E', bg: '#FFEDE0', subject: '수학' },
   img: { label: '이미지 선택', icon: 'ph-fill ph-image', c: '#2E7BFF', bg: '#E6F0FF', subject: '과학' },
   safe: { label: '생활 안전', icon: 'ph-fill ph-shield-check', c: '#8B6BFF', bg: '#EDE6FF', subject: '생활' },
+  hist: { label: '역사·문화', icon: 'ph-fill ph-scroll', c: '#17B08C', bg: '#DFF6EE', subject: '역사' },
 };
 
 // TODO(api): studentApi.wrongNotes() 실패 시 원본 하드코딩 데이터 유지
@@ -116,6 +118,9 @@ export default function WrongNotes() {
 
   const name = (me?.name ?? '하은').trim() || '하은';
   const visible = items.filter((i) => filter === 'all' || i.cat === filter);
+  // 오답 모아 풀기: 현재 필터 과목(전체면 첫 오답 과목, 없으면 생활)으로 복습 세션 진입
+  const solveAllSubject =
+    filter !== 'all' ? TAG[filter].subject : visible[0] ? TAG[visible[0].cat].subject : '생활';
   // 복습 진행률 = 복습 완료 / (복습 완료 + 남은 문제)
   const reviewTotal = reviewedCount + pendingCount;
   const reviewPct = reviewTotal > 0 ? Math.round((reviewedCount / reviewTotal) * 100) : 0;
@@ -207,9 +212,12 @@ export default function WrongNotes() {
               <div className="wn-progressfill" style={{ width: `${reviewPct}%` }} />
             </div>
           </div>
-          <button className="wn-solveall">
+          <Link
+            to={`${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(solveAllSubject)}&replay=1`}
+            className="wn-solveall"
+          >
             <i className="ph-fill ph-arrows-clockwise" />오답 모아 풀기
-          </button>
+          </Link>
         </div>
 
         {/* filter chips */}
@@ -262,7 +270,11 @@ export default function WrongNotes() {
                 <p>{q.tip}</p>
               </div>
               <div className="wn-actions">
-                <Link to={`${PATHS.STUDENT_GAME}?subject=${t.subject}`} className="wn-retry">
+                {/* 복습 모드(replay=1): 기록은 남지만 오늘의퀴즈 상태·코인 중복 반영 없음 */}
+                <Link
+                  to={`${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(t.subject)}&replay=1`}
+                  className="wn-retry"
+                >
                   <i className="ph-fill ph-arrow-counter-clockwise" />다시 풀기
                 </Link>
                 <button className="wn-explain">

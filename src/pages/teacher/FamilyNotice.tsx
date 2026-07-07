@@ -88,6 +88,9 @@ export default function FamilyNotice() {
   const [query, setQuery] = useState('');
   const [message, setMessage] = useState('');
   const [sent, setSent] = useState<SentMessage[]>(FALLBACK_SENT);
+  // 학생 명단이 서버에서 실제로 왔는지 — 실패/미로딩 시 가짜(FALLBACK) 명단으로 발송 방지
+  const [rosterState, setRosterState] = useState<'loading' | 'ready' | 'error'>('loading');
+  const [sending, setSending] = useState(false);
   const { toast, flash } = useToast(2200);
 
   useEffect(() => {
@@ -112,6 +115,7 @@ export default function FamilyNotice() {
             };
           });
           setStudents(mapped);
+          setRosterState('ready');
           // FALLBACK id('s2')로 선택돼 있던 학생을 API UUID로 다시 연결 (이름 기준)
           setSelectedIds((ids) =>
             ids
@@ -123,6 +127,9 @@ export default function FamilyNotice() {
               })
               .filter((id) => mapped.some((m) => m.id === id)),
           );
+        } else {
+          // 서버가 명단을 주지 못함 → 화면의 FALLBACK은 데모일 뿐, 발송 대상이 아님
+          setRosterState('error');
         }
         // 발송 이력
         const sentList = Array.isArray(data) ? data : data?.sent ?? data?.messages;
@@ -150,7 +157,8 @@ export default function FamilyNotice() {
         }
       })
       .catch(() => {
-        /* TODO(api): 실패 시 FALLBACK_STUDENTS / FALLBACK_SENT 유지 */
+        // 명단을 못 불러오면 가짜 명단으로 발송하지 않도록 error 상태로 표시
+        setRosterState('error');
       });
   }, []);
 
@@ -159,7 +167,8 @@ export default function FamilyNotice() {
   const linkedSelected = selectedStudents.filter((s) => s.linked);
   const totalLinked = students.filter((s) => s.linked).length;
   const allOn = students.every((s) => selectedIds.includes(s.id));
-  const canSend = linkedSelected.length > 0 && message.trim().length > 0;
+  const rosterReady = rosterState === 'ready';
+  const canSend = rosterReady && !sending && linkedSelected.length > 0 && message.trim().length > 0;
   const q = query.trim();
   const results = students.filter((s) => q === '' || s.name.includes(q) || s.parent.includes(q));
   const selCount = selectedStudents.length;
@@ -183,7 +192,8 @@ export default function FamilyNotice() {
   const send = () => {
     const msg = message.trim();
     const targets = linkedSelected;
-    if (!msg || !targets.length) return;
+    // 명단이 서버에서 오지 않았으면(가짜 명단) 발송 금지
+    if (!msg || !targets.length || !rosterReady || sending) return;
     const single = targets.length === 1 ? targets[0] : null;
     const entry: SentMessage = {
       recipient: single ? single.parent : `학부모 ${targets.length}명`,
@@ -193,12 +203,22 @@ export default function FamilyNotice() {
       time: '방금 전',
       status: 'sent',
     };
+    // 낙관적 반영 후 서버 응답을 기다려 성공/실패를 분기 (실패 시 롤백)
+    setSending(true);
     setSent((list) => [entry, ...list]);
     setMessage('');
-    flash(single ? `${single.parent}에게 메시지를 보냈어요` : `학부모 ${targets.length}명에게 메시지를 보냈어요`);
-    teacherApi.sendFamilyMessage(targets.map((t) => t.id), msg).catch(() => {
-      /* TODO(api): 백엔드 미구현 — 원본과 동일하게 로컬 발송 목록 갱신 유지 */
-    });
+    teacherApi
+      .sendFamilyMessage(targets.map((t) => t.id), msg)
+      .then(() => {
+        flash(single ? `${single.parent}에게 메시지를 보냈어요` : `학부모 ${targets.length}명에게 메시지를 보냈어요`);
+      })
+      .catch(() => {
+        // 발송 실패 — 낙관적으로 추가한 이력을 되돌리고 입력값 복구
+        setSent((list) => list.filter((e) => e !== entry));
+        setMessage(msg);
+        flash('메시지 전송에 실패했어요. 잠시 후 다시 시도해 주세요.');
+      })
+      .finally(() => setSending(false));
   };
 
   return (
@@ -345,12 +365,22 @@ export default function FamilyNotice() {
               <button onClick={() => setMessage('')} className="fn-clear">
                 지우기
               </button>
-              <button onClick={send} className={'fn-send ' + (canSend ? 'fn-send-on' : 'fn-send-off')}>
+              <button
+                onClick={send}
+                disabled={!canSend}
+                className={'fn-send ' + (canSend ? 'fn-send-on' : 'fn-send-off')}
+              >
                 <i className="ph-fill ph-paper-plane-tilt" />
-                메시지 보내기
+                {sending ? '보내는 중…' : '메시지 보내기'}
               </button>
             </div>
-            {blockedNote && (
+            {rosterState === 'error' && (
+              <div className="fn-blocked">
+                <i className="ph-fill ph-warning" />
+                <span>학생 명단을 불러오지 못했어요. 새로고침 후 다시 시도해 주세요. (명단을 불러오기 전에는 발송할 수 없어요)</span>
+              </div>
+            )}
+            {rosterState === 'ready' && blockedNote && (
               <div className="fn-blocked">
                 <i className="ph-fill ph-warning" />
                 <span>보호자 계정이 아직 연결되지 않았어요. 연결 후 전송할 수 있어요.</span>

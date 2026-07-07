@@ -1,13 +1,14 @@
 /* CatChap 보안캡챠 — handoff 원본 값 그대로 (접두사 cp-)
    ccSpin 만 공용 animations.css와 동일 → 공용 재사용. 나머지는 값이 다르거나 공용에 없음 → cp 접두사. */
 
+/* rotate는 비트맵 마스코트를 매 프레임 리샘플링해 번져 보임 → 이동만 남김 */
 @keyframes cpFloat {
   0%,
   100% {
-    transform: translateY(0) rotate(-3deg);
+    transform: translateY(0);
   }
   50% {
-    transform: translateY(-11px) rotate(3deg);
+    transform: translateY(-11px);
   }
 }
 @keyframes cpIn {
@@ -148,6 +149,7 @@
 }
 .cp-peek-float {
   animation: cpFloat 4.5s ease-in-out infinite;
+  will-change: transform;
 }
 .cp-peek-img {
   width: 84px;
@@ -440,6 +442,7 @@
   display: inline-block;
   position: relative;
   animation: cpFloat 4s ease-in-out infinite;
+  will-change: transform;
   margin-bottom: 16px;
 }
 .cp-success-img {

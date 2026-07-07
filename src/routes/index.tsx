@@ -65,7 +65,9 @@ const OrgContact = lazy(() => import('../pages/org/OrgContact'));
 const OpsLogin = lazy(() => import('../pages/ops/OpsLogin'));
 const OpsApproval = lazy(() => import('../pages/ops/OpsApproval'));
 const OpsOrgs = lazy(() => import('../pages/ops/OpsOrgs'));
+const OpsApiKeys = lazy(() => import('../pages/ops/OpsApiKeys'));
 const OpsInquiries = lazy(() => import('../pages/ops/OpsInquiries'));
+const OpsBehavior = lazy(() => import('../pages/ops/OpsBehavior'));
 const OpsAuditLog = lazy(() => import('../pages/ops/OpsAuditLog'));
 
 // 시스템
@@ -152,7 +154,9 @@ export default function AppRoutes() {
         <Route element={<ProtectedRoute roles={['ops']} />}>
           <Route path={PATHS.OPS_APPROVAL} element={<OpsApproval />} />
           <Route path={PATHS.OPS_ORGS} element={<OpsOrgs />} />
+          <Route path={PATHS.OPS_API_KEYS} element={<OpsApiKeys />} />
           <Route path={PATHS.OPS_INQUIRIES} element={<OpsInquiries />} />
+          <Route path={PATHS.OPS_BEHAVIOR} element={<OpsBehavior />} />
           <Route path={PATHS.OPS_LOGS} element={<OpsAuditLog />} />
         </Route>
 

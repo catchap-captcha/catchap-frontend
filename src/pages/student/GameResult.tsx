@@ -147,7 +147,12 @@ export default function GameResult() {
 
   const review = Array.from({ length: total }, (_, i) => i + 1 > s.correct);
 
-  const gameHref = `${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(subjectKey)}`;
+  // 다시 하기 = 복습 모드(replay=1): 기록은 남되 오늘의퀴즈 상태·코인 중복 반영 없음.
+  // 일차 플레이였으면 같은 일차(day)로 다시 들어간다.
+  const dayParam = searchParams.get('day');
+  const gameHref = `${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(subjectKey)}${
+    dayParam ? `&day=${encodeURIComponent(dayParam)}` : ''
+  }&replay=1`;
   const primaryHref = allDoneToday
     ? PATHS.STUDENT_HOME
     : `${PATHS.STUDENT_CHAPTERS}?subject=${encodeURIComponent(nextUndone || subjectKey)}`;

@@ -1,6 +1,6 @@
 /* 관리자 문의 폼 — 기관 콘솔 스타일 (ot-/oc- 톤 유지) */
 
-.ogc-head { margin-bottom: 22px; }
+.ogc-head { max-width: 720px; margin: 0 auto 22px; }
 
 .ogc-breadcrumb {
   display: flex;
@@ -30,6 +30,7 @@
   border-radius: 20px;
   padding: 26px 28px;
   max-width: 720px;
+  margin: 0 auto;
   box-shadow: 0 14px 34px -26px rgba(40, 50, 90, 0.35);
 }
 
@@ -146,6 +147,7 @@
   border-radius: 20px;
   padding: 48px 28px;
   max-width: 720px;
+  margin: 0 auto;
   text-align: center;
   box-shadow: 0 14px 34px -26px rgba(40, 50, 90, 0.35);
 }

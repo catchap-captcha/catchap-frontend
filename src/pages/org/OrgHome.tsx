@@ -231,22 +231,24 @@ function mapDashClasses(api: any): OhClassRow[] | null {
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
-/** 원본 buildBot 좌표 재현 */
+/** 원본 buildBot 좌표 재현 — y축은 0~100 전체 범위(차단율·통과율을 한 축에 담음), 좌표는 viewBox 안으로 클램프 */
 function buildBot(block: number[], pass: number[]) {
   const n = block.length;
   const last = n - 1;
-  const mapY = (v: number) => Math.round(200 - (v - 70) * 6);
+  const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
+  const mapY = (v: number) => Math.round(200 - clamp(v, 0, 100) * 1.8);
   const xAt = (i: number) => (n === 1 ? 335 : Math.round(44 + i * (582 / (n - 1))));
-  const botTicks = [100, 95, 90, 85, 80, 75, 70].map((v) => {
+  const lxAt = (i: number) => clamp(xAt(i), 24, 616);
+  const botTicks = [100, 75, 50, 25, 0].map((v) => {
     const y = mapY(v);
     return { y, ty: y + 4, label: String(v) };
   });
   const line = (arr: number[]) => arr.map((v, i) => `${xAt(i)},${mapY(v)}`).join(' ');
   const botBlockLine = line(block);
   const botPassLine = line(pass);
-  const botPassArea = `${botPassLine} ${xAt(last)},206 ${xAt(0)},206`;
-  const botBlockPts = block.map((v, i) => ({ cx: xAt(i), cy: mapY(v), label: `${v}%`, ly: mapY(v) - 12 }));
-  const botPassPts = pass.map((v, i) => ({ cx: xAt(i), cy: mapY(v), label: `${v}%`, ly: mapY(v) + 20 }));
+  const botPassArea = `${botPassLine} ${xAt(last)},200 ${xAt(0)},200`;
+  const botBlockPts = block.map((v, i) => ({ cx: xAt(i), cy: mapY(v), label: `${v}%`, lx: lxAt(i), ly: Math.max(mapY(v) - 12, 10) }));
+  const botPassPts = pass.map((v, i) => ({ cx: xAt(i), cy: mapY(v), label: `${v}%`, lx: lxAt(i), ly: Math.min(mapY(v) + 20, 224) }));
   const avg = (a: number[]) => Math.round(a.reduce((x, y) => x + y, 0) / a.length);
   return {
     botTicks,
@@ -449,7 +451,7 @@ export default function OrgHome() {
             {bot.botBlockPts.map((p, i) => (
               <g key={`b${i}`}>
                 <circle cx={p.cx} cy={p.cy} r={4.5} fill="#fff" stroke="#FF5A4D" strokeWidth={3} />
-                <text x={p.cx} y={p.ly} textAnchor="middle" fontSize={11} fontWeight={800} fill="#E0475E">
+                <text x={p.lx} y={p.ly} textAnchor="middle" fontSize={11} fontWeight={800} fill="#E0475E">
                   {p.label}
                 </text>
               </g>
@@ -457,7 +459,7 @@ export default function OrgHome() {
             {bot.botPassPts.map((p, i) => (
               <g key={`p${i}`}>
                 <circle cx={p.cx} cy={p.cy} r={4.5} fill="#fff" stroke="#2E7BFF" strokeWidth={3} />
-                <text x={p.cx} y={p.ly} textAnchor="middle" fontSize={11} fontWeight={800} fill="#2168D8">
+                <text x={p.lx} y={p.ly} textAnchor="middle" fontSize={11} fontWeight={800} fill="#2168D8">
                   {p.label}
                 </text>
               </g>

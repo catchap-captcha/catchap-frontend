@@ -1,13 +1,14 @@
 /* handoff `CatChap 학부모알림.dc.html` — 원본 값 그대로 (접두사 pn-) */
 
 /* 원본 ccFloat — 공용 animations.css에 없어 페이지 접두사 버전 */
+/* rotate는 비트맵 마스코트를 매 프레임 리샘플링해 번져 보임 → 이동만 남김 */
 @keyframes pnFloat {
   0%,
   100% {
-    transform: translateY(0) rotate(-2deg);
+    transform: translateY(0);
   }
   50% {
-    transform: translateY(-10px) rotate(2deg);
+    transform: translateY(-10px);
   }
 }
 
@@ -282,6 +283,7 @@
 .pn-emptyart {
   display: inline-block;
   animation: pnFloat 4s ease-in-out infinite;
+  will-change: transform;
   position: relative;
   margin-bottom: 20px;
 }

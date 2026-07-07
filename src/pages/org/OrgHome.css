@@ -189,7 +189,7 @@
 .oh-lineSvg {
   width: 100%;
   height: auto;
-  overflow: visible;
+  overflow: hidden;
   margin-top: 4px;
 }
 
