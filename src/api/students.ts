@@ -43,6 +43,13 @@ export const studentApi = {
   gameState: (subject: string) =>
     client.get<any>('/students/me/game-state', { params: { subject } }).then((r) => r.data),
 
+  /** 실전 게임 세션 — 서버 문항 발급(정답 미포함). 현재 생활 과목 지원 (ms 문제은행) */
+  gameSession: (subject: string, count = 5) =>
+    client.get<any>('/students/me/game-session', { params: { subject, count } }).then((r) => r.data),
+  /** 실전 채점 — 서버 판정 + 학습기록 저장 */
+  gameAnswer: (body: { question_id: string; option_id: string; last?: boolean; replay?: boolean }) =>
+    client.post<any>('/students/me/game-answer', body).then((r) => r.data),
+
   /** 개념 읽음 서버 동기화 */
   markConceptRead: (conceptId: string) =>
     client.post('/students/me/concepts/read', { concept_id: conceptId }).then((r) => r.data),

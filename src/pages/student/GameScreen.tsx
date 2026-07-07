@@ -129,6 +129,82 @@ export default function GameScreen() {
   // 복습 모드(?replay=1): 전날 다시풀기·완료 후 재도전 — 기록은 남지만 오늘의퀴즈 상태·코인 보상 없음
   const isReplay = searchParams.get('replay') === '1';
 
+  /* ===== 실전 모드 (서버 문항 + 서버 채점 — capcha_service ms 문제은행) =====
+     game-session available=true 인 과목(현재 생활)만 실문항 플레이.
+     아니면 기존 데모 슬롯 유지 (다른 과목은 팀원 캡차 통합 대기). */
+  interface LiveQ {
+    id: string;
+    topic: string;
+    prompt: string;
+    hint: string;
+    options: { id: string; emoji: string; text: string }[];
+  }
+  const [liveQs, setLiveQs] = useState<LiveQ[] | null>(null);
+  const [liveIdx, setLiveIdx] = useState(0);
+  const [liveSel, setLiveSel] = useState<string | null>(null);
+  const [liveResult, setLiveResult] = useState<{
+    correct: boolean;
+    answer_id: string;
+    answer_text: string;
+    hint: string;
+  } | null>(null);
+  const [liveStats, setLiveStats] = useState({ correct: 0, wrong: 0, streak: 0 });
+
+  useEffect(() => {
+    let on = true;
+    setLiveQs(null);
+    setLiveIdx(0);
+    setLiveSel(null);
+    setLiveResult(null);
+    setLiveStats({ correct: 0, wrong: 0, streak: 0 });
+    studentApi
+      .gameSession(key)
+      .then((d: any) => {
+        if (!on) return;
+        if (d?.available && Array.isArray(d.questions) && d.questions.length > 0) {
+          setLiveQs(d.questions);
+        }
+      })
+      .catch(() => {
+        /* 실패 시 데모 슬롯 유지 */
+      });
+    return () => {
+      on = false;
+    };
+  }, [key]);
+
+  const liveQ = liveQs ? liveQs[liveIdx] : null;
+  const liveLast = liveQs ? liveIdx >= liveQs.length - 1 : false;
+
+  const pickLive = (optionId: string) => {
+    if (!liveQ || liveResult) return; // 채점 후 재선택 방지
+    setLiveSel(optionId);
+    studentApi
+      .gameAnswer({ question_id: liveQ.id, option_id: optionId, last: liveLast, replay: isReplay })
+      .then((r: any) => {
+        setLiveResult(r);
+        playSfx(r.correct ? 'correct' : 'wrong');
+        setLiveStats((st) => ({
+          correct: st.correct + (r.correct ? 1 : 0),
+          wrong: st.wrong + (r.correct ? 0 : 1),
+          streak: r.correct ? st.streak + 1 : 0,
+        }));
+      })
+      .catch(() => setLiveSel(null)); // 채점 실패 시 다시 선택 가능
+  };
+
+  const nextLive = () => {
+    if (!liveQs) return;
+    if (!liveResult) return; // 아직 안 풀었으면 이동 안 함
+    if (liveLast) {
+      navigate(`${PATHS.STUDENT_RESULT}?subject=${encodeURIComponent(key)}`);
+      return;
+    }
+    setLiveIdx((i) => i + 1);
+    setLiveSel(null);
+    setLiveResult(null);
+  };
+
   /* 세션 시작 시각 — 완료 시 실제 풀이 시간(solve_time_ms) 계산용 */
   const startedAt = useRef<number>(Date.now());
   useEffect(() => {
@@ -330,11 +406,20 @@ export default function GameScreen() {
             </span>
           </div>
 
-          <h1 className="gs-question">{qd.q}</h1>
+          <h1 className="gs-question">{liveQ ? liveQ.prompt : qd.q}</h1>
           <p className="gs-subline">
-            {qd.pre}
-            <span className="gs-subhi">{qd.hi}</span>
-            {qd.post}
+            {liveQ ? (
+              <>
+                알맞은 <span className="gs-subhi">답 카드</span>를 눌러요.
+                {liveQ.topic && <span className="gs-livetopic">{liveQ.topic}</span>}
+              </>
+            ) : (
+              <>
+                {qd.pre}
+                <span className="gs-subhi">{qd.hi}</span>
+                {qd.post}
+              </>
+            )}
           </p>
 
           {/* ▼▼▼ CAPTCHA API MOUNT SLOT — 실제 게임 챌린지가 이 컨테이너 안에 렌더링됩니다 ▼▼▼ */}
@@ -342,23 +427,59 @@ export default function GameScreen() {
             id="captcha-mount"
             data-captcha-slot="true"
             data-subject={s.key}
-            data-question={s.current}
+            data-question={liveQ ? liveIdx + 1 : s.current}
             className="gs-mount"
           >
             <span className="gs-mount-tagleft">#captcha-mount</span>
             <span className="gs-mount-tagright">
-              문제 {s.current}/{s.total}
+              문제 {liveQ ? liveIdx + 1 : s.current}/{liveQs ? liveQs.length : s.total}
             </span>
-            <div className="gs-mount-body">
-              <span className="gs-mount-icon">
-                <i className="ph-fill ph-puzzle-piece" />
-              </span>
-              <span className="gs-mount-title">API 캡챠 위젯 자리</span>
-              <span className="gs-mount-desc">
-                실제 챌린지(그림 고르기·퍼즐 등)는 CatChap Guard API가
-                <br />이 컨테이너에 쏙 넣어줘요. <code>#captcha-mount</code>
-              </span>
-            </div>
+            {liveQ ? (
+              /* 실전 문항 (서버 발급·서버 채점 — 생활: capcha_service ms 문제은행) */
+              <div className="gs-live">
+                <div className="gs-live-options">
+                  {liveQ.options.map((o) => {
+                    const isSel = liveSel === o.id;
+                    const isAns = liveResult && o.id === liveResult.answer_id;
+                    const cls = [
+                      'gs-live-opt',
+                      liveResult && isAns ? 'gs-live-opt--answer' : '',
+                      liveResult && isSel && !liveResult.correct && !isAns ? 'gs-live-opt--wrong' : '',
+                      !liveResult && isSel ? 'gs-live-opt--sel' : '',
+                    ].join(' ');
+                    return (
+                      <button key={o.id} className={cls} disabled={!!liveResult} onClick={() => pickLive(o.id)}>
+                        <span className="gs-live-emoji">{o.emoji}</span>
+                        <span className="gs-live-text">{o.text}</span>
+                        {liveResult && isAns && <i className="ph-fill ph-check-circle gs-live-mark gs-live-mark--ok" />}
+                        {liveResult && isSel && !liveResult.correct && !isAns && (
+                          <i className="ph-fill ph-x-circle gs-live-mark gs-live-mark--no" />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+                {liveResult && (
+                  <div className={`gs-live-feedback ${liveResult.correct ? 'gs-live-feedback--ok' : 'gs-live-feedback--no'}`}>
+                    <i className={liveResult.correct ? 'ph-fill ph-confetti' : 'ph-fill ph-lightbulb'} />
+                    {liveResult.correct
+                      ? '정답이에요! 참 잘했어요 🎉'
+                      : `아쉬워요! 정답은 "${liveResult.answer_text}" — ${liveResult.hint || '다시 떠올려 봐요.'}`}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="gs-mount-body">
+                <span className="gs-mount-icon">
+                  <i className="ph-fill ph-puzzle-piece" />
+                </span>
+                <span className="gs-mount-title">API 캡챠 위젯 자리</span>
+                <span className="gs-mount-desc">
+                  실제 챌린지(그림 고르기·퍼즐 등)는 CatChap Guard API가
+                  <br />이 컨테이너에 쏙 넣어줘요. <code>#captcha-mount</code>
+                </span>
+              </div>
+            )}
           </div>
           {/* ▲▲▲ CAPTCHA API MOUNT SLOT ▲▲▲ */}
         </div>
@@ -378,19 +499,19 @@ export default function GameScreen() {
                 <span className="gs-staticon gs-staticon-ok">
                   <i className="ph-fill ph-check-circle" />
                 </span>
-                맞힌 문제 <span className="gs-statval gs-statval-ok">{s.correct}</span>
+                맞힌 문제 <span className="gs-statval gs-statval-ok">{liveQs ? liveStats.correct : s.correct}</span>
               </div>
               <div className="gs-statrow">
                 <span className="gs-staticon gs-staticon-no">
                   <i className="ph-fill ph-x-circle" />
                 </span>
-                틀린 문제 <span className="gs-statval gs-statval-no">{s.wrong}</span>
+                틀린 문제 <span className="gs-statval gs-statval-no">{liveQs ? liveStats.wrong : s.wrong}</span>
               </div>
               <div className="gs-statrow">
                 <span className="gs-staticon gs-staticon-streak">
                   <i className="ph-fill ph-lightning" />
                 </span>
-                연속 정답 <span className="gs-statval gs-statval-streak">{s.streak}</span>
+                연속 정답 <span className="gs-statval gs-statval-streak">{liveQs ? liveStats.streak : s.streak}</span>
               </div>
             </div>
           </div>
@@ -421,12 +542,23 @@ export default function GameScreen() {
       <div className="gs-bottombar">
         <div className="gs-bottombar-inner">
           <div className="gs-status">
-            {s.key} · {s.current}/{s.total}문제 진행 중
+            {s.key} · {liveQ ? liveIdx + 1 : s.current}/{liveQs ? liveQs.length : s.total}문제 진행 중
           </div>
           <div className="gs-actions">
-            <button className="gs-confirm" onClick={finishSession}>
-              {isLast ? '결과 보기' : '다음 문제'} <i className="ph-fill ph-arrow-right" />
-            </button>
+            {liveQs ? (
+              <button
+                className={`gs-confirm${!liveResult ? ' gs-confirm--wait' : ''}`}
+                onClick={nextLive}
+                disabled={!liveResult}
+              >
+                {liveResult ? (liveLast ? '결과 보기' : '다음 문제') : '답을 골라주세요'}{' '}
+                <i className="ph-fill ph-arrow-right" />
+              </button>
+            ) : (
+              <button className="gs-confirm" onClick={finishSession}>
+                {isLast ? '결과 보기' : '다음 문제'} <i className="ph-fill ph-arrow-right" />
+              </button>
+            )}
           </div>
         </div>
       </div>

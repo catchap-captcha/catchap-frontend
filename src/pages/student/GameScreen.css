@@ -631,3 +631,98 @@
   .gs-card,.gs-mascotcard { transition: none; }
   .gs-card:hover,.gs-mascotcard:hover { transform: none; }
 }
+
+/* ===== 실전 문항 모드 (서버 채점 — 생활 안전 퀴즈) ===== */
+.gs-livetopic {
+  display: inline-block;
+  margin-left: 10px;
+  font-size: 12px;
+  font-weight: 800;
+  color: #FF6DA6;
+  background: #FFE3EF;
+  border-radius: 20px;
+  padding: 3px 10px;
+  vertical-align: middle;
+}
+.gs-live {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  padding: 26px 22px 20px;
+  box-sizing: border-box;
+}
+.gs-live-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+}
+.gs-live-opt {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 22px 14px 18px;
+  background: #fff;
+  border: 2.5px solid #F0E4D8;
+  border-radius: 18px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: transform 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease;
+}
+.gs-live-opt:hover:not(:disabled) {
+  transform: translateY(-3px);
+  border-color: #FFB4CE;
+  box-shadow: 0 10px 22px -14px rgba(255, 109, 166, 0.5);
+}
+.gs-live-opt:disabled { cursor: default; }
+.gs-live-opt--sel { border-color: #FF6DA6; }
+.gs-live-opt--answer {
+  border-color: #17B08C;
+  background: #F0FBF7;
+  box-shadow: 0 10px 22px -14px rgba(23, 176, 140, 0.5);
+}
+.gs-live-opt--wrong {
+  border-color: #FF5A6E;
+  background: #FFF5F6;
+  opacity: 0.9;
+}
+.gs-live-emoji { font-size: 44px; line-height: 1; }
+.gs-live-text {
+  font-size: 15.5px;
+  font-weight: 800;
+  color: #3A3226;
+  text-align: center;
+  line-height: 1.4;
+}
+.gs-live-mark {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 22px;
+}
+.gs-live-mark--ok { color: #17B08C; }
+.gs-live-mark--no { color: #FF5A6E; }
+.gs-live-feedback {
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 14.5px;
+  font-weight: 800;
+  border-radius: 14px;
+  padding: 13px 16px;
+  animation: gsFeedIn 0.25s ease;
+}
+@keyframes gsFeedIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gs-live-feedback { animation: none; }
+  .gs-live-opt, .gs-live-opt:hover:not(:disabled) { transition: none; transform: none; }
+}
+.gs-live-feedback--ok { background: #E1F5EC; color: #0E8A6D; }
+.gs-live-feedback--no { background: #FFEDEF; color: #D14559; }
+.gs-live-feedback i { font-size: 19px; }
+.gs-confirm--wait { opacity: 0.55; cursor: not-allowed; }
