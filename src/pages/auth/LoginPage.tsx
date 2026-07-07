@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { authApi } from '../../api/auth';
+import { parentApi } from '../../api/parents';
 import mascot from '../../assets/characters/catchap-logo.png';
 import InstitutionPicker, { type PickedInstitution } from '../../components/auth/InstitutionPicker';
 import { useAuth } from '../../hooks/useAuth';
@@ -127,6 +128,7 @@ export default function LoginPage() {
   const [orgDup, setOrgDup] = useState(false);
   const [orgCode, setOrgCode] = useState('');
   const [orgCodeStatus, setOrgCodeStatus] = useState<'idle' | 'empty' | 'valid' | 'invalid'>('idle');
+  const [inviteCode, setInviteCode] = useState(''); // 학부모 가입 시 자녀 초대코드(선택)
   const [loginError, setLoginError] = useState('');
   const [loginBad, setLoginBad] = useState(false);
   // 아이디+비밀번호가 여러 기관에서 일치할 때(409)만 후보 기관 버튼 노출
@@ -271,7 +273,20 @@ export default function LoginPage() {
       });
     }
     req
-      .then(() => setSignupDone(true))
+      .then(async () => {
+        // 학부모 가입 + 초대코드 입력 시: 로그인 후 초대코드로 자녀 즉시 연결 (선택)
+        const invite = inviteCode.trim();
+        if (role === 'parent' && invite) {
+          try {
+            await login({ email, password: pw });
+            await parentApi.linkInvite(invite);
+          } catch {
+            // 계정은 만들어졌으니 가입 완료로 처리 — 연결만 실패(로그인 후 앱에서 재시도 가능)
+            setFormError('가입은 됐지만 초대코드 연결에 실패했어요. 로그인 후 자녀 연결에서 다시 시도해 주세요.');
+          }
+        }
+        setSignupDone(true);
+      })
       .catch(() => setFormError('가입에 실패했어요. 입력 정보를 확인한 뒤 다시 시도해 주세요.'));
   };
 
@@ -648,12 +663,12 @@ export default function LoginPage() {
           <div className="lg-left-c4" />
         </div>
         <div className="lg-left-pin">
-          <div className="lg-brand">
+          <Link to={PATHS.HOME} className="lg-brand" title="메인으로">
             <div className="lg-brand-logo">
               <img src={mascot} alt="CatChap" />
             </div>
             <span className="lg-brand-name">CatChap</span>
-          </div>
+          </Link>
           <div className="lg-hero">
             <div className="lg-hero-mascot-row">
               <div className="lg-hero-mascot">
@@ -997,6 +1012,25 @@ export default function LoginPage() {
                         className="lg-input lg-input--code"
                       />
                     </div>
+
+                    <label className="lg-label">
+                      자녀 초대코드 <span style={{ color: '#A0A4B2', fontWeight: 600 }}>(선택)</span>
+                    </label>
+                    <div className="lg-field lg-mb7">
+                      <i className="ph-fill ph-identification-badge lg-field-icon" />
+                      <input
+                        type="text"
+                        placeholder="예) LINK-7QX3-9K2M"
+                        value={inviteCode}
+                        onChange={(e) =>
+                          setInviteCode(e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, '').slice(0, 14))
+                        }
+                        className="lg-input"
+                      />
+                    </div>
+                    <p style={{ margin: '0 0 15px', fontSize: '12.5px', color: '#8A8F9E', lineHeight: 1.5 }}>
+                      학교에서 받은 초대코드가 있으면 입력하세요. 가입과 동시에 자녀와 연결돼요. 없으면 비워두고 가입 후 연결해도 됩니다.
+                    </p>
                   </>
                 )}
 

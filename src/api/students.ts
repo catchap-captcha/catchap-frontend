@@ -29,8 +29,10 @@ export const studentApi = {
     client.put('/students/me/avatar', { avatar }).then((r) => r.data),
   updateProfile: (body: any) => client.patch('/students/me/profile', body).then((r) => r.data),
 
-  /** 반 랭킹 (폴링) */
+  /** 학년 랭킹 (폴링) */
   classRanking: () => client.get<any>('/students/me/class-ranking').then((r) => r.data),
+  /** 상장 목록 (학년 랭킹 상위 3위 + 개근상) — 개근 뱃지 자동 지급 포함 */
+  awards: () => client.get<any>('/students/me/awards').then((r) => r.data),
 
   /** 게임 세션: 결과 저장 + 결과 화면 blob */
   saveAttempt: (body: any) => client.post('/learning/attempts', body).then((r) => r.data),

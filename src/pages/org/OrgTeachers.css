@@ -879,3 +879,78 @@
 .ot-saveBtn {
   background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0) 55%);
 }
+
+/* ===== 학년부장(grade_head) 배지 · 임명 버튼 · 모달 · 토스트 ===== */
+.ot-ghBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: 8px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #B87400;
+  background: #FFF3D6;
+  border: 1px solid #FBE2A8;
+  padding: 2px 8px;
+  border-radius: 20px;
+  vertical-align: middle;
+}
+.ot-ghBadge i { font-size: 11px; color: #F0A400; }
+
+.ot-ghBtn {
+  border: 1px solid #F1DFAE;
+  background: #FFFCF3;
+  color: #C98A00;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ot-ghBtn i { font-size: 15px; }
+.ot-ghBtn:hover:not(:disabled) { background: #FFF3D6; color: #B87400; }
+.ot-ghBtn:disabled { opacity: 0.4; cursor: not-allowed; }
+.ot-ghBtnOn {
+  background: #FFF3D6;
+  border-color: #F0A400;
+  color: #F0A400;
+}
+
+.ot-ghModalIcon {
+  background: linear-gradient(135deg, #FFC24B, #F0A400) !important;
+}
+.ot-ghModalName {
+  font-size: 14px;
+  color: #4A4E5C;
+  margin: 0 0 18px;
+}
+.ot-ghModalName b { color: #1F2330; }
+
+.ot-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 32px;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #1F2330;
+  color: #fff;
+  font-weight: 700;
+  font-size: 13.5px;
+  padding: 12px 20px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.22);
+  z-index: 1200;
+  animation: otToastIn 0.25s ease;
+}
+.ot-toast i { color: #57D9A3; font-size: 16px; }
+@keyframes otToastIn {
+  from { opacity: 0; transform: translate(-50%, 8px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ot-toast { animation: none; }
+}

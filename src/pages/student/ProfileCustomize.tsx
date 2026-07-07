@@ -183,6 +183,7 @@ export default function ProfileCustomize() {
 
   const [myScore, setMyScore] = useState(2360);
   const [scoreKey, setScoreKey] = useState(0);
+  const [bonusMsg, setBonusMsg] = useState(''); // 상위 3위 일일 보너스 코인 안내
   const [others, setOthers] = useState<RankRow[]>(RANK_OTHERS);
   const [classSize, setClassSize] = useState(RANK_CLASS_SIZE);
   const apiLive = useRef(false);
@@ -308,6 +309,11 @@ export default function ProfileCustomize() {
             apiLive.current = true;
             setMyScore(score);
             setScoreKey((k) => k + 1);
+          }
+          // 상위 3위 보너스 코인 지급 안내 (하루 1회 서버 지급분)
+          if (typeof d.bonus_coins === 'number' && d.bonus_coins > 0) {
+            setBonusMsg(`오늘의 랭킹 보상! ${d.rank}위 +${d.bonus_coins}코인 🎉`);
+            window.setTimeout(() => setBonusMsg(''), 4000);
           }
         })
         .catch(() => {
@@ -567,7 +573,7 @@ export default function ProfileCustomize() {
                 <span className="pf-rankicon">
                   <i className="ph-fill ph-trophy" />
                 </span>
-                <span className="pf-ranktext">우리 반 랭킹</span>
+                <span className="pf-ranktext">우리 학년 랭킹</span>
               </div>
               <span className="pf-live">
                 <span className="pf-livedotwrap">
@@ -582,7 +588,7 @@ export default function ProfileCustomize() {
                   {rank}
                   <span className="pf-rankunit">위</span>
                 </div>
-                <div className="pf-ranksub">우리 반 {classSize}명 중</div>
+                <div className="pf-ranksub">우리 학년 {classSize}명 중</div>
               </div>
               <div className="pf-scorecol">
                 <div className="pf-scorehead">
@@ -810,6 +816,16 @@ export default function ProfileCustomize() {
             <i className="ph-bold ph-check" />
           </span>
           {toast}
+        </div>
+      )}
+
+      {/* 랭킹 상위 3위 보너스 코인 안내 */}
+      {bonusMsg && (
+        <div className="pf-toast" style={{ background: '#F0A400' }}>
+          <span className="pf-toastcheck">
+            <i className="ph-fill ph-coins" />
+          </span>
+          {bonusMsg}
         </div>
       )}
 

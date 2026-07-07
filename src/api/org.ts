@@ -35,6 +35,15 @@ export const orgApi = {
 
   /** 학급학생관리 화면 */
   classes: (orgId: string) => client.get<any>(`/orgs/${orgId}/classes`).then((r) => r.data),
+  /** 새 학급 생성 (교장=전 학년, 학년부장=담당 학년만) */
+  createClass: (orgId: string, name: string) =>
+    client.post<any>(`/orgs/${orgId}/classes`, { name }).then((r) => r.data),
+  /** 학급 해체 (학년말) — 배정 학생 있으면 409 */
+  dissolveClass: (orgId: string, classId: string) =>
+    client.delete<any>(`/orgs/${orgId}/classes/${classId}`).then((r) => r.data),
+  /** 기관 코드 재발급 (교장 전용) — 새 코드 + 만료 1년 연장 */
+  rotateCode: (orgId: string) =>
+    client.post<any>(`/orgs/${orgId}/rotate-code`).then((r) => r.data),
   roster: (orgId: string, params?: any) =>
     client.get<any>(`/orgs/${orgId}/roster`, { params }).then((r) => r.data),
 
@@ -71,9 +80,11 @@ export const orgApi = {
   securityStats: (orgId: string) =>
     client.get<any>(`/orgs/${orgId}/security-stats`).then((r) => r.data),
 
-  /** 학생 슬롯 N개 생성 + 1회용 가입코드 발급 (온보딩) */
-  registerStudents: (orgId: string, body: { count: number; class_label?: string; class_id?: string }) =>
-    client.post<any>(`/orgs/${orgId}/students/register`, body).then((r) => r.data),
+  /** 학생 슬롯 N개 생성 + 1회용 가입코드 발급 (온보딩). names=실명 목록(교사·기관 전용) */
+  registerStudents: (
+    orgId: string,
+    body: { count: number; class_label?: string; class_id?: string; names?: string[] },
+  ) => client.post<any>(`/orgs/${orgId}/students/register`, body).then((r) => r.data),
 
   /** 학생 1명 학부모 초대코드 발급 */
   issueInvite: (orgId: string, studentId: string) =>
@@ -92,4 +103,12 @@ export const orgApi = {
   /** 학생 반 배정/이동 */
   assignClass: (orgId: string, studentId: string, classLabel: string) =>
     client.patch<any>(`/orgs/${orgId}/students/${studentId}/class`, { class_label: classLabel }).then((r) => r.data),
+
+  /** 학년부장 관리 (교장 전용) — 임명/해임/목록 */
+  gradeHeads: (orgId: string) =>
+    client.get<any>(`/orgs/${orgId}/grade-heads`).then((r) => r.data),
+  appointGradeHead: (orgId: string, teacherId: string, grade: number) =>
+    client.post<any>(`/orgs/${orgId}/teachers/${teacherId}/grade-head`, { grade }).then((r) => r.data),
+  dismissGradeHead: (orgId: string, teacherId: string) =>
+    client.delete<any>(`/orgs/${orgId}/teachers/${teacherId}/grade-head`).then((r) => r.data),
 };

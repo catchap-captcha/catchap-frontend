@@ -133,6 +133,7 @@ export default function TeacherClass() {
   const [directory, setDirectory] = useState<DirEntry[]>(DIRECTORY);
   const [clsName, setClsName] = useState('1-2반');
   const [detail, setDetail] = useState<TcDetail | null>(null);
+  const [search, setSearch] = useState('');
 
   // 재조회 시 이전 선택을 이름으로 이어가기 위한 최신 목록 참조
   const studentsRef = useRef<TcStudent[]>(FALLBACK);
@@ -282,7 +283,8 @@ export default function TeacherClass() {
       setStudents((prev) => prev.map((x) => (x.id === id ? { ...x, name, age, status } : x)));
       setModal(null);
       teacherApi
-        .updateStudent(id, { name, age, status })
+        // 교사가 고치는 이름은 학교용 실명(real_name) — 학생 닉네임은 학생 소유라 건드리지 않음
+        .updateStudent(id, { real_name: name, age, status })
         .then(() => loadStudents())
         .catch(() => {
           // TODO(api): 실패 시 원본 로컬 수정 흐름 유지
@@ -303,7 +305,8 @@ export default function TeacherClass() {
     (filter === 'slow' && s.status === '학습 뜸함') ||
     (filter === 'help' && s.status === '도움 필요');
 
-  const filtered = students.filter(inFilter);
+  const kw = search.trim();
+  const filtered = students.filter((s) => inFilter(s) && (kw === '' || s.name.includes(kw) || s.code.includes(kw.toUpperCase())));
 
   const sel = students.find((s) => s.id === selId) ?? null;
   // API 상세가 현재 선택과 일치하면 사용 — 아니면(로딩/실패) 로컬 합성 fallback
@@ -352,7 +355,12 @@ export default function TeacherClass() {
             <div className="tc-headActions">
               <div className="tc-searchWrap">
                 <i className="ph-bold ph-magnifying-glass tc-searchIcon" />
-                <input placeholder="학생 이름 검색" className="tc-searchInput" />
+                <input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="학생 이름·코드 검색"
+                  className="tc-searchInput"
+                />
               </div>
               <button onClick={openAdd} className="tc-addBtn">
                 <i className="ph-fill ph-user-plus" />학생 추가

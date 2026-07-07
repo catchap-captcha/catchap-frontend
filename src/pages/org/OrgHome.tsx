@@ -4,6 +4,8 @@ import { Link } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
 import { useAuth } from '../../hooks/useAuth';
 import { orgApi } from '../../api/org';
+import { dateSuffix, downloadCSV } from '../../utils/download';
+import { tableToPdf } from '../../utils/pdf';
 import OrgLayout from '../../layouts/OrgLayout';
 import './OrgHome.css';
 
@@ -373,9 +375,28 @@ export default function OrgHome() {
             <button className={`oh-periodBtn${period === 'month' ? ' oh-on' : ''}`} onClick={() => setPeriod('month')}>월</button>
             <button className={`oh-periodBtn${period === 'year' ? ' oh-on' : ''}`} onClick={() => setPeriod('year')}>년</button>
           </div>
-          <button className="oh-exportBtn">
-            <i className="ph-fill ph-export" />리포트 내보내기
-          </button>
+          {(() => {
+            // 대시보드 KPI + 학급별 요약 (현재 기간 기준 — CSV/PDF 공용)
+            const exportRows = [
+              ['[요약 지표]', `기간: ${period === 'week' ? '주' : period === 'month' ? '월' : '년'}`],
+              ['지표', '값'],
+              ...kpis.map((k) => [k.label, `${k.value}${k.unit ?? ''}`]),
+              [],
+              ['[학급별 요약]'],
+              ['반', '담임', '학생 수', '정답률', '조작 실패', '위험'],
+              ...classRows.map((c) => [c.name, c.teacher, c.count, c.acc, c.fail, c.risk]),
+            ];
+            return (
+              <>
+                <button className="oh-exportBtn" onClick={() => downloadCSV(`기관리포트_${period}_${dateSuffix()}.csv`, exportRows)}>
+                  <i className="ph-fill ph-export" />CSV
+                </button>
+                <button className="oh-exportBtn" onClick={() => tableToPdf(`기관리포트_${period}_${dateSuffix()}.pdf`, '기관 요약 리포트', exportRows)}>
+                  <i className="ph-fill ph-file-pdf" />PDF
+                </button>
+              </>
+            );
+          })()}
         </div>
       </div>
 

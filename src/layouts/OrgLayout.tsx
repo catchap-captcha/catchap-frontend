@@ -15,6 +15,7 @@ import './OrgLayout.css';
 export type OrgMenuKey =
   | 'home'
   | 'classes'
+  | 'students'
   | 'teachers'
   | 'analytics'
   | 'api'
@@ -25,7 +26,8 @@ export type OrgSideWidget = 'pro' | 'semester' | 'insight' | 'compliance' | 'non
 
 const MENU: { key: OrgMenuKey; label: string; icon: string; to: string }[] = [
   { key: 'home', label: '기관 요약', icon: 'ph-fill ph-squares-four', to: PATHS.ORG_HOME },
-  { key: 'classes', label: '학급·학생', icon: 'ph-fill ph-users-three', to: PATHS.ORG_CLASSES },
+  { key: 'classes', label: '학급 현황', icon: 'ph-fill ph-users-three', to: PATHS.ORG_CLASSES },
+  { key: 'students', label: '학생 등록·코드', icon: 'ph-fill ph-identification-card', to: PATHS.ORG_STUDENTS },
   { key: 'teachers', label: '선생님 관리', icon: 'ph-fill ph-chalkboard-teacher', to: PATHS.ORG_TEACHERS },
   { key: 'analytics', label: '학습 분석', icon: 'ph-fill ph-chart-bar', to: PATHS.ORG_ANALYTICS },
   { key: 'api', label: 'API·사이트', icon: 'ph-fill ph-plugs-connected', to: PATHS.ORG_CAPTCHA_SETTINGS },
@@ -93,6 +95,19 @@ export default function OrgLayout({
   const orgName = orgNameOverride ?? (me?.organization_name || '햇살초등학교');
   const [sidebar, setSidebar] = useState<OlSidebarData | null>(null);
 
+  // 학년부장은 전교 집계(기관 요약·학습 분석)와 기관 전체 설정(API·AI·보안) 메뉴 숨김 — 담당 학년 학급/교사만
+  const isGradeHead = me?.role === 'grade_head';
+  const menuItems = isGradeHead
+    ? MENU.filter((m) => !['home', 'analytics', 'api', 'ai', 'security'].includes(m.key))
+    : MENU;
+  // 학년부장은 ORG_HOME 접근 불가 → 로고/링크는 학급·학생 화면으로
+  const homePath = isGradeHead ? PATHS.ORG_CLASSES : PATHS.ORG_HOME;
+  const roleLabel = isGradeHead
+    ? `학년부장${me?.managed_grade ? ` · ${me.managed_grade}학년 담당` : ''}`
+    : me?.role === 'ops'
+      ? '운영자'
+      : '기관 관리자(교장)';
+
   useEffect(() => {
     if (!orgId) return;
     let on = true;
@@ -122,26 +137,39 @@ export default function OrgLayout({
   return (
     <div className="ol-page">
       <aside className="ol-side">
-        <Link to={PATHS.ORG_HOME} className="ol-logo">
+        <Link to={homePath} className="ol-logo">
           <img src={mascot} alt="CatChap" className="ol-logoImg" />
           <div className="ol-logoText">
             <div className="ol-logoName">CatChap</div>
             <div className="ol-logoSub">기관 콘솔</div>
           </div>
         </Link>
-        <Link
-          to={PATHS.ORG_MYPAGE}
-          className={profileHighlight ? 'ol-profile ol-profileOn' : 'ol-profile'}
-        >
-          <span className="ol-profileIcon">
-            <i className="ph-fill ph-buildings" />
-          </span>
-          <div className="ol-profileText">
-            <div className="ol-profileName">{orgName}</div>
-            <div className="ol-profileRole">기관 관리자</div>
+        {isGradeHead ? (
+          // 학년부장: 기관 마이페이지(교장 전용) 링크 대신 비링크 카드
+          <div className="ol-profile">
+            <span className="ol-profileIcon">
+              <i className="ph-fill ph-user-gear" />
+            </span>
+            <div className="ol-profileText">
+              <div className="ol-profileName">{me?.name || orgName}</div>
+              <div className="ol-profileRole">{roleLabel}</div>
+            </div>
           </div>
-        </Link>
-        {MENU.map((m) => (
+        ) : (
+          <Link
+            to={PATHS.ORG_MYPAGE}
+            className={profileHighlight ? 'ol-profile ol-profileOn' : 'ol-profile'}
+          >
+            <span className="ol-profileIcon">
+              <i className="ph-fill ph-buildings" />
+            </span>
+            <div className="ol-profileText">
+              <div className="ol-profileName">{orgName}</div>
+              <div className="ol-profileRole">{roleLabel}</div>
+            </div>
+          </Link>
+        )}
+        {menuItems.map((m) => (
           <Link
             key={m.key}
             to={m.to}
@@ -158,11 +186,11 @@ export default function OrgLayout({
             </span>
             <div className="ol-contactTitle">관리자 문의</div>
           </div>
-          <div className="ol-contactDesc">도입·계약·정산 문의는 전담 매니저가 도와드려요.</div>
-          <a href="mailto:help@catchap.io" className="ol-contactBtn">
+          <div className="ol-contactDesc">계약·정산·기술 문의는 전담 매니저가 도와드려요.</div>
+          <Link to={PATHS.ORG_CONTACT} className="ol-contactBtn">
             <i className="ph-fill ph-chat-circle-text" />
             문의하기
-          </a>
+          </Link>
         </div>
         {w && (
           <div className={`ol-widget ${w.cls}`}>

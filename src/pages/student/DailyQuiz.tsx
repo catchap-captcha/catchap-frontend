@@ -265,7 +265,7 @@ export default function DailyQuiz() {
             return (
               <Link
                 key={q.subject}
-                to={`${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(q.subject)}`}
+                to={`${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(q.subject)}${done ? '&replay=1' : ''}`}
                 className={`dq-card${done ? ' dq-card-done' : ''}`}
                 style={{
                   background: `linear-gradient(160deg,${q.c1},${q.c2})`,
@@ -310,23 +310,41 @@ export default function DailyQuiz() {
               <h3 className="dq-streakhead-title">이번 주 연속 도전</h3>
             </div>
             <div className="dq-week">
-              {data.week.map((d) => (
-                <div key={d.label} className="dq-day">
-                  <div
-                    className={`dq-daydot ${
-                      d.done ? 'dq-daydot-done' : d.today ? 'dq-daydot-today' : 'dq-daydot-off'
-                    }`}
-                  >
-                    {d.done && <i className="ph-bold ph-check" />}
-                  </div>
-                  <span
-                    className="dq-daylabel"
-                    style={{ color: d.today ? '#FF5A4D' : d.done ? '#5A5248' : '#B0A79B' }}
-                  >
-                    {d.label}
-                  </span>
-                </div>
-              ))}
+              {(() => {
+                const todayIdx = data.week.findIndex((w) => w.today);
+                return data.week.map((d, i) => {
+                  // 일일 잠금 규칙: 미래 날짜는 미리 풀 수 없음(자물쇠), 지난 날은 다시 풀기(복습) 가능
+                  const isFuture = todayIdx >= 0 && i > todayIdx;
+                  const isPast = todayIdx >= 0 && i < todayIdx;
+                  const dot = (
+                    <div
+                      className={`dq-daydot ${
+                        d.done ? 'dq-daydot-done' : d.today ? 'dq-daydot-today' : 'dq-daydot-off'
+                      }`}
+                      title={isFuture ? '아직 열리지 않았어요 — 내일 만나요!' : isPast ? `${d.label}요일 문제 다시 풀기` : undefined}
+                    >
+                      {d.done ? <i className="ph-bold ph-check" /> : isFuture ? <i className="ph-fill ph-lock-simple" /> : null}
+                    </div>
+                  );
+                  return (
+                    <div key={d.label} className="dq-day">
+                      {isPast ? (
+                        <Link to={`${PATHS.STUDENT_GAME}?subject=국어&replay=1`} className="dq-dayreplay" title={`${d.label}요일 문제 다시 풀기 (복습 — 코인 없음)`}>
+                          {dot}
+                        </Link>
+                      ) : (
+                        dot
+                      )}
+                      <span
+                        className="dq-daylabel"
+                        style={{ color: d.today ? '#FF5A4D' : d.done ? '#5A5248' : '#B0A79B' }}
+                      >
+                        {d.label}
+                      </span>
+                    </div>
+                  );
+                });
+              })()}
             </div>
             <div className="dq-streaknote">
               <i className="ph-fill ph-sparkle" />

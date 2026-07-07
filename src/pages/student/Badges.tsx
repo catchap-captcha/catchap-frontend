@@ -3,6 +3,9 @@ import { Link } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
 import { useAuth } from '../../hooks/useAuth';
 import { studentApi } from '../../api/students';
+import { dateSuffix, downloadCanvasPng } from '../../utils/download';
+import { canvasToPdf } from '../../utils/pdf';
+import { drawCertificate } from '../../utils/certificate';
 import ScreenTimeReminder from '../../components/motion/ScreenTimeReminder';
 import mascot from '../../assets/characters/catchap-logo.png';
 import './Badges.css';
@@ -122,9 +125,28 @@ export default function Badges() {
   const [hero, setHero] = useState<HeroBadge>(FALLBACK_HERO);
   const [next, setNext] = useState<NextBadge>(FALLBACK_NEXT);
   const [level, setLevel] = useState<number>(7);
+  // 상장 (학년 랭킹 상위 3위 · 개근상) — 다운로드 가능
+  const [awards, setAwards] = useState<any[]>([]);
+  const [awardMeta, setAwardMeta] = useState<{ nickname: string; streak: number; target: number }>({
+    nickname: '',
+    streak: 0,
+    target: 30,
+  });
 
   useEffect(() => {
     let mounted = true;
+    studentApi
+      .awards()
+      .then((d: any) => {
+        if (!mounted || !d) return;
+        if (Array.isArray(d.awards)) setAwards(d.awards);
+        setAwardMeta({
+          nickname: d.nickname ?? '',
+          streak: Number(d.streak_days) || 0,
+          target: Number(d.attendance_target) || 30,
+        });
+      })
+      .catch(() => {});
     studentApi
       .badges()
       .then((d: any) => {
@@ -256,6 +278,73 @@ export default function Badges() {
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* 상장 — 학년 랭킹 상위 3위 · 개근상 (다운로드 가능) */}
+      <section className="bd-section">
+        <div className="bd-awards">
+          <div className="bd-awardshead">
+            <span className="bd-awardsicon"><i className="ph-fill ph-certificate" /></span>
+            <div>
+              <h3 className="bd-awardstitle">나의 상장</h3>
+              <p className="bd-awardssub">
+                학년 랭킹 1~3위와 {awardMeta.target}일 연속 학습 개근상을 받으면 상장을 내려받을 수 있어요.
+              </p>
+            </div>
+          </div>
+          {awards.length === 0 ? (
+            <div className="bd-awardsempty">
+              <i className="ph-duotone ph-trophy" />
+              <p>
+                아직 받은 상장이 없어요. 매일 오늘의 퀴즈를 완료하면 랭킹이 올라가요!
+                {awardMeta.streak > 0 && (
+                  <>
+                    <br />개근 도전 중: <b>{awardMeta.streak}일</b> / {awardMeta.target}일
+                  </>
+                )}
+              </p>
+            </div>
+          ) : (
+            <div className="bd-awardsgrid">
+              {awards.map((a: any) => (
+                <div key={a.title} className={`bd-award${a.type === 'attendance' ? ' bd-award--green' : ''}`}>
+                  <span className="bd-awardmedal">{a.type === 'rank' ? '🏆' : '🌟'}</span>
+                  <div className="bd-awardbody">
+                    <div className="bd-awardname">{a.title}</div>
+                    <div className="bd-awarddetail">{a.detail}</div>
+                  </div>
+                  {(() => {
+                    const makeCanvas = () =>
+                      drawCertificate({
+                        kind: a.type === 'rank' ? 'rank' : 'attendance',
+                        name: awardMeta.nickname || name,
+                        title: a.title,
+                        detail: a.detail,
+                        semester: a.semester ?? '',
+                      });
+                    return (
+                      <div className="bd-awardbtns">
+                        <button
+                          className="bd-awarddl"
+                          onClick={() => canvasToPdf(`상장_${a.title}_${dateSuffix()}.pdf`, makeCanvas())}
+                        >
+                          <i className="ph-fill ph-download-simple" />상장 받기 (PDF)
+                        </button>
+                        <button
+                          className="bd-awarddl bd-awarddl--ghost"
+                          title="이미지(PNG)로 저장"
+                          onClick={() => downloadCanvasPng(`상장_${a.title}_${dateSuffix()}.png`, makeCanvas())}
+                        >
+                          <i className="ph-fill ph-image" />
+                        </button>
+                      </div>
+                    );
+                  })()}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 

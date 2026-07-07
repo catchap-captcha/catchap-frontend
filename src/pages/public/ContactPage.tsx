@@ -192,23 +192,25 @@ export default function ContactPage() {
                 <span className="ct-faq-head-title">자주 묻는 질문</span>
               </div>
               <div className="ct-faq-list">
-                <Link to={PATHS.LOGIN} className="ct-faq-item">
+                <Link to={PATHS.SUPPORT} className="ct-faq-item">
                   <span className="ct-faq-icon ct-faq-icon--key"><i className="ph-fill ph-key" /></span>
                   <span className="ct-faq-q">기관 코드는 어디서 받나요?</span>
                   <i className="ph-bold ph-caret-right ct-faq-caret" />
                 </Link>
-                <Link to={PATHS.LOGIN} className="ct-faq-item">
+                <Link to={PATHS.SUPPORT} className="ct-faq-item">
                   <span className="ct-faq-icon ct-faq-icon--card"><i className="ph-fill ph-credit-card" /></span>
                   <span className="ct-faq-q">요금제와 결제는 어떻게 하나요?</span>
                   <i className="ph-bold ph-caret-right ct-faq-caret" />
                 </Link>
-                <Link to={PATHS.PRIVACY} className="ct-faq-item">
+                <Link to={PATHS.SUPPORT} className="ct-faq-item">
                   <span className="ct-faq-icon ct-faq-icon--shield"><i className="ph-fill ph-shield-check" /></span>
                   <span className="ct-faq-q">아이 정보는 안전하게 관리되나요?</span>
                   <i className="ph-bold ph-caret-right ct-faq-caret" />
                 </Link>
               </div>
-              <div className="ct-faq-foot">더 궁금한 점은 왼쪽 문의 폼으로 남겨주세요 🐾</div>
+              <Link to={PATHS.SUPPORT} className="ct-faq-more">
+                자주 묻는 질문 전체 보기 <i className="ph-bold ph-arrow-right" />
+              </Link>
             </div>
           </div>
         </div>

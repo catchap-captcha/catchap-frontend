@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react';
 import ParentLayout, { ParentBellLink } from '../../layouts/ParentLayout';
 import { parentApi } from '../../api/parents';
 import { useToast } from '../../hooks/useToast';
+import { dateSuffix, downloadCanvasPng } from '../../utils/download';
+import { canvasToPdf } from '../../utils/pdf';
+import { drawWeeklyReport } from '../../utils/reportImage';
 import './ParentReports.css';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -365,7 +368,24 @@ export default function ParentReports() {
       '.',
   );
 
-  const download = () => flash(`${cur.name} 리포트를 저장했어요 (PDF)`);
+  const download = (format: 'pdf' | 'png' = 'pdf') => {
+    // 실파일 저장: 리포트 화면 데이터를 그려 PDF/PNG로 다운로드
+    const pctNum = (v: string) => {
+      const m = /(\d+)/.exec(String(v));
+      return m ? Number(m[1]) : 0;
+    };
+    const canvas = drawWeeklyReport({
+      childName: cur.name,
+      periodLabel: `${subjLabel} 리포트 · ${grade} · ${percentile}`,
+      stats: kpis.map((k: any) => ({ label: k.label, value: k.value })),
+      strengths: strengths.map((s: any) => ({ label: s.name ?? s.label, pct: pctNum(s.pct) })),
+      weaknesses: weaknesses.map((s: any) => ({ label: s.name ?? s.label, pct: pctNum(s.pct) })),
+      recommends: recs.map((rc: any) => rc.text),
+    });
+    if (format === 'pdf') canvasToPdf(`${cur.name}_리포트_${dateSuffix()}.pdf`, canvas);
+    else downloadCanvasPng(`${cur.name}_리포트_${dateSuffix()}.png`, canvas);
+    flash(`${cur.name} 리포트 ${format === 'pdf' ? 'PDF' : '이미지'}를 저장했어요`);
+  };
 
   return (
     <ParentLayout className="prt-bg" bell={<ParentBellLink />}>
@@ -402,9 +422,13 @@ export default function ParentReports() {
                 </button>
               ))}
             </div>
-            <button onClick={download} className="prt-dl-btn">
+            <button onClick={() => download('pdf')} className="prt-dl-btn">
               <i className={toast ? 'ph-fill ph-check' : 'ph-fill ph-file-pdf'} />
               {toast ? '저장됨' : 'PDF로 저장'}
+            </button>
+            <button onClick={() => download('png')} className="prt-dl-btn" style={{ background: '#fff', color: '#FF5A4D', border: '1.5px solid #FFD9CC' }}>
+              <i className="ph-fill ph-image" />
+              이미지
             </button>
           </div>
         </div>

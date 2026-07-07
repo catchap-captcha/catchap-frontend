@@ -18,6 +18,8 @@ interface OtTeacher {
   years: number;
   status: 'active' | 'pending';
   avatarBg: string;
+  isGradeHead?: boolean;
+  managedGrade?: number | null;
 }
 
 const PALETTE = [
@@ -73,6 +75,8 @@ interface OtBlock {
 export default function OrgTeachers() {
   const { me } = useAuth();
   const orgId = me?.organization_id ?? null;
+  // 학년부장 임명/해제는 교장(org_admin)만. 학년부장 본인이 이 화면을 봐도 임명 버튼은 숨김.
+  const isPrincipal = me?.role === 'org_admin';
 
   const [teachers, setTeachers] = useState<OtTeacher[]>(FALLBACK_TEACHERS);
   const [filter, setFilter] = useState('all');
@@ -80,6 +84,64 @@ export default function OrgTeachers() {
   const [modal, setModal] = useState<OtModal | null>(null);
   const [block, setBlock] = useState<OtBlock | null>(null);
   const [seq, setSeq] = useState(100);
+  // 학년부장 임명 모달: 대상 교사 + 담당 학년 선택
+  const [ghModal, setGhModal] = useState<{ id: string; name: string; grade: number } | null>(null);
+  const [toast, setToast] = useState('');
+
+  const flashToast = (msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(''), 2400);
+  };
+
+  const appointGradeHead = () => {
+    if (!ghModal) return;
+    const { id, grade } = ghModal;
+    setGhModal(null);
+    if (!orgId) {
+      // 데모(로컬)에서도 화면 반영
+      setTeachers((ts) =>
+        ts.map((x) =>
+          x.id === id
+            ? { ...x, isGradeHead: true, managedGrade: grade }
+            : x.managedGrade === grade
+              ? { ...x, isGradeHead: false, managedGrade: null }
+              : x,
+        ),
+      );
+      flashToast(`${grade}학년 학년부장으로 임명했어요.`);
+      return;
+    }
+    orgApi
+      .appointGradeHead(orgId, id, grade)
+      .then(() => {
+        setTeachers((ts) =>
+          ts.map((x) =>
+            x.id === id
+              ? { ...x, isGradeHead: true, managedGrade: grade }
+              : x.managedGrade === grade
+                ? { ...x, isGradeHead: false, managedGrade: null }
+                : x,
+          ),
+        );
+        flashToast(`${grade}학년 학년부장으로 임명했어요.`);
+      })
+      .catch(() => flashToast('임명에 실패했어요. 다시 시도해 주세요.'));
+  };
+
+  const dismissGradeHead = (id: string) => {
+    if (!orgId) {
+      setTeachers((ts) => ts.map((x) => (x.id === id ? { ...x, isGradeHead: false, managedGrade: null } : x)));
+      flashToast('학년부장을 해제했어요.');
+      return;
+    }
+    orgApi
+      .dismissGradeHead(orgId, id)
+      .then(() => {
+        setTeachers((ts) => ts.map((x) => (x.id === id ? { ...x, isGradeHead: false, managedGrade: null } : x)));
+        flashToast('학년부장을 해제했어요.');
+      })
+      .catch(() => flashToast('해제에 실패했어요. 다시 시도해 주세요.'));
+  };
 
   useEffect(() => {
     if (!orgId) return;
@@ -102,6 +164,8 @@ export default function OrgTeachers() {
             years: t.years ?? t.career_years ?? 0,
             status: t.status === 'pending' ? 'pending' : 'active',
             avatarBg: t.avatarBg ?? PALETTE[i % PALETTE.length],
+            isGradeHead: !!t.is_grade_head,
+            managedGrade: t.managed_grade ?? null,
           })),
         );
       })
@@ -166,35 +230,43 @@ export default function OrgTeachers() {
     if (!m) return;
     const name = (m.name || '').trim();
     if (!name) return;
+    const email = (m.email || '').trim();
+    // 백엔드 스키마에 맞춘 필드명: class_name / teacher_code, email 은 유효할 때만 전송(EmailStr)
+    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+    const apiBody: any = { name, class_name: m.cls, role: m.role };
+    if (email && email.includes('@')) apiBody.email = email;
     if (m.mode === 'add') {
       const code = (m.code || '').trim();
       if (!code) return;
-      const body = { name, cls: m.cls, role: m.role, email: (m.email || '').trim() || '미입력', code };
+      apiBody.teacher_code = code;
       const pal = PALETTE[teachers.length % PALETTE.length];
       const localId = `n${seq}`;
-      setTeachers((ts) => [...ts, { id: localId, ...body, years: 0, status: 'pending', avatarBg: pal }]);
+      setTeachers((ts) => [...ts, { id: localId, name, cls: m.cls, role: m.role, email: email || '미입력', code, years: 0, status: 'pending', avatarBg: pal }]);
       setSeq((s) => s + 1);
       setModal(null);
       if (orgId) {
         orgApi
-          .addTeacher(orgId, body)
+          .addTeacher(orgId, apiBody)
           /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
           .then((res: any) => {
-            if (res?.id) setTeachers((ts) => ts.map((x) => (x.id === localId ? { ...x, id: String(res.id) } : x)));
+            const nid = res?.teacher?.id ?? res?.id;
+            if (nid) setTeachers((ts) => ts.map((x) => (x.id === localId ? { ...x, id: String(nid) } : x)));
+            else throw new Error('no id');
           })
           .catch(() => {
-            // TODO(api): 실패 시 로컬 추가 유지 (원본 동작)
+            // 서버에 저장 안 됐으면 낙관적 행 제거 + 실제 오류 노출 (거짓 성공 금지)
+            setTeachers((ts) => ts.filter((x) => x.id !== localId));
+            flashToast('선생님 추가에 실패했어요. 교사 코드·이메일을 확인해 주세요.');
           });
       }
     } else {
-      const body = { name, cls: m.cls, role: m.role, email: (m.email || '').trim() };
       setTeachers((ts) =>
-        ts.map((x) => (x.id === m.id ? { ...x, name, cls: m.cls, role: m.role, email: body.email || x.email } : x)),
+        ts.map((x) => (x.id === m.id ? { ...x, name, cls: m.cls, role: m.role, email: email || x.email } : x)),
       );
       setModal(null);
       if (orgId && m.id) {
-        orgApi.updateTeacher(orgId, m.id, body).catch(() => {
-          // TODO(api): 실패 시 로컬 수정 유지 (원본 동작)
+        orgApi.updateTeacher(orgId, m.id, apiBody).catch(() => {
+          flashToast('수정 저장에 실패했어요. 다시 시도해 주세요.');
         });
       }
     }
@@ -281,8 +353,15 @@ export default function OrgTeachers() {
                   <div className="ot-teacher">
                     <span className="ot-avatar" style={{ background: t.avatarBg }}>{[...t.name][0] || '샘'}</span>
                     <div>
-                      <div className="ot-teacherName">{t.name} 선생님</div>
-                      <div className="ot-teacherYears">경력 {t.years}년</div>
+                      <div className="ot-teacherName">
+                        {t.name} 선생님
+                        {t.isGradeHead && (
+                          <span className="ot-ghBadge" title={`${t.managedGrade}학년 학년부장`}>
+                            <i className="ph-fill ph-star" />
+                            {t.managedGrade ? `${t.managedGrade}학년 ` : ''}학년부장
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </td>
@@ -310,6 +389,27 @@ export default function OrgTeachers() {
                 </td>
                 <td>
                   <div className="ot-actions">
+                    {isPrincipal &&
+                      (t.isGradeHead ? (
+                        <button
+                          className="ot-ghBtn ot-ghBtnOn"
+                          title="학년부장 해제"
+                          onClick={() => dismissGradeHead(t.id)}
+                        >
+                          <i className="ph-fill ph-star" />
+                        </button>
+                      ) : (
+                        <button
+                          className="ot-ghBtn"
+                          title="학년부장 임명"
+                          disabled={t.status !== 'active'}
+                          onClick={() =>
+                            setGhModal({ id: t.id, name: t.name, grade: parseCls(t.cls).grade })
+                          }
+                        >
+                          <i className="ph-bold ph-star" />
+                        </button>
+                      ))}
                     <button className="ot-editBtn" title="수정" onClick={() => openEdit(t.id)}>
                       <i className="ph-fill ph-pencil-simple" />
                     </button>
@@ -467,6 +567,61 @@ export default function OrgTeachers() {
               <button className="ot-blockOk" onClick={() => setBlock(null)}>알겠어요</button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* 학년부장 임명 모달 (교장 전용) */}
+      {ghModal && (
+        <div className="ot-overlay" onClick={() => setGhModal(null)}>
+          <div className="ot-modal ot-ghModal" onClick={(e) => e.stopPropagation()}>
+            <div className="ot-modalHead">
+              <div className="ot-modalHeadIcon ot-ghModalIcon">
+                <i className="ph-fill ph-star" />
+              </div>
+              <div className="ot-modalHeadText">
+                <div className="ot-modalTitle">학년부장 임명</div>
+                <div className="ot-modalSub">담당 학년의 반·선생님 배정을 맡깁니다</div>
+              </div>
+              <button className="ot-modalClose" onClick={() => setGhModal(null)}>
+                <i className="ph-bold ph-x" />
+              </button>
+            </div>
+            <div className="ot-modalBody">
+              <p className="ot-ghModalName">
+                <b>{ghModal.name} 선생님</b>을 학년부장으로 임명해요.
+              </p>
+              <label className="ot-label">담당 학년</label>
+              <div className="ot-selectWrap">
+                <select
+                  className="ot-select"
+                  value={String(ghModal.grade)}
+                  onChange={(e) => setGhModal((g) => (g ? { ...g, grade: +e.target.value } : g))}
+                >
+                  {GRADES.map((g) => (
+                    <option key={g} value={String(g)}>{g}학년</option>
+                  ))}
+                </select>
+                <i className="ph-bold ph-caret-down ot-selectCaret" />
+              </div>
+              <div className="ot-blockInfo">
+                <i className="ph-fill ph-info" />
+                <span>학년부장은 담당 학년의 학급·학생·선생님 배정만 관리할 수 있어요. 한 학년에 한 명이며, 이미 있으면 교체됩니다.</span>
+              </div>
+              <div className="ot-modalBtns">
+                <button className="ot-cancelBtn" onClick={() => setGhModal(null)}>취소</button>
+                <button className="ot-saveBtn" onClick={appointGradeHead}>
+                  <i className="ph-fill ph-check" />임명하기
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {toast && (
+        <div className="ot-toast">
+          <i className="ph-fill ph-check-circle" />
+          {toast}
         </div>
       )}
     </OrgLayout>

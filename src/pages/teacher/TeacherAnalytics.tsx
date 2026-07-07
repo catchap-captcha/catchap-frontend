@@ -4,6 +4,8 @@ import CountUp from '../../components/motion/CountUp';
 import { Link } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
 import { teacherApi } from '../../api/teacher';
+import { dateSuffix, downloadCSV } from '../../utils/download';
+import { tableToPdf } from '../../utils/pdf';
 import TeacherLayout from '../../layouts/TeacherLayout';
 import './TeacherAnalytics.css';
 
@@ -372,10 +374,34 @@ export default function TeacherAnalytics() {
               <button onClick={() => setPeriod('month')} className={`ta-segBtn${period === 'month' ? ' ta-on' : ''}`}>월</button>
               <button onClick={() => setPeriod('term')} className={`ta-segBtn${period === 'term' ? ' ta-on' : ''}`}>학기</button>
             </div>
-            {/* 원본대로 동작 없음 (exportReport: () => {}) */}
-            <button className="ta-exportBtn">
-              <i className="ph-fill ph-export" />리포트 내보내기
-            </button>
+            {(() => {
+              // 학급 학습분석 — KPI + 과목별 + 학생별 (현재 기간, CSV/PDF 공용)
+              const exportRows = [
+                ['[요약]', className, `기간: ${period === 'week' ? '주' : period === 'month' ? '월' : '학기'}`],
+                ['반 평균 정답률(%)', d.kAcc],
+                ['학습 학생', d.kActive],
+                ['푼 문제', d.kSolved],
+                ['도움 필요', d.kHelp],
+                [],
+                ['[과목별 정답률]'],
+                ['과목', '정답률(%)', '증감(%p)'],
+                ...subjects.map((s: any) => [s.name, s.pct, s.delta]),
+                [],
+                ['[학생별]'],
+                ['이름', '정답률(%)', '상태'],
+                ...studentRows.map((st: any) => [st.name, st.acc ?? st.pct ?? '', st.status ?? st.state ?? '']),
+              ];
+              return (
+                <>
+                  <button className="ta-exportBtn" onClick={() => downloadCSV(`${className}_학습분석_${period}_${dateSuffix()}.csv`, exportRows)}>
+                    <i className="ph-fill ph-export" />CSV
+                  </button>
+                  <button className="ta-exportBtn" onClick={() => tableToPdf(`${className}_학습분석_${period}_${dateSuffix()}.pdf`, `${className} 학습 분석`, exportRows)}>
+                    <i className="ph-fill ph-file-pdf" />PDF
+                  </button>
+                </>
+              );
+            })()}
           </div>
         </div>
 

@@ -1,4 +1,4 @@
-export type Role = 'student' | 'parent' | 'teacher' | 'org_admin' | 'ops';
+export type Role = 'student' | 'parent' | 'teacher' | 'grade_head' | 'org_admin' | 'ops';
 
 export interface TokenPair {
   access_token: string;
@@ -16,6 +16,8 @@ export interface MeResponse {
   organization_name: string | null;
   /** 학생 비번 초기화 후 true → 첫 로그인 시 새 비번 설정 강제 */
   must_change_password?: boolean;
+  /** 학년부장(grade_head)의 담당 학년 — 그 외 역할은 null */
+  managed_grade?: number | null;
   /** 학생일 때만: 학생 코드(CAT-xxxx), 별명, 반 정보 */
   student?: {
     student_login_id: string;

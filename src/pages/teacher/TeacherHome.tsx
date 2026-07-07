@@ -5,6 +5,8 @@ import { Link } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
 import { useAuth } from '../../hooks/useAuth';
 import { teacherApi } from '../../api/teacher';
+import { dateSuffix, downloadCSV } from '../../utils/download';
+import { tableToPdf } from '../../utils/pdf';
 import TeacherLayout from '../../layouts/TeacherLayout';
 import './TeacherHome.css';
 
@@ -290,10 +292,41 @@ export default function TeacherHome() {
             </p>
           </div>
           <div className="th-header-actions">
-            <button className="th-export-btn">
-              <i className="ph-fill ph-export" />
-              리포트 내보내기
-            </button>
+            {(() => {
+              // 학급 요약 리포트 — 오늘 현황 + 요일별 + 놀이별 + 관심 학생 (CSV/PDF 공용)
+              const exportRows = [
+                ['[오늘 현황]'],
+                ['전체 학생', data.studentsTotal],
+                ['오늘 학습 완료', data.doneToday],
+                ['평균 정답률(%)', data.avgAcc],
+                ['관심 필요 학생', data.attentionCount],
+                [],
+                ['[요일별 학습 인원]'],
+                ['요일', '인원'],
+                ...data.barData.map((b) => [b.day, b.n]),
+                [],
+                ['[놀이별 정답률]'],
+                ['놀이', '정답률'],
+                ...data.gameBars.map((g) => [g.label, g.pct]),
+                [],
+                ['[관심이 필요한 학생]'],
+                ['이름', '메모'],
+                ...data.attention.map((a) => [a.name, a.note]),
+              ];
+              const cls = data.classes[0] ?? '우리반';
+              return (
+                <>
+                  <button className="th-export-btn" onClick={() => downloadCSV(`${cls}_학급리포트_${dateSuffix()}.csv`, exportRows)}>
+                    <i className="ph-fill ph-export" />
+                    CSV
+                  </button>
+                  <button className="th-export-btn" onClick={() => tableToPdf(`${cls}_학급리포트_${dateSuffix()}.pdf`, `${cls} 학급 리포트`, exportRows)}>
+                    <i className="ph-fill ph-file-pdf" />
+                    PDF
+                  </button>
+                </>
+              );
+            })()}
           </div>
         </div>
 

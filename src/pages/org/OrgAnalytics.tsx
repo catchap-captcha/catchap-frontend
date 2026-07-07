@@ -4,6 +4,8 @@ import { Link } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
 import { useAuth } from '../../hooks/useAuth';
 import { orgApi } from '../../api/org';
+import { dateSuffix, downloadCSV } from '../../utils/download';
+import { tableToPdf } from '../../utils/pdf';
 import OrgLayout from '../../layouts/OrgLayout';
 import './OrgAnalytics.css';
 
@@ -324,9 +326,30 @@ export default function OrgAnalytics() {
             <button className={`oa-periodBtn${period === 'month' ? ' oa-on' : ''}`} onClick={() => setPeriod('month')}>월</button>
             <button className={`oa-periodBtn${period === 'year' ? ' oa-on' : ''}`} onClick={() => setPeriod('year')}>년</button>
           </div>
-          <button className="oa-exportBtn">
-            <i className="ph-fill ph-export" />내보내기
-          </button>
+          {(() => {
+            // 학습 분석 — 요약 KPI + 과목별 정답률 (현재 기간, CSV/PDF 공용)
+            const exportRows = [
+              ['[요약]', `기간: ${period === 'week' ? '주' : period === 'month' ? '월' : '년'}`],
+              ['평균 정답률(%)', d.kAcc],
+              ['학습 학생', d.kActive],
+              ['푼 문제', d.kSolved],
+              ['도움 필요 학생', d.kHelp],
+              [],
+              ['[과목별 정답률]'],
+              ['과목', '정답률(%)', '증감(%p)', '푼 문제'],
+              ...subjects.map((s) => [s.name, s.pct, s.delta, s.total]),
+            ];
+            return (
+              <>
+                <button className="oa-exportBtn" onClick={() => downloadCSV(`학습분석_${period}_${dateSuffix()}.csv`, exportRows)}>
+                  <i className="ph-fill ph-export" />CSV
+                </button>
+                <button className="oa-exportBtn" onClick={() => tableToPdf(`학습분석_${period}_${dateSuffix()}.pdf`, '학습 분석', exportRows)}>
+                  <i className="ph-fill ph-file-pdf" />PDF
+                </button>
+              </>
+            );
+          })()}
         </div>
       </div>
 

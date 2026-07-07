@@ -5,6 +5,7 @@ import StudentLayout from '../../layouts/StudentLayout';
 import { PATHS } from '../../routes/paths';
 import { useAuth } from '../../hooks/useAuth';
 import { studentApi } from '../../api/students';
+import { notificationApi } from '../../api/notifications';
 import mascot from '../../assets/characters/catchap-logo.png';
 import './StudentHome.css';
 
@@ -263,6 +264,8 @@ export default function StudentHome() {
   const [bubbleKey, setBubbleKey] = useState(0);
   const [pops, setPops] = useState<Pop[]>([]);
   const lastCheer = useRef(-1);
+  // 학부모 연동 알림 팝업 (미읽음 parent_link 알림이 있으면 1회 노출)
+  const [linkNotice, setLinkNotice] = useState<{ id: string; title: string; message: string } | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -275,10 +278,24 @@ export default function StudentHome() {
       .catch(() => {
         // TODO(api): 백엔드 미구현/실패 시 FALLBACK 유지
       });
+    // 보호자 연동 알림: 안 읽은 parent_link 알림이 있으면 팝업으로 안내
+    notificationApi
+      .list()
+      .then((rows) => {
+        if (!mounted || !Array.isArray(rows)) return;
+        const link = rows.find((n: any) => n.type === 'parent_link' && !n.read_at);
+        if (link) setLinkNotice({ id: link.id, title: link.title, message: link.message });
+      })
+      .catch(() => {});
     return () => {
       mounted = false;
     };
   }, []);
+
+  const closeLinkNotice = () => {
+    if (linkNotice) notificationApi.markRead(linkNotice.id).catch(() => {});
+    setLinkNotice(null);
+  };
 
   /* 원본 componentDidMount: #today 해시 + 스크롤 위치로 NAV `홈` 활성 전환 */
   useEffect(() => {
@@ -571,10 +588,10 @@ export default function StudentHome() {
                   <span className="sh-rank-chip">
                     <i className="ph-fill ph-trophy" />
                   </span>
-                  <h3 className="sh-rank-title">우리 반에서 나의 위치</h3>
+                  <h3 className="sh-rank-title">우리 학년에서 나의 위치</h3>
                 </div>
                 <p className="sh-rank-text">
-                  우리 반 <span className="sh-rank-pct">{data.rankLabel}</span> 구간이에요.
+                  우리 학년 <span className="sh-rank-pct">{data.rankLabel}</span> 구간이에요.
                   <br />
                   친구 이름·점수는 보이지 않아요 🙂
                 </p>
@@ -637,6 +654,22 @@ export default function StudentHome() {
           보호됩니다.
         </p>
       </footer>
+
+      {/* 보호자 연동 알림 팝업 — 학교 발급 초대코드로 연결됐을 때 1회 안내 */}
+      {linkNotice && (
+        <div className="sh-linkpop-bg" onClick={closeLinkNotice}>
+          <div className="sh-linkpop" onClick={(e) => e.stopPropagation()}>
+            <div className="sh-linkpop-icon">
+              <i className="ph-fill ph-link" />
+            </div>
+            <h3 className="sh-linkpop-title">{linkNotice.title}</h3>
+            <p className="sh-linkpop-msg">{linkNotice.message}</p>
+            <button className="sh-linkpop-ok" onClick={closeLinkNotice}>
+              <i className="ph-fill ph-check-circle" />확인했어요
+            </button>
+          </div>
+        </div>
+      )}
     </StudentLayout>
   );
 }

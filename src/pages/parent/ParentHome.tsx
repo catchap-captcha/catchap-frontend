@@ -15,6 +15,9 @@ import { PATHS } from '../../routes/paths';
 import { parentApi } from '../../api/parents';
 import { notificationApi, type Notification } from '../../api/notifications';
 import { reportApi } from '../../api/misc';
+import { dateSuffix, downloadCanvasPng } from '../../utils/download';
+import { canvasToPdf } from '../../utils/pdf';
+import { drawWeeklyReport } from '../../utils/reportImage';
 import ParentLayout from '../../layouts/ParentLayout';
 import './ParentHome.css';
 
@@ -560,59 +563,88 @@ export default function ParentHome() {
     toastTimerRef.current = window.setTimeout(() => setToast(null), 5200);
   };
 
-  const downloadReport = () => {
-    reportApi
-      .list()
-      .then((reports: any) => {
-        const arr = Array.isArray(reports) ? reports : reports?.items;
-        const latest = Array.isArray(arr) ? arr[0] : null;
-        if (!latest || latest.id == null) return Promise.reject(new Error('no-report'));
-        return reportApi.requestDownload(String(latest.id));
-      })
-      .then(() =>
-        flashToast({
-          id: 'dl-ok-' + Date.now(), icon: 'ph-fill ph-check-circle', color: '#17B08C', bg: '#E1F5EC',
-          title: '주간 리포트 다운로드를 시작했어요', preview: 'CAPTCHA·OTP 확인 후 PDF가 저장돼요.', time: '방금', unread: false,
-        }),
-      )
-      .catch(() => {
-        // TODO(api): 리포트 API 실패 — 토스트로 안내
-        flashToast({
-          id: 'dl-fail-' + Date.now(), icon: 'ph-fill ph-warning', color: '#FF5A6E', bg: '#FFE3E9',
-          title: '리포트 다운로드에 실패했어요', preview: '잠시 후 다시 시도해 주세요.', time: '방금', unread: false,
-        });
+  const downloadReport = (format: 'pdf' | 'png' = 'pdf') => {
+    try {
+      // 화면 실데이터로 주간 리포트를 그려 즉시 파일 저장 (기본 PDF, 이미지도 선택 가능)
+      const canvas = drawWeeklyReport({
+        childName,
+        periodLabel,
+        stats: stats.map((s) => ({ label: s.label, value: s.value, unit: s.unit, badge: s.badge })),
+        strengths: strengths.map((b) => ({ label: b.label, pct: b.pct })),
+        weaknesses: weaknesses.map((b) => ({ label: b.label, pct: b.pct })),
+        recommends: recommends.map((r) => r.text),
       });
+      if (format === 'pdf') canvasToPdf(`${childName}_주간리포트_${dateSuffix()}.pdf`, canvas);
+      else downloadCanvasPng(`${childName}_주간리포트_${dateSuffix()}.png`, canvas);
+      flashToast({
+        id: 'dl-ok-' + Date.now(), icon: 'ph-fill ph-check-circle', color: '#17B08C', bg: '#E1F5EC',
+        title: `주간 리포트 ${format === 'pdf' ? 'PDF' : '이미지'}를 저장했어요`, preview: '다운로드 폴더에서 확인해 주세요.', time: '방금', unread: false,
+      });
+      // 다운로드 감사 기록 (백엔드 audit) — 실패해도 파일 저장엔 영향 없음
+      reportApi
+        .list()
+        .then((reports: any) => {
+          const arr = Array.isArray(reports) ? reports : reports?.items;
+          const latest = Array.isArray(arr) ? arr[0] : null;
+          if (latest?.id != null) reportApi.requestDownload(String(latest.id)).catch(() => {});
+        })
+        .catch(() => {});
+    } catch {
+      flashToast({
+        id: 'dl-fail-' + Date.now(), icon: 'ph-fill ph-warning', color: '#FF5A6E', bg: '#FFE3E9',
+        title: '리포트 저장에 실패했어요', preview: '잠시 후 다시 시도해 주세요.', time: '방금', unread: false,
+      });
+    }
   };
 
   /* ----- 자녀 연결 모달 ----- */
   const [linkOpen, setLinkOpen] = useState(false);
   const [linked, setLinked] = useState(false);
   const [code, setCode] = useState('');
+  const [linkError, setLinkError] = useState('');
 
   const openLink = () => {
     setLinkOpen(true);
     setLinked(false);
     setCode('');
+    setLinkError('');
   };
   const closeLink = () => setLinkOpen(false);
-  const onCodeChange = (e: ChangeEvent<HTMLInputElement>) =>
-    setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, '').slice(0, 10));
+  const onCodeChange = (e: ChangeEvent<HTMLInputElement>) => {
+    // 초대코드 형식 LINK-XXXX-XXXX (최대 14자)
+    setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, '').slice(0, 14));
+    setLinkError('');
+  };
   const confirmLink = () => {
-    setLinked(true); // 원본대로 즉시 성공 상태 전환 유지
+    const c = code.trim();
+    if (!c) return;
+    setLinkError('');
+    // 성공을 미리 위장하지 않는다 — 서버가 실제로 연결한 뒤에만 성공 화면 전환
     parentApi
-      .linkRequest(code)
-      .then(() =>
+      .linkInvite(c)
+      .then(() => {
+        setLinked(true);
         parentApi
           .children()
           .then((list) => {
             if (Array.isArray(list) && list.length > 0) setChildren(list);
           })
-          .catch(() => {
-            // TODO(api): 스위처 갱신 실패 무시
-          }),
-      )
-      .catch(() => {
-        // TODO(api): 연결 API 실패 — 원본 UX(성공 화면 전환)는 유지
+          .catch(() => {});
+      })
+      /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+      .catch((err: any) => {
+        const st = err?.response?.status;
+        setLinkError(
+          st === 404
+            ? '초대코드가 올바르지 않아요. 다시 확인해 주세요.'
+            : st === 410
+              ? '만료되었거나 이미 다 사용된 초대코드예요.'
+              : st === 409
+                ? '이미 연결된 자녀예요.'
+                : st === 429
+                  ? '시도가 너무 많아요. 잠시 후 다시 시도해 주세요.'
+                  : '연결에 실패했어요. 초대코드를 다시 확인해 주세요.',
+        );
       });
   };
 
@@ -826,7 +858,14 @@ export default function ParentHome() {
             <div className="ph-reportShield">
               <i className="ph-fill ph-shield-check" />다운로드 시 CAPTCHA + OTP 확인
             </div>
-            <button onClick={downloadReport} className="ph-reportBtn">주간 리포트 다운로드</button>
+            <button onClick={() => downloadReport('pdf')} className="ph-reportBtn">주간 리포트 다운로드 (PDF)</button>
+            <button
+              onClick={() => downloadReport('png')}
+              className="ph-reportBtn"
+              style={{ marginTop: 8, background: '#fff', color: '#FF5A4D', border: '1.5px solid #FFD9CC' }}
+            >
+              이미지(PNG)로 저장
+            </button>
           </div>
         </div>
 
@@ -843,7 +882,7 @@ export default function ParentHome() {
               </div>
               <div className="ph-modalHeadText">
                 <div className="ph-modalHeadTitle">자녀 연결</div>
-                <div className="ph-modalHeadSub">학생 코드로 자녀 계정을 연결해요</div>
+                <div className="ph-modalHeadSub">학교 발급 초대코드로 자녀 계정을 연결해요</div>
               </div>
               <button onClick={closeLink} className="ph-modalClose">
                 <i className="ph-bold ph-x" />
@@ -857,26 +896,33 @@ export default function ParentHome() {
                     <i className="ph-fill ph-student" />
                   </div>
                 </div>
-                <h3 className="ph-modalTitle">자녀의 학생 코드를 입력해 주세요</h3>
+                <h3 className="ph-modalTitle">학교에서 받은 초대코드를 입력해 주세요</h3>
                 <p className="ph-modalDesc">
-                  학생 코드는 자녀의 앱 &lsquo;나의 기록 &rsaquo; 설정&rsquo;<br />또는 소속 기관에서 확인할 수 있어요.
+                  초대코드는 자녀가 다니는 <b>학교(기관)에서 발급</b>해요.<br />담임 선생님이나 기관에 요청하면 받을 수 있어요.
                 </p>
 
-                <label className="ph-modalLabel">학생 코드</label>
+                <label className="ph-modalLabel">초대코드</label>
                 <div className="ph-modalInputWrap">
                   <i className="ph-fill ph-identification-badge ph-modalInputIcon" />
                   <input
                     type="text"
-                    placeholder="예) CAT-4823"
+                    placeholder="예) LINK-7QX3-9K2M"
                     value={code}
                     onChange={onCodeChange}
                     className="ph-modalInput"
                   />
                 </div>
-                <div className="ph-modalHint">
-                  <i className="ph-fill ph-lightning" />
-                  <span className="ph-modalHintText">학생 코드를 입력하면 자녀 계정이 바로 연동돼요.</span>
-                </div>
+                {linkError ? (
+                  <div className="ph-modalHint" style={{ color: '#E0475E' }}>
+                    <i className="ph-fill ph-warning-circle" />
+                    <span className="ph-modalHintText">{linkError}</span>
+                  </div>
+                ) : (
+                  <div className="ph-modalHint">
+                    <i className="ph-fill ph-shield-check" />
+                    <span className="ph-modalHintText">초대코드는 1회용이며 유효기간이 있어요. 안전하게 연결돼요.</span>
+                  </div>
+                )}
 
                 <button onClick={confirmLink} className="ph-modalConfirm">
                   <i className="ph-fill ph-link" />연결하기

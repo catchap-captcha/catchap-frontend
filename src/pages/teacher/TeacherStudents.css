@@ -275,6 +275,21 @@
   color: #fff;
 }
 
+.ts-student-info {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 1px;
+  line-height: 1.25;
+}
+
+/* 반배정용 학생코드 (이름 아래 회색 소문) */
+.ts-student-code {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #a79c90;
+  letter-spacing: 0.2px;
+}
+
 .ts-acc {
   font-weight: 800;
 }

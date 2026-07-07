@@ -59,6 +59,7 @@ const AiModels = lazy(() => import('../pages/org/AiModels'));
 const SecurityPolicy = lazy(() => import('../pages/org/SecurityPolicy'));
 const OrgMyPage = lazy(() => import('../pages/org/OrgMyPage'));
 const OrgStudents = lazy(() => import('../pages/org/OrgStudents'));
+const OrgContact = lazy(() => import('../pages/org/OrgContact'));
 
 // 운영자
 const OpsLogin = lazy(() => import('../pages/ops/OpsLogin'));
@@ -115,7 +116,7 @@ export default function AppRoutes() {
         </Route>
 
         {/* 교사 */}
-        <Route element={<ProtectedRoute roles={['teacher', 'org_admin']} />}>
+        <Route element={<ProtectedRoute roles={['teacher', 'grade_head', 'org_admin']} />}>
           <Route path={PATHS.TEACHER_HOME} element={<TeacherHome />} />
           <Route path={PATHS.TEACHER_CLASS} element={<TeacherClass />} />
           <Route path={PATHS.TEACHER_STUDENTS} element={<TeacherStudents />} />
@@ -124,17 +125,24 @@ export default function AppRoutes() {
           <Route path={PATHS.TEACHER_MYPAGE} element={<TeacherMyPage />} />
         </Route>
 
-        {/* 기관 관리자 */}
-        <Route element={<ProtectedRoute roles={['org_admin', 'ops']} />}>
-          <Route path={PATHS.ORG_HOME} element={<OrgHome />} />
+        {/* 기관 관리자(교장) + 학년부장 공용: 학급/교사/학생 관리
+            (백엔드가 학년부장은 담당 학년으로 자동 스코프) */}
+        <Route element={<ProtectedRoute roles={['grade_head', 'org_admin', 'ops']} />}>
           <Route path={PATHS.ORG_CLASSES} element={<OrgClasses />} />
           <Route path={PATHS.ORG_TEACHERS} element={<OrgTeachers />} />
+          <Route path={PATHS.ORG_STUDENTS} element={<OrgStudents />} />
+          <Route path={PATHS.ORG_CONTACT} element={<OrgContact />} />
+        </Route>
+
+        {/* 교장(org_admin) 전용: 전교 대시보드·분석 + 기관 전체 설정
+            (전교 집계는 담당 학년만 보는 학년부장에게 노출하지 않음) */}
+        <Route element={<ProtectedRoute roles={['org_admin', 'ops']} />}>
+          <Route path={PATHS.ORG_HOME} element={<OrgHome />} />
           <Route path={PATHS.ORG_ANALYTICS} element={<OrgAnalytics />} />
           <Route path={PATHS.ORG_CAPTCHA_SETTINGS} element={<CaptchaSettings />} />
           <Route path={PATHS.ORG_AI_MODELS} element={<AiModels />} />
           <Route path={PATHS.ORG_SECURITY_POLICY} element={<SecurityPolicy />} />
           <Route path={PATHS.ORG_MYPAGE} element={<OrgMyPage />} />
-          <Route path={PATHS.ORG_STUDENTS} element={<OrgStudents />} />
         </Route>
 
         {/* 운영자 전용 로그인 (공개 라우트 — 어디에도 링크하지 않는 숨겨진 진입구) */}

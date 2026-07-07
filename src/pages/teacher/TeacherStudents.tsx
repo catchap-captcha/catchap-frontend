@@ -10,6 +10,7 @@ import './TeacherStudents.css';
 
 interface TsStudent {
   name: string;
+  code?: string; // 실데이터(API)만 보유 — FALLBACK 데모엔 없음
   g: number;
   c: number;
   acc: number;
@@ -86,8 +87,8 @@ function accColor(a: number) {
   return a >= 85 ? '#17B08C' : a >= 70 ? '#F0A400' : '#E0475E';
 }
 
-const GRADES = [1, 2, 3];
-const CLASSES = [1, 2, 3];
+const GRADES = [1, 2, 3, 4, 5, 6];
+const CLASSES = [1, 2, 3, 4, 5, 6];
 
 /**
  * API 응답을 평탄한 명단으로 매핑.
@@ -110,6 +111,7 @@ function mapRoster(res: any): { rows: TsStudent[]; teachers: Record<string, stri
     (Array.isArray(grp.students) ? grp.students : []).forEach((s: any) => {
       rows.push({
         name: String(s.name ?? ''),
+        code: String(s.code ?? s.student_code ?? ''),
         g,
         c,
         acc: Number(s.acc ?? s.accuracy) || 0,
@@ -190,6 +192,7 @@ export default function TeacherStudents() {
         const av = AVATARS[ai++ % AVATARS.length];
         return {
           name: s.name,
+          code: s.code,
           initial: [...s.name][0],
           avatarBg: av,
           acc: s.acc + '%',
@@ -350,7 +353,10 @@ export default function TeacherStudents() {
                             <span className="ts-avatar" style={{ background: s.avatarBg }}>
                               {s.initial}
                             </span>
-                            <b>{s.name}</b>
+                            <span className="ts-student-info">
+                              <b>{s.name}</b>
+                              {s.code ? <span className="ts-student-code">{s.code}</span> : null}
+                            </span>
                           </span>
                         </td>
                         <td>

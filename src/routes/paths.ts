@@ -59,6 +59,7 @@ export const PATHS = {
   ORG_AI_MODELS: '/org/ai-models',
   ORG_SECURITY_POLICY: '/org/security-policy',
   ORG_MYPAGE: '/org/mypage',
+  ORG_CONTACT: '/org/contact', // 관리자 문의 폼 (사이드바 '문의하기' 버튼)
 
   // 운영자(ops)
   OPS_LOGIN: '/ops/login', // 숨겨진 운영자 전용 로그인 (공개 라우트, 링크 노출 안 함)

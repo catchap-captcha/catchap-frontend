@@ -1,15 +1,19 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { orgApi } from '../../api/org';
+import { dateSuffix, downloadCSV } from '../../utils/download';
+import { tableToPdf } from '../../utils/pdf';
 import OrgLayout from '../../layouts/OrgLayout';
 import './OrgClasses.css';
 
 /** handoff `CatChap 학급학생관리.dc.html` 포팅 — 학급·학생 관리(조회 전용) */
 
 interface OcClass {
+  id?: string;
   key: string;
   name: string;
   teacher: string;
+  assistant?: string | null;
   count: number;
   acc: number;
   risk: string;
@@ -106,6 +110,98 @@ export default function OrgClasses() {
   const [filterGrade, setFilterGrade] = useState<number | null>(null);
   const [gradeSel, setGradeSel] = useState<number[]>([1]);
   const [clsPage, setClsPage] = useState(0);
+  // 새 반 만들기 (교장=전 학년, 학년부장=담당 학년 고정)
+  const isGradeHead = me?.role === 'grade_head';
+  const isPrincipal = me?.role === 'org_admin'; // 코드 재발급은 교장 전용
+  const lockedGrade = isGradeHead ? me?.managed_grade ?? 1 : null;
+  const [rotateConfirm, setRotateConfirm] = useState(false);
+  const [newClass, setNewClass] = useState<{ grade: number; ban: number } | null>(null);
+  const [dissolveTarget, setDissolveTarget] = useState<OcClass | null>(null);
+  const [dissolveBlocked, setDissolveBlocked] = useState<{ name: string; count: number } | null>(null);
+  const [toast, setToast] = useState('');
+
+  const flashToast = (msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(''), 2400);
+  };
+
+  const openNewClass = () => setNewClass({ grade: lockedGrade ?? 1, ban: 1 });
+
+  const submitNewClass = () => {
+    if (!newClass) return;
+    const name = `${newClass.grade}-${newClass.ban}반`;
+    if (classList.some((c) => c.name === name)) {
+      flashToast('이미 있는 반 이름이에요.');
+      return;
+    }
+    setNewClass(null);
+    if (!orgId) {
+      flashToast(`${name}을(를) 만들었어요.`);
+      return;
+    }
+    orgApi
+      .createClass(orgId, name)
+      /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+      .then((res: any) => {
+        const c = res?.class;
+        const grade = Number(c?.grade) || newClass.grade;
+        setClassList((list) => [
+          {
+            id: c?.id,
+            key: `${grade}-${newClass.ban}`,
+            name: c?.name ?? name,
+            teacher: '미배정',
+            count: 0,
+            acc: 0,
+            risk: '낮음',
+            icon: `ph-fill ph-number-circle-${GRADE_ICONS[Math.min(6, Math.max(1, grade)) - 1]}`,
+          },
+          ...list,
+        ]);
+        flashToast(`${name}을(를) 만들었어요.`);
+      })
+      /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+      .catch((err: any) => {
+        const msg = err?.response?.status === 409 ? '이미 있는 반 이름이에요.' : '반 만들기에 실패했어요.';
+        flashToast(msg);
+      });
+  };
+
+  const confirmDissolve = () => {
+    const c = dissolveTarget;
+    if (!c) return;
+    setDissolveTarget(null);
+    const removeLocal = () => {
+      setClassList((list) => list.filter((x) => x !== c));
+      setCls('all');
+    };
+    if (!orgId || !c.id) {
+      // 데모(로컬) — 학생 있으면 차단, 없으면 해체
+      if ((c.count ?? 0) > 0) {
+        setDissolveBlocked({ name: c.name, count: c.count });
+        return;
+      }
+      removeLocal();
+      flashToast(`${c.name}을(를) 해체했어요.`);
+      return;
+    }
+    orgApi
+      .dissolveClass(orgId, c.id)
+      .then(() => {
+        removeLocal();
+        flashToast(`${c.name}을(를) 해체했어요.`);
+      })
+      /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+      .catch((err: any) => {
+        if (err?.response?.status === 409) {
+          const raw = err.response?.data?.detail ?? {};
+          const detail = typeof raw === 'string' ? { message: raw } : raw;
+          setDissolveBlocked({ name: detail.cls ?? c.name, count: detail.count ?? c.count ?? 0 });
+          return;
+        }
+        flashToast('반 해체에 실패했어요.');
+      });
+  };
 
   useEffect(() => {
     if (!orgId) return;
@@ -122,9 +218,11 @@ export default function OrgClasses() {
             const key = String(c.key ?? c.name ?? '').replace('반', '');
             const grade = Number(c.grade) || parseInt(key, 10) || 1;
             return {
+              id: c.id,
               key,
               name: c.name ?? `${key}반`,
               teacher: c.teacher ?? '',
+              assistant: c.assistant ?? null,
               count: c.count ?? c.student_count ?? 0,
               acc: c.acc ?? c.accuracy ?? 0,
               risk: c.risk ?? '낮음',
@@ -170,6 +268,22 @@ export default function OrgClasses() {
       on = false;
     };
   }, [orgId]);
+
+  const doRotateCode = () => {
+    setRotateConfirm(false);
+    if (!orgId) {
+      flashToast('데모에서는 코드가 실제로 바뀌지 않아요.');
+      return;
+    }
+    orgApi
+      .rotateCode(orgId)
+      /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+      .then((res: any) => {
+        if (res?.code) setOrgCode(res.code);
+        flashToast('새 기관 코드를 발급했어요. 이전 코드는 더 이상 쓸 수 없어요.');
+      })
+      .catch(() => flashToast('코드 재발급에 실패했어요.'));
+  };
 
   const copyCode = () => {
     try {
@@ -225,6 +339,11 @@ export default function OrgClasses() {
           <div className="oc-codeValue">{orgCode}</div>
         </div>
         <span className="oc-codeHint">학생·선생님이 회원가입할 때 입력하는 코드예요. 외부에 노출되지 않도록 주의해 주세요.</span>
+        {isPrincipal && (
+          <button className="oc-rotateBtn" onClick={() => setRotateConfirm(true)}>
+            <i className="ph-fill ph-arrows-clockwise" />재발급
+          </button>
+        )}
         <button className="oc-copyBtn" onClick={copyCode}>
           <i className={copied ? 'ph-fill ph-check' : 'ph-fill ph-copy'} />
           {copied ? '복사됨' : '코드 복사'}
@@ -241,11 +360,45 @@ export default function OrgClasses() {
         </div>
         <div className="oc-headerRight">
           <span className="oc-readonlyBadge">
-            <i className="ph-fill ph-lock-simple" />조회 전용 · 학생 편집은 담당 선생님 권한
+            <i className="ph-fill ph-lock-simple" />학생 편집은 담당 선생님 권한
           </span>
-          <button className="oc-exportBtn">
-            <i className="ph-fill ph-export" />현황 내보내기
+          <button className="oc-newClassBtn" onClick={openNewClass}>
+            <i className="ph-fill ph-plus-circle" />새 반 만들기
           </button>
+          {(() => {
+            // 학급 현황 + 학생 명단 (화면 실데이터 그대로 — CSV/PDF 공용)
+            const exportRows = [
+              ['[학급 현황]'],
+              ['반', '담임', '보조', '학생 수', '정답률(%)', '위험 신호'],
+              ...classList.map((c) => [c.name, c.teacher, c.assistant ?? '', c.count, c.acc, c.risk]),
+              [],
+              ['[학생 명단]'],
+              ['이름', '나이', '학급', '학생 코드', '보호자 연결', '정답률(%)', '위험 신호'],
+              ...rosterList.map((r) => [r.name, r.age, r.cls, r.code, r.link ? '연결됨' : '미연결', r.acc, r.risk]),
+            ];
+            return (
+              <>
+                <button
+                  className="oc-exportBtn"
+                  onClick={() => {
+                    downloadCSV(`학급학생현황_${dateSuffix()}.csv`, exportRows);
+                    flashToast('학급·학생 현황 CSV를 저장했어요.');
+                  }}
+                >
+                  <i className="ph-fill ph-export" />CSV
+                </button>
+                <button
+                  className="oc-exportBtn"
+                  onClick={() => {
+                    tableToPdf(`학급학생현황_${dateSuffix()}.pdf`, '학급 · 학생 현황', exportRows);
+                    flashToast('학급·학생 현황 PDF를 저장했어요.');
+                  }}
+                >
+                  <i className="ph-fill ph-file-pdf" />PDF
+                </button>
+              </>
+            );
+          })()}
         </div>
       </div>
 
@@ -312,6 +465,11 @@ export default function OrgClasses() {
               </div>
               <div className="oc-className">{c.name}</div>
               <div className="oc-classTeacher">{c.teacher} · {c.count}명</div>
+              {c.assistant && (
+                <div className="oc-classAssistant">
+                  <i className="ph-fill ph-user-switch" />보조 {c.assistant}
+                </div>
+              )}
               <div className="oc-classAccRow">
                 <span>정답률</span>
                 <span style={{ color: accColor(c.acc) }}>{c.acc}%</span>
@@ -334,6 +492,15 @@ export default function OrgClasses() {
               <button className="oc-filterTag" onClick={clearFilter}>
                 {filterLabel}
                 <i className="ph-bold ph-x" />
+              </button>
+            )}
+            {activeClass && (
+              <button
+                className="oc-dissolveBtn"
+                title={`${activeClass.name} 해체`}
+                onClick={() => setDissolveTarget(activeClass)}
+              >
+                <i className="ph-fill ph-trash" />반 해체
               </button>
             )}
           </div>
@@ -495,6 +662,180 @@ export default function OrgClasses() {
           </div>
         </div>
       </div>
+
+      {/* 새 반 만들기 모달 */}
+      {newClass && (
+        <div className="oc-ncOverlay" onClick={() => setNewClass(null)}>
+          <div className="oc-ncModal" onClick={(e) => e.stopPropagation()}>
+            <div className="oc-ncHead">
+              <span className="oc-ncHeadIcon">
+                <i className="ph-fill ph-chalkboard" />
+              </span>
+              <div>
+                <div className="oc-ncTitle">새 반 만들기</div>
+                <div className="oc-ncSub">
+                  {isGradeHead ? `${lockedGrade}학년 안에서 새 반을 추가해요` : '학년과 반 번호를 골라 새 반을 추가해요'}
+                </div>
+              </div>
+              <button className="oc-ncClose" onClick={() => setNewClass(null)}>
+                <i className="ph-bold ph-x" />
+              </button>
+            </div>
+            <div className="oc-ncBody">
+              <div className="oc-ncRow">
+                <div className="oc-ncField">
+                  <label className="oc-ncLabel">학년</label>
+                  <div className="oc-ncSelectWrap">
+                    <select
+                      className="oc-ncSelect"
+                      value={String(newClass.grade)}
+                      disabled={isGradeHead}
+                      onChange={(e) => setNewClass((n) => (n ? { ...n, grade: +e.target.value } : n))}
+                    >
+                      {[1, 2, 3, 4, 5, 6].map((g) => (
+                        <option key={g} value={String(g)}>{g}학년</option>
+                      ))}
+                    </select>
+                    <i className="ph-bold ph-caret-down oc-ncCaret" />
+                  </div>
+                </div>
+                <div className="oc-ncField">
+                  <label className="oc-ncLabel">반</label>
+                  <div className="oc-ncSelectWrap">
+                    <select
+                      className="oc-ncSelect"
+                      value={String(newClass.ban)}
+                      onChange={(e) => setNewClass((n) => (n ? { ...n, ban: +e.target.value } : n))}
+                    >
+                      {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((b) => (
+                        <option key={b} value={String(b)}>{b}반</option>
+                      ))}
+                    </select>
+                    <i className="ph-bold ph-caret-down oc-ncCaret" />
+                  </div>
+                </div>
+              </div>
+              <div className="oc-ncPreview">
+                만들 반: <b>{newClass.grade}-{newClass.ban}반</b>
+              </div>
+              {isGradeHead && (
+                <div className="oc-ncInfo">
+                  <i className="ph-fill ph-info" />
+                  <span>학년부장은 담당 학년({lockedGrade}학년) 반만 만들 수 있어요.</span>
+                </div>
+              )}
+              <div className="oc-ncBtns">
+                <button className="oc-ncCancel" onClick={() => setNewClass(null)}>취소</button>
+                <button className="oc-ncSave" onClick={submitNewClass}>
+                  <i className="ph-fill ph-check" />만들기
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 반 해체 확인 모달 */}
+      {dissolveTarget && (
+        <div className="oc-ncOverlay" onClick={() => setDissolveTarget(null)}>
+          <div className="oc-ncModal" onClick={(e) => e.stopPropagation()}>
+            <div className="oc-ncHead oc-ncHeadDanger">
+              <span className="oc-ncHeadIcon">
+                <i className="ph-fill ph-warning" />
+              </span>
+              <div>
+                <div className="oc-ncTitle">{dissolveTarget.name} 해체</div>
+                <div className="oc-ncSub">학년말 반 정리 — 되돌리려면 같은 이름으로 다시 만들면 돼요</div>
+              </div>
+              <button className="oc-ncClose" onClick={() => setDissolveTarget(null)}>
+                <i className="ph-bold ph-x" />
+              </button>
+            </div>
+            <div className="oc-ncBody">
+              <p className="oc-ncPreview">
+                <b>{dissolveTarget.name}</b>을(를) 해체할까요? 담임 연결이 풀리고 목록에서 사라져요.
+              </p>
+              <div className="oc-ncInfo">
+                <i className="ph-fill ph-info" />
+                <span>학생이 남아 있으면 해체할 수 없어요. 먼저 담당 선생님이 학생을 다른 반으로 옮겨 주세요.</span>
+              </div>
+              <div className="oc-ncBtns">
+                <button className="oc-ncCancel" onClick={() => setDissolveTarget(null)}>취소</button>
+                <button className="oc-ncSave oc-ncSaveDanger" onClick={confirmDissolve}>
+                  <i className="ph-fill ph-trash" />해체하기
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 해체 차단 (학생 남음) */}
+      {dissolveBlocked && (
+        <div className="oc-ncOverlay" onClick={() => setDissolveBlocked(null)}>
+          <div className="oc-ncModal" onClick={(e) => e.stopPropagation()}>
+            <div className="oc-ncHead oc-ncHeadDanger">
+              <span className="oc-ncHeadIcon">
+                <i className="ph-fill ph-users-three" />
+              </span>
+              <div>
+                <div className="oc-ncTitle">해체할 수 없어요</div>
+                <div className="oc-ncSub">아직 학생이 남아 있는 반이에요</div>
+              </div>
+            </div>
+            <div className="oc-ncBody">
+              <p className="oc-ncPreview">
+                <b>{dissolveBlocked.name}</b>에 <b>학생 {dissolveBlocked.count}명</b>이 남아 있어요. 먼저 학생을 다른 반으로 옮기거나 뺀 뒤 해체해 주세요.
+              </p>
+              <div className="oc-ncBtns">
+                <button className="oc-ncSave" onClick={() => setDissolveBlocked(null)}>알겠어요</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 기관 코드 재발급 확인 모달 (교장 전용) */}
+      {rotateConfirm && (
+        <div className="oc-ncOverlay" onClick={() => setRotateConfirm(false)}>
+          <div className="oc-ncModal" onClick={(e) => e.stopPropagation()}>
+            <div className="oc-ncHead">
+              <span className="oc-ncHeadIcon">
+                <i className="ph-fill ph-arrows-clockwise" />
+              </span>
+              <div>
+                <div className="oc-ncTitle">기관 코드 재발급</div>
+                <div className="oc-ncSub">새 코드를 만들고 만료일을 1년 연장해요</div>
+              </div>
+              <button className="oc-ncClose" onClick={() => setRotateConfirm(false)}>
+                <i className="ph-bold ph-x" />
+              </button>
+            </div>
+            <div className="oc-ncBody">
+              <p className="oc-ncPreview">
+                지금 코드 <b>{orgCode}</b>는 <b>즉시 무효</b>가 되고 새 코드가 발급돼요.
+              </p>
+              <div className="oc-ncInfo">
+                <i className="ph-fill ph-warning" />
+                <span>이미 가입한 학생·선생님은 영향 없지만, <b>새로 가입할 사람</b>에게는 새 코드를 알려줘야 해요. 학년이 바뀌는 새 학기에 한 번씩 바꾸는 걸 권장해요.</span>
+              </div>
+              <div className="oc-ncBtns">
+                <button className="oc-ncCancel" onClick={() => setRotateConfirm(false)}>취소</button>
+                <button className="oc-ncSave" onClick={doRotateCode}>
+                  <i className="ph-fill ph-arrows-clockwise" />재발급하기
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {toast && (
+        <div className="oc-toast">
+          <i className="ph-fill ph-check-circle" />
+          {toast}
+        </div>
+      )}
     </OrgLayout>
   );
 }

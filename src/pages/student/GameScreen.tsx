@@ -126,6 +126,8 @@ export default function GameScreen() {
 
   const s = subjects[subjectIdx];
   const key = s.key;
+  // 복습 모드(?replay=1): 전날 다시풀기·완료 후 재도전 — 기록은 남지만 오늘의퀴즈 상태·코인 보상 없음
+  const isReplay = searchParams.get('replay') === '1';
 
   /* 세션 시작 시각 — 완료 시 실제 풀이 시간(solve_time_ms) 계산용 */
   const startedAt = useRef<number>(Date.now());
@@ -158,7 +160,8 @@ export default function GameScreen() {
             score: last ? (typeof s.score === 'number' ? s.score : 0) : 0,
             solve_time_ms: last ? solveMs : 0,
             retry_count: 0,
-            completed: last, // 마지막에만 오늘의퀴즈 완료 처리
+            completed: last && !isReplay, // 마지막에만 오늘의퀴즈 완료 처리 (복습은 제외)
+            replay: isReplay, // 복습: 상태·코인 반영 안 함
           })
           .catch(() => {
             /* 저장 실패해도 흐름 유지 */

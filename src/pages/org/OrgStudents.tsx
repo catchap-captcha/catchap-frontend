@@ -29,7 +29,8 @@ const FALLBACK: StudentRow[] = [
   { id: 's4', nickname: '(가입 대기)', login_id: 'haetsal-2-021', className: '2학년 1반', status: 'pending', join_code: 'JOIN-4B7M-1D6R', invite_code: null },
 ];
 
-const CLASSES = ['1학년 2반', '2학년 1반', '3학년 3반'];
+// 앱 전체(학급·선생님 관리, 백엔드)와 동일한 "N-M반" 표기로 통일 — 라벨 불일치로 중복 학급 생성 방지
+const CLASSES = ['1-2반', '2-1반', '3-3반'];
 
 export default function OrgStudents() {
   const { me } = useAuth();
@@ -39,6 +40,7 @@ export default function OrgStudents() {
   const [addOpen, setAddOpen] = useState(false);
   const [addClass, setAddClass] = useState(CLASSES[0]);
   const [addCount, setAddCount] = useState(1);
+  const [addNames, setAddNames] = useState(''); // 학생 실명 목록 (줄바꿈 구분, 교사·기관 화면 전용)
   const [issued, setIssued] = useState<{ login_id: string; join_code: string }[] | null>(null);
 
   const flash = (m: string) => {
@@ -63,19 +65,30 @@ export default function OrgStudents() {
   // 학생 슬롯 생성 + 가입코드 발급 — 실백엔드 POST /orgs/{id}/students/register (실패 시 로컬 데모)
   const createStudents = async () => {
     const orgId = me?.organization_id;
+    // 실명 목록: 줄바꿈/쉼표 구분 → 슬롯 순서대로 매칭
+    const names = addNames
+      .split(/[\n,]/)
+      .map((n) => n.trim())
+      .filter(Boolean);
     let made: StudentRow[] = [];
     try {
       if (!orgId) throw new Error('no org');
-      const res = await orgApi.registerStudents(orgId, { count: addCount, class_label: addClass });
-      made = (res.issued ?? []).map((it: { login_id: string; join_code: string }, k: number) => ({
-        id: `srv-${it.login_id}-${k}`,
-        nickname: '(가입 대기)',
-        login_id: it.login_id,
-        className: addClass,
-        status: 'pending' as const,
-        join_code: it.join_code,
-        invite_code: null,
-      }));
+      const res = await orgApi.registerStudents(orgId, {
+        count: addCount,
+        class_label: addClass,
+        names: names.length ? names : undefined,
+      });
+      made = (res.issued ?? []).map(
+        (it: { login_id: string; join_code: string; real_name?: string | null }, k: number) => ({
+          id: `srv-${it.login_id}-${k}`,
+          nickname: it.real_name ? `${it.real_name} (가입 대기)` : '(가입 대기)',
+          login_id: it.login_id,
+          className: addClass,
+          status: 'pending' as const,
+          join_code: it.join_code,
+          invite_code: null,
+        }),
+      );
     } catch {
       const base = rows.filter((r) => r.className === addClass).length + 12;
       made = Array.from({ length: addCount }, (_, k) => ({
@@ -92,21 +105,25 @@ export default function OrgStudents() {
     setIssued(made.map((m) => ({ login_id: m.login_id, join_code: m.join_code! })));
   };
 
+  const isRealId = (id: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-/.test(id);
   const issueInvite = async (id: string) => {
     const orgId = me?.organization_id;
-    let code = genInvite();
-    try {
-      if (orgId && /^[0-9a-f]{8}-[0-9a-f]{4}-/.test(id)) {
+    if (orgId && isRealId(id)) {
+      try {
         const res = await orgApi.issueInvite(orgId, id);
-        if (res?.invite_code) code = res.invite_code;
+        setRows((prev) => prev.map((r) => (r.id === id ? { ...r, invite_code: res.invite_code } : r)));
+        flash(`학부모 초대코드 발급: ${res.invite_code}`);
+      } catch {
+        // 서버가 거부(권한 없음 등)하면 가짜 코드를 보여주지 않는다 — 실제 상황 안내
+        flash('초대코드 발급에 실패했어요. 권한이 없다면 교장에게 요청하세요.');
       }
-    } catch {
-      /* 실패 시 로컬 코드 사용 */
+      return;
     }
+    // 데모 행(실제 학생 아님)만 예시 코드 표시
+    const code = genInvite();
     setRows((prev) => prev.map((r) => (r.id === id ? { ...r, invite_code: code } : r)));
-    flash(`학부모 초대코드 발급: ${code}`);
+    flash(`학부모 초대코드(예시): ${code}`);
   };
-  const isRealId = (id: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-/.test(id);
   const changeClass = async (id: string, label: string) => {
     setRows((prev) => prev.map((r) => (r.id === id ? { ...r, className: label } : r)));
     const orgId = me?.organization_id;
@@ -124,20 +141,21 @@ export default function OrgStudents() {
 
   const resetPw = async (id: string, nick: string) => {
     const orgId = me?.organization_id;
-    try {
-      if (orgId && isRealId(id)) {
+    if (orgId && isRealId(id)) {
+      try {
         const res = await orgApi.resetStudentPassword(orgId, id);
         flash(`${nick} 임시 비번: ${res.temp_password} · 기존 세션 로그아웃됨`);
-        return;
+      } catch {
+        // 권한 없음(학년부장) 등 서버 거부 시 성공으로 위장하지 않음
+        flash('비밀번호 초기화에 실패했어요. 권한이 없다면 교장에게 요청하세요.');
       }
-    } catch {
-      /* 실패 시 데모 안내 */
+      return;
     }
-    flash(`${nick} 비밀번호를 초기화했어요 (임시 비번 발급 · 기존 세션 로그아웃).`);
+    flash(`${nick} (예시) 비밀번호 초기화 안내 — 실제 학생이 아니에요.`);
   };
 
   return (
-    <OrgLayout active="classes" widget="none">
+    <OrgLayout active="students" widget="none">
       <div className="os-wrap">
         <div className="os-head">
           <div>
@@ -223,6 +241,17 @@ export default function OrgStudents() {
                   <span>{addCount}명</span>
                   <button onClick={() => setAddCount((n) => Math.min(30, n + 1))}><i className="ph-bold ph-plus" /></button>
                 </div>
+                <label className="os-lbl">학생 실명 (한 줄에 한 명, 순서대로)</label>
+                <textarea
+                  className="os-names"
+                  value={addNames}
+                  placeholder={'예)\n김하은\n박도윤'}
+                  rows={Math.min(6, Math.max(3, addCount))}
+                  onChange={(e) => setAddNames(e.target.value)}
+                />
+                <p className="os-names-hint">
+                  실명은 <b>선생님·기관 화면에만</b> 보여요. 학생이 닉네임을 바꿔도 선생님은 실명으로 찾을 수 있어요.
+                </p>
                 <div className="os-modal-actions">
                   <button className="os-btn-ghost" onClick={() => setAddOpen(false)}>취소</button>
                   <button className="os-btn-primary" onClick={createStudents}><i className="ph-bold ph-ticket" />코드 발급</button>

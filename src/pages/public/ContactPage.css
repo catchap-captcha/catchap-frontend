@@ -492,6 +492,20 @@
   line-height: 1.6;
 }
 
+.ct-faq-more {
+  margin-top: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  font-size: 13px;
+  font-weight: 800;
+  color: #ff6f43;
+  text-decoration: none;
+}
+.ct-faq-more:hover { gap: 9px; }
+.ct-faq-more i { font-size: 14px; transition: transform 0.15s ease; }
+
 /* ===== 정제(polish): 액션 버튼 hover 부상 + 탄력 눌림 (배경색 불변, 그림자/모션만) ===== */
 .ct-reset-btn,
 .ct-submit-btn,

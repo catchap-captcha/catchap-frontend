@@ -118,11 +118,33 @@ export default function SearchPage() {
       .searchContent(q)
       .then((data) => {
         if (stale) return;
-        const items = Array.isArray(data) ? data : Array.isArray(data?.items) ? data.items : null;
-        setApiItems(items);
+        // API 응답 형태: { query, count, results:[{title,tag,desc,icon,href,meta}] }
+        // (배열 직접 응답 / items 키도 방어적으로 지원)
+        const raw = Array.isArray(data)
+          ? data
+          : Array.isArray(data?.results)
+            ? data.results
+            : Array.isArray(data?.items)
+              ? data.items
+              : null;
+        if (!raw) {
+          setApiItems(null);
+          return;
+        }
+        const mapped: SearchItem[] = raw.map((r: any) => ({
+          title: String(r.title ?? ''),
+          tag: String(r.tag ?? '기타'),
+          desc: String(r.desc ?? ''),
+          icon: String(r.icon ?? 'ph-fill ph-sparkle'),
+          bg: r.bg ?? r.meta?.soft ?? '#F1EFF7',
+          color: r.color ?? r.meta?.color ?? '#8B6BFF',
+          href: String(r.href ?? ''),
+          kw: String(r.kw ?? ''),
+        }));
+        // 결과가 있으면 API 사용, 비어 있으면 로컬 FALLBACK 필터로 (실패 시에도 로컬)
+        setApiItems(mapped.length ? mapped : null);
       })
       .catch(() => {
-        // TODO(api): 백엔드 미구현 — FALLBACK 로컬 필터링으로 동작
         if (!stale) setApiItems(null);
       });
     return () => {

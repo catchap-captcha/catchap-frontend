@@ -210,3 +210,24 @@
 }
 .os-clssel:hover { border-color: #ffc9b8; }
 .os-clssel:focus { outline: none; border-color: #ff5a4d; }
+
+/* 학생 실명 입력 (등록 모달) — 교사·기관 화면 전용 표기 */
+.os-names {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1.5px solid #e4e6ef;
+  border-radius: 11px;
+  padding: 11px 13px;
+  font-size: 13.5px;
+  font-family: inherit;
+  color: #2e3040;
+  line-height: 1.6;
+  resize: vertical;
+}
+.os-names:focus { outline: none; border-color: #ff7a4d; }
+.os-names-hint {
+  margin: 7px 0 14px;
+  font-size: 12px;
+  color: #8a8f9e;
+  line-height: 1.5;
+}

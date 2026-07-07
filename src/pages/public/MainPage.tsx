@@ -3,6 +3,24 @@ import { Link } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
 import { useRevealOnScroll } from '../../hooks/useRevealOnScroll';
 import mascot from '../../assets/characters/catchap-logo.png';
+// 협력사 로고 (배경 제거 PNG)
+import pChamjal from '../../assets/partners/p-chamjal.png';
+import pTtokttok from '../../assets/partners/p-ttokttok.png';
+import pHanbit from '../../assets/partners/p-hanbit.png';
+import pYeollin from '../../assets/partners/p-yeollin.png';
+import pIbook from '../../assets/partners/p-ibook.png';
+import pMiraen from '../../assets/partners/p-miraen.png';
+import pCube from '../../assets/partners/p-cube.png';
+import pParang from '../../assets/partners/p-parang.png';
+import pHaneul from '../../assets/partners/p-haneul.png';
+import pDegul from '../../assets/partners/p-degul.png';
+// 데이터 활용 기관 로고
+import dBaldal from '../../assets/partners/d-baldal.png';
+import dEduresearch from '../../assets/partners/d-eduresearch.png';
+import dProtect from '../../assets/partners/d-protect.png';
+import dBehavior from '../../assets/partners/d-behavior.png';
+import dHospital from '../../assets/partners/d-hospital.png';
+import dPolicy from '../../assets/partners/d-policy.png';
 import './MainPage.css';
 
 const GAMES = [
@@ -15,25 +33,25 @@ const GAMES = [
 ];
 
 const DATA_RECIPIENTS = [
-  { key: 'hospital', icon: 'ph-first-aid-kit', name: '어린이 병동', desc: '소아 인지·집중 패턴을 참고해 치료와 재활 프로그램 설계에 활용돼요.' },
-  { key: 'behavior', icon: 'ph-brain', name: '아동 행동 개발원', desc: '연령별 행동 발달 지표를 연구해 건강한 성장 가이드를 만드는 데 쓰여요.' },
-  { key: 'edu', icon: 'ph-graduation-cap', name: '교육 연구 기관', desc: '놀이형 학습의 효과를 분석해 더 나은 학습 콘텐츠를 개발하는 데 활용돼요.' },
-  { key: 'dev', icon: 'ph-baby', name: '발달 지원 센터', desc: '느린 학습이 필요한 아이를 조기에 발견해 맞춤 지원을 연결하는 데 도움을 줘요.' },
-  { key: 'protect', icon: 'ph-shield-check', name: '아동 보호 협회', desc: '온라인 환경에서 아이들을 지키는 안전 정책과 캠페인 연구에 활용돼요.' },
-  { key: 'gov', icon: 'ph-buildings', name: '지자체 아동 정책과', desc: '지역 아동 학습 실태를 파악해 공공 교육 정책을 세우는 데 참고돼요.' },
+  { key: 'hospital', img: dHospital, name: '어린이병동' },
+  { key: 'behavior', img: dBehavior, name: '아동행동개발원' },
+  { key: 'edu', img: dEduresearch, name: '아동교육연구원' },
+  { key: 'dev', img: dBaldal, name: '발달지원센터' },
+  { key: 'protect', img: dProtect, name: '아동보호협회' },
+  { key: 'gov', img: dPolicy, name: '지자체아동정책과' },
 ];
 
 const PARTNERS = [
-  { key: 'p1', icon: 'ph-book-open', name: '참잘북스' },
-  { key: 'p2', icon: 'ph-plus-minus', name: '똑똑수학' },
-  { key: 'p3', icon: 'ph-graduation-cap', name: '한빛에듀' },
-  { key: 'p4', icon: 'ph-books', name: '열린책들쿨' },
-  { key: 'p5', icon: 'ph-baby', name: '아이북클럽' },
-  { key: 'p6', icon: 'ph-rocket-launch', name: '미래엔키즈' },
-  { key: 'p7', icon: 'ph-cube', name: '큐브러닝' },
-  { key: 'p8', icon: 'ph-pencil', name: '파랑연필' },
-  { key: 'p9', icon: 'ph-cloud', name: '하늘국어' },
-  { key: 'p10', icon: 'ph-circles-three', name: '데굴수학' },
+  { key: 'p1', img: pChamjal, name: '참잘북스' },
+  { key: 'p2', img: pTtokttok, name: '똑똑수학' },
+  { key: 'p3', img: pHanbit, name: '한빛에듀' },
+  { key: 'p4', img: pYeollin, name: '열린책들쿨' },
+  { key: 'p5', img: pIbook, name: '아이북클럽' },
+  { key: 'p6', img: pMiraen, name: '미래엔키즈' },
+  { key: 'p7', img: pCube, name: '큐브러닝' },
+  { key: 'p8', img: pParang, name: '파랑연필' },
+  { key: 'p9', img: pHaneul, name: '하늘국어' },
+  { key: 'p10', img: pDegul, name: '데굴수학' },
 ];
 
 export default function MainPage() {
@@ -229,14 +247,19 @@ export default function MainPage() {
             <h2 className="mn-data-title">아이들의 행동 데이터가 이렇게 쓰여요</h2>
             <p className="mn-data-desc">학습 중 수집된 아동 행동 데이터는 가명 처리를 거쳐, 아이들의 발달과 건강을 돕는 전문 기관들에 안전하게 전달돼요. 연구와 돌봄에만 쓰이고 상업적 목적으로는 활용되지 않아요.</p>
           </div>
-          <div className="mn-data-grid cc-reveal-group">
-            {DATA_RECIPIENTS.map((d) => (
-              <div key={d.key} className="mn-data-card">
-                <span className={`mn-data-icon mn-data-icon--${d.key}`}><i className={`ph-fill ${d.icon}`} /></span>
-                <div className="mn-data-name">{d.name}</div>
-                <div className="mn-data-text">{d.desc}</div>
-              </div>
-            ))}
+          <div className="mn-marquee-mask mn-data-marquee">
+            <div className="mn-marquee">
+              {DATA_RECIPIENTS.map((d) => (
+                <div key={d.key} className="mn-partner mn-partner--img">
+                  <img src={d.img} alt={d.name} className="mn-partner-logo" loading="lazy" />
+                </div>
+              ))}
+              {DATA_RECIPIENTS.map((d) => (
+                <div key={`dup-${d.key}`} aria-hidden="true" className="mn-partner mn-partner--img">
+                  <img src={d.img} alt="" className="mn-partner-logo" loading="lazy" />
+                </div>
+              ))}
+            </div>
           </div>
           <div className="mn-data-note">
             <i className="ph-fill ph-lock-key" />
@@ -255,15 +278,13 @@ export default function MainPage() {
         <div className="mn-marquee-mask">
           <div className="mn-marquee">
             {PARTNERS.map((p) => (
-              <div key={p.key} className="mn-partner">
-                <span className={`mn-partner-icon mn-partner-icon--${p.key}`}><i className={`ph-fill ${p.icon}`} /></span>
-                <span className="mn-partner-name">{p.name}</span>
+              <div key={p.key} className="mn-partner mn-partner--img">
+                <img src={p.img} alt={p.name} className="mn-partner-logo" loading="lazy" />
               </div>
             ))}
             {PARTNERS.map((p) => (
-              <div key={`dup-${p.key}`} aria-hidden="true" className="mn-partner">
-                <span className={`mn-partner-icon mn-partner-icon--${p.key}`}><i className={`ph-fill ${p.icon}`} /></span>
-                <span className="mn-partner-name">{p.name}</span>
+              <div key={`dup-${p.key}`} aria-hidden="true" className="mn-partner mn-partner--img">
+                <img src={p.img} alt="" className="mn-partner-logo" loading="lazy" />
               </div>
             ))}
           </div>

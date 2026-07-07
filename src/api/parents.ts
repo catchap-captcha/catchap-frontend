@@ -14,9 +14,9 @@ export const parentApi = {
       .get<any>(`/parents/me/children/${childId}/report`, { params: { period, subject } })
       .then((r) => r.data),
 
-  /** 자녀 연결: 학생 코드(CAT-xxxx) 입력 — DB는 요청/승인 구조, 자동 승인 처리 */
-  linkRequest: (studentCode: string) =>
-    client.post<any>('/parents/me/children/link-request', { student_code: studentCode })
+  /** 자녀 연결: 학교 발급 초대코드(LINK-xxxx) 입력 — 1회용·만료·최대 2명 (학생코드 자동승인 폐지, B1) */
+  linkInvite: (inviteCode: string) =>
+    client.post<any>('/parents/me/children/link-invite', { invite_code: inviteCode })
       .then((r) => r.data),
 
   unlink: (childId: string) =>
