@@ -4,6 +4,7 @@ import { PATHS } from '../../routes/paths';
 import { useAuth } from '../../hooks/useAuth';
 import { useToast } from '../../hooks/useToast';
 import { studentApi } from '../../api/students';
+import { RANKING_ENABLED } from '../../config/features';
 import { playSfx } from '../../utils/feedback';
 import ScreenTimeReminder from '../../components/motion/ScreenTimeReminder';
 import mascot from '../../assets/characters/catchap-logo.png';
@@ -283,6 +284,7 @@ export default function ProfileCustomize() {
 
   /* 반 랭킹: 원본 setInterval(2800ms) 점수 상승 시뮬레이션(fallback) + 5초 API 폴링 */
   useEffect(() => {
+    if (!RANKING_ENABLED) return; // 랭킹 비활성('준비중') — API 폴링·점수 시뮬레이션·보너스 안내 모두 중단
     const simT = window.setInterval(() => {
       if (apiLive.current) return; // API 성공 시 응답으로 대체
       setMyScore((s) => s + Math.floor(Math.random() * 22) + 4);
@@ -566,6 +568,22 @@ export default function ProfileCustomize() {
           </div>
 
           {/* CLASS RANKING */}
+          {!RANKING_ENABLED ? (
+            <div className="pf-rank">
+              <div className="pf-rankdeco" />
+              <div className="pf-rankhead">
+                <div className="pf-ranktitle">
+                  <span className="pf-rankicon">
+                    <i className="ph-fill ph-trophy" />
+                  </span>
+                  <span className="pf-ranktext">우리 학년 랭킹</span>
+                </div>
+              </div>
+              <div className="pf-rankbody">
+                <div className="pf-ranksub">학년 랭킹은 준비중이에요. 곧 만나요 🐾</div>
+              </div>
+            </div>
+          ) : (
           <div className="pf-rank">
             <div className="pf-rankdeco" />
             <div className="pf-rankhead">
@@ -628,6 +646,7 @@ export default function ProfileCustomize() {
               })}
             </div>
           </div>
+          )}
 
           {/* SETTINGS ENTRY */}
           <Link to={PATHS.STUDENT_SETTINGS} className="pf-settings">

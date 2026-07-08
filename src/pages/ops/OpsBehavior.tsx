@@ -148,7 +148,7 @@ export default function OpsBehavior() {
       const header = [
         '수집시각', '출처', '그룹', '학생코드', '학년밴드', '기관',
         '풀이시간ms', '경로길이', '평균속도', '멈춤수', '재시도수', '드롭거리norm',
-        '결과', '위험도', '학습셋',
+        '결과', '위험도', '입력방식', '라벨', '학습셋',
       ];
       downloadCSV(`catchap-behavior-${dateSuffix()}.csv`, [
         header,
@@ -156,7 +156,8 @@ export default function OpsBehavior() {
           r.occurred_at ?? r.created_at, r.source_type, r.student ? 'child' : 'anonymous',
           r.student?.student_code, r.student?.grade_band, r.organization_name,
           r.solve_time_ms, r.path_length, r.avg_speed, r.pause_count, r.retry_count,
-          r.drop_distance_norm, r.interaction_result, r.risk_level, r.dataset_status,
+          r.drop_distance_norm, r.interaction_result, r.risk_level,
+          r.input_type, r.sample_label, r.dataset_status,
         ]),
       ]);
       say(

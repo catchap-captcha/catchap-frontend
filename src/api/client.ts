@@ -38,10 +38,32 @@ client.interceptors.request.use((config) => {
 
 let refreshing: Promise<string | null> | null = null;
 
-async function refreshAccessToken(): Promise<string | null> {
-  const refresh = localStorage.getItem(REFRESH_KEY);
-  if (!refresh) return null;
+/** JWT exp가 margin초 안에 끝나는지 — 서명 검증 없이 payload만 읽는다(만료 판단용). */
+function tokenExpiringSoon(token: string, marginSec = 60): boolean {
   try {
+    const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+    return typeof payload.exp !== 'number' || payload.exp * 1000 - Date.now() < marginSec * 1000;
+  } catch {
+    return true; // 못 읽으면 갱신 시도
+  }
+}
+
+/** 항상 유효한 access token을 돌려준다 — 만료 임박 시 refresh 토큰으로 선제 갱신.
+ *  캡차 위젯처럼 axios 인터셉터(401 재시도) 밖에서 fetch를 쓰는 소비자용. */
+export async function getFreshAccessToken(): Promise<string | null> {
+  const token = getAccessToken();
+  if (token && !tokenExpiringSoon(token)) return token;
+  refreshing = refreshing ?? refreshAccessToken();
+  const renewed = await refreshing;
+  return renewed ?? getAccessToken();
+}
+
+async function refreshAccessToken(): Promise<string | null> {
+  try {
+    // 무토큰 조기 반환도 try 안에 — finally 밖에서 반환하면 공유 상태(refreshing)에
+    // resolved Promise<null>이 영구 잔존해, 재로그인 후에도 갱신이 영영 안 도는 버그가 된다.
+    const refresh = localStorage.getItem(REFRESH_KEY);
+    if (!refresh) return null;
     const res = await axios.post(`${BASE_URL}/api/v1/auth/refresh`, {
       refresh_token: refresh,
     });

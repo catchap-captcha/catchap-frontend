@@ -6,6 +6,7 @@ import { PATHS } from '../../routes/paths';
 import { useAuth } from '../../hooks/useAuth';
 import { studentApi } from '../../api/students';
 import { notificationApi } from '../../api/notifications';
+import { RANKING_ENABLED } from '../../config/features';
 import mascot from '../../assets/characters/catchap-logo.png';
 import './StudentHome.css';
 
@@ -605,7 +606,7 @@ export default function StudentHome() {
               </div>
             </div>
 
-            {data.showRank && (
+            {!RANKING_ENABLED ? (
               <div className="sh-rank">
                 <div className="sh-rank-head">
                   <span className="sh-rank-chip">
@@ -614,11 +615,27 @@ export default function StudentHome() {
                   <h3 className="sh-rank-title">우리 학년에서 나의 위치</h3>
                 </div>
                 <p className="sh-rank-text">
-                  우리 학년 <span className="sh-rank-pct">{data.rankLabel}</span> 구간이에요.
+                  학년 랭킹은 <span className="sh-rank-pct">준비중</span>이에요.
                   <br />
-                  친구 이름·점수는 보이지 않아요 🙂
+                  곧 만나요 🐾
                 </p>
               </div>
+            ) : (
+              data.showRank && (
+                <div className="sh-rank">
+                  <div className="sh-rank-head">
+                    <span className="sh-rank-chip">
+                      <i className="ph-fill ph-trophy" />
+                    </span>
+                    <h3 className="sh-rank-title">우리 학년에서 나의 위치</h3>
+                  </div>
+                  <p className="sh-rank-text">
+                    우리 학년 <span className="sh-rank-pct">{data.rankLabel}</span> 구간이에요.
+                    <br />
+                    친구 이름·점수는 보이지 않아요 🙂
+                  </p>
+                </div>
+              )
             )}
 
             <div className="sh-ai">

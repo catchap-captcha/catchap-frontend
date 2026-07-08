@@ -9,6 +9,7 @@
 export interface TraceBehavior {
   trace: [number, number, number][];
   box: { w: number; h: number };
+  input_type: string; // mouse|touch|pen|unknown — 기기 축(수집 시점에만 알 수 있음)
 }
 
 const SAMPLE_MIN_MS = 16; // pointermove 스로틀 — 페이로드 과대 방지
@@ -27,8 +28,10 @@ export function attachPointerTrace(el: HTMLElement): PointerTraceRecorder {
   let trace: [number, number, number][] = [];
   let startAt = Date.now();
   let lastT = -1;
+  let inputType = '';
 
   const record = (e: PointerEvent, force: boolean) => {
+    if (e.pointerType) inputType = e.pointerType; // mouse|touch|pen
     if (trace.length >= MAX_POINTS) return;
     const r = el.getBoundingClientRect();
     if (!r.width || !r.height) return;
@@ -53,11 +56,16 @@ export function attachPointerTrace(el: HTMLElement): PointerTraceRecorder {
       trace = [];
       startAt = Date.now();
       lastT = -1;
+      inputType = '';
     },
     snapshot() {
       if (trace.length < 2) return null;
       const r = el.getBoundingClientRect();
-      return { trace: trace.slice(), box: { w: Math.round(r.width), h: Math.round(r.height) } };
+      return {
+        trace: trace.slice(),
+        box: { w: Math.round(r.width), h: Math.round(r.height) },
+        input_type: inputType || 'unknown',
+      };
     },
     detach() {
       el.removeEventListener('pointermove', onMove);

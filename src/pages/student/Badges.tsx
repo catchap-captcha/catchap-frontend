@@ -6,6 +6,7 @@ import { studentApi } from '../../api/students';
 import { dateSuffix, downloadCanvasPng } from '../../utils/download';
 import { canvasToPdf } from '../../utils/pdf';
 import { drawCertificate } from '../../utils/certificate';
+import { RANKING_ENABLED } from '../../config/features';
 import ScreenTimeReminder from '../../components/motion/ScreenTimeReminder';
 import mascot from '../../assets/characters/catchap-logo.png';
 import './Badges.css';
@@ -127,6 +128,8 @@ export default function Badges() {
   const [level, setLevel] = useState<number>(7);
   // 상장 (학년 랭킹 상위 3위 · 개근상) — 다운로드 가능
   const [awards, setAwards] = useState<any[]>([]);
+  // 랭킹 비활성('준비중') 동안엔 랭킹(rank) 상장은 숨기고 개근상(attendance)만 노출한다.
+  const shownAwards = RANKING_ENABLED ? awards : awards.filter((a: any) => a.type !== 'rank');
   const [awardMeta, setAwardMeta] = useState<{ nickname: string; streak: number; target: number }>({
     nickname: '',
     streak: 0,
@@ -281,7 +284,7 @@ export default function Badges() {
         </div>
       </section>
 
-      {/* 상장 — 학년 랭킹 상위 3위 · 개근상 (다운로드 가능) */}
+      {/* 상장 — (랭킹 준비중) 개근상 (다운로드 가능). 랭킹 상장은 RANKING_ENABLED 전까지 숨김. */}
       <section className="bd-section">
         <div className="bd-awards">
           <div className="bd-awardshead">
@@ -289,15 +292,19 @@ export default function Badges() {
             <div>
               <h3 className="bd-awardstitle">나의 상장</h3>
               <p className="bd-awardssub">
-                학년 랭킹 1~3위와 {awardMeta.target}일 연속 학습 개근상을 받으면 상장을 내려받을 수 있어요.
+                {RANKING_ENABLED
+                  ? `학년 랭킹 1~3위와 ${awardMeta.target}일 연속 학습 개근상을 받으면 상장을 내려받을 수 있어요.`
+                  : `${awardMeta.target}일 연속 학습 개근상을 받으면 상장을 내려받을 수 있어요. (학년 랭킹 상장은 준비중이에요)`}
               </p>
             </div>
           </div>
-          {awards.length === 0 ? (
+          {shownAwards.length === 0 ? (
             <div className="bd-awardsempty">
               <i className="ph-duotone ph-trophy" />
               <p>
-                아직 받은 상장이 없어요. 매일 오늘의 퀴즈를 완료하면 랭킹이 올라가요!
+                {RANKING_ENABLED
+                  ? '아직 받은 상장이 없어요. 매일 오늘의 퀴즈를 완료하면 랭킹이 올라가요!'
+                  : '아직 받은 상장이 없어요. 매일 꾸준히 학습하면 개근상을 받을 수 있어요!'}
                 {awardMeta.streak > 0 && (
                   <>
                     <br />개근 도전 중: <b>{awardMeta.streak}일</b> / {awardMeta.target}일
@@ -307,7 +314,7 @@ export default function Badges() {
             </div>
           ) : (
             <div className="bd-awardsgrid">
-              {awards.map((a: any) => (
+              {shownAwards.map((a: any) => (
                 <div key={a.title} className={`bd-award${a.type === 'attendance' ? ' bd-award--green' : ''}`}>
                   <span className="bd-awardmedal">{a.type === 'rank' ? '🏆' : '🌟'}</span>
                   <div className="bd-awardbody">

@@ -49,20 +49,8 @@ export const studentApi = {
   /** 특정 일차 상세 (미래는 잠금·주제만) */
   curriculumDay: (subject: string, day: number) =>
     client.get<any>('/students/me/curriculum/day', { params: { subject, day } }).then((r) => r.data),
-  /** 실전 게임 세션 — 서버 문항 발급(정답 미포함). day 지정 시 그 일차 커리큘럼 */
-  gameSession: (subject: string, day?: number, count = 5) =>
-    client.get<any>('/students/me/game-session', { params: { subject, day, count } }).then((r) => r.data),
-  /** 실전 채점 — 서버 판정 + 학습기록 저장 (behavior: 포인터 궤적 등 행동 데이터)
-      subject: 문항이 속한 과목(뱅크 스코프) / multi 문항은 option_ids(집합 채점) */
-  gameAnswer: (body: {
-    question_id: string;
-    subject: string;
-    option_id?: string;
-    option_ids?: string[];
-    last?: boolean;
-    replay?: boolean;
-    behavior?: Record<string, unknown>;
-  }) => client.post<any>('/students/me/game-answer', body).then((r) => r.data),
+  /* (실전 모드 폐지) gameSession/gameAnswer 제거 — 문항 발급·채점·적립은
+     교육형 위젯(/captcha/v1/*)이 담당. 백엔드 엔드포인트는 잔존. */
 
   /** 개념 읽음 서버 동기화 */
   markConceptRead: (conceptId: string) =>

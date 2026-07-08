@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
 import { studentApi } from '../../api/students';
+import { getFreshAccessToken } from '../../api/client';
 import { playSfx } from '../../utils/feedback';
 import { attachPointerTrace, type PointerTraceRecorder } from '../../utils/pointerTrace';
 import ScreenTimeReminder from '../../components/motion/ScreenTimeReminder';
@@ -137,66 +138,24 @@ export default function GameScreen() {
   // 복습 모드(?replay=1): 전날 다시풀기·완료 후 재도전 — 기록은 남지만 오늘의퀴즈 상태·코인 보상 없음
   const isReplay = searchParams.get('replay') === '1';
 
-  /* ===== 실전 모드 (서버 문항 + 서버 채점 — capcha_service 과목별 문제은행) =====
-     game-session available=true 인 과목(생활=ms, 수학·과학=my, 역사=sw)만 실문항 플레이.
-     아니면 기존 데모 슬롯 유지 (국어·영어는 팀원 캡차 통합 대기).
-     type: 'single'(선택 즉시 채점) | 'multi'(복수 토글 후 제출 — 서버 집합 채점) */
-  interface LiveQ {
-    id: string;
-    topic: string;
-    type: string;
-    prompt: string;
-    hint: string;
-    options: { id: string; emoji: string; text: string }[];
-  }
-  const [liveQs, setLiveQs] = useState<LiveQ[] | null>(null);
-  const [liveIdx, setLiveIdx] = useState(0);
-  const [liveSel, setLiveSel] = useState<string | null>(null);
-  const [liveMultiSel, setLiveMultiSel] = useState<string[]>([]);
-  const [liveResult, setLiveResult] = useState<{
-    correct: boolean;
-    answer_id: string;
-    answer_ids?: string[];
-    answer_text: string;
-    hint: string;
-  } | null>(null);
-  const [liveStats, setLiveStats] = useState({ correct: 0, wrong: 0, streak: 0 });
-
+  /* ===== 교육형 위젯 세션 (전 과목 공통 — 실전 모드 대체) =====
+     문항 발급·채점은 교육형 API가 담당하고, 위젯이 학생 토큰(data-auth)을 실어 보내
+     서버가 채점 시점에 학습기록(코인·진도·오늘의퀴즈)을 적립한다.
+     위젯 이벤트: 문항마다 catchap:answer, 세션(EDU_TOTAL문항) 완료 진행 시 catchap:finished. */
+  // ?day=abc/0 같은 비정상 값은 무시 — NaN이 배너("NaN일차")로 새지 않게 1 이상 정수만 인정
+  const dayParam = Number(searchParams.get('day'));
+  const day = Number.isInteger(dayParam) && dayParam >= 1 ? dayParam : undefined;
+  const EDU_TOTAL = 5; // 한 세션 문항 수 (오늘의퀴즈 기준)
+  const [widgetStats, setWidgetStats] = useState({ answered: 0, correct: 0, wrong: 0, streak: 0 });
+  // 인증이 풀려 채점은 되는데 적립(session 응답)이 빠지는 상태 — 조용히 유실되지 않게 경고
+  const [authLost, setAuthLost] = useState(false);
   useEffect(() => {
-    let on = true;
-    setLiveQs(null);
-    setLiveIdx(0);
-    setLiveSel(null);
-    setLiveMultiSel([]);
-    setLiveResult(null);
-    setLiveStats({ correct: 0, wrong: 0, streak: 0 });
-    setLiveDay(null);
-    // ?day=N 이면 그 일차 커리큘럼, 아니면 무작위 연습
-    const dayParam = searchParams.get('day');
-    const day = dayParam ? Number(dayParam) : undefined;
-    studentApi
-      .gameSession(key, day)
-      .then((d: any) => {
-        if (!on) return;
-        if (d?.available && Array.isArray(d.questions) && d.questions.length > 0) {
-          setLiveQs(d.questions);
-          if (day) setLiveDay({ day, topic: d.topic ?? '', isReplay: !!d.is_replay });
-        }
-      })
-      .catch(() => {
-        /* 실패 시 데모 슬롯 유지 */
-      });
-    return () => {
-      on = false;
-    };
-  }, [key, searchParams]);
+    setWidgetStats({ answered: 0, correct: 0, wrong: 0, streak: 0 });
+    setAuthLost(false);
+  }, [key]);
 
-  const [liveDay, setLiveDay] = useState<{ day: number; topic: string; isReplay: boolean } | null>(null);
-  const liveQ = liveQs ? liveQs[liveIdx] : null;
-  const liveLast = liveQs ? liveIdx >= liveQs.length - 1 : false;
-
-  /* 포인터 궤적 캡처 (#captcha-mount 영역) — 아동용 캡차 판정 모델의 행동 데이터.
-     live/폴백 모드에서 답 제출 시 behavior로 전송. 위젯 모드는 위젯 스크립트가 자체 캡처. */
+  /* 포인터 궤적 캡처 (#captcha-mount 영역) — 폴백(데모) 모드 완료 저장용.
+     위젯 모드는 위젯 스크립트가 자체 캡처해 verify로 보낸다. */
   const mountRef = useRef<HTMLDivElement | null>(null);
   const tracerRef = useRef<PointerTraceRecorder | null>(null);
   useEffect(() => {
@@ -208,66 +167,38 @@ export default function GameScreen() {
       tracerRef.current = null;
     };
   }, []);
-  /* 문항이 바뀌면 궤적·시각 기준 리셋 (과목 전환 포함) */
-  const questionShownAt = useRef(Date.now());
   useEffect(() => {
     tracerRef.current?.reset();
-    questionShownAt.current = Date.now();
-  }, [key, liveIdx, liveQs]);
+  }, [key]);
 
-  const gradeLive = (payload: { option_id?: string; option_ids?: string[] }, onFail: () => void) => {
-    if (!liveQ) return;
-    const behavior = {
-      solve_time_ms: Math.max(0, Date.now() - questionShownAt.current),
-      retry_count: 0,
-      ...(tracerRef.current?.snapshot() ?? {}),
+  /* 위젯 이벤트 배선 — 사이드패널 통계·효과음·완료 시 결과 화면 이동 */
+  useEffect(() => {
+    const el = mountRef.current;
+    if (!el) return;
+    const onAnswer = (e: Event) => {
+      const d = (e as CustomEvent).detail as { correct?: boolean; session?: unknown } | undefined;
+      playSfx(d?.correct ? 'correct' : 'wrong');
+      // session이 빠졌다 = 서버가 학생 인증을 못 받아 적립이 안 됨 (로그인 만료 등)
+      setAuthLost(!d?.session);
+      setWidgetStats((st) => ({
+        answered: st.answered + 1,
+        correct: st.correct + (d?.correct ? 1 : 0),
+        wrong: st.wrong + (d?.correct ? 0 : 1),
+        streak: d?.correct ? st.streak + 1 : 0,
+      }));
     };
-    studentApi
-      .gameAnswer({ question_id: liveQ.id, subject: key, ...payload, last: liveLast, replay: isReplay, behavior })
-      .then((r: any) => {
-        setLiveResult(r);
-        playSfx(r.correct ? 'correct' : 'wrong');
-        setLiveStats((st) => ({
-          correct: st.correct + (r.correct ? 1 : 0),
-          wrong: st.wrong + (r.correct ? 0 : 1),
-          streak: r.correct ? st.streak + 1 : 0,
-        }));
-      })
-      .catch(onFail); // 채점 실패 시 다시 선택 가능
-  };
-
-  const pickLive = (optionId: string) => {
-    if (!liveQ || liveResult) return; // 채점 후 재선택 방지
-    if (liveQ.type === 'multi') {
-      // 복수선택: 토글만 — 제출은 별도 버튼
-      setLiveMultiSel((sel) =>
-        sel.includes(optionId) ? sel.filter((x) => x !== optionId) : [...sel, optionId],
-      );
-      return;
-    }
-    setLiveSel(optionId);
-    gradeLive({ option_id: optionId }, () => setLiveSel(null));
-  };
-
-  const submitLiveMulti = () => {
-    if (!liveQ || liveResult || liveMultiSel.length === 0) return;
-    gradeLive({ option_ids: liveMultiSel }, () => undefined);
-  };
-
-  const nextLive = () => {
-    if (!liveQs) return;
-    if (!liveResult) return; // 아직 안 풀었으면 이동 안 함
-    if (liveLast) {
+    const onFinished = () => {
       // 결과 화면에 day를 넘겨 '다시 하기'가 같은 일차 복습으로 이어지게 한다
-      const dayQ = liveDay ? `&day=${liveDay.day}` : '';
+      const dayQ = day ? `&day=${day}` : '';
       navigate(`${PATHS.STUDENT_RESULT}?subject=${encodeURIComponent(key)}${dayQ}`);
-      return;
-    }
-    setLiveIdx((i) => i + 1);
-    setLiveSel(null);
-    setLiveMultiSel([]);
-    setLiveResult(null);
-  };
+    };
+    el.addEventListener('catchap:answer', onAnswer);
+    el.addEventListener('catchap:finished', onFinished);
+    return () => {
+      el.removeEventListener('catchap:answer', onAnswer);
+      el.removeEventListener('catchap:finished', onFinished);
+    };
+  }, [key, day, navigate]);
 
   /* 세션 시작 시각 — 완료 시 실제 풀이 시간(solve_time_ms) 계산용 */
   const startedAt = useRef<number>(Date.now());
@@ -391,7 +322,10 @@ export default function GameScreen() {
     };
   }, [key]);
 
-  const pct = Math.round((s.current / s.total) * 100);
+  /* 위젯 모드: 이 세션에서 푼 문항 수 기준 진행 표시 (풀이 중 문항 = answered+1) */
+  const curNo = EDU_SITE_KEY ? Math.min(widgetStats.answered + 1, EDU_TOTAL) : s.current;
+  const curTotal = EDU_SITE_KEY ? EDU_TOTAL : s.total;
+  const pct = Math.round(((EDU_SITE_KEY ? widgetStats.answered : s.current) / curTotal) * 100);
   const isLast = s.current >= s.total;
 
   const rewardGoal = rewards[s.key]?.goal ?? 5;
@@ -433,7 +367,7 @@ export default function GameScreen() {
           <div className="gs-progress">
             <div className="gs-progress-labels">
               <span>
-                문제 {s.current} / {s.total}
+                문제 {curNo} / {curTotal}
               </span>
               <span className="gs-progress-pct">{pct}%</span>
             </div>
@@ -485,18 +419,11 @@ export default function GameScreen() {
             </span>
           </div>
 
-          {/* 위젯이 붙는 경우(EDU_SITE_KEY && !liveQ) 실제 문제는 위젯이 보여주므로,
+          {/* 위젯 모드(EDU_SITE_KEY): 실제 문제는 위젯이 보여주므로
               바깥 제목은 정적 문항 대신 게임 제목만 노출해 이중 질문을 피한다. */}
-          <h1 className="gs-question">
-            {liveQ ? liveQ.prompt : !liveQ && EDU_SITE_KEY ? s.gameTitle : qd.q}
-          </h1>
+          <h1 className="gs-question">{EDU_SITE_KEY ? s.gameTitle : qd.q}</h1>
           <p className="gs-subline">
-            {liveQ ? (
-              <>
-                알맞은 <span className="gs-subhi">답 카드</span>를 눌러요.
-                {liveQ.topic && <span className="gs-livetopic">{liveQ.topic}</span>}
-              </>
-            ) : !liveQ && EDU_SITE_KEY ? (
+            {EDU_SITE_KEY ? (
               <>
                 아래 <span className="gs-subhi">{s.key}</span> 문제를 풀어봐요.
               </>
@@ -508,6 +435,19 @@ export default function GameScreen() {
               </>
             )}
           </p>
+          {EDU_SITE_KEY && day != null && (
+            <div className={`gs-live-daybar${isReplay ? ' gs-live-daybar--replay' : ''}`}>
+              <i className={isReplay ? 'ph-fill ph-arrow-counter-clockwise' : 'ph-fill ph-calendar-star'} />
+              {day}일차 커리큘럼{isReplay ? ' · 복습(코인 없음)' : ' · 오늘 과제'}
+            </div>
+          )}
+          {authLost && (
+            <div className="gs-authwarn">
+              <i className="ph-fill ph-warning-circle" />
+              로그인이 풀려서 코인·진도가 저장되지 않고 있어요.
+              <Link to={PATHS.LOGIN} className="gs-authwarn-link">다시 로그인</Link>
+            </div>
+          )}
 
           {/* ▼▼▼ CAPTCHA API MOUNT SLOT — 실제 게임 챌린지가 이 컨테이너 안에 렌더링됩니다 ▼▼▼ */}
           <div
@@ -515,76 +455,27 @@ export default function GameScreen() {
             ref={mountRef}
             data-captcha-slot="true"
             data-subject={s.key}
-            data-question={liveQ ? liveIdx + 1 : s.current}
+            data-question={curNo}
             className="gs-mount"
           >
             <span className="gs-mount-tagleft">#captcha-mount</span>
             <span className="gs-mount-tagright">
-              문제 {liveQ ? liveIdx + 1 : s.current}/{liveQs ? liveQs.length : s.total}
+              문제 {curNo}/{curTotal}
             </span>
-            {liveQ ? (
-              /* 실전 문항 (서버 발급·서버 채점 — 생활: capcha_service ms 문제은행) */
-              <div className="gs-live">
-                {liveDay && (
-                  <div className={`gs-live-daybar${liveDay.isReplay ? ' gs-live-daybar--replay' : ''}`}>
-                    <i className={liveDay.isReplay ? 'ph-fill ph-arrow-counter-clockwise' : 'ph-fill ph-calendar-star'} />
-                    {liveDay.day}일차 · {liveDay.topic}
-                    {liveDay.isReplay ? ' · 복습(코인 없음)' : ' · 오늘 과제'}
-                  </div>
-                )}
-                {liveQ.type === 'multi' && !liveResult && (
-                  <div className="gs-live-multibar">
-                    <i className="ph-fill ph-checks" /> 맞는 것을 <b>모두</b> 고르고 제출을 눌러요!
-                  </div>
-                )}
-                <div className="gs-live-options">
-                  {liveQ.options.map((o) => {
-                    const isMulti = liveQ.type === 'multi';
-                    const isSel = isMulti ? liveMultiSel.includes(o.id) : liveSel === o.id;
-                    const answerIds = liveResult ? (liveResult.answer_ids ?? [liveResult.answer_id]) : [];
-                    const isAns = liveResult ? answerIds.includes(o.id) : false;
-                    const cls = [
-                      'gs-live-opt',
-                      liveResult && isAns ? 'gs-live-opt--answer' : '',
-                      liveResult && isSel && !liveResult.correct && !isAns ? 'gs-live-opt--wrong' : '',
-                      !liveResult && isSel ? 'gs-live-opt--sel' : '',
-                    ].join(' ');
-                    return (
-                      <button key={o.id} className={cls} disabled={!!liveResult} onClick={() => pickLive(o.id)}>
-                        <span className="gs-live-emoji">{o.emoji}</span>
-                        <span className="gs-live-text">{o.text}</span>
-                        {liveResult && isAns && <i className="ph-fill ph-check-circle gs-live-mark gs-live-mark--ok" />}
-                        {liveResult && isSel && !liveResult.correct && !isAns && (
-                          <i className="ph-fill ph-x-circle gs-live-mark gs-live-mark--no" />
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-                {liveQ.type === 'multi' && !liveResult && (
-                  <button className="gs-live-submit" disabled={liveMultiSel.length === 0} onClick={submitLiveMulti}>
-                    <i className="ph-fill ph-paper-plane-tilt" /> 제출하기
-                    {liveMultiSel.length > 0 ? ` (${liveMultiSel.length}개 선택)` : ''}
-                  </button>
-                )}
-                {liveResult && (
-                  <div className={`gs-live-feedback ${liveResult.correct ? 'gs-live-feedback--ok' : 'gs-live-feedback--no'}`}>
-                    <i className={liveResult.correct ? 'ph-fill ph-confetti' : 'ph-fill ph-lightbulb'} />
-                    {liveResult.correct
-                      ? '정답이에요! 참 잘했어요 🎉'
-                      : `아쉬워요! 정답은 "${liveResult.answer_text}" — ${liveResult.hint || '다시 떠올려 봐요.'}`}
-                  </div>
-                )}
-              </div>
-            ) : EDU_SITE_KEY ? (
+            {EDU_SITE_KEY ? (
               /* 1st-party 임베드 — 우리 앱이 교육형 API(위젯)를 직접 소비.
-                 과목별 챌린지 + 행동데이터 수집(behavior_summaries). 게임 화면 크기(full). */
+                 학생 토큰(auth)을 실어 서버가 채점 시점에 코인·진도·오늘의퀴즈를 적립하고,
+                 행동데이터(behavior_summaries)도 학생 귀속으로 수집한다. */
               <CatchapWidget
                 siteKey={EDU_SITE_KEY}
                 api={WIDGET_API}
                 subject={s.key}
                 size="full"
                 className="gs-mount-widget"
+                auth={getFreshAccessToken}
+                day={day}
+                replay={isReplay}
+                total={EDU_TOTAL}
               />
             ) : (
               <div className="gs-mount-body">
@@ -617,19 +508,19 @@ export default function GameScreen() {
                 <span className="gs-staticon gs-staticon-ok">
                   <i className="ph-fill ph-check-circle" />
                 </span>
-                맞힌 문제 <span className="gs-statval gs-statval-ok">{liveQs ? liveStats.correct : s.correct}</span>
+                맞힌 문제 <span className="gs-statval gs-statval-ok">{EDU_SITE_KEY ? widgetStats.correct : s.correct}</span>
               </div>
               <div className="gs-statrow">
                 <span className="gs-staticon gs-staticon-no">
                   <i className="ph-fill ph-x-circle" />
                 </span>
-                틀린 문제 <span className="gs-statval gs-statval-no">{liveQs ? liveStats.wrong : s.wrong}</span>
+                틀린 문제 <span className="gs-statval gs-statval-no">{EDU_SITE_KEY ? widgetStats.wrong : s.wrong}</span>
               </div>
               <div className="gs-statrow">
                 <span className="gs-staticon gs-staticon-streak">
                   <i className="ph-fill ph-lightning" />
                 </span>
-                연속 정답 <span className="gs-statval gs-statval-streak">{liveQs ? liveStats.streak : s.streak}</span>
+                연속 정답 <span className="gs-statval gs-statval-streak">{EDU_SITE_KEY ? widgetStats.streak : s.streak}</span>
               </div>
             </div>
           </div>
@@ -656,23 +547,15 @@ export default function GameScreen() {
         </div>
       </div>
 
-      {/* BOTTOM ACTION BAR */}
-      <div className="gs-bottombar">
-        <div className="gs-bottombar-inner">
-          <div className="gs-status">
-            {s.key} · {liveQ ? liveIdx + 1 : s.current}/{liveQs ? liveQs.length : s.total}문제 진행 중
-          </div>
-          <div className="gs-actions">
-            {liveQs ? (
-              <button
-                className={`gs-confirm${!liveResult ? ' gs-confirm--wait' : ''}`}
-                onClick={nextLive}
-                disabled={!liveResult}
-              >
-                {liveResult ? (liveLast ? '결과 보기' : '다음 문제') : '답을 골라주세요'}{' '}
-                <i className="ph-fill ph-arrow-right" />
-              </button>
-            ) : (
+      {/* BOTTOM ACTION BAR — 폴백(데모) 모드 전용. 위젯 모드에선 진행·완료를
+          위젯 풋터(다음 문제/결과 보기)가 담당하고 적립은 서버가 하므로 바가 필요 없다. */}
+      {!EDU_SITE_KEY && (
+        <div className="gs-bottombar">
+          <div className="gs-bottombar-inner">
+            <div className="gs-status">
+              {s.key} · {s.current}/{s.total}문제 진행 중
+            </div>
+            <div className="gs-actions">
               <div className="gs-finishwrap" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
                 {saveError && (
                   <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: '#E23D3D', fontWeight: 700, fontSize: 13 }}>
@@ -685,10 +568,10 @@ export default function GameScreen() {
                   <i className="ph-fill ph-arrow-right" />
                 </button>
               </div>
-            )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       <ScreenTimeReminder />
     </div>

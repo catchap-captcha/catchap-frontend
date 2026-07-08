@@ -50,9 +50,18 @@ interface Props {
   subject?: string; // 교육형: 과목별 챌린지 요청
   size?: 'full' | 'compact';
   className?: string;
+  /* 인앱(1st-party) 학습 세션 전용 — 외부 임베드 데모에선 생략 */
+  // 학생 access token → 서버가 채점 결과를 학습기록에 적립.
+  // 함수를 주면 위젯이 매 요청 전에 호출해 항상 유효한 토큰을 쓴다(만료 자동 갱신).
+  auth?: string | (() => Promise<string | null>) | null;
+  day?: number; // 커리큘럼 일차 (생활)
+  replay?: boolean; // 복습 — 코인·퀴즈 상태 미반영
+  total?: number; // 세션 문항 수 — 채우면 위젯이 catchap:finished 발신
 }
 
-export default function CatchapWidget({ siteKey, api, subject, size = 'full', className }: Props) {
+export default function CatchapWidget({
+  siteKey, api, subject, size = 'full', className, auth, day, replay, total,
+}: Props) {
   const hostRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -67,6 +76,15 @@ export default function CatchapWidget({ siteKey, api, subject, size = 'full', cl
     box.setAttribute('data-api', api);
     box.setAttribute('data-size', size);
     if (subject) box.setAttribute('data-subject', subject);
+    if (typeof auth === 'function') {
+      // 함수형 토큰: DOM 속성에 못 실으므로 프로퍼티로 전달 — 위젯이 요청마다 호출
+      (box as HTMLDivElement & { catchapAuth?: () => Promise<string | null> }).catchapAuth = auth;
+    } else if (auth) {
+      box.setAttribute('data-auth', auth);
+    }
+    if (day) box.setAttribute('data-day', String(day));
+    if (replay) box.setAttribute('data-replay', '1');
+    if (total) box.setAttribute('data-total', String(total));
     host.appendChild(box);
 
     ensureScript(api)
@@ -84,8 +102,8 @@ export default function CatchapWidget({ siteKey, api, subject, size = 'full', cl
       // 마운트 노드 제거(구독/타이머 없는 순수 DOM 위젯이라 노드 제거로 충분)
       if (box.parentNode) box.parentNode.removeChild(box);
     };
-    // subject/siteKey가 바뀌면 재마운트
-  }, [siteKey, api, subject, size]);
+    // subject/siteKey 등이 바뀌면 재마운트
+  }, [siteKey, api, subject, size, auth, day, replay, total]);
 
   return <div ref={hostRef} className={className} />;
 }
