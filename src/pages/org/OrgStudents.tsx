@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import OrgLayout from '../../layouts/OrgLayout';
 import { useAuth } from '../../hooks/useAuth';
 import { orgApi } from '../../api/org';
@@ -42,6 +42,37 @@ export default function OrgStudents() {
   const [issued, setIssued] = useState<{ login_id: string; join_code: string }[] | null>(null);
   const [creating, setCreating] = useState(false);
   const [createErr, setCreateErr] = useState('');
+
+  // 실배정 학생 명단 로딩 (기존엔 호출 자체가 없어 하드코딩 4행만 보이던 것 해소)
+  useEffect(() => {
+    const orgId = me?.organization_id;
+    if (!orgId) return;
+    let on = true;
+    orgApi
+      .roster(orgId)
+      .then((res: any) => {
+        if (!on) return;
+        const studs = Array.isArray(res?.students) ? res.students : [];
+        if (!studs.length) return; // 학생 없으면 FALLBACK 유지(화면 빈 것 방지)
+        setRows(
+          studs.map((s: any) => ({
+            id: String(s.id),
+            nickname: String(s.nickname ?? s.name ?? ''),
+            login_id: String(s.login_id ?? s.code ?? ''),
+            className: String(s.cls ?? ''),
+            status: s.status === 'pending' ? 'pending' : 'active',
+            join_code: null, // 가입코드는 등록/발급 액션에서만 노출(서버 발급)
+            invite_code: null, // 학부모 초대코드는 발급 버튼으로 생성
+          })),
+        );
+      })
+      .catch(() => {
+        // 실패 시 FALLBACK 유지
+      });
+    return () => {
+      on = false;
+    };
+  }, [me?.organization_id]);
 
   const flash = (m: string) => {
     setToast(m);
