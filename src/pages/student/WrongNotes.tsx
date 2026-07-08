@@ -8,7 +8,7 @@ import './WrongNotes.css';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-type Cat = 'word' | 'num' | 'img' | 'safe' | 'hist';
+type Cat = 'word' | 'num' | 'img' | 'safe' | 'hist' | 'eng';
 type FilterKey = 'all' | Cat;
 
 interface WrongItem {
@@ -27,6 +27,7 @@ const CHIPS: { key: FilterKey; label: string; icon: string }[] = [
   { key: 'img', label: '이미지 선택', icon: 'ph-fill ph-image' },
   { key: 'safe', label: '생활 안전', icon: 'ph-fill ph-shield-check' },
   { key: 'hist', label: '역사·문화', icon: 'ph-fill ph-scroll' },
+  { key: 'eng', label: '영어·어휘', icon: 'ph-fill ph-translate' },
 ];
 
 /** subject: "다시 풀기" → 게임화면 `?subject=` 매핑 (HANDOFF_ROUTE_MAP의 깨진 링크 통일 규칙) */
@@ -36,6 +37,7 @@ const TAG: Record<Cat, { label: string; icon: string; c: string; bg: string; sub
   img: { label: '이미지 선택', icon: 'ph-fill ph-image', c: '#2E7BFF', bg: '#E6F0FF', subject: '과학' },
   safe: { label: '생활 안전', icon: 'ph-fill ph-shield-check', c: '#8B6BFF', bg: '#EDE6FF', subject: '생활' },
   hist: { label: '역사·문화', icon: 'ph-fill ph-scroll', c: '#17B08C', bg: '#DFF6EE', subject: '역사' },
+  eng: { label: '영어·어휘', icon: 'ph-fill ph-translate', c: '#E0489E', bg: '#FCE4F1', subject: '영어' },
 };
 
 // TODO(api): studentApi.wrongNotes() 실패 시 원본 하드코딩 데이터 유지
