@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from 'react';
 import CountUp from '../../components/motion/CountUp';
+import DemoBadge from '../../components/common/DemoBadge';
 import { Link } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
 import { useAuth } from '../../hooks/useAuth';
@@ -227,6 +228,7 @@ function mapDashboard(res: any): Partial<ThDashboard> | null {
 export default function TeacherHome() {
   const { me } = useAuth();
   const [data, setData] = useState<ThDashboard>(FALLBACK);
+  const [demo, setDemo] = useState(false); // 실 시도가 없어 그래프·KPI가 데모값이면 true
   const [cls, setCls] = useState('1-2');
   const name = me?.name || data.teacherName || '이수진';
 
@@ -236,6 +238,7 @@ export default function TeacherHome() {
       .dashboard()
       .then((res: any) => {
         if (!on) return;
+        setDemo(!!res?.demo);
         const mapped = mapDashboard(res);
         // 성공 시 API에 존재하는 필드만 덮어쓰기 — 나머지는 FALLBACK 유지
         if (mapped) setData((d) => ({ ...d, ...mapped }));
@@ -283,6 +286,7 @@ export default function TeacherHome() {
       }
     >
       <main className="th-main">
+        <DemoBadge show={demo} variant="banner" />
         {/* HEADER */}
         <div className="th-header">
           <div>

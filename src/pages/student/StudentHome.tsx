@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import CountUp from '../../components/motion/CountUp';
+import DemoBadge from '../../components/common/DemoBadge';
 import { Link } from 'react-router-dom';
 import StudentLayout from '../../layouts/StudentLayout';
 import { PATHS } from '../../routes/paths';
@@ -260,6 +261,7 @@ export default function StudentHome() {
   const name = (me?.name ?? '하은').trim() || '하은';
 
   const [data, setData] = useState<HomeData>(FALLBACK);
+  const [demo, setDemo] = useState(false); // 성장 그래프가 데모값(시도 없음)이면 true
   const [scrollActive, setScrollActive] = useState<'home' | 'today'>('home');
   const [bubbleMessage, setBubbleMessage] = useState<string | null>(null);
   const [bubbleKey, setBubbleKey] = useState(0);
@@ -276,6 +278,7 @@ export default function StudentHome() {
       .dashboard()
       .then((d: any) => {
         if (!mounted || !d) return;
+        setDemo(!!d.demo);
         setData((prev) => ({ ...prev, ...mapDashboard(d, prev) }));
       })
       .catch(() => {
@@ -356,6 +359,7 @@ export default function StudentHome() {
       active={scrollActive === 'today' ? null : 'home'}
       onHomeClick={() => setScrollActive('home')}
     >
+      <div style={{ padding: '0 16px' }}><DemoBadge show={demo} variant="banner" /></div>
       {/* ================= HERO ================= */}
       <section className="sh-hero-sec">
         <div className="sh-hero">

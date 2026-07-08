@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import StudentLayout from '../../layouts/StudentLayout';
+import DemoBadge from '../../components/common/DemoBadge';
 import { PATHS } from '../../routes/paths';
 import { useAuth } from '../../hooks/useAuth';
 import { studentApi } from '../../api/students';
@@ -229,6 +230,7 @@ function mapRecords(d: any, prev: RecordsData): Partial<RecordsData> {
 export default function MyRecords() {
   const { me } = useAuth();
   const [data, setData] = useState<RecordsData>(FALLBACK);
+  const [demo, setDemo] = useState(false); // 시도 기록이 없어 전부 데모값이면 true
   const [subject, setSubject] = useState('전체');
 
   useEffect(() => {
@@ -237,6 +239,7 @@ export default function MyRecords() {
       .records()
       .then((d: any) => {
         if (!mounted || !d) return;
+        setDemo(!!d.demo);
         setData((prev) => ({ ...prev, ...mapRecords(d, prev) }));
       })
       .catch(() => {
@@ -305,6 +308,7 @@ export default function MyRecords() {
 
   return (
     <StudentLayout className="mr-root">
+      <div style={{ padding: '0 16px' }}><DemoBadge show={demo} variant="banner" /></div>
       {/* HEADER */}
       <section className="mr-section mr-header">
         <div className="mr-headrow">

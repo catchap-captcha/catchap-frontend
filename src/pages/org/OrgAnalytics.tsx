@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import CountUp from '../../components/motion/CountUp';
+import DemoBadge from '../../components/common/DemoBadge';
 import { Link } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
 import { useAuth } from '../../hooks/useAuth';
@@ -253,6 +254,7 @@ export default function OrgAnalytics() {
   const [period, setPeriod] = useState<Period>('week');
   const [trendSubject, setTrendSubject] = useState('all');
   const [remote, setRemote] = useState<{ key: string; data: Partial<OaPeriodData> } | null>(null);
+  const [demo, setDemo] = useState(false); // 학습 실집계 없어 그래프·표가 데모값이면 true
   const [subjects, setSubjects] = useState<OaSubject[]>(SUBJECTS);
   const [grades, setGrades] = useState<OaGrade[]>(GRADES);
   const [classes, setClasses] = useState<OaClassRow[]>(CLASSES);
@@ -272,6 +274,7 @@ export default function OrgAnalytics() {
       .then((res: any) => {
         if (!on || !res || typeof res !== 'object') return;
         const blob = res[period] ?? res;
+        setDemo(!!blob.demo);
         const mapped = mapAnalytics(blob);
         if (mapped.kAcc || Array.isArray(mapped.accPct)) setRemote({ key: `${period}|${trendSubject}`, data: mapped });
         const subj = mapSubjects(blob.subjects);
@@ -311,6 +314,7 @@ export default function OrgAnalytics() {
 
   return (
     <OrgLayout active="analytics" widget="insight">
+      <DemoBadge show={demo} variant="banner" />
       {/* HEADER */}
       <div className="oa-header">
         <div>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import ParentLayout, { ParentBellLink } from '../../layouts/ParentLayout';
+import DemoBadge from '../../components/common/DemoBadge';
 import { parentApi } from '../../api/parents';
 import { useToast } from '../../hooks/useToast';
 import { dateSuffix, downloadCanvasPng } from '../../utils/download';
@@ -177,6 +178,7 @@ export default function ParentReports() {
   const [period, setPeriod] = useState<'week' | 'month' | 'year'>('week');
   const [trendSubject, setTrendSubject] = useState('all');
   const [apiReport, setApiReport] = useState<any>(null);
+  const [demo, setDemo] = useState(false); // 자녀 기간 실집계 없어 등급·차트가 데모값이면 true
   const { toast, flash } = useToast();
 
   // TODO(api): 자녀 목록 — 실패 시 원본 하드코딩 자녀 칩 유지
@@ -223,7 +225,10 @@ export default function ParentReports() {
     parentApi
       .childReport(cur.id, period, trendSubject === 'all' ? undefined : trendSubject)
       .then((r: any) => {
-        if (mounted && r && typeof r === 'object') setApiReport(r);
+        if (mounted && r && typeof r === 'object') {
+          setApiReport(r);
+          setDemo(!!r.demo);
+        }
       })
       .catch(() => {
         // TODO(api): 백엔드 미구현/실패 시 FALLBACK 유지
@@ -390,6 +395,7 @@ export default function ParentReports() {
   return (
     <ParentLayout className="prt-bg" bell={<ParentBellLink />}>
       <div className="prt-container">
+        <DemoBadge show={demo} variant="banner" />
         {/* CHILD + PERIOD BAR */}
         <div className="prt-topbar">
           <div className="prt-top-left">

@@ -1,5 +1,6 @@
 import { useEffect, useState, type CSSProperties } from 'react';
 import CountUp from '../../components/motion/CountUp';
+import DemoBadge from '../../components/common/DemoBadge';
 import { Link } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
 import { useAuth } from '../../hooks/useAuth';
@@ -286,6 +287,7 @@ export default function OrgHome() {
   const [showMore, setShowMore] = useState(false);
   const [barPage, setBarPage] = useState(0);
   const [remote, setRemote] = useState<Partial<Record<Period, Partial<OhPeriodData>>>>({});
+  const [demo, setDemo] = useState(false); // 학습 실집계 없어 정답률·학급표가 데모값이면 true
   const [grades, setGrades] = useState<OhGrade[]>(GRADES);
   const [bars, setBars] = useState<OhBar[]>(BARS);
   const [classRows, setClassRows] = useState<OhClassRow[]>(CLASS_ROWS);
@@ -300,6 +302,7 @@ export default function OrgHome() {
       .then((res: any) => {
         if (!on || !res || typeof res !== 'object') return;
         const blob = res[period] ?? res;
+        setDemo(!!blob.demo);
         const mapped = mapDashboard(blob);
         if (mapped.kStudents) setRemote((r) => ({ ...r, [period]: mapped }));
         const g = mapDashGrades(blob);
@@ -365,6 +368,7 @@ export default function OrgHome() {
 
   return (
     <OrgLayout active="home" widget="pro">
+      <DemoBadge show={demo} variant="banner" />
       {/* HEADER */}
       <div className="oh-header">
         <div>

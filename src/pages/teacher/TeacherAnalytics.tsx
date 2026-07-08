@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from 'react';
 import CountUp from '../../components/motion/CountUp';
+import DemoBadge from '../../components/common/DemoBadge';
 import { Link } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
 import { teacherApi } from '../../api/teacher';
@@ -288,6 +289,7 @@ export default function TeacherAnalytics() {
   const [className, setClassName] = useState('1-2반');
   const [aiSummary, setAiSummary] = useState(FALLBACK_AI);
   const [insight, setInsight] = useState(FALLBACK_INSIGHT);
+  const [demo, setDemo] = useState(false); // 실집계 없어 시리즈·수치가 데모값이면 true
 
   const remoteKey = `${period}:${trendSubject}`;
 
@@ -299,6 +301,7 @@ export default function TeacherAnalytics() {
         if (!on) return;
         // class_name / ai_summary / insight — 시리즈 유무와 무관하게 반영
         const src = res?.data ?? res;
+        setDemo(!!src?.demo);
         if (src && typeof src === 'object') {
           if (src.class_name) setClassName(String(src.class_name));
           const ai = src.ai_summary;
@@ -359,6 +362,7 @@ export default function TeacherAnalytics() {
       }
     >
       <main className="ta-main">
+        <DemoBadge show={demo} variant="banner" />
         {/* HEADER */}
         <div className="ta-header">
           <div>
