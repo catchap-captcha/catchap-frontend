@@ -147,6 +147,8 @@ export interface BehaviorRecord {
   retry_count: number;
   drop_distance_norm: number;
   interaction_result: string | null;
+  input_type: string; // pointer | key | touch 등 입력 방식 (CSV 내보내기·분석용)
+  sample_label: string | null; // 학습셋 큐레이션 라벨 (없으면 null)
   risk_level: string;
   dataset_status: string; // candidate | included | excluded
   trace_points: number | null; // null = 원시 궤적 없음
