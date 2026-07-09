@@ -98,7 +98,7 @@ const FALLBACK: RecordsData = {
     { key: '영어', color: '#FF922E', data: [60, 66, 70, 68, 74, 79] },
     { key: '수학', color: '#2E7BFF', data: [70, 74, 72, 80, 83, 86] },
     { key: '과학', color: '#8B6BFF', data: [55, 62, 60, 68, 72, 77] },
-    { key: '역사', color: '#33C892', data: [64, 68, 72, 75, 79, 84] },
+    { key: '사회', color: '#33C892', data: [64, 68, 72, 75, 79, 84] },
     { key: '생활', color: '#FF6DA6', data: [78, 80, 79, 85, 88, 91] },
   ],
   activities: [
@@ -113,7 +113,7 @@ const FALLBACK: RecordsData = {
 const GRID_LINES = [50, 60, 70, 80, 90, 100];
 
 /** 정답률 흐름 탭 순서 — 디자인 순서(전체 → 과목들) 유지용 */
-const SUBJECT_ORDER = ['전체', '국어', '영어', '수학', '과학', '역사', '생활'];
+const SUBJECT_ORDER = ['전체', '국어', '영어', '수학', '과학', '사회', '생활'];
 
 /**
  * GET /students/me/records 응답 → RecordsData 매핑.

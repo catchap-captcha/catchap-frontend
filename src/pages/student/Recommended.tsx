@@ -29,7 +29,7 @@ const SUBJECT_STYLE: Record<string, { icon: string; bg: string; color: string }>
   '영어': { icon: 'ph-fill ph-translate', bg: '#FFEDD6', color: '#FF922E' },
   '수학': { icon: 'ph-fill ph-plus-minus', bg: '#DFF6EE', color: '#17B08C' },
   '과학': { icon: 'ph-fill ph-flask', bg: '#E1EDFF', color: '#2E7BFF' },
-  '역사': { icon: 'ph-fill ph-scroll', bg: '#EAE2FF', color: '#8B6BFF' },
+  '사회': { icon: 'ph-fill ph-scroll', bg: '#EAE2FF', color: '#8B6BFF' },
   '생활': { icon: 'ph-fill ph-house-line', bg: '#FFE3EF', color: '#FF6DA6' },
 };
 
@@ -39,7 +39,7 @@ const FALLBACK: RecItem[] = [
   { title: '동물 친구 관찰하기', subject: '과학', cat: '과학', chapter: 1, priority: '우선', reason: '정답을 골랐다가 자주 바꿨어요. 한 번 더 연습!', icon: 'ph-fill ph-flask', bg: '#E1EDFF', color: '#2E7BFF' },
   { title: '받침 있는 낱말 찾기', subject: '국어', cat: '국어', chapter: 2, priority: '보통', reason: '비슷한 낱말에서 살짝 헷갈렸어요.', icon: 'ph-fill ph-book-open', bg: '#FFE0DB', color: '#FF5A4D' },
   { title: '알파벳 소리 맞히기', subject: '영어', cat: '영어', chapter: 2, priority: '보통', reason: '파닉스 소리에서 헷갈린 적이 있어요.', icon: 'ph-fill ph-translate', bg: '#FFEDD6', color: '#FF922E' },
-  { title: '위인 이야기 떠올리기', subject: '역사', cat: '역사', chapter: 2, priority: '낮음', reason: '대체로 잘했지만 한 문제만 다시 볼까요?', icon: 'ph-fill ph-scroll', bg: '#EAE2FF', color: '#8B6BFF' },
+  { title: '위인 이야기 떠올리기', subject: '사회', cat: '사회', chapter: 2, priority: '낮음', reason: '대체로 잘했지만 한 문제만 다시 볼까요?', icon: 'ph-fill ph-scroll', bg: '#EAE2FF', color: '#8B6BFF' },
   { title: '안전한 행동 고르기', subject: '생활', cat: '생활', chapter: 1, priority: '낮음', reason: '상황을 보고 바른 행동을 한 번 더 골라봐요.', icon: 'ph-fill ph-house-line', bg: '#FFE3EF', color: '#FF6DA6' },
 ];
 
@@ -50,7 +50,7 @@ const CHIPS = [
   { key: '영어', label: '영어' },
   { key: '수학', label: '수학' },
   { key: '과학', label: '과학' },
-  { key: '역사', label: '역사' },
+  { key: '사회', label: '사회' },
   { key: '생활', label: '생활' },
 ];
 

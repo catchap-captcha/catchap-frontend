@@ -46,10 +46,10 @@ const SUBJECT_META: Record<string, { key: string; desc: string; c1: string; c2: 
   영어: { key: 'eng', desc: '알파벳과 쉬운 단어를 만나요', c1: '#FFB43C', c2: '#FF922E', icon: 'ph-fill ph-translate' },
   수학: { key: 'math', desc: '수와 셈을 놀이로 배워요', c1: '#33C892', c2: '#17B0A0', icon: 'ph-fill ph-plus-minus' },
   과학: { key: 'sci', desc: '관찰하고 탐구하며 배워요', c1: '#4AA6FF', c2: '#2E7BFF', icon: 'ph-fill ph-flask' },
-  역사: { key: 'hist', desc: '옛날 이야기와 지혜를 만나요', c1: '#A98CFF', c2: '#8B6BFF', icon: 'ph-fill ph-scroll' },
+  사회: { key: 'soc', desc: '옛날 이야기와 지혜를 만나요', c1: '#A98CFF', c2: '#8B6BFF', icon: 'ph-fill ph-scroll' },
   생활: { key: 'life', desc: '생활 속 안전과 지혜를 익혀요', c1: '#FF93BE', c2: '#FF6DA6', icon: 'ph-fill ph-house-line' },
 };
-const SUBJECT_ORDER = ['국어', '영어', '수학', '과학', '역사', '생활'];
+const SUBJECT_ORDER = ['국어', '영어', '수학', '과학', '사회', '생활'];
 
 function makeCat(subject: string): Cat {
   const m = SUBJECT_META[subject];
@@ -72,7 +72,7 @@ const CHIPS = [
   { key: 'eng', label: '영어', icon: 'ph-fill ph-translate' },
   { key: 'math', label: '수학', icon: 'ph-fill ph-plus-minus' },
   { key: 'sci', label: '과학', icon: 'ph-fill ph-flask' },
-  { key: 'hist', label: '역사', icon: 'ph-fill ph-scroll' },
+  { key: 'soc', label: '사회', icon: 'ph-fill ph-scroll' },
   { key: 'life', label: '생활', icon: 'ph-fill ph-house-line' },
 ];
 
@@ -215,7 +215,7 @@ export default function AllLearning() {
             </span>
             <div>
               <h1 className="al-title">전체 학습</h1>
-              <p className="al-subtitle">국어·영어·수학·과학·역사·생활 여섯 과목을 단계별로 차근차근 배워요</p>
+              <p className="al-subtitle">국어·영어·수학·과학·사회·생활 여섯 과목을 단계별로 차근차근 배워요</p>
             </div>
           </div>
           <div className="al-stats">

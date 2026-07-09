@@ -56,7 +56,7 @@ const FALLBACK = {
     weaknesses: [
       { name: '수학', pct: '72%' },
       { name: '영어', pct: '78%' },
-      { name: '역사', pct: '75%' },
+      { name: '사회', pct: '75%' },
     ],
     strengthNote: '국어·과학에서 꾸준히 높은 정답률을 유지하고 있어요. 새로운 도전 문제도 잘 소화해요.',
     weaknessNote: '수학에서 개념 오답이 반복돼요. 사과 세기처럼 눈으로 보는 활동이 도움돼요.',
@@ -119,7 +119,7 @@ const TREND_SUBJECT_OPTIONS = [
   { value: '영어', label: '영어' },
   { value: '수학', label: '수학' },
   { value: '과학', label: '과학' },
-  { value: '역사', label: '역사' },
+  { value: '사회', label: '사회' },
   { value: '생활', label: '생활' },
 ];
 
@@ -164,8 +164,8 @@ const RECS_FALLBACK = [
 const AXIS = ['5주전', '4주전', '3주전', '2주전', '지난주', '이번주'];
 const BASE = [80, 82, 83, 85, 87, 89];
 const CBASE = [79, 80, 80, 81, 82, 82];
-const SUBJ_LAST: Record<string, number> = { all: 89, 국어: 96, 영어: 78, 수학: 72, 과학: 92, 역사: 75, 생활: 88 };
-const CLASS_LAST: Record<string, number> = { all: 82, 국어: 88, 영어: 74, 수학: 69, 과학: 85, 역사: 72, 생활: 83 };
+const SUBJ_LAST: Record<string, number> = { all: 89, 국어: 96, 영어: 78, 수학: 72, 과학: 92, 사회: 75, 생활: 88 };
+const CLASS_LAST: Record<string, number> = { all: 82, 국어: 88, 영어: 74, 수학: 69, 과학: 85, 사회: 72, 생활: 83 };
 
 const str = (v: any, fb: string) => (typeof v === 'string' && v ? v : fb);
 const arr = <T,>(v: any, fb: T[]): T[] => (Array.isArray(v) && v.length ? (v as T[]) : fb);

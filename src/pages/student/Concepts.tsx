@@ -28,7 +28,7 @@ const SUBJECTS: Record<string, SubjectTheme> = {
   '영어': { color: '#FF922E', soft: '#FFEDD6', band: 'linear-gradient(150deg,#FFEFD9,#FFE0BE)', grad: 'linear-gradient(150deg,#FFB43C,#FF922E)', icon: 'ph-fill ph-translate' },
   '수학': { color: '#17B08C', soft: '#DFF6EE', band: 'linear-gradient(150deg,#E4F7F0,#CDEEE1)', grad: 'linear-gradient(150deg,#33C892,#17B0A0)', icon: 'ph-fill ph-plus-minus' },
   '과학': { color: '#2E7BFF', soft: '#E1EDFF', band: 'linear-gradient(150deg,#E9F1FF,#D3E3FF)', grad: 'linear-gradient(150deg,#4AA6FF,#2E7BFF)', icon: 'ph-fill ph-flask' },
-  '역사': { color: '#8B6BFF', soft: '#EAE2FF', band: 'linear-gradient(150deg,#EFE9FF,#DED2FF)', grad: 'linear-gradient(150deg,#A98CFF,#8B6BFF)', icon: 'ph-fill ph-scroll' },
+  '사회': { color: '#8B6BFF', soft: '#EAE2FF', band: 'linear-gradient(150deg,#EFE9FF,#DED2FF)', grad: 'linear-gradient(150deg,#A98CFF,#8B6BFF)', icon: 'ph-fill ph-scroll' },
   '생활': { color: '#FF6DA6', soft: '#FFE3EF', band: 'linear-gradient(150deg,#FFE8F1,#FFD3E3)', grad: 'linear-gradient(150deg,#FF93BE,#FF6DA6)', icon: 'ph-fill ph-house-line' },
 };
 
@@ -62,12 +62,12 @@ const CONCEPTS: Record<string, Concept[]> = {
     { name: '물과 공기', icon: 'ph-fill ph-drop', summary: '물과 공기는 보이거나 안 보여요.', points: ['물은 얼면 얼음, 끓으면 김이 돼요.', '공기는 안 보여도 우리 곁에 있어요.', '바람은 움직이는 공기예요.'], example: '물이 얼면 단단한 얼음이 돼요 🧊' },
     { name: '종합 복습', icon: 'ph-fill ph-star', summary: '배운 과학을 떠올려봐요.', points: ['동물, 식물, 날씨를 관찰해봐요.', '궁금한 걸 ‘왜?’ 하고 물어봐요.', '오늘 본 것 하나를 그려봐요.'], example: '창밖 날씨를 관찰하고 말해봐요!' },
   ],
-  '역사': [
+  '사회': [
     { name: '옛날 사람들', icon: 'ph-fill ph-users-three', summary: '옛날 사람들은 지금과 다르게 살았어요.', points: ['동굴이나 초가집에서 살았어요.', '돌과 나무로 도구를 만들었어요.', '불을 사용하며 생활이 편해졌어요.'], example: '아주 먼 옛날엔 돌로 도구를 만들었어요 🪨' },
     { name: '위인 이야기', icon: 'ph-fill ph-crown', summary: '훌륭한 일을 한 위인이 있어요.', points: ['세종대왕은 한글을 만드셨어요.', '이순신 장군은 나라를 지켰어요.', '위인의 노력을 배울 수 있어요.'], example: '세종대왕님 덕분에 한글을 써요 👑' },
     { name: '우리 문화', icon: 'ph-fill ph-scroll', summary: '우리나라만의 멋진 문화가 있어요.', points: ['한복, 한옥, 한글이 있어요.', '설날·추석 같은 명절이 있어요.', '전통 놀이와 음식이 있어요.'], example: '설날에는 세배를 하고 떡국을 먹어요 🥢' },
     { name: '나라의 시작', icon: 'ph-fill ph-flag', summary: '우리나라는 아주 오래전에 시작됐어요.', points: ['단군 이야기가 전해져요.', '여러 나라가 있다가 하나가 됐어요.', '옛 이야기로 시작을 알 수 있어요.'], example: '먼 옛날의 이야기가 전해 내려와요 📜' },
-    { name: '종합 복습', icon: 'ph-fill ph-star', summary: '배운 역사를 이야기처럼 정리해요.', points: ['옛날 사람들의 생활을 떠올려봐요.', '기억나는 위인을 말해봐요.', '좋아하는 옛이야기를 골라봐요.'], example: '가장 기억에 남는 이야기를 말해봐요!' },
+    { name: '종합 복습', icon: 'ph-fill ph-star', summary: '배운 사회를 이야기처럼 정리해요.', points: ['옛날 사람들의 생활을 떠올려봐요.', '기억나는 위인을 말해봐요.', '좋아하는 옛이야기를 골라봐요.'], example: '가장 기억에 남는 이야기를 말해봐요!' },
   ],
   '생활': [
     { name: '교통 안전', icon: 'ph-fill ph-traffic-sign', summary: '길에서는 안전 약속을 지켜요.', points: ['초록불에 손 들고 건너요.', '좌우를 살피고 건너요.', '횡단보도로만 건너요.'], example: '초록불이 켜지면 좌우를 보고 건너요 🚦' },
@@ -78,7 +78,7 @@ const CONCEPTS: Record<string, Concept[]> = {
   ],
 };
 
-const ORDER = ['국어', '영어', '수학', '과학', '역사', '생활'];
+const ORDER = ['국어', '영어', '수학', '과학', '사회', '생활'];
 
 /* 원본 saveRead() 그대로 */
 function saveRead(read: Record<string, boolean>) {

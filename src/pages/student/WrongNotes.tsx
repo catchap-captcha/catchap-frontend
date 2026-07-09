@@ -8,7 +8,7 @@ import './WrongNotes.css';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-type Cat = 'word' | 'num' | 'img' | 'safe' | 'hist' | 'eng';
+type Cat = 'word' | 'num' | 'img' | 'safe' | 'soc' | 'eng';
 type FilterKey = 'all' | Cat;
 
 interface WrongItem {
@@ -26,7 +26,7 @@ const CHIPS: { key: FilterKey; label: string; icon: string }[] = [
   { key: 'num', label: '수·연산', icon: 'ph-fill ph-plus-minus' },
   { key: 'img', label: '이미지 선택', icon: 'ph-fill ph-image' },
   { key: 'safe', label: '생활 안전', icon: 'ph-fill ph-shield-check' },
-  { key: 'hist', label: '역사·문화', icon: 'ph-fill ph-scroll' },
+  { key: 'soc', label: '사회·문화', icon: 'ph-fill ph-scroll' },
   { key: 'eng', label: '영어·어휘', icon: 'ph-fill ph-translate' },
 ];
 
@@ -36,7 +36,7 @@ const TAG: Record<Cat, { label: string; icon: string; c: string; bg: string; sub
   num: { label: '수·연산', icon: 'ph-fill ph-plus-minus', c: '#FF922E', bg: '#FFEDE0', subject: '수학' },
   img: { label: '이미지 선택', icon: 'ph-fill ph-image', c: '#2E7BFF', bg: '#E6F0FF', subject: '과학' },
   safe: { label: '생활 안전', icon: 'ph-fill ph-shield-check', c: '#8B6BFF', bg: '#EDE6FF', subject: '생활' },
-  hist: { label: '역사·문화', icon: 'ph-fill ph-scroll', c: '#17B08C', bg: '#DFF6EE', subject: '역사' },
+  soc: { label: '사회·문화', icon: 'ph-fill ph-scroll', c: '#17B08C', bg: '#DFF6EE', subject: '사회' },
   eng: { label: '영어·어휘', icon: 'ph-fill ph-translate', c: '#E0489E', bg: '#FCE4F1', subject: '영어' },
 };
 

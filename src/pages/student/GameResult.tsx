@@ -29,7 +29,7 @@ const FALLBACK: Record<string, ResultEntry> = {
   '영어': { solid: '#FF922E', soft: '#FFEDD6', cleared: 3, correct: 4, score: '+90', time: '2:10', streak: 3, ai: '영어 단어를 척척 맞혔어요! 알파벳 소리를 떠올리면 더 쉬워요. 다음 단계도 잘 해낼 거예요! 🐾' },
   '수학': { solid: '#17B08C', soft: '#DFF6EE', cleared: 5, correct: 5, score: '+160', time: '3:05', streak: 5, ai: '수 세기가 아주 정확했어요! 하나씩 짚으며 세는 방법이 완벽했어요. 수학 전 단계 클리어! 🐾' },
   '과학': { solid: '#2E7BFF', soft: '#E1EDFF', cleared: 2, correct: 4, score: '+95', time: '2:20', streak: 3, ai: '관찰을 참 잘했어요! 무겁고 가벼운 걸 잘 구분했어요. 다음엔 더 어려운 관찰에 도전해봐요! 🐾' },
-  '역사': { solid: '#8B6BFF', soft: '#EAE2FF', cleared: 1, correct: 4, score: '+80', time: '2:05', streak: 3, ai: '옛날 이야기를 잘 기억하고 있네요! 세종대왕님 이야기, 아주 멋지게 맞혔어요. 다음 단계로 가볼까요? 🐾' },
+  '사회': { solid: '#8B6BFF', soft: '#EAE2FF', cleared: 1, correct: 4, score: '+80', time: '2:05', streak: 3, ai: '옛날 이야기를 잘 기억하고 있네요! 세종대왕님 이야기, 아주 멋지게 맞혔어요. 다음 단계로 가볼까요? 🐾' },
   '생활': { solid: '#FF6DA6', soft: '#FFE3EF', cleared: 1, correct: 4, score: '+110', time: '2:35', streak: 4, ai: '안전 규칙을 잘 지켰어요! 멈추고, 살피고, 건너기 — 참 잘 기억했어요. 다음 단계도 안전하게! 🐾' },
 };
 
@@ -38,11 +38,11 @@ const MAP: Record<string, { color: string; soft: string; icon: string }> = {
   '영어': { color: '#FF922E', soft: '#FFEDD6', icon: 'ph-fill ph-translate' },
   '수학': { color: '#17B08C', soft: '#DFF6EE', icon: 'ph-fill ph-plus-minus' },
   '과학': { color: '#2E7BFF', soft: '#E1EDFF', icon: 'ph-fill ph-flask' },
-  '역사': { color: '#8B6BFF', soft: '#EAE2FF', icon: 'ph-fill ph-scroll' },
+  '사회': { color: '#8B6BFF', soft: '#EAE2FF', icon: 'ph-fill ph-scroll' },
   '생활': { color: '#FF6DA6', soft: '#FFE3EF', icon: 'ph-fill ph-house-line' },
 };
 
-const ORDER = ['국어', '영어', '수학', '과학', '역사', '생활'];
+const ORDER = ['국어', '영어', '수학', '과학', '사회', '생활'];
 
 // TODO(api): 오늘 완료한 과목 — API 실패 시 원본 TODAY_DONE 유지
 const TODAY_DONE = ['국어', '영어', '수학'];

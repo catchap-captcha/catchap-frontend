@@ -22,7 +22,7 @@ const SUBJECTS: Record<string, SubjectTheme> = {
   영어: { color: '#FF922E', soft: '#FFEDD6', ring: 'rgba(255,146,46,0.4)', grad: 'linear-gradient(150deg,#FFB43C,#FF922E)', icon: 'ph-fill ph-translate' },
   수학: { color: '#17B08C', soft: '#DFF6EE', ring: 'rgba(23,176,140,0.4)', grad: 'linear-gradient(150deg,#33C892,#17B0A0)', icon: 'ph-fill ph-plus-minus' },
   과학: { color: '#2E7BFF', soft: '#E1EDFF', ring: 'rgba(46,123,255,0.4)', grad: 'linear-gradient(150deg,#4AA6FF,#2E7BFF)', icon: 'ph-fill ph-flask' },
-  역사: { color: '#8B6BFF', soft: '#EAE2FF', ring: 'rgba(139,107,255,0.4)', grad: 'linear-gradient(150deg,#A98CFF,#8B6BFF)', icon: 'ph-fill ph-scroll' },
+  사회: { color: '#8B6BFF', soft: '#EAE2FF', ring: 'rgba(139,107,255,0.4)', grad: 'linear-gradient(150deg,#A98CFF,#8B6BFF)', icon: 'ph-fill ph-scroll' },
   생활: { color: '#FF6DA6', soft: '#FFE3EF', ring: 'rgba(255,109,166,0.4)', grad: 'linear-gradient(150deg,#FF93BE,#FF6DA6)', icon: 'ph-fill ph-house-line' },
 };
 
@@ -43,7 +43,7 @@ const CHAPTERS: Record<string, { name: string; count: number }[]> = {
     { name: '동물 친구', count: 4 }, { name: '식물 관찰', count: 4 }, { name: '날씨와 계절', count: 5 },
     { name: '물과 공기', count: 4 }, { name: '종합 복습', count: 5 },
   ],
-  역사: [
+  사회: [
     { name: '옛날 사람들', count: 4 }, { name: '위인 이야기', count: 5 }, { name: '우리 문화', count: 4 },
     { name: '나라의 시작', count: 4 }, { name: '종합 복습', count: 5 },
   ],
@@ -54,7 +54,7 @@ const CHAPTERS: Record<string, { name: string; count: number }[]> = {
 };
 
 // TODO(api): studentApi.progress(subject) 실패 시 원본 DEFAULT_DONE 데이터 유지
-const FALLBACK: Record<string, number> = { 국어: 2, 영어: 1, 수학: 3, 과학: 0, 역사: 1, 생활: 2 };
+const FALLBACK: Record<string, number> = { 국어: 2, 영어: 1, 수학: 3, 과학: 0, 사회: 1, 생활: 2 };
 
 interface ChapterEntry {
   name: string;

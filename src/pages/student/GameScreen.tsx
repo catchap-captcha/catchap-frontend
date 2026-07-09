@@ -75,10 +75,10 @@ const FALLBACK: SubjectPreset[] = [
     current: 1, total: 5, score: 40, correct: 0, wrong: 0, streak: 0,
   },
   {
-    key: '역사', solid: '#8B6BFF', soft: '#EAE2FF', slotBg: 'linear-gradient(160deg,#FAF8FF,#F1EBFF)', dash: '#D6C8FF',
+    key: '사회', solid: '#8B6BFF', soft: '#EAE2FF', slotBg: 'linear-gradient(160deg,#FAF8FF,#F1EBFF)', dash: '#D6C8FF',
     mascotGrad: 'linear-gradient(160deg,#DCD0FF,#CBBAFF)', progGrad: 'linear-gradient(90deg,#A98CFF,#8B6BFF)',
-    gameTitle: '역사 이야기 퀴즈', gameSub: '이야기 읽고 답 고르기', gameIcon: 'ph-fill ph-scroll',
-    catLabel: '이야기·역사', catIcon: 'ph-fill ph-scroll',
+    gameTitle: '사회 이야기 퀴즈', gameSub: '이야기 읽고 답 고르기', gameIcon: 'ph-fill ph-scroll',
+    catLabel: '이야기·사회', catIcon: 'ph-fill ph-scroll',
     cheer: '옛날 이야기, 참 잘 기억하네요! 📜',
     current: 2, total: 5, score: 120, correct: 1, wrong: 0, streak: 1,
   },
@@ -97,12 +97,12 @@ const QUESTIONS: Record<string, { q: string; pre: string; hi: string; post: stri
   '영어': { q: '이 그림은 영어로 뭘까요? 🔤', pre: '그림을 잘 보고, 알맞은 ', hi: '영어 단어', post: '를 눌러요.' },
   '수학': { q: '별이 모두 몇 개일까요? ⭐', pre: '별을 하나씩 세고, 알맞은 ', hi: '숫자 카드', post: '를 눌러요.' },
   '과학': { q: '물에 둥둥 뜨는 것은? 💧', pre: '가볍고 물에 뜨는 것을 생각하며, 알맞은 ', hi: '답 카드', post: '를 눌러요.' },
-  '역사': { q: '한글을 만드신 임금님은? 👑', pre: '옛날 이야기를 떠올리며, 알맞은 ', hi: '답 카드', post: '를 눌러요.' },
+  '사회': { q: '한글을 만드신 임금님은? 👑', pre: '옛날 이야기를 떠올리며, 알맞은 ', hi: '답 카드', post: '를 눌러요.' },
   '생활': { q: '횡단보도에서 바른 행동은? 🚸', pre: '안전을 먼저 생각하며, 알맞은 ', hi: '행동 카드', post: '를 눌러요.' },
 };
 
 // TODO(api): 과목별 보상 별 개수 — API 실패 시 원본 REWARDS 유지
-const REWARDS: Record<string, number> = { '국어': 3, '영어': 1, '수학': 4, '과학': 0, '역사': 2, '생활': 4 };
+const REWARDS: Record<string, number> = { '국어': 3, '영어': 1, '수학': 4, '과학': 0, '사회': 2, '생활': 4 };
 
 export default function GameScreen() {
   const navigate = useNavigate();

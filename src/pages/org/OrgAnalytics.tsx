@@ -49,14 +49,14 @@ const FALLBACK: Record<Period, OaPeriodData> = {
   },
 };
 
-const SUBJ_LAST: Record<string, number> = { 국어: 94, 영어: 82, 수학: 71, 과학: 90, 역사: 85, 생활: 88 };
+const SUBJ_LAST: Record<string, number> = { 국어: 94, 영어: 82, 수학: 71, 과학: 90, 사회: 85, 생활: 88 };
 
 const SUBJECTS = [
   { name: '국어', icon: 'ph-fill ph-book-open', bg: '#FFE7E2', color: '#FF5A4D', pct: 94, delta: 5, total: 3200 },
   { name: '영어', icon: 'ph-fill ph-translate', bg: '#FFEDE0', color: '#FF922E', pct: 82, delta: 2, total: 2600 },
   { name: '수학', icon: 'ph-fill ph-plus-minus', bg: '#E1F5EC', color: '#17B08C', pct: 71, delta: -4, total: 2400 },
   { name: '과학', icon: 'ph-fill ph-flask', bg: '#E6F0FF', color: '#2E7BFF', pct: 90, delta: 3, total: 2900 },
-  { name: '역사', icon: 'ph-fill ph-scroll', bg: '#EDE9FF', color: '#8B6BFF', pct: 85, delta: 1, total: 2100 },
+  { name: '사회', icon: 'ph-fill ph-scroll', bg: '#EDE9FF', color: '#8B6BFF', pct: 85, delta: 1, total: 2100 },
   { name: '생활', icon: 'ph-fill ph-house-line', bg: '#FFE9F1', color: '#FF6DA6', pct: 88, delta: 6, total: 2500 },
 ];
 
@@ -87,7 +87,7 @@ const CLASSES = [
   { name: '1-2반', teacher: '이수진', acc: '90%', accColor: '#17B08C', sessions: '118회', weak: '수학', trend: '상승', trendIcon: 'ph-fill ph-trend-up' },
   { name: '2-1반', teacher: '박민호', acc: '92%', accColor: '#17B08C', sessions: '126회', weak: '영어', trend: '상승', trendIcon: 'ph-fill ph-trend-up' },
   { name: '1-3반', teacher: '최유나', acc: '84%', accColor: '#F0A400', sessions: '98회', weak: '수학', trend: '하락', trendIcon: 'ph-fill ph-trend-down' },
-  { name: '3-2반', teacher: '정하늘', acc: '95%', accColor: '#17B08C', sessions: '131회', weak: '역사', trend: '유지', trendIcon: 'ph-fill ph-minus' },
+  { name: '3-2반', teacher: '정하늘', acc: '95%', accColor: '#17B08C', sessions: '131회', weak: '사회', trend: '유지', trendIcon: 'ph-fill ph-minus' },
   { name: '2-3반', teacher: '강도현', acc: '81%', accColor: '#F0A400', sessions: '88회', weak: '수학', trend: '하락', trendIcon: 'ph-fill ph-trend-down' },
 ];
 
@@ -521,7 +521,7 @@ export default function OrgAnalytics() {
                 <option value="영어">영어</option>
                 <option value="수학">수학</option>
                 <option value="과학">과학</option>
-                <option value="역사">역사</option>
+                <option value="사회">사회</option>
                 <option value="생활">생활</option>
               </select>
               <span className={chart.trendDown ? 'oa-trendBadge oa-trendBadgeDown' : 'oa-trendBadge oa-trendBadgeUp'}>

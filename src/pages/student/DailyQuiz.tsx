@@ -46,7 +46,7 @@ const FALLBACK: QuizData = {
     { subject: '영어', topic: '알파벳과 쉬운 단어', status: 'progress', reward: 10, icon: 'ph-fill ph-translate', c1: '#FFB43C', c2: '#FF922E' },
     { subject: '수학', topic: '더하기·빼기 놀이', status: 'todo', reward: 15, icon: 'ph-fill ph-plus-minus', c1: '#33C892', c2: '#17B0A0' },
     { subject: '과학', topic: '관찰하고 골라요', status: 'todo', reward: 15, icon: 'ph-fill ph-flask', c1: '#4AA6FF', c2: '#2E7BFF' },
-    { subject: '역사', topic: '옛날 이야기 속으로', status: 'todo', reward: 20, icon: 'ph-fill ph-scroll', c1: '#A98CFF', c2: '#8B6BFF' },
+    { subject: '사회', topic: '옛날 이야기 속으로', status: 'todo', reward: 20, icon: 'ph-fill ph-scroll', c1: '#A98CFF', c2: '#8B6BFF' },
     { subject: '생활', topic: '안전하게 생활해요', status: 'todo', reward: 15, icon: 'ph-fill ph-house-line', c1: '#FF93BE', c2: '#FF6DA6' },
   ],
   week: [
@@ -241,7 +241,7 @@ export default function DailyQuiz() {
             </div>
             <h1 className="dq-herotitle">오늘은 여섯 과목, 하나씩 도전! 🎯</h1>
             <p className="dq-herodesc">
-              국어·영어·수학·과학·역사·생활을 매일 한 판씩 풀어요. 다 풀면 <b>보너스 냥코인</b>이
+              국어·영어·수학·과학·사회·생활을 매일 한 판씩 풀어요. 다 풀면 <b>보너스 냥코인</b>이
               팡!
             </p>
           </div>

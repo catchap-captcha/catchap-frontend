@@ -7,7 +7,7 @@
  *
  * 주의: 값은 원본 handoff와 100% 동일해야 한다. 색을 바꾸면 디자인이 바뀐다.
  */
-export type SubjectKey = '국어' | '영어' | '수학' | '과학' | '역사' | '생활';
+export type SubjectKey = '국어' | '영어' | '수학' | '과학' | '사회' | '생활';
 
 export interface SubjectMeta {
   key: SubjectKey;
@@ -19,14 +19,14 @@ export interface SubjectMeta {
   icon: string;
 }
 
-export const SUBJECT_ORDER: SubjectKey[] = ['국어', '영어', '수학', '과학', '역사', '생활'];
+export const SUBJECT_ORDER: SubjectKey[] = ['국어', '영어', '수학', '과학', '사회', '생활'];
 
 export const SUBJECT_META: Record<SubjectKey, SubjectMeta> = {
   국어: { key: '국어', solid: '#FF5A4D', soft: '#FFE0DB', icon: 'ph-fill ph-book-open' },
   영어: { key: '영어', solid: '#FF922E', soft: '#FFEDD6', icon: 'ph-fill ph-translate' },
   수학: { key: '수학', solid: '#17B08C', soft: '#DFF6EE', icon: 'ph-fill ph-plus-minus' },
   과학: { key: '과학', solid: '#2E7BFF', soft: '#E1EDFF', icon: 'ph-fill ph-flask' },
-  역사: { key: '역사', solid: '#8B6BFF', soft: '#EAE2FF', icon: 'ph-fill ph-scroll' },
+  사회: { key: '사회', solid: '#8B6BFF', soft: '#EAE2FF', icon: 'ph-fill ph-scroll' },
   생활: { key: '생활', solid: '#FF6DA6', soft: '#FFE3EF', icon: 'ph-fill ph-house-line' },
 };
 

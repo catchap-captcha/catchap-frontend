@@ -50,7 +50,7 @@ const FALLBACK: Record<Period, TaPeriodData> = {
 };
 
 // 원본 클라이언트 계산 로직 — FALLBACK 경로에서 과목별 시리즈 보정에 사용
-const SUBJ_LAST: Record<string, number> = { 국어: 94, 영어: 82, 수학: 71, 과학: 90, 역사: 85, 생활: 88 };
+const SUBJ_LAST: Record<string, number> = { 국어: 94, 영어: 82, 수학: 71, 과학: 90, 사회: 85, 생활: 88 };
 
 const SUBJ_TARGET = '80%';
 
@@ -479,7 +479,7 @@ export default function TeacherAnalytics() {
                   <option value="영어">영어</option>
                   <option value="수학">수학</option>
                   <option value="과학">과학</option>
-                  <option value="역사">역사</option>
+                  <option value="사회">사회</option>
                   <option value="생활">생활</option>
                 </select>
                 <span className={`ta-trendBadge ${chart.trendDown ? 'ta-badge-down' : 'ta-badge-up'}`}>
