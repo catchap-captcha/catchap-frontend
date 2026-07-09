@@ -825,3 +825,11 @@
 .dq-cur-future { opacity: 0.62; }
 .dq-cur-future .dq-cur-topic { color: #9A9187; }
 @media (prefers-reduced-motion: reduce) { .dq-cur-playable, .dq-cur-playable:hover { transition: none; transform: none; } }
+
+/* 오늘의 퀴즈 카드 5단계 진행 바 — 홈처럼 단계별로 나눔 (카드 배경이 컬러라 흰색 세그먼트) */
+.dq-card-segs { display: flex; gap: 4px; margin: 10px 0 2px; }
+.dq-card-segs .dq-seg {
+  flex: 1; height: 6px; border-radius: 4px;
+  background: rgba(255, 255, 255, 0.35);
+}
+.dq-card-segs .dq-seg-on { background: #fff; }

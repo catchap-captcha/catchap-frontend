@@ -22,6 +22,7 @@ interface Cat {
   total: number;
   href: string;
   locked?: boolean;
+  chapters?: { name: string; state?: string }[]; // 실제 교육과정 챕터(주제) — progress API에서
 }
 
 interface AllLearningData {
@@ -97,10 +98,14 @@ function mapProgress(d: any, prev: AllLearningData): Partial<AllLearningData> {
           : typeof m.total === 'number'
             ? m.total
             : c.total;
+      const chapters = Array.isArray(m.chapters) && m.chapters.length
+        ? m.chapters.map((ch: any) => ({ name: String(ch.name ?? ''), state: ch.state ? String(ch.state) : undefined }))
+        : c.chapters;
       return {
         ...c,
         done,
         total,
+        chapters,
         locked: typeof m.locked === 'boolean' ? m.locked : c.locked,
       };
     });
@@ -239,8 +244,11 @@ export default function AllLearning() {
                   <span className="al-panel-donelabel">{c.locked ? '곧 열려요' : `${c.done}/${c.total} 단계`}</span>
                   <span>{pct}%</span>
                 </div>
-                <div className="al-panel-track">
-                  <div className="al-panel-fill" style={{ width: `${pct}%` }} />
+                {/* 5단계(챕터) 세그먼트 바 — 홈 sh-card-segs와 동일하게 단계별로 나눔 */}
+                <div className="al-panel-segs">
+                  {Array.from({ length: c.total || 5 }, (_, i) => (
+                    <div key={i} className={`al-seg${i < c.done ? ' al-seg-on' : ''}`} />
+                  ))}
                 </div>
               </div>
               {/* lessons */}
@@ -252,23 +260,34 @@ export default function AllLearning() {
                   </Link>
                 </div>
                 <div className="al-lessons">
-                  {LESSON_NAMES.map((nm, i) => {
-                    const status: LessonStatus = c.locked
-                      ? 'lock'
-                      : i < c.done
+                  {(c.chapters && c.chapters.length
+                    ? c.chapters
+                    : LESSON_NAMES.map((n) => ({ name: n, state: undefined }))
+                  ).map((ch, i) => {
+                    // 실제 챕터 상태(progress API) 우선, 없으면 done 개수로 파생
+                    const status: LessonStatus =
+                      ch.state === 'done'
                         ? 'done'
-                        : i === c.done
+                        : ch.state === 'current'
                           ? 'active'
-                          : 'todo';
+                          : ch.state === 'locked'
+                            ? 'lock'
+                            : c.locked
+                              ? 'lock'
+                              : i < c.done
+                                ? 'done'
+                                : i === c.done
+                                  ? 'active'
+                                  : 'todo';
                     return (
-                      <div key={nm} className={`al-ls al-ls-${status}`}>
+                      <div key={ch.name + i} className={`al-ls al-ls-${status}`}>
                         <div className="al-ls-head">
-                          <span className="al-ls-level">LV.{i + 1}</span>
+                          <span className="al-ls-level">{i + 1}단계</span>
                           <span className="al-ls-icon">
                             <i className={LESSON_ICON[status]} />
                           </span>
                         </div>
-                        <div className="al-ls-name">{nm}</div>
+                        <div className="al-ls-name">{ch.name}</div>
                         <div className="al-ls-state">{LESSON_LABEL[status]}</div>
                       </div>
                     );

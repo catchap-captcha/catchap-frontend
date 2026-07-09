@@ -19,6 +19,8 @@ interface QuizCard {
   icon: string;
   c1: string;
   c2: string;
+  stageDone?: number; // 오늘 완료한 단계 수(5단계 바용)
+  stages?: number; // 총 단계(기본 5)
 }
 
 interface WeekDay {
@@ -85,6 +87,8 @@ function mapApiQuizzes(list: any, prev: QuizCard[]): QuizCard[] {
         icon: typeof q.meta?.icon === 'string' ? q.meta.icon : base?.icon ?? 'ph-fill ph-star',
         c1: grad?.[0] ?? metaColor ?? base?.c1 ?? '#FF7A7A',
         c2: grad?.[1] ?? metaColor ?? base?.c2 ?? '#FF5A6E',
+        stageDone: typeof q.stage_done === 'number' ? q.stage_done : q.status === 'done' ? 5 : 0,
+        stages: typeof q.stages === 'number' ? q.stages : 5,
       };
     })
     .filter((q: QuizCard | null): q is QuizCard => q !== null);
@@ -300,6 +304,12 @@ export default function DailyQuiz() {
                 </div>
                 <div className="dq-card-subject">{q.subject}</div>
                 <div className="dq-card-topic">{q.topic}</div>
+                {/* 5단계 진행 바 (홈처럼 단계별로 나눔) */}
+                <div className="dq-card-segs">
+                  {Array.from({ length: q.stages ?? 5 }, (_, i) => (
+                    <div key={i} className={`dq-seg${i < (q.stageDone ?? 0) ? ' dq-seg-on' : ''}`} />
+                  ))}
+                </div>
                 <div className="dq-card-bottom">
                   <span className="dq-card-reward">
                     <i className="ph-fill ph-coins" />+{q.reward}

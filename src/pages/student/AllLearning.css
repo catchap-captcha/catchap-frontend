@@ -616,3 +616,11 @@
   .al-bellbtn { transition: none; }
   .al-bellbtn:hover, .al-bellbtn:active { transform: none; }
 }
+
+/* 5단계(챕터) 세그먼트 바 — 홈처럼 단계별로 나눠 표시 */
+.al-panel-segs { display: flex; gap: 5px; margin-top: 4px; }
+.al-panel-segs .al-seg {
+  flex: 1; height: 8px; border-radius: 6px;
+  background: rgba(255, 255, 255, 0.35);
+}
+.al-panel-segs .al-seg-on { background: #fff; }
