@@ -1,0 +1,70 @@
+/* 기관 API 키 페이지 — 구매 범위·사용량 요약(oa-). 나머지는 op-/ak- 공용 재사용. */
+
+.oa-head {
+  margin-bottom: 18px;
+}
+
+.oa-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.oa-sum-card {
+  background: #fff;
+  border: 1px solid #fff0e8;
+  border-radius: 18px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  box-shadow: 0 10px 24px -20px rgba(120, 90, 60, 0.5);
+}
+
+.oa-sum-lb {
+  font-size: 12px;
+  font-weight: 700;
+  color: #9b9086;
+}
+
+.oa-sum-v {
+  font-size: 15px;
+  font-weight: 800;
+  color: #3a3340;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.oa-subchip {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: #eef4ff;
+  color: #2e7bff;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.oa-none {
+  color: #b0a79b;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.oa-sum-card--usage .oa-usebar {
+  margin-top: 4px;
+  height: 8px;
+  border-radius: 8px;
+  background: #f2ede7;
+  overflow: hidden;
+}
+
+.oa-usebar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #ff8a4d, #ff5a4d);
+}

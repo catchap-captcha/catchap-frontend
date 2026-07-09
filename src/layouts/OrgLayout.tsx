@@ -19,6 +19,7 @@ export type OrgMenuKey =
   | 'teachers'
   | 'analytics'
   | 'api'
+  | 'apikeys'
   | 'ai'
   | 'security';
 
@@ -31,6 +32,7 @@ const MENU: { key: OrgMenuKey; label: string; icon: string; to: string }[] = [
   { key: 'teachers', label: '선생님 관리', icon: 'ph-fill ph-chalkboard-teacher', to: PATHS.ORG_TEACHERS },
   { key: 'analytics', label: '학습 분석', icon: 'ph-fill ph-chart-bar', to: PATHS.ORG_ANALYTICS },
   { key: 'api', label: 'API·사이트', icon: 'ph-fill ph-plugs-connected', to: PATHS.ORG_CAPTCHA_SETTINGS },
+  { key: 'apikeys', label: 'API 키 발급', icon: 'ph-fill ph-key', to: PATHS.ORG_API_KEYS },
   { key: 'ai', label: 'AI 모델', icon: 'ph-fill ph-cpu', to: PATHS.ORG_AI_MODELS },
   { key: 'security', label: '보안·정책', icon: 'ph-fill ph-shield-check', to: PATHS.ORG_SECURITY_POLICY },
 ];
@@ -98,7 +100,7 @@ export default function OrgLayout({
   // 학년부장은 전교 집계(기관 요약·학습 분석)와 기관 전체 설정(API·AI·보안) 메뉴 숨김 — 담당 학년 학급/교사만
   const isGradeHead = me?.role === 'grade_head';
   const menuItems = isGradeHead
-    ? MENU.filter((m) => !['home', 'analytics', 'api', 'ai', 'security'].includes(m.key))
+    ? MENU.filter((m) => !['home', 'analytics', 'api', 'apikeys', 'ai', 'security'].includes(m.key))
     : MENU;
   // 학년부장은 ORG_HOME 접근 불가 → 로고/링크는 학급·학생 화면으로
   const homePath = isGradeHead ? PATHS.ORG_CLASSES : PATHS.ORG_HOME;

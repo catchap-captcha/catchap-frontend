@@ -55,6 +55,7 @@ const OrgClasses = lazy(() => import('../pages/org/OrgClasses'));
 const OrgTeachers = lazy(() => import('../pages/org/OrgTeachers'));
 const OrgAnalytics = lazy(() => import('../pages/org/OrgAnalytics'));
 const CaptchaSettings = lazy(() => import('../pages/org/CaptchaSettings'));
+const OrgApiKeys = lazy(() => import('../pages/org/OrgApiKeys'));
 const AiModels = lazy(() => import('../pages/org/AiModels'));
 const SecurityPolicy = lazy(() => import('../pages/org/SecurityPolicy'));
 const OrgMyPage = lazy(() => import('../pages/org/OrgMyPage'));
@@ -70,6 +71,7 @@ const OpsInquiries = lazy(() => import('../pages/ops/OpsInquiries'));
 const OpsBehavior = lazy(() => import('../pages/ops/OpsBehavior'));
 const OpsBehaviorExport = lazy(() => import('../pages/ops/OpsBehaviorExport'));
 const OpsAuditLog = lazy(() => import('../pages/ops/OpsAuditLog'));
+const OpsOperators = lazy(() => import('../pages/ops/OpsOperators'));
 
 // 시스템
 const NotFoundPage = lazy(() => import('../pages/system/NotFoundPage'));
@@ -143,6 +145,7 @@ export default function AppRoutes() {
           <Route path={PATHS.ORG_HOME} element={<OrgHome />} />
           <Route path={PATHS.ORG_ANALYTICS} element={<OrgAnalytics />} />
           <Route path={PATHS.ORG_CAPTCHA_SETTINGS} element={<CaptchaSettings />} />
+          <Route path={PATHS.ORG_API_KEYS} element={<OrgApiKeys />} />
           <Route path={PATHS.ORG_AI_MODELS} element={<AiModels />} />
           <Route path={PATHS.ORG_SECURITY_POLICY} element={<SecurityPolicy />} />
           <Route path={PATHS.ORG_MYPAGE} element={<OrgMyPage />} />
@@ -160,6 +163,7 @@ export default function AppRoutes() {
           <Route path={PATHS.OPS_BEHAVIOR} element={<OpsBehavior />} />
           <Route path={PATHS.OPS_BEHAVIOR_EXPORT} element={<OpsBehaviorExport />} />
           <Route path={PATHS.OPS_LOGS} element={<OpsAuditLog />} />
+          <Route path={PATHS.OPS_OPERATORS} element={<OpsOperators />} />
         </Route>
 
         {/* 404 — handoff: CatChap 404 */}

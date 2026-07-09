@@ -237,3 +237,87 @@
   .ak-keyline { flex-wrap: wrap; }
   .ak-mono { flex-basis: 100%; }
 }
+
+/* first_party 체크박스 / 판매 프로비저닝(구매 과목) 편집 — 강제·과목판매 추가분 */
+.ak-field--check {
+  justify-content: flex-start;
+}
+.ak-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #3a3340;
+  cursor: pointer;
+}
+.ak-check input {
+  width: 17px;
+  height: 17px;
+  accent-color: #ff5a4d;
+  cursor: pointer;
+}
+
+.ak-ent {
+  margin-top: 4px;
+  padding: 14px 16px;
+  border: 1px dashed #f0c9bb;
+  border-radius: 14px;
+  background: #fffaf7;
+}
+.ak-ent-head {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 14px;
+  color: #3a3340;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+.ak-ent-head .ak-hint {
+  margin-left: 4px;
+}
+.ak-ent-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.ak-entchip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 14px;
+  border-radius: 20px;
+  border: 1.5px solid #ecdfd6;
+  background: #fff;
+  color: #8a8072;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.ak-entchip--on {
+  border-color: #17b08c;
+  background: #e1f5ec;
+  color: #17b08c;
+}
+.ak-ent-save {
+  margin-left: auto;
+}
+
+.ak-fp {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 800;
+  margin-left: 2px;
+}
+.ak-fp--in {
+  background: #eef4ff;
+  color: #2e7bff;
+}
+.ak-fp--ext {
+  background: #fff3d6;
+  color: #d98a00;
+}

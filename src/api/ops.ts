@@ -19,16 +19,64 @@ export interface OrgRegRequest {
   approved_at: string | null;
 }
 
+/** 승인한 기관 관리자에게 발급된 임시 자격증명 (응답에서만 1회 노출) */
+export interface OpsAdminCredential {
+  email: string;
+  temp_password: string;
+  organization_id: string;
+}
+
+export interface OpsApproveResult {
+  ok: boolean;
+  status: string;
+  admin_credentials: OpsAdminCredential[];
+}
+
+export interface OpsSendCredResult {
+  ok: boolean;
+  email_sent: boolean;
+  email_status: string; // sent | dry_run | failed
+  to: string;
+}
+
 export interface OpsAuditLog {
   id: string;
   action: string;
   actor_user_id: string | null;
   actor_name: string | null; // 사람이 읽는 실행자(학생은 익명 코드)
+  actor_email: string | null; // 계정 유일 식별용(동명 운영자/기관 관리자 구분). 학생/삭제계정은 null
   organization_id: string | null;
   org_name: string | null;
   target_type: string | null;
   target_id: string | null;
+  detail: OpsAuditInquiryDetail | null; // 문의 답변 미리보기용 스레드 (그 외 액션은 null)
   created_at: string | null;
+}
+
+/** 감사로그 문의답변 미리보기 — 원래 질문 + 그 문의에 달린 모든 답변 */
+export interface OpsAuditInquiryDetail {
+  question: string | null;
+  question_by: string | null;
+  question_email: string | null; // 회신용 문의자 이메일
+  question_at: string | null;
+  answers: { body: string; at: string | null }[];
+}
+
+/** 운영자(ops) 계정 */
+export interface OpsOperator {
+  id: string;
+  name: string;
+  email: string | null;
+  status: string; // active | disabled
+  two_factor_enabled: boolean;
+  last_login_at: string | null;
+  created_at: string | null;
+}
+
+export interface OpsOperatorCreated extends OpsOperator {
+  ok: boolean;
+  temp_password: string; // 생성 응답에서만 1회 노출 (이메일 실패/dry-run 시 수동 전달용)
+  email_status: string; // sent | dry_run | failed — 임시 비번 자동 통보 결과
 }
 
 export interface OpsOrg {
@@ -41,6 +89,7 @@ export interface OpsOrg {
   contact_phone: string | null;
   address: string | null;
   business_number: string | null;
+  edu_subjects: string[]; // 구매한 교육형 과목(발급 허용 범위)
   students: number;
   created_at: string | null;
 }
@@ -48,7 +97,8 @@ export interface OpsOrg {
 export interface OpsOrgCreated extends OpsOrg {
   ok: boolean;
   admin_email: string;
-  admin_temp_password: string; // 생성 응답에서만 1회 노출
+  admin_temp_password: string; // 생성 응답에서만 1회 노출 (이메일 실패/dry-run 시 수동 전달용)
+  admin_email_status: string; // sent | dry_run | failed — 임시 비번 자동 통보 결과
 }
 
 export interface OpsOrgCreateInput {
@@ -118,6 +168,7 @@ export interface OpsApiKey {
   product_name: string;
   subject: string | null;
   label: string | null;
+  first_party: boolean;
   site_key: string;
   status: string; // active | disabled
   plan: string;
@@ -132,6 +183,7 @@ export interface OpsIssuedKey {
   secret_key: string; // 발급 응답에서만 1회 노출
   product: string;
   subject: string | null;
+  first_party: boolean;
 }
 
 export interface BehaviorGroupMetrics {
@@ -215,6 +267,13 @@ export const opsApi = {
   updateOrg: (id: string, body: OpsOrgUpdateInput) =>
     client.patch<OpsOrg>(`/ops/orgs/${id}`, body).then((r) => r.data),
   deleteOrg: (id: string) => client.delete<{ ok: boolean }>(`/ops/orgs/${id}`).then((r) => r.data),
+
+  /** 운영자 계정 관리 */
+  operators: () => client.get<OpsOperator[]>('/ops/operators').then((r) => r.data),
+  createOperator: (body: { name: string; email: string }) =>
+    client.post<OpsOperatorCreated>('/ops/operators', body).then((r) => r.data),
+  updateOperator: (id: string, body: { name?: string; status?: string }) =>
+    client.patch<OpsOperator>(`/ops/operators/${id}`, body).then((r) => r.data),
   logs: () => client.get<OpsAuditLog[]>('/ops/logs').then((r) => r.data),
   inquiries: (status?: string) =>
     client
@@ -238,7 +297,17 @@ export const opsApi = {
       })
       .then((r) => r.data),
   approve: (id: string) =>
-    client.post(`/ops/registration-requests/${id}/approve`).then((r) => r.data),
+    client
+      .post<OpsApproveResult>(`/ops/registration-requests/${id}/approve`)
+      .then((r) => r.data),
+  /** 승인 시 발급된 관리자 임시 비밀번호를 담당자 이메일로 발송 */
+  sendAdminCredentials: (orgId: string, email: string, tempPassword: string) =>
+    client
+      .post<OpsSendCredResult>(`/ops/orgs/${orgId}/send-admin-credentials`, {
+        email,
+        temp_password: tempPassword,
+      })
+      .then((r) => r.data),
   reject: (id: string) =>
     client.post(`/ops/registration-requests/${id}/reject`).then((r) => r.data),
 
@@ -251,8 +320,16 @@ export const opsApi = {
     subject?: string;
     label?: string;
     domain?: string;
+    first_party?: boolean;
   }) => client.post<OpsIssuedKey>('/ops/api-keys', body).then((r) => r.data),
   revokeApiKey: (id: string) => client.delete(`/ops/api-keys/${id}`).then((r) => r.data),
+  /** 기관 구매 과목(edu_subjects) 설정 — 판매 프로비저닝 */
+  setEntitlements: (orgId: string, edu_subjects: string[]) =>
+    client
+      .patch<{ ok: boolean; edu_subjects: string[] }>(`/ops/orgs/${orgId}/entitlements`, {
+        edu_subjects,
+      })
+      .then((r) => r.data),
 
   /** 행동 데이터 (아동용 캡차 학습셋) */
   behaviorOverview: () =>

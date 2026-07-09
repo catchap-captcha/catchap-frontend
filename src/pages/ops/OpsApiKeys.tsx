@@ -38,7 +38,12 @@ export default function OpsApiKeys() {
   const [subject, setSubject] = useState('');
   const [label, setLabel] = useState('');
   const [domain, setDomain] = useState('');
+  const [firstParty, setFirstParty] = useState(false);
   const [issuing, setIssuing] = useState(false);
+
+  // 기관 구매 과목(edu_subjects) 편집 — 판매 프로비저닝
+  const [entSubs, setEntSubs] = useState<string[]>([]);
+  const [savingEnt, setSavingEnt] = useState(false);
 
   // 발급 직후 secret 1회 노출 + 임베드 스니펫 펼침
   const [issued, setIssued] = useState<OpsIssuedKey | null>(null);
@@ -64,6 +69,28 @@ export default function OpsApiKeys() {
 
   // 발급 대상이 될 수 있는 활성 기관
   const activeOrgs = useMemo(() => orgs.filter((o) => o.status === 'active'), [orgs]);
+  const selectedOrg = useMemo(() => orgs.find((o) => o.id === orgId) ?? null, [orgs, orgId]);
+  useEffect(() => {
+    setEntSubs(selectedOrg?.edu_subjects ?? []);
+  }, [selectedOrg]);
+
+  const toggleEnt = (s: string) =>
+    setEntSubs((prev) => (prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]));
+
+  const saveEnt = () => {
+    if (!orgId) return;
+    setSavingEnt(true);
+    opsApi
+      .setEntitlements(orgId, entSubs)
+      .then((r) => {
+        flash('구매 과목을 저장했어요.');
+        setOrgs((prev) =>
+          prev.map((o) => (o.id === orgId ? { ...o, edu_subjects: r.edu_subjects } : o)),
+        );
+      })
+      .catch((err) => flash(errMsg(err, '저장에 실패했어요.')))
+      .finally(() => setSavingEnt(false));
+  };
 
   // 선택 기관의 요금제 → 발급 가능 제품 (마지막 발급 키에서 유추 or plans 매핑은 불가하므로 목록 키로 추정)
   // 실제 게이팅은 백엔드가 402로 판정. 여기선 안내만.
@@ -86,11 +113,13 @@ export default function OpsApiKeys() {
         subject: product === 'edu' ? subject : undefined,
         label: label.trim() || undefined,
         domain: domain.trim() || undefined,
+        first_party: firstParty,
       })
       .then((res) => {
         setIssued(res);
         setLabel('');
         setDomain('');
+        setFirstParty(false);
         flash('API 키를 발급했어요. secret_key는 지금만 볼 수 있어요.');
         // 목록 갱신
         opsApi.apiKeys().then((k) => setKeys(Array.isArray(k) ? k : []));
@@ -249,7 +278,59 @@ export default function OpsApiKeys() {
                 지정하면 그 도메인·서브도메인에서만 동작해요. 비우면 모든 도메인 허용(테스트용)
               </span>
             </label>
+
+            <label className="ak-field ak-field--check">
+              <span className="ak-label">키 유형</span>
+              <label className="ak-check">
+                <input
+                  type="checkbox"
+                  checked={firstParty}
+                  onChange={(e) => setFirstParty(e.target.checked)}
+                />
+                <span>1st-party (우리 앱 · 과목 전환 허용)</span>
+              </label>
+              <span className="ak-hint">
+                체크하면 한 키로 여러 과목을 전환할 수 있어요(우리 인앱 전용). 외부 판매 키는 체크 해제
+                — 발급 과목에 고정돼요.
+              </span>
+            </label>
           </div>
+
+          {/* 판매 프로비저닝: 이 기관이 구매한 교육형 과목 설정 */}
+          {selectedOrg && (
+            <div className="ak-ent">
+              <div className="ak-ent-head">
+                <i className="ph-fill ph-shopping-bag-open" />
+                <b>{selectedOrg.name}</b> 구매 교육형 과목
+                <span className="ak-hint">기관 관리자는 이 과목만 셀프 발급할 수 있어요.</span>
+              </div>
+              <div className="ak-ent-chips">
+                {eduSubjects.map((s) => {
+                  const on = entSubs.includes(s);
+                  return (
+                    <button
+                      key={s}
+                      type="button"
+                      className={on ? 'ak-entchip ak-entchip--on' : 'ak-entchip'}
+                      onClick={() => toggleEnt(s)}
+                    >
+                      {on && <i className="ph-bold ph-check" />}
+                      {s}
+                    </button>
+                  );
+                })}
+                <button
+                  type="button"
+                  className="op-btn op-btn--approve ak-ent-save"
+                  onClick={saveEnt}
+                  disabled={savingEnt}
+                >
+                  <i className="ph-bold ph-floppy-disk" />
+                  {savingEnt ? '저장 중…' : '구매 과목 저장'}
+                </button>
+              </div>
+            </div>
+          )}
 
           <div className="ak-form-actions">
             <button type="submit" className="op-btn op-btn--approve" disabled={issuing}>
@@ -292,6 +373,11 @@ export default function OpsApiKeys() {
                         {k.label || k.product_name}
                         <span className="op-card-type">{k.product_name}</span>
                         {k.subject && <span className="ak-subject">{k.subject}</span>}
+                        {k.first_party ? (
+                          <span className="ak-fp ak-fp--in">1st-party</span>
+                        ) : (
+                          k.product === 'edu' && <span className="ak-fp ak-fp--ext">외부·과목고정</span>
+                        )}
                       </div>
                       <div className="op-card-code">
                         {k.organization_name} · {k.plan}

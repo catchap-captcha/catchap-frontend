@@ -111,4 +111,44 @@ export const orgApi = {
     client.post<any>(`/orgs/${orgId}/teachers/${teacherId}/grade-head`, { grade }).then((r) => r.data),
   dismissGradeHead: (orgId: string, teacherId: string) =>
     client.delete<any>(`/orgs/${orgId}/teachers/${teacherId}/grade-head`).then((r) => r.data),
+
+  /** API 키 관리 (교장 전용) — 자기 기관만. 발급은 구매 범위로 제한됨. */
+  apiEntitlements: (orgId: string) =>
+    client.get<OrgApiEntitlements>(`/orgs/${orgId}/api-entitlements`).then((r) => r.data),
+  apiKeys: (orgId: string) =>
+    client.get<OrgApiKey[]>(`/orgs/${orgId}/api-keys`).then((r) => r.data),
+  issueApiKey: (orgId: string, body: OrgIssueKeyBody) =>
+    client.post<OrgIssuedKey>(`/orgs/${orgId}/api-keys`, body).then((r) => r.data),
+  revokeApiKey: (orgId: string, keyId: string) =>
+    client.delete<{ ok: boolean }>(`/orgs/${orgId}/api-keys/${keyId}`).then((r) => r.data),
 };
+
+export interface OrgApiEntitlements {
+  products: string[];
+  edu_subjects: string[];
+  plan: string;
+  usage: { used: number; quota: number };
+  product_names: Record<string, string>;
+}
+export interface OrgApiKey {
+  id: string;
+  product: string;
+  product_name: string;
+  subject: string | null;
+  label: string | null;
+  first_party: boolean;
+  site_key: string;
+  status: string;
+  last_used_at: string | null;
+  created_at: string | null;
+}
+export interface OrgIssueKeyBody {
+  product: string;
+  subject?: string;
+  label?: string;
+  domain?: string;
+}
+export interface OrgIssuedKey extends OrgApiKey {
+  ok: boolean;
+  secret_key: string;
+}

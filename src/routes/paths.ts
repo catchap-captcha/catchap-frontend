@@ -57,6 +57,7 @@ export const PATHS = {
   ORG_TEACHERS: '/org/teachers',
   ORG_ANALYTICS: '/org/analytics',
   ORG_CAPTCHA_SETTINGS: '/org/captcha-settings',
+  ORG_API_KEYS: '/org/api-keys',
   ORG_AI_MODELS: '/org/ai-models',
   ORG_SECURITY_POLICY: '/org/security-policy',
   ORG_MYPAGE: '/org/mypage',
@@ -71,6 +72,7 @@ export const PATHS = {
   OPS_BEHAVIOR: '/ops/behavior',
   OPS_BEHAVIOR_EXPORT: '/ops/behavior/export', // 외부 업체 제공용 익명 내보내기
   OPS_LOGS: '/ops/logs',
+  OPS_OPERATORS: '/ops/operators', // 운영자 계정 관리
 
   // 기관 학생 관리 (학생 생성 + 가입코드 배부)
   ORG_STUDENTS: '/org/students',
