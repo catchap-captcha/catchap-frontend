@@ -624,3 +624,45 @@
   background: rgba(255, 255, 255, 0.35);
 }
 .al-panel-segs .al-seg-on { background: #fff; }
+.dq-sec-curric { max-width: 1160px; margin: 0 auto; padding: 8px 24px 4px; }
+.dq-curric {
+  background: #fff; border: 1.5px solid #FFE0EC; border-radius: 22px;
+  padding: 22px 24px; box-shadow: 0 14px 34px -26px rgba(255, 109, 166, 0.5);
+}
+.dq-curric-title {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 18px; font-weight: 900; color: #3A3226; margin: 0 0 5px;
+}
+.dq-curric-title i { color: #FF6DA6; }
+.dq-curric-sub { font-size: 13px; color: #8A8070; margin: 0 0 16px; line-height: 1.5; }
+.dq-curric-sub b { color: #FF6DA6; }
+.dq-curric-track {
+  display: flex; gap: 12px; overflow-x: auto; padding: 4px 2px 10px; scroll-snap-type: x proximity;
+}
+.dq-cur-day-card {
+  flex: 0 0 auto; width: 132px; scroll-snap-align: start;
+  display: flex; flex-direction: column; gap: 6px;
+  padding: 14px 14px 12px; border-radius: 16px;
+  border: 2px solid #F0E4D8; background: #FFFDF9;
+  text-decoration: none; position: relative;
+}
+.dq-cur-day { font-size: 11.5px; font-weight: 800; color: #B0A79B; }
+.dq-cur-topic { font-size: 15px; font-weight: 900; color: #3A3226; line-height: 1.3; min-height: 38px; }
+.dq-cur-meta {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 12px; font-weight: 700; color: #8A8070;
+}
+.dq-cur-meta i { font-size: 13px; }
+.dq-cur-flag {
+  position: absolute; top: -9px; right: 10px;
+  font-size: 10.5px; font-weight: 800; color: #fff;
+  background: #FF5A4D; border-radius: 20px; padding: 3px 9px;
+}
+.dq-cur-flag--replay { background: #8B6BFF; }
+.dq-cur-today { border-color: #FF6DA6; background: #FFF5FA; }
+.dq-cur-playable { cursor: pointer; transition: transform 0.12s ease, box-shadow 0.12s ease; }
+.dq-cur-playable:hover { transform: translateY(-3px); box-shadow: 0 12px 24px -16px rgba(255, 109, 166, 0.55); }
+.dq-cur-future { opacity: 0.62; }
+.dq-cur-future .dq-cur-topic { color: #9A9187; }
+@media (prefers-reduced-motion: reduce) { .dq-cur-playable, .dq-cur-playable:hover { transition: none; transform: none; } }
+
