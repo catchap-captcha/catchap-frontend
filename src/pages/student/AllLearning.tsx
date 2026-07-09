@@ -1,4 +1,4 @@
-import { useEffect, useState, type CSSProperties } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { Link } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
 import { useAuth } from '../../hooks/useAuth';
@@ -10,6 +10,14 @@ import './AllLearning.css';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+interface ChapterInfo {
+  no: number;
+  name: string;
+  stages: number;
+  stagesDone: number;
+  unlocked: boolean;
+  state: string; // done | current | available | locked
+}
 interface Cat {
   key: string;
   tag: string;
@@ -18,31 +26,44 @@ interface Cat {
   c1: string;
   c2: string;
   icon: string;
-  done: number;
-  total: number;
-  href: string;
-  locked?: boolean;
-  chapters?: { name: string; state?: string }[]; // 실제 교육과정 챕터(주제) — progress API에서
+  available: boolean; // 문제은행 있는 과목만 챕터 플레이 가능(국어는 준비중)
+  currentChapter: number; // 이어할 챕터(열린 것 중 미완료 최저)
+  accuracy: number; // 숙련도(정답률)
+  unlockedChapters: number;
+  maxChapters: number;
+  chapters: ChapterInfo[]; // 주차별 챕터 — 각 5단계, 달력 잠금
 }
 
 interface AllLearningData {
-  level: number;
+  completedChapters: number; // 완료한 챕터 수(전 과목) — 헤더 지표
   overallPct: number;
   cats: Cat[];
 }
 
-// TODO(api): studentApi.progress() 실패 시 원본 하드코딩 데이터 유지
+// 과목 메타(색·아이콘·설명) — 서버 /chapters가 이 껍데기에 챕터·진행을 채운다.
+const SUBJECT_META: Record<string, { key: string; desc: string; c1: string; c2: string; icon: string }> = {
+  국어: { key: 'kor', desc: '글자와 낱말을 놀이로 익혀요', c1: '#FF7A7A', c2: '#FF5A6E', icon: 'ph-fill ph-book-open' },
+  영어: { key: 'eng', desc: '알파벳과 쉬운 단어를 만나요', c1: '#FFB43C', c2: '#FF922E', icon: 'ph-fill ph-translate' },
+  수학: { key: 'math', desc: '수와 셈을 놀이로 배워요', c1: '#33C892', c2: '#17B0A0', icon: 'ph-fill ph-plus-minus' },
+  과학: { key: 'sci', desc: '관찰하고 탐구하며 배워요', c1: '#4AA6FF', c2: '#2E7BFF', icon: 'ph-fill ph-flask' },
+  역사: { key: 'hist', desc: '옛날 이야기와 지혜를 만나요', c1: '#A98CFF', c2: '#8B6BFF', icon: 'ph-fill ph-scroll' },
+  생활: { key: 'life', desc: '생활 속 안전과 지혜를 익혀요', c1: '#FF93BE', c2: '#FF6DA6', icon: 'ph-fill ph-house-line' },
+};
+const SUBJECT_ORDER = ['국어', '영어', '수학', '과학', '역사', '생활'];
+
+function makeCat(subject: string): Cat {
+  const m = SUBJECT_META[subject];
+  return {
+    key: m.key, tag: subject, title: subject, desc: m.desc, c1: m.c1, c2: m.c2, icon: m.icon,
+    available: false, currentChapter: 1, accuracy: 0, unlockedChapters: 0, maxChapters: 0, chapters: [],
+  };
+}
+
+// 서버 미응답 시 껍데기(챕터 없음) — 가짜 진행을 보여주지 않는다.
 const FALLBACK: AllLearningData = {
-  level: 7,
-  overallPct: 62,
-  cats: [
-    { key: 'kor', tag: '국어', title: '국어', desc: '글자와 낱말을 놀이로 익혀요', c1: '#FF7A7A', c2: '#FF5A6E', icon: 'ph-fill ph-book-open', done: 4, total: 5, href: `${PATHS.STUDENT_GAME}?subject=국어` },
-    { key: 'eng', tag: '영어', title: '영어', desc: '알파벳과 쉬운 단어를 만나요', c1: '#FFB43C', c2: '#FF922E', icon: 'ph-fill ph-translate', done: 2, total: 5, href: `${PATHS.STUDENT_GAME}?subject=영어` },
-    { key: 'math', tag: '수학', title: '수학', desc: '수와 셈을 놀이로 배워요', c1: '#33C892', c2: '#17B0A0', icon: 'ph-fill ph-plus-minus', done: 5, total: 5, href: `${PATHS.STUDENT_GAME}?subject=수학` },
-    { key: 'sci', tag: '과학', title: '과학', desc: '관찰하고 탐구하며 배워요', c1: '#4AA6FF', c2: '#2E7BFF', icon: 'ph-fill ph-flask', done: 1, total: 5, href: `${PATHS.STUDENT_GAME}?subject=과학` },
-    { key: 'hist', tag: '역사', title: '역사', desc: '옛날 이야기와 지혜를 만나요', c1: '#A98CFF', c2: '#8B6BFF', icon: 'ph-fill ph-scroll', done: 0, total: 5, href: `${PATHS.STUDENT_GAME}?subject=역사` },
-    { key: 'life', tag: '생활', title: '생활', desc: '생활 속 안전과 지혜를 익혀요', c1: '#FF93BE', c2: '#FF6DA6', icon: 'ph-fill ph-house-line', done: 0, total: 5, href: `${PATHS.STUDENT_GAME}?subject=생활` },
-  ],
+  completedChapters: 0,
+  overallPct: 0,
+  cats: SUBJECT_ORDER.map(makeCat),
 };
 
 const CHIPS = [
@@ -55,88 +76,82 @@ const CHIPS = [
   { key: 'life', label: '생활', icon: 'ph-fill ph-house-line' },
 ];
 
-const LESSON_NAMES = ['기초 익히기', '기초 다지기', '조금 더 어렵게', '도전 문제', '마스터 챌린지'];
-
-type LessonStatus = 'done' | 'active' | 'lock' | 'todo';
-
-const LESSON_ICON: Record<LessonStatus, string> = {
+const CH_ICON: Record<string, string> = {
   done: 'ph-fill ph-check',
-  active: 'ph-fill ph-play',
-  lock: 'ph-bold ph-lock-simple',
-  todo: 'ph-bold ph-dot-outline',
+  current: 'ph-fill ph-play',
+  available: 'ph-fill ph-play',
+  locked: 'ph-bold ph-lock-simple',
 };
-
-const LESSON_LABEL: Record<LessonStatus, string> = {
+const CH_LABEL: Record<string, string> = {
   done: '완료',
-  active: '진행중',
-  lock: '잠김',
-  todo: '시작 전',
+  current: '이어하기',
+  available: '이어하기',
+  locked: '다음 주',
 };
 
 /**
- * GET /students/me/progress 응답 → AllLearningData 매핑.
- * 실제 응답 형태: { subjects: [{ subject, done_chapters, current_chapter, accuracy, questions_done,
- *                              levels[], chapters[{no,name,count,state}] }], level, overall_pct }
- * 과목명(subject) 기준으로 매칭해 done(=done_chapters)·total(=chapters 개수)만 덮어쓴다.
- * level(실컬럼) / overall_pct(완료 챕터 실집계)는 top-level 필드를 사용한다.
+ * GET /students/me/chapters 응답 → AllLearningData 매핑.
+ * 응답: { subjects: [{ subject, available, max_chapters, unlocked_chapters, current_chapter,
+ *          accuracy, chapters[{no,name,stages,stages_done,unlocked,state}] }], anchor_monday }
+ * 오늘의 퀴즈(습관)와 분리된 '학습(주간 챕터·5단계)' 축. 잠금은 달력(월요일) 기준.
  */
-function mapProgress(d: any, prev: AllLearningData): Partial<AllLearningData> {
-  const out: Partial<AllLearningData> = {};
-  const list: any[] = Array.isArray(d.subjects) ? d.subjects : Array.isArray(d.cats) ? d.cats : [];
-  const overall = d.overall_pct ?? d.overallPct;
-  if (typeof d.level === 'number') out.level = d.level;
-  if (typeof overall === 'number') out.overallPct = overall;
-  if (list.length) {
-    out.cats = prev.cats.map((c) => {
-      const m = list.find((x) => x && (x.subject === c.tag || x.key === c.key || x.tag === c.tag));
-      if (!m) return c;
-      const done =
-        typeof m.done_chapters === 'number' ? m.done_chapters : typeof m.done === 'number' ? m.done : c.done;
-      const total =
-        Array.isArray(m.chapters) && m.chapters.length
-          ? m.chapters.length
-          : typeof m.total === 'number'
-            ? m.total
-            : c.total;
-      const chapters = Array.isArray(m.chapters) && m.chapters.length
-        ? m.chapters.map((ch: any) => ({ name: String(ch.name ?? ''), state: ch.state ? String(ch.state) : undefined }))
-        : c.chapters;
-      return {
-        ...c,
-        done,
-        total,
-        chapters,
-        locked: typeof m.locked === 'boolean' ? m.locked : c.locked,
-      };
-    });
+function mapChapters(d: any): Partial<AllLearningData> {
+  const list: any[] = Array.isArray(d?.subjects) ? d.subjects : [];
+  if (!list.length) return {};
+  const cats = SUBJECT_ORDER.map((subj) => {
+    const c = makeCat(subj);
+    const m = list.find((x) => x && x.subject === subj);
+    if (!m) return c;
+    const chapters: ChapterInfo[] = (Array.isArray(m.chapters) ? m.chapters : []).map((ch: any) => ({
+      no: Number(ch.no),
+      name: String(ch.name ?? `${ch.no}주차`),
+      stages: Number(ch.stages ?? 5),
+      stagesDone: Number(ch.stages_done ?? 0),
+      unlocked: !!ch.unlocked,
+      state: String(ch.state ?? 'locked'),
+    }));
+    return {
+      ...c,
+      available: !!m.available,
+      currentChapter: Number(m.current_chapter ?? 1) || 1,
+      accuracy: Number(m.accuracy ?? 0),
+      unlockedChapters: Number(m.unlocked_chapters ?? 0),
+      maxChapters: Number(m.max_chapters ?? 0),
+      chapters,
+    };
+  });
+  // 전체 진행률 = 완료 단계 / 전체 단계(가능 과목만) — 홈/챕터 바와 같은 '단계' 기준
+  // 완료 챕터 수 = 5단계 다 채운 챕터 개수(전 과목) — 헤더 지표(가짜 레벨 대체)
+  let done = 0;
+  let total = 0;
+  let completedChapters = 0;
+  for (const c of cats) {
+    for (const ch of c.chapters) {
+      done += Math.min(ch.stages, ch.stagesDone);
+      total += ch.stages;
+      if (ch.stagesDone >= ch.stages) completedChapters += 1;
+    }
   }
-  return out;
+  return { cats, completedChapters, overallPct: total ? Math.round((done / total) * 100) : 0 };
 }
 
 export default function AllLearning() {
   const { me } = useAuth();
   const [filter, setFilter] = useState('all');
   const [data, setData] = useState<AllLearningData>(FALLBACK);
-  // 생활 일일 교육과정 트랙 (오늘의퀴즈에서 이동) — 매일 주제가 바뀌는 25문제(5단계)
-  const [curr, setCurr] = useState<{ today_day: number; days: any[] } | null>(null);
 
   useEffect(() => {
     let mounted = true;
+    // 주간 챕터(학습 축) — 5단계 진행·달력 잠금
     studentApi
-      .progress()
+      .chapters()
       .then((d: any) => {
         if (!mounted || !d) return;
-        setData((prev) => ({ ...prev, ...mapProgress(d, prev) }));
+        setData((prev) => ({ ...prev, ...mapChapters(d) }));
       })
       .catch(() => {
-        /* TODO(api): 백엔드 미구현 — FALLBACK 유지 */
+        /* 실패 시 FALLBACK(빈 챕터) 유지 — 가짜 진행 표시 안 함 */
       });
-    studentApi
-      .curriculum('생활', 6, 4)
-      .then((d: any) => {
-        if (mounted && d?.available && Array.isArray(d.days)) setCurr({ today_day: d.today_day, days: d.days });
-      })
-      .catch(() => {});
     return () => {
       mounted = false;
     };
@@ -205,8 +220,8 @@ export default function AllLearning() {
           </div>
           <div className="al-stats">
             <div className="al-stat">
-              <div className="al-stat-value al-stat-level">레벨 {data.level}</div>
-              <div className="al-stat-label">나의 학습 레벨</div>
+              <div className="al-stat-value al-stat-level">{data.completedChapters}개</div>
+              <div className="al-stat-label">완료한 챕터</div>
             </div>
             <div className="al-stat">
               <div className="al-stat-value al-stat-pct">{data.overallPct}%</div>
@@ -233,8 +248,15 @@ export default function AllLearning() {
       {/* CATEGORY LIST */}
       <section className="al-cats">
         {cats.map((c) => {
-          const pct = Math.round((c.done / c.total) * 100);
           const panelVars = { '--al-c1': c.c1, '--al-c2': c.c2, '--al-sh': `${c.c2}cc` } as CSSProperties;
+          // 이번 주(이어할) 챕터의 단계 진행 — 홈/오늘의퀴즈 바와 같은 5단계 세그먼트
+          const cur = c.chapters.find((ch) => ch.no === c.currentChapter) || c.chapters[0];
+          const curDone = cur ? cur.stagesDone : 0;
+          const curStages = cur ? cur.stages : 5;
+          const pct = curStages ? Math.round((curDone / curStages) * 100) : 0;
+          const playHref = cur
+            ? `${PATHS.STUDENT_CHAPTER_PLAY}?subject=${encodeURIComponent(c.tag)}&chapter=${cur.no}`
+            : '';
           return (
             <div key={c.key} className="al-cat">
               {/* left color panel */}
@@ -248,120 +270,116 @@ export default function AllLearning() {
                 </div>
                 <h3 className="al-panel-title">{c.title}</h3>
                 <p className="al-panel-desc">{c.desc}</p>
-                <div className="al-panel-meta">
-                  <span className="al-panel-donelabel">{c.locked ? '곧 열려요' : `${c.done}/${c.total} 단계`}</span>
-                  <span>{pct}%</span>
-                </div>
-                {/* 5단계(챕터) 세그먼트 바 — 홈 sh-card-segs와 동일하게 단계별로 나눔 */}
-                <div className="al-panel-segs">
-                  {Array.from({ length: c.total || 5 }, (_, i) => (
-                    <div key={i} className={`al-seg${i < c.done ? ' al-seg-on' : ''}`} />
-                  ))}
-                </div>
+                {c.available && cur ? (
+                  <>
+                    <div className="al-panel-meta">
+                      <span className="al-panel-donelabel">
+                        {cur.no}주차 · {curDone}/{curStages}단계
+                      </span>
+                      <span>{pct}%</span>
+                    </div>
+                    {/* 이번 주 챕터의 5단계 세그먼트 바 (홈 sh-card-segs와 동일 개념) */}
+                    <div className="al-panel-segs">
+                      {Array.from({ length: curStages }, (_, i) => (
+                        <div key={i} className={`al-seg${i < curDone ? ' al-seg-on' : ''}`} />
+                      ))}
+                    </div>
+                    {c.accuracy > 0 && (
+                      <div className="al-panel-acc">숙련도 {Math.round(c.accuracy)}%</div>
+                    )}
+                  </>
+                ) : (
+                  <div className="al-panel-soon">
+                    <i className="ph-fill ph-puzzle-piece" /> 문제 준비 중
+                  </div>
+                )}
               </div>
-              {/* lessons */}
-              <div>
-                <div className="al-lessons-head">
-                  <span className="al-lessons-label">단계별 학습</span>
-                  <Link to={c.href} className="al-continue">
-                    이어서 하기 <i className="ph-bold ph-arrow-right" />
-                  </Link>
-                </div>
-                <div className="al-lessons">
-                  {(c.chapters && c.chapters.length
-                    ? c.chapters
-                    : LESSON_NAMES.map((n) => ({ name: n, state: undefined }))
-                  ).map((ch, i) => {
-                    // 실제 챕터 상태(progress API) 우선, 없으면 done 개수로 파생
-                    const status: LessonStatus =
-                      ch.state === 'done'
-                        ? 'done'
-                        : ch.state === 'current'
-                          ? 'active'
-                          : ch.state === 'locked'
-                            ? 'lock'
-                            : c.locked
-                              ? 'lock'
-                              : i < c.done
-                                ? 'done'
-                                : i === c.done
-                                  ? 'active'
-                                  : 'todo';
-                    return (
-                      <div key={ch.name + i} className={`al-ls al-ls-${status}`}>
-                        <div className="al-ls-head">
-                          <span className="al-ls-level">{i + 1}단계</span>
-                          <span className="al-ls-icon">
-                            <i className={LESSON_ICON[status]} />
-                          </span>
-                        </div>
-                        <div className="al-ls-name">{ch.name}</div>
-                        <div className="al-ls-state">{LESSON_LABEL[status]}</div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
+              {/* 주차별 챕터 — 각 5단계, 달력 잠금(월요일 해제). 가로 캐러셀(< > 화살표) */}
+              <ChapterWeeks cat={c} playHref={playHref} />
             </div>
           );
         })}
       </section>
 
-      {/* 생활 일일 교육과정 — 오늘의 퀴즈에서 이동. 매일 주제가 바뀌는 25문제(5단계) */}
-      {curr && (
-        <section className="dq-sec-curric">
-          <div className="dq-curric">
-            <div className="dq-curric-head">
-              <div>
-                <h2 className="dq-curric-title">
-                  <i className="ph-fill ph-calendar-star" />생활 안전 교육과정
-                </h2>
-                <p className="dq-curric-sub">
-                  매일 다른 주제로 <b>25문제(5단계)</b>씩! 지난 날은 다시 풀 수 있고, 다음 날 주제는 미리 볼 수 있어요.
-                </p>
-              </div>
-            </div>
-            <div className="dq-curric-track">
-              {curr.days.map((d: any) => {
-                const inner = (
-                  <>
-                    <span className="dq-cur-day">{d.day}일차</span>
-                    <span className="dq-cur-topic">{d.topic}</span>
-                    <span className="dq-cur-meta">
-                      {d.status === 'future' ? (
-                        <><i className="ph-fill ph-lock-simple" />다음 날</>
-                      ) : d.playable_count > 0 ? (
-                        <><i className="ph-fill ph-play-circle" />{d.playable_count}문제</>
-                      ) : (
-                        <><i className="ph-fill ph-puzzle-piece" />위젯 준비중</>
-                      )}
-                    </span>
-                  </>
-                );
-                const cls = `dq-cur-day-card dq-cur-${d.status}${d.status !== 'future' && d.playable_count > 0 ? ' dq-cur-playable' : ''}`;
-                if (d.status !== 'future' && d.playable_count > 0) {
-                  const replay = d.status === 'past' ? '&replay=1' : '';
-                  return (
-                    <Link key={d.day} to={`${PATHS.STUDENT_GAME}?subject=생활&day=${d.day}${replay}`} className={cls}>
-                      {inner}
-                      {d.status === 'today' && <span className="dq-cur-flag">오늘 과제</span>}
-                      {d.status === 'past' && <span className="dq-cur-flag dq-cur-flag--replay">복습</span>}
-                    </Link>
-                  );
-                }
-                return (
-                  <div key={d.day} className={cls} title={d.status === 'future' ? '다음 날 과제는 아직 열리지 않았어요' : '이 주제는 곧 만나요'}>
-                    {inner}
-                    {d.status === 'today' && <span className="dq-cur-flag">오늘</span>}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-      )}
-
       <ScreenTimeReminder />
+    </div>
+  );
+}
+
+/** 주차별 챕터 가로 캐러셀 — 이어서 하기 위 < > 화살표로 좌우 이동(챕터가 화면보다 많으면 스크롤). */
+function ChapterWeeks({ cat, playHref }: { cat: Cat; playHref: string }) {
+  const trackRef = useRef<HTMLDivElement | null>(null);
+  const cur = cat.chapters.find((ch) => ch.no === cat.currentChapter) || cat.chapters[0];
+  const scroll = (dir: number) => {
+    const el = trackRef.current;
+    if (!el) return;
+    el.scrollBy({ left: dir * Math.max(240, el.clientWidth * 0.7), behavior: 'smooth' });
+  };
+  return (
+    <div>
+      <div className="al-lessons-head">
+        <span className="al-lessons-label">주차별 챕터 (1챕터 = 1주 · 5단계)</span>
+        {cat.available && cur && (
+          <div className="al-weeks-headright">
+            <div className="al-weeks-arrows">
+              <button type="button" className="al-weeks-arrow" onClick={() => scroll(-1)} aria-label="이전 주차">
+                <i className="ph-bold ph-caret-left" />
+              </button>
+              <button type="button" className="al-weeks-arrow" onClick={() => scroll(1)} aria-label="다음 주차">
+                <i className="ph-bold ph-caret-right" />
+              </button>
+            </div>
+            <Link to={playHref} className="al-continue">
+              이어서 하기 <i className="ph-bold ph-arrow-right" />
+            </Link>
+          </div>
+        )}
+      </div>
+      <div className="al-lessons" ref={trackRef}>
+        {cat.available && cat.chapters.length ? (
+          cat.chapters.map((ch) => {
+            const href = `${PATHS.STUDENT_CHAPTER_PLAY}?subject=${encodeURIComponent(cat.tag)}&chapter=${ch.no}`;
+            const inner = (
+              <>
+                <div className="al-ls-head">
+                  <span className="al-ls-level">{ch.no}주차</span>
+                  <span className="al-ls-icon">
+                    <i className={CH_ICON[ch.state] || CH_ICON.locked} />
+                  </span>
+                </div>
+                <div className="al-ls-name">{ch.name}</div>
+                {/* 챕터별 5단계 미니 바 */}
+                <div className="al-ls-segs">
+                  {Array.from({ length: ch.stages }, (_, i) => (
+                    <div key={i} className={`al-ls-seg${i < ch.stagesDone ? ' al-ls-seg-on' : ''}`} />
+                  ))}
+                </div>
+                <div className="al-ls-state">
+                  {ch.state === 'locked'
+                    ? ch.no - cat.unlockedChapters <= 1
+                      ? '다음 주'
+                      : `${ch.no - cat.unlockedChapters}주 후`
+                    : CH_LABEL[ch.state] || '잠김'}
+                </div>
+              </>
+            );
+            const cls = `al-ls al-ls-${ch.state === 'current' || ch.state === 'available' ? 'active' : ch.state === 'done' ? 'done' : 'lock'}`;
+            return ch.unlocked ? (
+              <Link key={ch.no} to={href} className={cls}>
+                {inner}
+              </Link>
+            ) : (
+              <div key={ch.no} className={cls} title="다음 주 월요일에 열려요">
+                {inner}
+              </div>
+            );
+          })
+        ) : (
+          <div className="al-ls al-ls-lock al-ls-soon">
+            <div className="al-ls-name">이 과목은 문제를 준비 중이에요</div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

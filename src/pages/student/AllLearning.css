@@ -468,17 +468,60 @@
 }
 
 .al-lessons {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  display: flex;
   gap: 11px;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  padding-bottom: 4px;
+  scrollbar-width: none; /* Firefox — 화살표로 이동하므로 스크롤바 숨김 */
+}
+.al-lessons::-webkit-scrollbar {
+  display: none;
 }
 
 .al-ls {
+  flex: 0 0 clamp(128px, 19%, 168px); /* 캐러셀: 고정폭 카드, 5개는 한 화면·초과분은 스크롤 */
+  scroll-snap-align: start;
   border-radius: 16px;
   padding: 13px;
   min-height: 96px;
   display: flex;
   flex-direction: column;
+  box-sizing: border-box;
+}
+
+/* 주차 캐러셀 헤더 우측 — < > 화살표(위) + 이어서 하기(아래) */
+.al-weeks-headright {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+.al-weeks-arrows {
+  display: flex;
+  gap: 6px;
+}
+/* al-iconbtn과 같은 언어(soft peach 배경·muted 색·hover coral)로 통일 */
+.al-weeks-arrow {
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 10px;
+  background: #fff1e9;
+  color: #8a8072;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.18s, color 0.18s, transform 0.1s;
+}
+.al-weeks-arrow:hover {
+  background: #ffe3d6;
+  color: #ff5a4d;
+}
+.al-weeks-arrow:active {
+  transform: scale(0.92);
 }
 
 .al-ls-head {
@@ -624,6 +667,60 @@
   background: rgba(255, 255, 255, 0.35);
 }
 .al-panel-segs .al-seg-on { background: #fff; }
+
+/* 숙련도(정답률) · 준비중 배지 */
+.al-panel-acc {
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.92);
+}
+.al-panel-soon {
+  margin-top: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 800;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.22);
+  padding: 6px 12px;
+  border-radius: 999px;
+  align-self: flex-start;
+}
+
+/* 챕터(주차) 카드 안의 5단계 미니 바 */
+.al-ls-segs {
+  display: flex;
+  gap: 3px;
+  margin: 8px 0 6px;
+}
+.al-ls-seg {
+  flex: 1;
+  height: 5px;
+  border-radius: 4px;
+  background: #e6e0d6;
+}
+.al-ls-seg-on {
+  background: #2fbf8f;
+}
+.al-ls-lock .al-ls-seg-on {
+  background: #c0b6a9;
+}
+.al-ls-soon {
+  opacity: 0.75;
+  font-style: normal;
+}
+/* 잠금 아닌 챕터 카드는 클릭 가능 — 링크 기본 스타일 제거 */
+a.al-ls {
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+a.al-ls:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px -14px rgba(30, 41, 59, 0.35);
+}
 .dq-sec-curric { max-width: 1160px; margin: 0 auto; padding: 8px 24px 4px; }
 .dq-curric {
   background: #fff; border: 1.5px solid #FFE0EC; border-radius: 22px;

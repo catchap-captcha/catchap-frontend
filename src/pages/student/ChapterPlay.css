@@ -1,0 +1,322 @@
+/* ChapterPlay — 주간 챕터 한 단계(2문항) 플레이. 자체 완결 스타일 */
+.cp-root {
+  --cp-c1: #33c892;
+  --cp-c2: #17b0a0;
+  min-height: 100vh;
+  background: #f6f8fc;
+  padding: 18px 16px 48px;
+  max-width: 720px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* 상단 바 */
+.cp-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.cp-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #6b7280;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 8px 10px;
+  border-radius: 10px;
+}
+.cp-back:hover {
+  background: #eef1f6;
+}
+.cp-topmid {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.cp-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 800;
+  color: #fff;
+  background: linear-gradient(135deg, var(--cp-c1), var(--cp-c2));
+  padding: 3px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+}
+.cp-chap {
+  font-size: 12px;
+  color: #9aa2af;
+  font-weight: 700;
+}
+.cp-count {
+  font-weight: 800;
+  color: #b0b7c3;
+  font-size: 14px;
+  min-width: 44px;
+  text-align: right;
+}
+
+/* 5단계 세그먼트 바 */
+.cp-segs {
+  display: flex;
+  gap: 6px;
+}
+.cp-seg {
+  flex: 1;
+  height: 8px;
+  border-radius: 999px;
+  background: #e3e8f0;
+  transition: background 0.25s;
+}
+.cp-seg-on {
+  background: linear-gradient(90deg, var(--cp-c1), var(--cp-c2));
+}
+.cp-seg-cur {
+  outline: 2px solid color-mix(in srgb, var(--cp-c2) 50%, transparent);
+  outline-offset: 1px;
+}
+.cp-segs-lg .cp-seg {
+  height: 12px;
+}
+
+/* 문제 카드 */
+.cp-card {
+  background: #fff;
+  border-radius: 22px;
+  padding: 24px 20px 20px;
+  box-shadow: 0 8px 30px rgba(30, 41, 59, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.cp-prompt {
+  font-size: 20px;
+  font-weight: 800;
+  color: #1f2937;
+  line-height: 1.45;
+  text-align: center;
+  margin: 4px 0;
+}
+.cp-audio {
+  width: 100%;
+  max-width: 340px;
+  margin: 0 auto;
+}
+.cp-multihint {
+  text-align: center;
+  color: #8b93a1;
+  font-size: 13px;
+  font-weight: 700;
+  margin: -6px 0 0;
+}
+
+.cp-options {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+.cp-opt {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 64px;
+  padding: 14px 16px;
+  border: 2.5px solid #e6eaf1;
+  border-radius: 16px;
+  background: #fbfcfe;
+  font-size: 17px;
+  font-weight: 700;
+  color: #374151;
+  cursor: pointer;
+  transition: transform 0.08s, border-color 0.15s, background 0.15s;
+}
+.cp-opt:hover:not(:disabled) {
+  border-color: var(--cp-c2);
+  transform: translateY(-1px);
+}
+.cp-opt:disabled {
+  cursor: default;
+}
+.cp-opt-sel {
+  border-color: var(--cp-c2);
+  background: color-mix(in srgb, var(--cp-c1) 12%, #fff);
+}
+.cp-opt-emoji {
+  font-size: 30px;
+}
+.cp-opt-correct {
+  border-color: #22c55e !important;
+  background: #ecfdf3 !important;
+  color: #15803d;
+}
+.cp-opt-wrong {
+  border-color: #ef4444 !important;
+  background: #fef2f2 !important;
+  color: #b91c1c;
+}
+.cp-opt-mark {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  font-size: 16px;
+}
+.cp-opt-correct .cp-opt-mark {
+  color: #22c55e;
+}
+.cp-opt-wrong .cp-opt-mark {
+  color: #ef4444;
+}
+
+/* 피드백 */
+.cp-fb {
+  border-radius: 14px;
+  padding: 12px 14px;
+  font-weight: 700;
+}
+.cp-fb-ok {
+  background: #ecfdf3;
+  color: #15803d;
+}
+.cp-fb-no {
+  background: #fff7ed;
+  color: #b45309;
+}
+.cp-fb-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+}
+.cp-coins {
+  margin-left: auto;
+  font-weight: 800;
+}
+.cp-fb-hint {
+  margin: 6px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+  opacity: 0.85;
+}
+.cp-submiterr {
+  color: #dc2626;
+  font-weight: 700;
+  font-size: 13px;
+  text-align: center;
+  margin: 0;
+}
+
+/* 버튼 */
+.cp-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: none;
+  border-radius: 14px;
+  font-weight: 800;
+  font-size: 16px;
+  padding: 14px 22px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: transform 0.08s, opacity 0.15s;
+}
+.cp-btn:active {
+  transform: scale(0.98);
+}
+.cp-btn-primary {
+  background: linear-gradient(135deg, var(--cp-c1), var(--cp-c2));
+  color: #fff;
+}
+.cp-btn-primary:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.cp-btn-ghost {
+  background: #eef1f6;
+  color: #4b5563;
+}
+.cp-btn-wide {
+  width: 100%;
+}
+
+/* 로딩/잠금/에러 메시지 카드 */
+.cp-msgcard,
+.cp-donecard {
+  background: #fff;
+  border-radius: 22px;
+  padding: 40px 24px;
+  box-shadow: 0 8px 30px rgba(30, 41, 59, 0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  text-align: center;
+  margin-top: 40px;
+}
+.cp-msgicon {
+  font-size: 44px;
+  color: #b0b7c3;
+}
+.cp-msgtext {
+  font-size: 16px;
+  font-weight: 700;
+  color: #4b5563;
+  margin: 0;
+}
+.cp-spin {
+  animation: cp-spin 0.9s linear infinite;
+}
+@keyframes cp-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 단계 완료 화면 */
+.cp-doneicon {
+  font-size: 56px;
+  color: var(--cp-c2);
+}
+.cp-donetitle {
+  font-size: 24px;
+  font-weight: 900;
+  color: #1f2937;
+  margin: 0;
+}
+.cp-donecard .cp-segs {
+  width: 100%;
+  max-width: 320px;
+}
+.cp-donesub {
+  font-size: 15px;
+  color: #6b7280;
+  font-weight: 600;
+  margin: 4px 0 8px;
+  line-height: 1.5;
+}
+.cp-doneactions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  max-width: 320px;
+}
+
+@media (max-width: 420px) {
+  .cp-prompt {
+    font-size: 18px;
+  }
+  .cp-opt {
+    font-size: 15px;
+    min-height: 58px;
+  }
+}

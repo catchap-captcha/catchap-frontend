@@ -21,6 +21,7 @@ export const PATHS = {
   STUDENT_HOME: '/student/home',
   STUDENT_CHAPTERS: '/student/chapters', // ?subject=
   STUDENT_GAME: '/student/game', // ?subject=&chapter=
+  STUDENT_CHAPTER_PLAY: '/student/chapter-play', // ?subject=&chapter= — 주간 챕터 한 단계(2문항) 플레이
   STUDENT_RESULT: '/student/result', // ?subject=
   STUDENT_DAILY_QUIZ: '/student/daily-quiz',
   STUDENT_ALL_LEARNING: '/student/all-learning',

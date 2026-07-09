@@ -20,6 +20,7 @@ const ActivatePage = lazy(() => import('../pages/auth/ActivatePage'));
 const StudentHome = lazy(() => import('../pages/student/StudentHome'));
 const ChapterMap = lazy(() => import('../pages/student/ChapterMap'));
 const GameScreen = lazy(() => import('../pages/student/GameScreen'));
+const ChapterPlay = lazy(() => import('../pages/student/ChapterPlay'));
 const GameResult = lazy(() => import('../pages/student/GameResult'));
 const DailyQuiz = lazy(() => import('../pages/student/DailyQuiz'));
 const AllLearning = lazy(() => import('../pages/student/AllLearning'));
@@ -93,6 +94,7 @@ export default function AppRoutes() {
           <Route path={PATHS.STUDENT_HOME} element={<StudentHome />} />
           <Route path={PATHS.STUDENT_CHAPTERS} element={<ChapterMap />} />
           <Route path={PATHS.STUDENT_GAME} element={<GameScreen />} />
+          <Route path={PATHS.STUDENT_CHAPTER_PLAY} element={<ChapterPlay />} />
           <Route path={PATHS.STUDENT_RESULT} element={<GameResult />} />
           <Route path={PATHS.STUDENT_DAILY_QUIZ} element={<DailyQuiz />} />
           <Route path={PATHS.STUDENT_ALL_LEARNING} element={<AllLearning />} />
