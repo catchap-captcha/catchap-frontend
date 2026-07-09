@@ -172,6 +172,7 @@ export interface OpsApiKey {
   site_key: string;
   status: string; // active | disabled
   plan: string;
+  usage_month: number;
   last_used_at: string | null;
   created_at: string | null;
 }
@@ -323,6 +324,12 @@ export const opsApi = {
     first_party?: boolean;
   }) => client.post<OpsIssuedKey>('/ops/api-keys', body).then((r) => r.data),
   revokeApiKey: (id: string) => client.delete(`/ops/api-keys/${id}`).then((r) => r.data),
+  rotateSecret: (id: string) =>
+    client
+      .post<{ ok: boolean; site_key: string; secret_key: string }>(
+        `/ops/api-keys/${id}/rotate-secret`,
+      )
+      .then((r) => r.data),
   /** 기관 구매 과목(edu_subjects) 설정 — 판매 프로비저닝 */
   setEntitlements: (orgId: string, edu_subjects: string[]) =>
     client

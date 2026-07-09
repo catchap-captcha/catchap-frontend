@@ -121,6 +121,12 @@ export const orgApi = {
     client.post<OrgIssuedKey>(`/orgs/${orgId}/api-keys`, body).then((r) => r.data),
   revokeApiKey: (orgId: string, keyId: string) =>
     client.delete<{ ok: boolean }>(`/orgs/${orgId}/api-keys/${keyId}`).then((r) => r.data),
+  rotateSecret: (orgId: string, keyId: string) =>
+    client
+      .post<{ ok: boolean; site_key: string; secret_key: string }>(
+        `/orgs/${orgId}/api-keys/${keyId}/rotate-secret`,
+      )
+      .then((r) => r.data),
 };
 
 export interface OrgApiEntitlements {
@@ -128,6 +134,7 @@ export interface OrgApiEntitlements {
   edu_subjects: string[];
   plan: string;
   usage: { used: number; quota: number };
+  subject_usage: Record<string, number>;
   product_names: Record<string, string>;
 }
 export interface OrgApiKey {
@@ -139,6 +146,7 @@ export interface OrgApiKey {
   first_party: boolean;
   site_key: string;
   status: string;
+  usage_month: number;
   last_used_at: string | null;
   created_at: string | null;
 }

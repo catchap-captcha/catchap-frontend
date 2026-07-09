@@ -68,3 +68,9 @@
   border-radius: 8px;
   background: linear-gradient(90deg, #ff8a4d, #ff5a4d);
 }
+
+.oa-subchip-n {
+  margin-left: 5px;
+  font-weight: 900;
+  color: #ff5a4d;
+}

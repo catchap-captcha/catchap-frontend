@@ -43,7 +43,9 @@ export default function OrgApiKeys() {
   const [issuing, setIssuing] = useState(false);
 
   const [issued, setIssued] = useState<OrgIssuedKey | null>(null);
+  const [rotated, setRotated] = useState<{ site_key: string; secret_key: string } | null>(null);
   const [openSnippet, setOpenSnippet] = useState<string | null>(null);
+  const reveal = issued ?? rotated; // secret 1회 노출 모달 공용(발급·재발급)
 
   const load = () => {
     if (!orgId) return;
@@ -66,6 +68,7 @@ export default function OrgApiKeys() {
   };
 
   const eduSubjects = ent?.edu_subjects ?? [];
+  const subjectUsage = ent?.subject_usage ?? {};
   const canIssueEdu = (ent?.products ?? []).includes('edu');
   const usage = ent?.usage ?? { used: 0, quota: 0 };
   const usagePct = usage.quota ? Math.min(100, Math.round((usage.used / usage.quota) * 100)) : 0;
@@ -94,6 +97,18 @@ export default function OrgApiKeys() {
       })
       .catch((err) => flash(errMsg(err, '발급에 실패했어요.')))
       .finally(() => setIssuing(false));
+  };
+
+  const onRotate = (k: OrgApiKey) => {
+    if (!window.confirm(`'${k.label || k.site_key}'의 secret_key를 재발급할까요? 기존 secret은 즉시 무효가 돼요.`))
+      return;
+    orgApi
+      .rotateSecret(orgId, k.id)
+      .then((res) => {
+        setRotated({ site_key: res.site_key, secret_key: res.secret_key });
+        flash('secret_key를 재발급했어요. 지금만 볼 수 있어요.');
+      })
+      .catch((err) => flash(errMsg(err, '재발급에 실패했어요.')));
   };
 
   const onRevoke = (k: OrgApiKey) => {
@@ -152,12 +167,13 @@ export default function OrgApiKeys() {
             </span>
           </div>
           <div className="oa-sum-card">
-            <span className="oa-sum-lb">구매한 교육형 과목</span>
+            <span className="oa-sum-lb">구매 과목 · 이번 달 호출</span>
             <span className="oa-sum-v">
               {eduSubjects.length ? (
                 eduSubjects.map((s) => (
                   <span key={s} className="oa-subchip">
                     {s}
+                    {subjectUsage[s] ? <b className="oa-subchip-n">{subjectUsage[s].toLocaleString('ko-KR')}</b> : null}
                   </span>
                 ))
               ) : (
@@ -319,6 +335,7 @@ export default function OrgApiKeys() {
                 </div>
 
                 <div className="ak-key-meta">
+                  <span>이번 달 호출: {k.usage_month.toLocaleString('ko-KR')}회</span>
                   <span>
                     마지막 사용:{' '}
                     {k.last_used_at ? new Date(k.last_used_at).toLocaleString('ko-KR') : '없음'}
@@ -351,6 +368,12 @@ export default function OrgApiKeys() {
                     {on ? '코드 닫기' : '임베드 코드'}
                   </button>
                   {k.status === 'active' && (
+                    <button type="button" className="op-btn op-btn--reject" onClick={() => onRotate(k)}>
+                      <i className="ph-bold ph-arrows-clockwise" />
+                      secret 재발급
+                    </button>
+                  )}
+                  {k.status === 'active' && (
                     <button type="button" className="op-btn op-btn--reject" onClick={() => onRevoke(k)}>
                       <i className="ph-bold ph-prohibit" />
                       사용 중지
@@ -362,14 +385,22 @@ export default function OrgApiKeys() {
           })}
       </div>
 
-      {/* secret 1회 노출 모달 */}
-      {issued && (
-        <div className="ak-modal-back" onClick={() => setIssued(null)}>
+      {/* secret 1회 노출 모달 (발급·재발급 공용) */}
+      {reveal && (
+        <div
+          className="ak-modal-back"
+          onClick={() => {
+            setIssued(null);
+            setRotated(null);
+          }}
+        >
           <div className="ak-modal" onClick={(e) => e.stopPropagation()}>
             <div className="ak-modal-ic">
               <i className="ph-fill ph-check-circle" />
             </div>
-            <h2 className="ak-modal-title">API 키가 발급됐어요</h2>
+            <h2 className="ak-modal-title">
+              {issued ? 'API 키가 발급됐어요' : 'secret_key를 재발급했어요'}
+            </h2>
             <p className="ak-modal-warn">
               <i className="ph-fill ph-warning" /> <strong>secret_key는 지금만 표시</strong>돼요. 창을
               닫으면 다시 볼 수 없으니 안전한 곳에 복사해 두세요.
@@ -378,8 +409,8 @@ export default function OrgApiKeys() {
             <div className="ak-modal-field">
               <span className="ak-keyline-k">site_key (공개 · 위젯에 사용)</span>
               <div className="ak-modal-val">
-                <code className="ak-mono">{issued.site_key}</code>
-                <button className="ak-copy" onClick={() => copy(issued.site_key, 'site_key 복사됨')}>
+                <code className="ak-mono">{reveal.site_key}</code>
+                <button className="ak-copy" onClick={() => copy(reveal.site_key, 'site_key 복사됨')}>
                   <i className="ph-bold ph-copy" /> 복사
                 </button>
               </div>
@@ -388,14 +419,20 @@ export default function OrgApiKeys() {
             <div className="ak-modal-field">
               <span className="ak-keyline-k ak-keyline-k--secret">secret_key (비공개 · 서버 검증용)</span>
               <div className="ak-modal-val ak-modal-val--secret">
-                <code className="ak-mono">{issued.secret_key}</code>
-                <button className="ak-copy" onClick={() => copy(issued.secret_key, 'secret_key 복사됨')}>
+                <code className="ak-mono">{reveal.secret_key}</code>
+                <button className="ak-copy" onClick={() => copy(reveal.secret_key, 'secret_key 복사됨')}>
                   <i className="ph-bold ph-copy" /> 복사
                 </button>
               </div>
             </div>
 
-            <button className="op-btn op-btn--approve ak-modal-done" onClick={() => setIssued(null)}>
+            <button
+              className="op-btn op-btn--approve ak-modal-done"
+              onClick={() => {
+                setIssued(null);
+                setRotated(null);
+              }}
+            >
               복사했어요, 닫기
             </button>
           </div>

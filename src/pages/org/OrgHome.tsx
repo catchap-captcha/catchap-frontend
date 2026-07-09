@@ -141,6 +141,8 @@ const FALLBACK_SITE = {
   domain: 'school.hatsal.kr',
   errorRate: '0.3%',
   avgResponse: '142ms',
+  activeKeys: 0,
+  subjectUsage: {} as Record<string, number>,
 };
 
 type OhGrade = (typeof GRADES)[number];
@@ -337,6 +339,8 @@ export default function OrgHome() {
             typeof res.avg_latency_ms === 'number'
               ? `${res.avg_latency_ms}ms`
               : res.avg_response ?? FALLBACK_SITE.avgResponse,
+          activeKeys: typeof res.active_keys === 'number' ? res.active_keys : FALLBACK_SITE.activeKeys,
+          subjectUsage: res.subject_usage ?? FALLBACK_SITE.subjectUsage,
         });
       })
       .catch(() => {
@@ -669,11 +673,25 @@ export default function OrgHome() {
               <span className="oh-apiKey">평균 응답 시간</span>
               <span className="oh-apiVal">{site.avgResponse}</span>
             </div>
+            <div className="oh-apiRow">
+              <span className="oh-apiKey">활성 API 키</span>
+              <span className="oh-apiVal">{site.activeKeys}개</span>
+            </div>
+            {Object.keys(site.subjectUsage).length > 0 && (
+              <div className="oh-apiRow">
+                <span className="oh-apiKey">과목별 호출(이번 달)</span>
+                <span className="oh-apiVal">
+                  {Object.entries(site.subjectUsage)
+                    .sort((a, b) => b[1] - a[1])
+                    .map(([s, n]) => `${s} ${n.toLocaleString('ko-KR')}`)
+                    .join(' · ')}
+                </span>
+              </div>
+            )}
           </div>
-          {/* 원본대로 동작 없음 (site_key 발급/도메인 등록 UI는 디자인에 없음) */}
-          <button className="oh-apiManageBtn">
-            <i className="ph-fill ph-gear" />연동 설정 관리
-          </button>
+          <Link className="oh-apiManageBtn" to={PATHS.ORG_API_KEYS}>
+            <i className="ph-fill ph-gear" />API 키 관리
+          </Link>
         </div>
       </div>
     </OrgLayout>
