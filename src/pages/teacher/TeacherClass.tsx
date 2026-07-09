@@ -15,6 +15,7 @@ interface TcStudent {
   id: string;
   name: string;
   age: number;
+  gender?: string; // '' | male | female | other (선생님이 관리)
   code: string;
   avatarBg: string;
   today: Today;
@@ -34,7 +35,7 @@ interface DirEntry {
 
 type TcModal =
   | { mode: 'add'; code: string }
-  | { mode: 'edit'; id: string; name: string; age: number; status: string }
+  | { mode: 'edit'; id: string; name: string; age: number; gender: string; status: string }
   | null;
 
 /** GET /teacher/class/students/{id} 상세 — skills/comment (없으면 로컬 합성 fallback) */
@@ -111,6 +112,7 @@ function mapStudents(res: any): TcStudent[] | null {
       id: String(r.id ?? r.student_id ?? `s${i + 1}`),
       name: String(r.name ?? ''),
       age: Number(r.age ?? 7),
+      gender: r.gender ?? '',
       code: String(r.code ?? r.student_code ?? ''),
       avatarBg: r.avatarBg ?? r.avatar_bg ?? fb?.avatarBg ?? pal.avatarBg,
       today: r.today === 'done' || r.today_done ? 'done' : 'none',
@@ -228,7 +230,7 @@ export default function TeacherClass() {
     const s = students.find((x) => x.id === (id || selId));
     if (!s) return;
     setSelId(s.id);
-    setModal({ mode: 'edit', id: s.id, name: s.name, age: s.age, status: s.status });
+    setModal({ mode: 'edit', id: s.id, name: s.name, age: s.age, gender: s.gender ?? '', status: s.status });
   };
 
   const deleteStudent = (id: string | null) => {
@@ -279,12 +281,12 @@ export default function TeacherClass() {
     } else {
       const name = (modal.name || '').trim();
       if (!name) return;
-      const { id, age, status } = modal;
-      setStudents((prev) => prev.map((x) => (x.id === id ? { ...x, name, age, status } : x)));
+      const { id, age, gender, status } = modal;
+      setStudents((prev) => prev.map((x) => (x.id === id ? { ...x, name, age, gender, status } : x)));
       setModal(null);
       teacherApi
         // 교사가 고치는 이름은 학교용 실명(real_name) — 학생 닉네임은 학생 소유라 건드리지 않음
-        .updateStudent(id, { real_name: name, age, status })
+        .updateStudent(id, { real_name: name, age, gender, status })
         .then(() => loadStudents())
         .catch(() => {
           // TODO(api): 실패 시 원본 로컬 수정 흐름 유지
@@ -602,6 +604,25 @@ export default function TeacherClass() {
                           className={`tc-ageChip ${modal.age === n ? 'tc-chip2-on' : 'tc-chip2-off'}`}
                         >
                           {n}세
+                        </button>
+                      ))}
+                    </div>
+
+                    <label className="tc-label">성별</label>
+                    <div className="tc-statusRow">
+                      {([
+                        { v: '', label: '미입력' },
+                        { v: 'male', label: '남아' },
+                        { v: 'female', label: '여아' },
+                      ] as const).map((g) => (
+                        <button
+                          key={g.v || 'none'}
+                          onClick={() =>
+                            setModal((m) => (m && m.mode === 'edit' ? { ...m, gender: g.v } : m))
+                          }
+                          className={`tc-statusChip ${modal.gender === g.v ? 'tc-st-on' : 'tc-st-off'}`}
+                        >
+                          {g.label}
                         </button>
                       ))}
                     </div>

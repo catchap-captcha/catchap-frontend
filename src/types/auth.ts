@@ -77,8 +77,6 @@ export interface RegisterStudentRequest {
   email_code: string;
   student_login_id: string;
   password: string;
-  age?: number | null;
-  gender?: Gender | null;
 }
 
 export interface RegisterOrgRequest {
