@@ -101,12 +101,17 @@ function mapApiWeek(list: any, prev: WeekDay[]): WeekDay[] {
   return mapped.length ? mapped : prev;
 }
 
-/* API streak_days(실집계) 우선 — 없을 때만 week(월요일부터 연속 완료)에서 파생 */
+/* API streak_days(실집계) 우선 — 없을 때만 week에서 파생.
+   오늘(오늘 아직이면 어제)부터 역방향으로 연속 완료일을 센다. 월요일부터 정방향으로 세면
+   월요일을 안 한 주엔 화·수·목 다 해도 0으로 끊긴다. */
 function streakFromWeek(week: WeekDay[]): number {
+  let ti = week.findIndex((w) => w.today);
+  if (ti < 0) ti = week.length - 1; // today 표시 없으면 마지막 요일 기준
+  let i = week[ti]?.done ? ti : ti - 1;
   let n = 0;
-  for (const w of week) {
-    if (w.done) n += 1;
-    else break;
+  while (i >= 0 && week[i]?.done) {
+    n += 1;
+    i -= 1;
   }
   return n;
 }
