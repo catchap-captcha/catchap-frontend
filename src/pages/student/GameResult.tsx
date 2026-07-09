@@ -25,11 +25,11 @@ interface ResultEntry {
 
 // TODO(api): studentApi.result() 실패 시 원본 SUBJECTS 하드코딩 데이터 유지
 const FALLBACK: Record<string, ResultEntry> = {
-  '국어': { solid: '#FF5A4D', soft: '#FFE0DB', cleared: 5, correct: 5, score: '+150', time: '2:40', streak: 5, ai: '낱말을 정말 잘 찾았어요! 그림을 천천히 보고 고르는 습관이 멋져요. 이제 국어 모든 단계를 마스터했네요! 🐾' },
-  '영어': { solid: '#FF922E', soft: '#FFEDD6', cleared: 3, correct: 4, score: '+90', time: '2:10', streak: 3, ai: '영어 단어를 척척 맞혔어요! 알파벳 소리를 떠올리면 더 쉬워요. 다음 단계도 잘 해낼 거예요! 🐾' },
-  '수학': { solid: '#17B08C', soft: '#DFF6EE', cleared: 5, correct: 5, score: '+160', time: '3:05', streak: 5, ai: '수 세기가 아주 정확했어요! 하나씩 짚으며 세는 방법이 완벽했어요. 수학 전 단계 클리어! 🐾' },
-  '과학': { solid: '#2E7BFF', soft: '#E1EDFF', cleared: 2, correct: 4, score: '+95', time: '2:20', streak: 3, ai: '관찰을 참 잘했어요! 무겁고 가벼운 걸 잘 구분했어요. 다음엔 더 어려운 관찰에 도전해봐요! 🐾' },
-  '사회': { solid: '#8B6BFF', soft: '#EAE2FF', cleared: 1, correct: 4, score: '+80', time: '2:05', streak: 3, ai: '옛날 이야기를 잘 기억하고 있네요! 세종대왕님 이야기, 아주 멋지게 맞혔어요. 다음 단계로 가볼까요? 🐾' },
+  '국어': { solid: '#FF5A4D', soft: '#FFE0DB', cleared: 5, correct: 5, score: '+150', time: '2:40', streak: 5, ai: '글의 속뜻까지 잘 파악했어요! 낱말과 문장을 꼼꼼히 읽는 습관이 멋져요. 다음 단계도 잘 해낼 거예요! 🐾' },
+  '영어': { solid: '#FF922E', soft: '#FFEDD6', cleared: 3, correct: 4, score: '+90', time: '2:10', streak: 3, ai: '영어 문장과 문법을 척척 풀었어요! 단어의 쓰임을 잘 이해했네요. 다음 단계도 잘 해낼 거예요! 🐾' },
+  '수학': { solid: '#17B08C', soft: '#DFF6EE', cleared: 5, correct: 5, score: '+160', time: '3:05', streak: 5, ai: '계산과 도형 문제를 아주 정확하게 풀었어요! 차근차근 따지는 방법이 완벽했어요. 다음 단계도 도전해봐요! 🐾' },
+  '과학': { solid: '#2E7BFF', soft: '#E1EDFF', cleared: 2, correct: 4, score: '+95', time: '2:20', streak: 3, ai: '관찰하고 탐구를 참 잘했어요! 원리를 꼼꼼히 살피는 눈이 멋져요. 다음엔 더 깊은 탐구에 도전해봐요! 🐾' },
+  '사회': { solid: '#8B6BFF', soft: '#EAE2FF', cleared: 1, correct: 4, score: '+80', time: '2:05', streak: 3, ai: '우리 지역과 사회를 잘 이해하고 있네요! 지도와 공공기관 문제를 멋지게 풀었어요. 다음 단계로 가볼까요? 🐾' },
   '생활': { solid: '#FF6DA6', soft: '#FFE3EF', cleared: 1, correct: 4, score: '+110', time: '2:35', streak: 4, ai: '안전 규칙을 잘 지켰어요! 멈추고, 살피고, 건너기 — 참 잘 기억했어요. 다음 단계도 안전하게! 🐾' },
 };
 
