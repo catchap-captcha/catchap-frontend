@@ -161,6 +161,33 @@ a:hover { color: #3f7fb8; }
 .success-title { font-size: 33px; color: #4f9a34; margin-bottom: 5px; }
 .success-sub { font-size: 19px; color: #a08a66; margin-bottom: 24px; }
 
+/* ===== narrow embeds (iframe < 460px) — 회전 카드가 칸을 넘지 않게 축소 ===== */
+@media (max-width: 460px) {
+  .bubble { top: 16px; }
+  .bubble-inner { padding: 10px 18px; gap: 9px; }
+  .bubble-icon { font-size: 21px; }
+  .bubble-text { font-size: 17px; }
+  .corner-btn { width: 46px; height: 46px; top: 16px; border-radius: 17px; }
+  .corner-btn--right { right: 16px; }
+  .corner-btn--left { left: 16px; }
+  .wrong-toast-inner { padding: 12px 22px; font-size: 18px; }
+  .rotate-wrap { padding: 0 10px 14px; }
+  .rotate-card { padding: 11px 14px 15px; gap: 9px; border-radius: 26px; }
+  .rotate-hint { font-size: 14px; }
+  .rotate-hint-icon { font-size: 17px; }
+  .rotate-row { gap: 10px; }
+  .rotate-btn { font-size: 12px; gap: 4px; }
+  .rotate-btn-icon { width: 50px; height: 50px; border-radius: 17px; }
+  .rotate-btn-icon svg { width: 24px; height: 24px; }
+  .rotate-pad { width: 104px; height: 104px; border-radius: 21px; padding: 8px; }
+  .rotate-pad-inner { width: 86px; height: 84px; }
+  .btn-gold { font-size: 18px; padding: 10px 44px; border-radius: 18px; }
+  .success-card { padding: 28px 32px 24px; border-radius: 30px; }
+  .success-check { width: 84px; height: 84px; }
+  .success-title { font-size: 27px; }
+  .success-sub { font-size: 16px; }
+}
+
 /* ===== tiny dev status line ===== */
 .status-line {
   position: absolute; left: 12px; bottom: 10px; z-index: 40;

@@ -1697,6 +1697,24 @@
   justify-content: center;
 }
 
+/* 메인 캡차(숲속 마을)는 iframe 자체가 칸 — 점선 액자를 빼고 폭을 꽉 채운다 */
+.lg-cap-slot--forest {
+  border: none;
+  background: transparent;
+  min-height: 0;
+  display: block;
+}
+
+/* 모바일: 팝업 여백을 줄여 캡차 칸이 최대한 넓게 나오도록 */
+@media (max-width: 480px) {
+  .lg-cap-overlay {
+    padding: 10px;
+  }
+  .lg-cap-body {
+    padding: 14px 12px;
+  }
+}
+
 .lg-cap-loading {
   display: flex;
   flex-direction: column;
