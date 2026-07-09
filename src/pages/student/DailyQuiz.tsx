@@ -43,7 +43,7 @@ const FALLBACK: QuizData = {
   streakDays: 4,
   quizzes: [
     { subject: '국어', topic: '그림 보고 낱말 찾기', status: 'done', reward: 10, icon: 'ph-fill ph-book-open', c1: '#FF7A7A', c2: '#FF5A6E' },
-    { subject: '영어', topic: '알파벳과 쉬운 단어', status: 'progress', reward: 10, icon: 'ph-fill ph-translate', c1: '#FFB43C', c2: '#FF922E' },
+    { subject: '영어', topic: '단어와 문장', status: 'progress', reward: 10, icon: 'ph-fill ph-translate', c1: '#FFB43C', c2: '#FF922E' },
     { subject: '수학', topic: '더하기·빼기 놀이', status: 'todo', reward: 15, icon: 'ph-fill ph-plus-minus', c1: '#33C892', c2: '#17B0A0' },
     { subject: '과학', topic: '관찰하고 골라요', status: 'todo', reward: 15, icon: 'ph-fill ph-flask', c1: '#4AA6FF', c2: '#2E7BFF' },
     { subject: '사회', topic: '옛날 이야기 속으로', status: 'todo', reward: 20, icon: 'ph-fill ph-scroll', c1: '#A98CFF', c2: '#8B6BFF' },

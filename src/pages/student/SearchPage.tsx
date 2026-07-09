@@ -20,11 +20,11 @@ interface SearchItem {
 
 // TODO(api): 백엔드 미구현 — studentApi.searchContent 실패/무응답 시 원본 DCLogic ITEMS 그대로 로컬 필터링
 const FALLBACK: SearchItem[] = [
-  { title: '국어', tag: '과목', desc: '글자와 낱말을 익히는 국어 한 판', icon: 'ph-fill ph-book-open', bg: '#FFE7E2', color: '#FF5A4D', href: 'CatChap 한글낱말.dc.html', kw: '국어 한글 낱말 글자 읽기 kor' },
-  { title: '영어', tag: '과목', desc: '알파벳과 쉬운 단어를 만나는 영어 한 판', icon: 'ph-fill ph-translate', bg: '#FFEDE0', color: '#FF922E', href: 'CatChap 숫자놀이터.dc.html', kw: '영어 알파벳 단어 eng english' },
-  { title: '수학', tag: '과목', desc: '수와 셈을 놀이로 배우는 수학 한 판', icon: 'ph-fill ph-plus-minus', bg: '#E1F5EC', color: '#17B08C', href: 'CatChap 끌어놓기.dc.html', kw: '수학 숫자 셈 덧셈 뺄셈 연산 math' },
+  { title: '국어', tag: '과목', desc: '낱말·문장·글의 속뜻을 익히는 국어 한 판', icon: 'ph-fill ph-book-open', bg: '#FFE7E2', color: '#FF5A4D', href: 'CatChap 한글낱말.dc.html', kw: '국어 한글 낱말 글자 읽기 kor' },
+  { title: '영어', tag: '과목', desc: '단어·문장·문법으로 배우는 영어 한 판', icon: 'ph-fill ph-translate', bg: '#FFEDE0', color: '#FF922E', href: 'CatChap 숫자놀이터.dc.html', kw: '영어 알파벳 단어 eng english' },
+  { title: '수학', tag: '과목', desc: '수·연산·도형·측정을 배우는 수학 한 판', icon: 'ph-fill ph-plus-minus', bg: '#E1F5EC', color: '#17B08C', href: 'CatChap 끌어놓기.dc.html', kw: '수학 숫자 셈 덧셈 뺄셈 연산 math' },
   { title: '과학', tag: '과목', desc: '관찰하고 탐구하는 과학 한 판', icon: 'ph-fill ph-flask', bg: '#E6F0FF', color: '#2E7BFF', href: 'CatChap 그림찾기.dc.html', kw: '과학 관찰 탐구 실험 sci' },
-  { title: '사회', tag: '과목', desc: '옛날 이야기와 지혜를 만나는 사회 한 판', icon: 'ph-fill ph-scroll', bg: '#EDE6FF', color: '#8B6BFF', href: 'CatChap 안전지킴이.dc.html', kw: '사회 이야기 옛날 soc' },
+  { title: '사회', tag: '과목', desc: '지도·지역·공공기관을 알아가는 사회 한 판', icon: 'ph-fill ph-scroll', bg: '#EDE6FF', color: '#8B6BFF', href: 'CatChap 안전지킴이.dc.html', kw: '사회 이야기 옛날 soc' },
   { title: '생활', tag: '과목', desc: '생활 속 안전과 지혜를 배우는 생활 한 판', icon: 'ph-fill ph-house-line', bg: '#FFE9F1', color: '#FF6DA6', href: 'CatChap 미로탐험.dc.html', kw: '생활 안전 지혜 life' },
   { title: '한글 낱말 찾기', tag: '놀이', desc: '그림을 보고 알맞은 낱말 고르기', icon: 'ph-fill ph-text-aa', bg: '#FFE7E2', color: '#FF5A4D', href: 'CatChap 한글낱말.dc.html', kw: '한글 낱말 찾기 글자 단어' },
   { title: '숫자 놀이터', tag: '놀이', desc: '더하기·빼기 답을 상자에 담기', icon: 'ph-fill ph-calculator', bg: '#FFEDE0', color: '#FF922E', href: 'CatChap 숫자놀이터.dc.html', kw: '숫자 놀이터 더하기 빼기 계산' },

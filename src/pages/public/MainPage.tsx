@@ -24,9 +24,9 @@ import dPolicy from '../../assets/partners/d-policy.png';
 import './MainPage.css';
 
 const GAMES = [
-  { key: 'kor', icon: 'ph-book-open', name: '국어', tag: '읽기 · 낱말', desc: '글자와 낱말을 익히는 오늘의 국어 한 판' },
-  { key: 'eng', icon: 'ph-translate', name: '영어', tag: '알파벳 · 단어', desc: '알파벳과 쉬운 단어를 만나는 영어 한 판' },
-  { key: 'math', icon: 'ph-plus-minus', name: '수학', tag: '수 · 연산', desc: '수와 셈을 놀이로 배우는 수학 한 판' },
+  { key: 'kor', icon: 'ph-book-open', name: '국어', tag: '읽기 · 낱말', desc: '낱말·문장·글의 속뜻을 익히는 오늘의 국어 한 판' },
+  { key: 'eng', icon: 'ph-translate', name: '영어', tag: '단어 · 문법', desc: '단어·문장·문법으로 배우는 영어 한 판' },
+  { key: 'math', icon: 'ph-plus-minus', name: '수학', tag: '연산 · 도형', desc: '수·연산·도형·측정을 배우는 수학 한 판' },
   { key: 'sci', icon: 'ph-flask', name: '과학', tag: '관찰 · 탐구', desc: '그림을 관찰하고 탐구하는 과학 한 판' },
   { key: 'soc', icon: 'ph-scroll', name: '사회', tag: '이야기 · 지혜', desc: '옆날 이야기와 지혜를 만나는 사회 한 판' },
   { key: 'life', icon: 'ph-house-line', name: '생활', tag: '생활 · 안전', desc: '생활 속 안전과 지혜를 배우는 생활 한 판' },
