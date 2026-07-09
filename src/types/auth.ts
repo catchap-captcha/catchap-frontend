@@ -38,6 +38,8 @@ export interface LoginRequest {
   role?: 'parent' | 'teacher' | 'org_admin' | 'ops';
   email: string;
   password: string;
+  /** 5회 이상 실패해 캡차가 요구된 뒤, 메인 캡차(forest) 통과 단일사용 토큰 */
+  captcha_token?: string;
 }
 
 export interface StudentLoginRequest {
@@ -45,6 +47,7 @@ export interface StudentLoginRequest {
   organization_id?: string;
   student_login_id: string;
   password: string;
+  captcha_token?: string;
 }
 
 export interface RegisterParentRequest {

@@ -4,6 +4,7 @@ import { authApi } from '../../api/auth';
 import { parentApi } from '../../api/parents';
 import mascot from '../../assets/characters/catchap-logo.png';
 import InstitutionPicker, { type PickedInstitution } from '../../components/auth/InstitutionPicker';
+import ForestCaptcha from '../../components/captcha/ForestCaptcha';
 import { useAuth } from '../../hooks/useAuth';
 import { PATHS } from '../../routes/paths';
 import { ROLE_HOME } from '../../routes/roleRoutes';
@@ -112,7 +113,6 @@ export default function LoginPage() {
   const [role, setRole] = useState<RoleTab>('student');
   const [orgKind, setOrgKind] = useState<'teacher' | 'org' | null | undefined>(undefined);
   const [captcha, setCaptcha] = useState(false);
-  const [captchaSlot, setCaptchaSlot] = useState<'loading' | 'ready'>('loading');
   const [signupDone, setSignupDone] = useState(false);
   const [codeSent, setCodeSent] = useState(false);
   const [verified, setVerified] = useState(false);
@@ -441,16 +441,9 @@ export default function LoginPage() {
       .catch(() => setOrgCodeStatus('invalid'));
   };
 
-  // ===== 캡차 팝업 (원본 데모: 로딩 1.1초 → ready) → 확인 시 실제 로그인 =====
-  const loadCaptcha = () => {
-    setCaptchaSlot('loading');
-    if (capT.current) window.clearTimeout(capT.current);
-    capT.current = window.setTimeout(() => setCaptchaSlot('ready'), 1100);
-  };
-
+  // ===== 캡차 팝업 — 5회+ 실패 시 메인 캡차(forest)를 먼저 통과해야 로그인 재시도 =====
   const openCaptcha = () => {
     setCaptcha(true);
-    loadCaptcha();
   };
 
   // 평소엔 캡차 없이 바로 로그인 — 서버가 5회 이상 실패를 알리면(captcha_required)
@@ -496,7 +489,7 @@ export default function LoginPage() {
     }
   };
 
-  const doLogin = async (orgOverride?: string) => {
+  const doLogin = async (orgOverride?: string, captchaToken?: string) => {
     const id = loginIdRef.current?.value.trim() ?? '';
     const pw = loginPwRef.current?.value ?? '';
     setLoginError('');
@@ -515,6 +508,7 @@ export default function LoginPage() {
             organization_id: orgId,
             student_login_id: id,
             password: pw,
+            captcha_token: captchaToken,
           });
           if (orgId) rememberOrg(id, orgId);
           setCaptchaNeeded(false);
@@ -525,7 +519,11 @@ export default function LoginPage() {
           // 기억해 둔 기관이 더 이상 맞지 않으면(전학 등) 잊고 전체에서 한 번 더
           if (resp?.status === 401 && orgId && !orgOverride) {
             forgetOrg(id);
-            const me = await studentLogin({ student_login_id: id, password: pw });
+            const me = await studentLogin({
+              student_login_id: id,
+              password: pw,
+              captcha_token: captchaToken,
+            });
             setCaptchaNeeded(false);
             navigate(ROLE_HOME[me.role]);
             return;
@@ -534,7 +532,7 @@ export default function LoginPage() {
         }
       }
       // 역할(선생님/기관 관리자/학부모)은 백엔드가 이메일로 조회한 계정에서 판별한다.
-      const me = await login({ email: id, password: pw });
+      const me = await login({ email: id, password: pw, captcha_token: captchaToken });
       setCaptchaNeeded(false);
       navigate(ROLE_HOME[me.role]);
     } catch (err) {
@@ -580,9 +578,10 @@ export default function LoginPage() {
     void doLogin(orgId);
   };
 
-  const confirmCaptcha = () => {
+  // 메인 캡차(forest) 통과 → 단일사용 토큰을 로그인에 실어 재시도
+  const onCaptchaToken = (token: string) => {
     setCaptcha(false);
-    void doLogin();
+    void doLogin(undefined, token);
   };
 
   // ===== 탭/뷰 전환 (원본 그대로) =====
@@ -1585,38 +1584,13 @@ export default function LoginPage() {
                 </div>
 
                 <div className="lg-cap-prompt-row">
-                  <span>아래에서 문제를 풀어요</span>
-                  <button type="button" onClick={loadCaptcha} title="새 문제 불러오기" className="lg-cap-shuffle">
-                    <i className="ph-bold ph-arrow-clockwise" />
-                  </button>
+                  <span>숨은 동물을 찾아 같은 방향으로 돌려주세요 🧭</span>
                 </div>
 
-                {/* CAPTCHA API MOUNT SLOT */}
-                <div className="lg-cap-slot">
-                  {captchaSlot === 'loading' && (
-                    <div className="lg-cap-loading">
-                      <div className="lg-cap-spinner" />
-                      <span className="lg-cap-loading-text">냥이가 문제를 준비하고 있어요…</span>
-                      <span className="lg-cap-mono">GET /v1/captcha/challenge</span>
-                    </div>
-                  )}
-                  {captchaSlot === 'ready' && (
-                    <div className="lg-cap-ready">
-                      <span className="lg-cap-ready-icon">
-                        <i className="ph-fill ph-puzzle-piece" />
-                      </span>
-                      <span className="lg-cap-ready-title">API 캡챠 위젯 자리</span>
-                      <span className="lg-cap-ready-desc">
-                        실제 챌린지(그림 고르기·퍼즐 등)는 CatChap Guard API가 이 자리에 넣어줘요.
-                      </span>
-                    </div>
-                  )}
+                {/* 메인 캡차(숲속 마을 동물 방향) — 통과 시 토큰이 자동 전달돼 로그인이 이어져요 */}
+                <div className="lg-cap-slot lg-cap-slot--forest">
+                  <ForestCaptcha onToken={onCaptchaToken} />
                 </div>
-
-                <button type="button" onClick={confirmCaptcha} className="lg-cap-verify">
-                  <i className="ph-fill ph-check-circle" />
-                  확인했어요!
-                </button>
               </div>
 
               <div className="lg-cap-foot">
