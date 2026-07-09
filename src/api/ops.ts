@@ -23,7 +23,9 @@ export interface OpsAuditLog {
   id: string;
   action: string;
   actor_user_id: string | null;
+  actor_name: string | null; // 사람이 읽는 실행자(학생은 익명 코드)
   organization_id: string | null;
+  org_name: string | null;
   target_type: string | null;
   target_id: string | null;
   created_at: string | null;
@@ -35,8 +37,33 @@ export interface OpsOrg {
   code: string;
   org_type: string;
   status: string; // pending | active | disabled
+  contact_email: string | null;
+  contact_phone: string | null;
+  address: string | null;
+  business_number: string | null;
   students: number;
+  created_at: string | null;
 }
+
+export interface OpsOrgCreated extends OpsOrg {
+  ok: boolean;
+  admin_email: string;
+  admin_temp_password: string; // 생성 응답에서만 1회 노출
+}
+
+export interface OpsOrgCreateInput {
+  name: string;
+  org_type: string;
+  status?: string;
+  contact_email?: string | null;
+  contact_phone?: string | null;
+  address?: string | null;
+  business_number?: string | null;
+  admin_name: string;
+  admin_email: string;
+}
+
+export type OpsOrgUpdateInput = Partial<Omit<OpsOrgCreateInput, 'admin_name' | 'admin_email'>>;
 
 export interface OpsDashboard {
   organizations: number;
@@ -129,9 +156,8 @@ export interface BehaviorOverview {
 }
 
 export interface BehaviorStudent {
-  nickname: string;
-  student_code: string;
-  age: number | null;
+  // 아동 PII 비노출 — 서버가 학생 ID를 해시한 익명 코드와 학년밴드만 내려준다
+  anon_code: string;
   grade_band: string;
 }
 
@@ -152,6 +178,7 @@ export interface BehaviorRecord {
   risk_level: string;
   dataset_status: string; // candidate | included | excluded
   trace_points: number | null; // null = 원시 궤적 없음
+  trace_preview: [number, number][] | null; // 인라인 스파크라인용 다운샘플 [x,y] (없으면 null)
   occurred_at: string | null;
   created_at: string | null;
 }
@@ -183,6 +210,11 @@ export interface BehaviorRecordsFilter {
 export const opsApi = {
   dashboard: () => client.get<OpsDashboard>('/ops/dashboard').then((r) => r.data),
   orgs: () => client.get<OpsOrg[]>('/ops/orgs').then((r) => r.data),
+  createOrg: (body: OpsOrgCreateInput) =>
+    client.post<OpsOrgCreated>('/ops/orgs', body).then((r) => r.data),
+  updateOrg: (id: string, body: OpsOrgUpdateInput) =>
+    client.patch<OpsOrg>(`/ops/orgs/${id}`, body).then((r) => r.data),
+  deleteOrg: (id: string) => client.delete<{ ok: boolean }>(`/ops/orgs/${id}`).then((r) => r.data),
   logs: () => client.get<OpsAuditLog[]>('/ops/logs').then((r) => r.data),
   inquiries: (status?: string) =>
     client
@@ -237,4 +269,28 @@ export const opsApi = {
       .then((r) => r.data),
   behaviorTrace: (id: string) =>
     client.get<BehaviorTraceDetail>(`/ops/behavior/records/${id}/trace`).then((r) => r.data),
+
+  /** 외부 업체 제공용 익명 내보내기 — 미리보기(JSON) */
+  behaviorExportPreview: (params: {
+    mode: 'aggregate' | 'rows';
+    dataset?: string;
+    source_type?: string;
+  }) =>
+    client
+      .get<BehaviorExportPreview>('/ops/behavior/export', { params: { ...params, fmt: 'json' } })
+      .then((r) => r.data),
+  /** 외부 업체 제공용 익명 내보내기 — CSV 다운로드(blob) */
+  behaviorExportCsv: (params: { mode: 'aggregate' | 'rows'; dataset?: string; source_type?: string }) =>
+    client
+      .get('/ops/behavior/export', { params: { ...params, fmt: 'csv' }, responseType: 'blob' })
+      .then((r) => r.data as Blob),
 };
+
+export interface BehaviorExportPreview {
+  mode: string;
+  count: number;
+  k_anon_min: number;
+  k_dropped: number;
+  columns: string[];
+  rows: Record<string, string | number | null>[];
+}

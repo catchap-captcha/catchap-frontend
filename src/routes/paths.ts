@@ -69,6 +69,7 @@ export const PATHS = {
   OPS_API_KEYS: '/ops/api-keys',
   OPS_INQUIRIES: '/ops/inquiries',
   OPS_BEHAVIOR: '/ops/behavior',
+  OPS_BEHAVIOR_EXPORT: '/ops/behavior/export', // 외부 업체 제공용 익명 내보내기
   OPS_LOGS: '/ops/logs',
 
   // 기관 학생 관리 (학생 생성 + 가입코드 배부)

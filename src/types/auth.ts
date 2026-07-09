@@ -50,6 +50,8 @@ export interface StudentLoginRequest {
   captcha_token?: string;
 }
 
+export type Gender = 'male' | 'female' | 'other';
+
 export interface RegisterParentRequest {
   name: string;
   email: string;
@@ -75,6 +77,8 @@ export interface RegisterStudentRequest {
   email_code: string;
   student_login_id: string;
   password: string;
+  age?: number | null;
+  gender?: Gender | null;
 }
 
 export interface RegisterOrgRequest {

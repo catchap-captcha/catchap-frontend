@@ -97,7 +97,7 @@ export default function OpsAuditLog() {
                   <span className={`op-logic op-logic--${m.cls}`}><i className={`ph-fill ${m.icon}`} /></span>
                   {m.label}
                 </span>
-                <span className="op-logcol-who op-mono">{r.actor_user_id ?? '-'}</span>
+                <span className="op-logcol-who">{r.actor_name ?? r.actor_user_id ?? '-'}</span>
                 <span className="op-logcol-tgt op-mono">{r.target_type ?? '-'}</span>
                 <span className="op-logcol-time">{fmt(r.created_at)}</span>
               </div>

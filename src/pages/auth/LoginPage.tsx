@@ -113,6 +113,7 @@ export default function LoginPage() {
   const [role, setRole] = useState<RoleTab>('student');
   const [orgKind, setOrgKind] = useState<'teacher' | 'org' | null | undefined>(undefined);
   const [captcha, setCaptcha] = useState(false);
+  const [studentGender, setStudentGender] = useState<'male' | 'female' | ''>(''); // 학생 가입 성별(선택)
   const [signupDone, setSignupDone] = useState(false);
   const [codeSent, setCodeSent] = useState(false);
   const [verified, setVerified] = useState(false);
@@ -259,6 +260,7 @@ export default function LoginPage() {
         email_code: emailCode,
         student_login_id: loginId,
         password: pw,
+        gender: studentGender || null,
       });
     } else if (role === 'parent') {
       req = authApi.registerParent({ name, email, phone, password: pw, email_code: emailCode });
@@ -878,6 +880,27 @@ export default function LoginPage() {
                   <i className="ph-fill ph-identification-card lg-field-icon" />
                   <input type="text" data-req="이름" placeholder={namePlaceholder} className="lg-input" />
                 </div>
+
+                {role === 'student' && (
+                  <>
+                    <label className="lg-label">성별 (선택)</label>
+                    <div className="lg-genrow lg-mb15">
+                      {([
+                        { v: 'male', label: '남아' },
+                        { v: 'female', label: '여아' },
+                      ] as const).map((g) => (
+                        <button
+                          key={g.v}
+                          type="button"
+                          className={`lg-genbtn${studentGender === g.v ? ' lg-genbtn-on' : ''}`}
+                          onClick={() => setStudentGender(studentGender === g.v ? '' : g.v)}
+                        >
+                          {g.label}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
 
                 {showInstitution && (
                   <>

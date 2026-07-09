@@ -2177,3 +2177,23 @@
 .lg-sendbtn--sent {
   background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0) 55%);
 }
+
+/* 학생 가입 성별 선택 */
+.lg-genrow { display: flex; gap: 10px; }
+.lg-genbtn {
+  flex: 1;
+  padding: 12px;
+  border: 2px solid #ffe7dc;
+  border-radius: 12px;
+  background: #fff;
+  font-weight: 800;
+  font-size: 14px;
+  color: #8a8072;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.lg-genbtn-on {
+  border-color: #ff5a4d;
+  background: #fff1ec;
+  color: #ff5a4d;
+}

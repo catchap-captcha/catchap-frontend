@@ -651,3 +651,209 @@
 }
 .op-bh-modal-legend span { display: inline-flex; align-items: center; gap: 6px; }
 .op-bh-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+
+/* ===== 기관 관리 (추가/수정/삭제) ===== */
+.op-addbtn {
+  display: inline-flex; align-items: center; gap: 6px;
+  border: none; background: #ff5a4d; color: #fff; border-radius: 12px;
+  padding: 10px 16px; font-weight: 800; font-size: 13.5px; cursor: pointer;
+  box-shadow: 0 8px 18px -8px rgba(255, 90, 77, 0.7); transition: transform 0.12s, background 0.15s;
+}
+.op-addbtn:hover { background: #f0463a; transform: translateY(-1px); }
+.op-addbtn:active { transform: translateY(0); }
+
+/* 관리 열이 추가된 6열 그리드 */
+.op-orghead--manage, .op-orgrow--manage {
+  grid-template-columns: 2.1fr 1.2fr 0.9fr 1fr 0.8fr 0.9fr;
+}
+.op-org-actions { display: inline-flex; gap: 8px; justify-content: flex-end; }
+.op-iconbtn {
+  border: 1.5px solid #fff0e8; background: #fffaf7; border-radius: 9px;
+  width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer; color: #6e6558; font-size: 15px; transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.op-iconbtn:hover { background: #fff0e8; border-color: #ffd9cc; color: #ff5a4d; }
+.op-iconbtn--danger:hover { background: #ffe3e3; border-color: #ffc7c7; color: #e23d3d; }
+
+/* 폼 모달 */
+.op-formmodal {
+  background: #fff; border-radius: 20px; padding: 20px 22px; width: 100%; max-width: 560px;
+  max-height: calc(100vh - 40px); overflow-y: auto;
+  box-shadow: 0 30px 60px -20px rgba(58, 51, 64, 0.45);
+}
+.op-form { display: flex; flex-direction: column; gap: 12px; margin-top: 14px; }
+.op-form-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.op-form-row { display: flex; flex-direction: column; gap: 6px; }
+.op-form-lb { font-weight: 800; font-size: 12.5px; color: #6e6558; }
+.op-form-lb b { color: #ff5a4d; }
+.op-form-in {
+  width: 100%; box-sizing: border-box;
+  border: 1.5px solid #ffe0d6; border-radius: 12px; background: #fffbf6;
+  padding: 10px 12px; font: inherit; font-size: 13.5px; font-weight: 600; color: #3a3340;
+  transition: border-color 0.2s, background 0.2s;
+}
+.op-form-in:focus { outline: none; border-color: #ff5a4d; background: #fff; }
+.op-form-divider {
+  display: flex; align-items: center; gap: 6px; margin-top: 6px;
+  font-weight: 800; font-size: 12.5px; color: #7a5bd6;
+  border-top: 1.5px dashed #f0eae4; padding-top: 14px;
+}
+.op-form-hint { font-weight: 600; font-size: 12.5px; color: #9b9086; line-height: 1.6; margin: -2px 0 2px; }
+.op-form-err {
+  display: flex; align-items: center; gap: 6px;
+  background: #ffe3e3; color: #d43a3a; border-radius: 10px; padding: 9px 12px;
+  font-weight: 700; font-size: 12.5px;
+}
+.op-form-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 6px; }
+.op-btn--danger {
+  background: #e23d3d; color: #fff; border: none;
+}
+.op-btn--danger:hover:not(:disabled) { background: #cf2f2f; }
+
+/* 생성 결과 — 임시 비밀번호 */
+.op-cred { display: flex; flex-direction: column; gap: 8px; background: #fffaf7; border: 1.5px solid #fff0e8; border-radius: 14px; padding: 14px 16px; }
+.op-cred-row { display: flex; align-items: center; gap: 10px; font-size: 13.5px; }
+.op-cred-row span { width: 108px; flex-shrink: 0; font-weight: 700; color: #9b9086; }
+.op-cred-row b { font-weight: 800; color: #3a3340; }
+.op-cred-row--pw b { font-size: 15px; color: #7a5bd6; letter-spacing: 0.5px; }
+
+/* 삭제 확인 모달 */
+.op-confirmmodal {
+  background: #fff; border-radius: 20px; padding: 24px; width: 100%; max-width: 420px; text-align: center;
+  box-shadow: 0 30px 60px -20px rgba(58, 51, 64, 0.45);
+}
+.op-confirm-ic {
+  width: 54px; height: 54px; border-radius: 16px; margin: 0 auto 14px;
+  display: flex; align-items: center; justify-content: center; font-size: 28px;
+  background: #ffe3e3; color: #e23d3d;
+}
+.op-confirm-title { font-weight: 800; font-size: 17px; color: #3a3340; }
+.op-confirm-body { font-weight: 600; font-size: 13.5px; color: #6e6558; line-height: 1.65; margin: 10px 0 18px; }
+.op-confirmmodal .op-form-actions { justify-content: center; }
+
+/* 행동 지표 — 인라인 궤적 스파크라인 */
+.op-bh-metrics { display: inline-flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.op-bh-metrics-txt { white-space: nowrap; }
+.op-bh-spark {
+  display: block; background: #fffaf7; border: 1.5px solid #f0e6ff; border-radius: 7px;
+}
+.op-bh-tracebtn .op-bh-spark { margin-right: 2px; }
+.op-bh-tracen { white-space: nowrap; }
+
+/* ===== 외부 내보내기(OpsBehaviorExport) ===== */
+.ox-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: #eef6ff;
+  border: 1px solid #cfe3ff;
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin: 12px 0;
+  font-size: 13px;
+  color: #33507a;
+  line-height: 1.55;
+}
+.ox-note i {
+  font-size: 18px;
+  color: #3b7bdd;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.ox-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.ox-seg {
+  display: inline-flex;
+  background: #eef1f6;
+  border-radius: 12px;
+  padding: 3px;
+}
+.ox-segbtn {
+  border: none;
+  background: transparent;
+  padding: 8px 14px;
+  border-radius: 9px;
+  font-weight: 700;
+  font-size: 13px;
+  color: #6b7280;
+  cursor: pointer;
+}
+.ox-segbtn-on {
+  background: #fff;
+  color: #1f2937;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+.ox-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #8a8072;
+}
+.ox-field select {
+  border: 1.5px solid #e6eaf1;
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  background: #fff;
+}
+.ox-download {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  border-radius: 11px;
+  background: #2fbf8f;
+  color: #fff;
+  font-weight: 800;
+  font-size: 14px;
+  padding: 10px 18px;
+  cursor: pointer;
+}
+.ox-download:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+.ox-meta {
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #4b5563;
+}
+.ox-drop {
+  font-weight: 600;
+  color: #b45309;
+}
+.ox-tablewrap {
+  overflow-x: auto;
+}
+.ox-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+.ox-table th {
+  text-align: left;
+  padding: 8px 10px;
+  background: #f6f8fc;
+  color: #6b7280;
+  font-weight: 800;
+  white-space: nowrap;
+  border-bottom: 1px solid #e6eaf1;
+}
+.ox-table td {
+  padding: 7px 10px;
+  border-bottom: 1px solid #f0f2f6;
+  color: #374151;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
