@@ -145,7 +145,12 @@ export default function GameScreen() {
   // ?day=abc/0 같은 비정상 값은 무시 — NaN이 배너("NaN일차")로 새지 않게 1 이상 정수만 인정
   const dayParam = Number(searchParams.get('day'));
   const day = Number.isInteger(dayParam) && dayParam >= 1 ? dayParam : undefined;
-  const EDU_TOTAL = 5; // 한 세션 문항 수 (오늘의퀴즈 기준)
+  // 전체학습 주간 챕터 모드: ?chapter=&stage= → 그 단계(2문항)를 같은 위젯으로 플레이.
+  const chapterParam = Number(searchParams.get('chapter'));
+  const chapter = Number.isInteger(chapterParam) && chapterParam >= 1 ? chapterParam : undefined;
+  const stageParam = Number(searchParams.get('stage'));
+  const stage = Number.isInteger(stageParam) && stageParam >= 1 ? stageParam : undefined;
+  const EDU_TOTAL = chapter ? 2 : 5; // 챕터 한 단계=2문항, 오늘의퀴즈=5문항
   const [widgetStats, setWidgetStats] = useState({ answered: 0, correct: 0, wrong: 0, streak: 0 });
   // 인증이 풀려 채점은 되는데 적립(session 응답)이 빠지는 상태 — 조용히 유실되지 않게 경고
   const [authLost, setAuthLost] = useState(false);
@@ -188,6 +193,14 @@ export default function GameScreen() {
       }));
     };
     const onFinished = () => {
+      // 챕터 모드: 단계 커서 전진(위젯 채점 경로라 별도 호출) 후 전체학습으로 복귀.
+      if (chapter && stage) {
+        studentApi
+          .chapterStageComplete({ subject: key, chapter, stage })
+          .catch(() => {})
+          .finally(() => navigate(PATHS.STUDENT_ALL_LEARNING));
+        return;
+      }
       // 결과 화면에 day를 넘겨 '다시 하기'가 같은 일차 복습으로 이어지게 한다
       const dayQ = day ? `&day=${day}` : '';
       navigate(`${PATHS.STUDENT_RESULT}?subject=${encodeURIComponent(key)}${dayQ}`);
@@ -198,7 +211,7 @@ export default function GameScreen() {
       el.removeEventListener('catchap:answer', onAnswer);
       el.removeEventListener('catchap:finished', onFinished);
     };
-  }, [key, day, navigate]);
+  }, [key, day, chapter, stage, navigate]);
 
   /* 세션 시작 시각 — 완료 시 실제 풀이 시간(solve_time_ms) 계산용 */
   const startedAt = useRef<number>(Date.now());
@@ -474,6 +487,8 @@ export default function GameScreen() {
                 className="gs-mount-widget"
                 auth={getFreshAccessToken}
                 day={day}
+                chapter={chapter}
+                stage={stage}
                 replay={isReplay}
                 total={EDU_TOTAL}
               />

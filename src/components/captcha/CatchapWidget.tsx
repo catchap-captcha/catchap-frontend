@@ -55,12 +55,14 @@ interface Props {
   // 함수를 주면 위젯이 매 요청 전에 호출해 항상 유효한 토큰을 쓴다(만료 자동 갱신).
   auth?: string | (() => Promise<string | null>) | null;
   day?: number; // 커리큘럼 일차 (생활)
+  chapter?: number; // 전체학습 주간 챕터 — 그 챕터 문항만 + 오늘의퀴즈 미오염
+  stage?: number; // 챕터 단계(1~5)
   replay?: boolean; // 복습 — 코인·퀴즈 상태 미반영
   total?: number; // 세션 문항 수 — 채우면 위젯이 catchap:finished 발신
 }
 
 export default function CatchapWidget({
-  siteKey, api, subject, size = 'full', className, auth, day, replay, total,
+  siteKey, api, subject, size = 'full', className, auth, day, chapter, stage, replay, total,
 }: Props) {
   const hostRef = useRef<HTMLDivElement | null>(null);
 
@@ -83,6 +85,8 @@ export default function CatchapWidget({
       box.setAttribute('data-auth', auth);
     }
     if (day) box.setAttribute('data-day', String(day));
+    if (chapter) box.setAttribute('data-chapter', String(chapter));
+    if (stage) box.setAttribute('data-stage', String(stage));
     if (replay) box.setAttribute('data-replay', '1');
     if (total) box.setAttribute('data-total', String(total));
     host.appendChild(box);
@@ -103,7 +107,7 @@ export default function CatchapWidget({
       if (box.parentNode) box.parentNode.removeChild(box);
     };
     // subject/siteKey 등이 바뀌면 재마운트
-  }, [siteKey, api, subject, size, auth, day, replay, total]);
+  }, [siteKey, api, subject, size, auth, day, chapter, stage, replay, total]);
 
   return <div ref={hostRef} className={className} />;
 }

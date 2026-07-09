@@ -20,6 +20,9 @@ export const studentApi = {
   /** 문항 1개 서버 채점 — 챕터 플레이는 chapter_no/stage 실어 오늘의퀴즈 미오염 + 단계 커서 전진 */
   gameAnswer: (body: any) =>
     client.post<any>('/students/me/game-answer', body).then((r) => r.data),
+  /** 위젯 세션(챕터 한 단계=2문항) 완료 → 단계 커서 전진 */
+  chapterStageComplete: (body: { subject: string; chapter: number; stage: number }) =>
+    client.post<any>('/students/me/chapter-stage-complete', body).then((r) => r.data),
 
   /** 나의기록 blob (주간/달력/실력/추이/최근활동) */
   records: () => client.get<any>('/students/me/records').then((r) => r.data),
