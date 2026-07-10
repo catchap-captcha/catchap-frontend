@@ -291,6 +291,16 @@
   background: #E1F5EC;
   color: #158A6E;
 }
+/* 교사(일반, 담당 없음) */
+.ot-roleTeacher {
+  background: #EEF0F6;
+  color: #5A6072;
+}
+/* 학년부장 */
+.ot-roleHead {
+  background: #FFF1D9;
+  color: #B26A00;
+}
 
 .ot-codeBadge {
   display: inline-flex;

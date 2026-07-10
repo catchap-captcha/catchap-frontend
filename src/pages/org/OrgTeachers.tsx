@@ -30,10 +30,11 @@ const PALETTE = [
   'linear-gradient(135deg,#FFC24B,#FF8A5B)',
 ];
 
-// 역할(담임/교과/보조)·학년(1~6) 개념은 고정 라벨 템플릿이라 그대로 둔다.
+// 역할: '교사'(일반, 담당 없음)를 포함해 담임/교과/보조 중 선택. '교사'는 특정 담당이 없는
+// 기본 상태로, 예전엔 이 선택지가 없어 편집 시 전원 '담임'으로 바뀌던 문제가 있었다.
 // 학급 배정은 실제 존재하는 학급(GET /orgs/{id}/classes)에서 고른다 — 정적 '1-2반' 등을 쓰면
 // 학급 현황(OrgClasses)에서 만든 학급과 연동이 안 돼 없는 반을 배정할 수 있다. 학생 수도 실데이터를 쓴다.
-const ROLES = ['담임', '교과', '보조'];
+const ROLES = ['교사', '담임', '교과', '보조'];
 const GRADES = [1, 2, 3, 4, 5, 6];
 
 function parseCls(cls: string) {
@@ -45,7 +46,9 @@ function parseCls(cls: string) {
 function roleClass(r: string) {
   if (r === '담임') return 'ot-roleBadge ot-roleHomeroom';
   if (r === '교과') return 'ot-roleBadge ot-roleSubject';
-  return 'ot-roleBadge ot-roleAssist';
+  if (r === '보조') return 'ot-roleBadge ot-roleAssist';
+  if (r.includes('학년부장')) return 'ot-roleBadge ot-roleHead';
+  return 'ot-roleBadge ot-roleTeacher'; // 교사(일반)
 }
 
 interface OtModal {
@@ -207,6 +210,10 @@ export default function OrgTeachers() {
     const email = im.email.trim();
     if (!email || !email.includes('@')) {
       flashToast('올바른 이메일을 입력해 주세요.');
+      return;
+    }
+    if (!im.name.trim()) {
+      flashToast('선생님 이름을 입력해 주세요.');
       return;
     }
     setInviteBusy(true);
@@ -644,7 +651,7 @@ export default function OrgTeachers() {
                 onChange={(e) => setInviteModal((m) => (m ? { ...m, email: e.target.value } : m))}
               />
 
-              <label className="ot-label">이름 (선택)</label>
+              <label className="ot-label">이름</label>
               <input
                 className="ot-nameInput"
                 value={inviteModal.name}
