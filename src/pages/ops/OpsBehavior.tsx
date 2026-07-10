@@ -431,7 +431,8 @@ export default function OpsBehavior() {
           const W = 460;
           const aspect = trace.box_w > 0 && trace.box_h > 0 ? trace.box_h / trace.box_w : 0.62;
           const H = Math.max(160, Math.min(460, Math.round(W * aspect)));
-          const pts = trace.points;
+          // point_count 0인 레코드도 버튼이 보여 빈 배열이 올 수 있다 — first/last 인덱싱 크래시 방지
+          const pts = Array.isArray(trace.points) ? trace.points : [];
           const d = pts
             .map((p, i) => `${i === 0 ? 'M' : 'L'}${(p[1] * W).toFixed(1)},${(p[2] * H).toFixed(1)}`)
             .join(' ');
@@ -463,8 +464,8 @@ export default function OpsBehavior() {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
-                  <circle cx={first[1] * W} cy={first[2] * H} r="5" fill="#17b08c" />
-                  <circle cx={last[1] * W} cy={last[2] * H} r="5" fill="#ff5a4d" />
+                  {first && <circle cx={first[1] * W} cy={first[2] * H} r="5" fill="#17b08c" />}
+                  {last && <circle cx={last[1] * W} cy={last[2] * H} r="5" fill="#ff5a4d" />}
                 </svg>
                 <div className="op-bh-modal-legend">
                   <span>

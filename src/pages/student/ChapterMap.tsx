@@ -175,7 +175,7 @@ export default function ChapterMap() {
     ? curDays.filter((d) => d.status === 'past').length
     : Math.max(0, Math.min(list.length, apiDone[key] ?? FALLBACK[key] ?? 0));
   const currentNum = Math.min(list.length, done + 1);
-  const pct = Math.round((done / list.length) * 100);
+  const pct = list.length ? Math.round((done / list.length) * 100) : 0; // 빈 목록이면 NaN% 방지
   const continueHref = isLife
     ? `${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(key)}&day=${curTodayDay ?? curDays[done]?.day ?? 1}`
     : `${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(key)}&chapter=${currentNum}`;

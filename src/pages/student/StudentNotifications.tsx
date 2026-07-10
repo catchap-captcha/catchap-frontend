@@ -82,7 +82,9 @@ const API_STYLE: Record<string, { icon: string; color: string; bg: string }> = {
 const API_STYLE_DEFAULT = { icon: 'ph-fill ph-check-circle', color: '#17B08C', bg: '#DFF6ED' };
 
 function relTime(iso: string): string {
-  const diff = Date.now() - new Date(iso).getTime();
+  const t = new Date(iso).getTime();
+  if (!Number.isFinite(t)) return ''; // 깨진 날짜면 'NaN분 전' 대신 빈 문자열
+  const diff = Date.now() - t;
   const min = Math.floor(diff / 60000);
   if (min < 1) return '방금 전';
   if (min < 60) return `${min}분 전`;

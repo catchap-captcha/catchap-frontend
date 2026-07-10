@@ -286,7 +286,11 @@ export default function ProfileCustomize() {
   useEffect(() => {
     if (!RANKING_ENABLED) return; // 랭킹 비활성('준비중') — API 폴링·점수 시뮬레이션·보너스 안내 모두 중단
     const simT = window.setInterval(() => {
-      if (apiLive.current) return; // API 성공 시 응답으로 대체
+      if (apiLive.current) {
+        // API가 살아있으면 시뮬레이션은 다시 쓸 일이 없다 — 유휴 타이머로 남기지 않고 종료
+        window.clearInterval(simT);
+        return;
+      }
       setMyScore((s) => s + Math.floor(Math.random() * 22) + 4);
       setScoreKey((k) => k + 1);
     }, 2800);
@@ -452,7 +456,7 @@ export default function ProfileCustomize() {
     (a, b) => b.score - a.score,
   );
   const topScore = allRanked[0].score;
-  const topPct = Math.round((myScore / topScore) * 100) + '%';
+  const topPct = (topScore ? Math.round((myScore / topScore) * 100) : 0) + '%'; // 전원 0점이면 NaN% 방지
   const board = allRanked.slice(0, 3);
   const mine = allRanked.find((x) => x.me);
   if (!board.some((x) => x.me) && mine) board.push(mine);
@@ -463,7 +467,7 @@ export default function ProfileCustomize() {
   /* 주간 목표 — wallet.week_goal(이번 주 학습일 실집계) */
   const goalDone = weekGoal.done;
   const goalTotal = weekGoal.total;
-  const goalPct = Math.round((goalDone / goalTotal) * 100) + '%';
+  const goalPct = (goalTotal ? Math.round((goalDone / goalTotal) * 100) : 0) + '%'; // total 0이면 NaN% 방지
   const goalLabel = goalDone + '/' + goalTotal + '일 달성';
   const goalHint = weekGoal.hint;
   const badgeCount = earnedBadges ?? badges.filter((b) => !b.locked).length;

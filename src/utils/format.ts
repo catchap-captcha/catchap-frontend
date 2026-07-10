@@ -1,6 +1,8 @@
 /** 상대 시간 표기 (알림 등) */
 export function timeAgo(iso: string): string {
-  const diff = Date.now() - new Date(iso).getTime();
+  const t = new Date(iso).getTime();
+  if (!Number.isFinite(t)) return ''; // 깨진 날짜면 'NaN분 전'/'Invalid Date' 대신 빈 문자열
+  const diff = Date.now() - t;
   const m = Math.floor(diff / 60000);
   if (m < 1) return '방금 전';
   if (m < 60) return `${m}분 전`;

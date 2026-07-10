@@ -1,11 +1,21 @@
 /** PDF 다운로드 — 캔버스(리포트/상장) 임베드 + 표 데이터 A4 렌더.
  *
  * 한글 폰트 임베딩 없이 캔버스로 그려 이미지로 싣는 방식이라 어떤 환경에서도 한글이 깨지지 않는다.
+ * jspdf(수백 KB)는 '다운로드 버튼을 눌렀을 때'만 필요하므로 동적 import — 정적으로 두면
+ * 이 모듈을 쓰는 8개 페이지 청크 전부에 항상 실려 초기 로드가 무거워진다.
  */
-import { jsPDF } from 'jspdf';
+type JsPDFModule = typeof import('jspdf');
+
+let jspdfModule: JsPDFModule | null = null;
+
+async function loadJsPDF(): Promise<JsPDFModule['jsPDF']> {
+  if (!jspdfModule) jspdfModule = await import('jspdf');
+  return jspdfModule.jsPDF;
+}
 
 /** 캔버스 1장 → 같은 비율의 PDF 1페이지 (주간 리포트·상장) */
-export function canvasToPdf(filename: string, canvas: HTMLCanvasElement) {
+export async function canvasToPdf(filename: string, canvas: HTMLCanvasElement) {
+  const jsPDF = await loadJsPDF();
   const w = canvas.width;
   const h = canvas.height;
   const pdf = new jsPDF({
@@ -51,7 +61,8 @@ function newPage(title: string, pageNo: number): { canvas: HTMLCanvasElement; ct
 }
 
 /** CSV용 rows(섹션 제목은 '[...]'로 시작)를 그대로 받아 A4 다중 페이지 PDF로 저장 */
-export function tableToPdf(filename: string, title: string, rows: Row[]) {
+export async function tableToPdf(filename: string, title: string, rows: Row[]) {
+  const jsPDF = await loadJsPDF();
   const pages: HTMLCanvasElement[] = [];
   let page = newPage(title, 1);
   let sectionHeader: Row | null = null; // 페이지 넘김 시 컬럼 헤더 반복용

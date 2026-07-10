@@ -196,7 +196,7 @@ export default function OrgStudents() {
           {list.map((r) => (
             <div key={r.id} className="os-row">
               <span className="os-col-name">
-                <span className={`os-avatar os-avatar--${r.status}`}>{r.status === 'active' ? r.nickname[0] : '?'}</span>
+                <span className={`os-avatar os-avatar--${r.status}`}>{r.status === 'active' ? r.nickname[0] || '?' : '?'}</span>
                 <span className="os-name-wrap">
                   <span className="os-nick">{r.nickname}</span>
                   <span className={`os-badge os-badge--${r.status}`}>{r.status === 'active' ? '가입 완료' : '가입 대기'}</span>

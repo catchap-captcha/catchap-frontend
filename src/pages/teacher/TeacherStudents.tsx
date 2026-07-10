@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
 import { teacherApi } from '../../api/teacher';
@@ -169,50 +169,54 @@ export default function TeacherStudents() {
 
   const q = query.trim();
 
-  // 원본 renderVals 필터/그룹핑 로직 그대로 (클라이언트 필터링)
-  const filtered = roster.filter(
-    (s) =>
-      (grade === '전체' || s.g === grade) &&
-      (cls === '전체' || s.c === cls) &&
-      (q === '' || s.name.includes(q)),
-  );
+  // 원본 renderVals 필터/그룹핑 로직 그대로 (클라이언트 필터링).
+  // 명단이 커지면 그룹핑이 렌더마다 도는 비용이 커서 입력값이 바뀔 때만 재계산한다.
+  const { filtered, groups } = useMemo(() => {
+    const filtered = roster.filter(
+      (s) =>
+        (grade === '전체' || s.g === grade) &&
+        (cls === '전체' || s.c === cls) &&
+        (q === '' || s.name.includes(q)),
+    );
 
-  const keys: string[] = [];
-  filtered.forEach((s) => {
-    const k = s.g + '-' + s.c;
-    if (!keys.includes(k)) keys.push(k);
-  });
-  keys.sort();
-  let ai = 0;
-  const groups = keys.map((k, gi) => {
-    const [g, c] = k.split('-');
-    const list = filtered
-      .filter((s) => s.g + '-' + s.c === k)
-      .map((s) => {
-        const av = AVATARS[ai++ % AVATARS.length];
-        return {
-          name: s.name,
-          code: s.code,
-          initial: [...s.name][0],
-          avatarBg: av,
-          acc: s.acc + '%',
-          accColor: accColor(s.acc),
-          sessions: s.sessions,
-          weak: s.weak,
-          ...statusTag(s.status),
-        };
-      });
-    const col = GROUP_COLORS[gi % GROUP_COLORS.length];
-    return {
-      label: g + '학년 ' + c + '반',
-      badge: g + '-' + c,
-      teacher: teachers[k] || '미배정',
-      count: list.length,
-      students: list,
-      bg: col.bg,
-      color: col.color,
-    };
-  });
+    const keys: string[] = [];
+    filtered.forEach((s) => {
+      const k = s.g + '-' + s.c;
+      if (!keys.includes(k)) keys.push(k);
+    });
+    keys.sort();
+    let ai = 0;
+    const groups = keys.map((k, gi) => {
+      const [g, c] = k.split('-');
+      const list = filtered
+        .filter((s) => s.g + '-' + s.c === k)
+        .map((s) => {
+          const av = AVATARS[ai++ % AVATARS.length];
+          return {
+            name: s.name,
+            code: s.code,
+            initial: [...s.name][0],
+            avatarBg: av,
+            acc: s.acc + '%',
+            accColor: accColor(s.acc),
+            sessions: s.sessions,
+            weak: s.weak,
+            ...statusTag(s.status),
+          };
+        });
+      const col = GROUP_COLORS[gi % GROUP_COLORS.length];
+      return {
+        label: g + '학년 ' + c + '반',
+        badge: g + '-' + c,
+        teacher: teachers[k] || '미배정',
+        count: list.length,
+        students: list,
+        bg: col.bg,
+        color: col.color,
+      };
+    });
+    return { filtered, groups };
+  }, [roster, grade, cls, q, teachers]);
 
   const filterLabel =
     (grade === '전체' ? '전체 학년' : grade + '학년') +
