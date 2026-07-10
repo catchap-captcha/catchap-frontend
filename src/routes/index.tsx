@@ -15,6 +15,7 @@ const LoginPage = lazy(() => import('../pages/auth/LoginPage'));
 const PasswordResetPage = lazy(() => import('../pages/auth/PasswordResetPage'));
 const CaptchaPage = lazy(() => import('../pages/auth/CaptchaPage'));
 const ActivatePage = lazy(() => import('../pages/auth/ActivatePage'));
+const InvitePage = lazy(() => import('../pages/auth/InvitePage'));
 
 // 학생
 const StudentHome = lazy(() => import('../pages/student/StudentHome'));
@@ -87,6 +88,7 @@ export default function AppRoutes() {
         <Route path={PATHS.TERMS} element={<TermsPage />} />
         <Route path={PATHS.PRIVACY} element={<PrivacyPage />} />
         <Route path={PATHS.LOGIN} element={<LoginPage />} />
+        <Route path={PATHS.INVITE} element={<InvitePage />} />
         <Route path={PATHS.PASSWORD_RESET} element={<PasswordResetPage />} />
         <Route path={PATHS.CAPTCHA} element={<CaptchaPage />} />
         <Route path={PATHS.ACTIVATE} element={<ActivatePage />} />

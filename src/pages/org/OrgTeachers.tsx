@@ -82,6 +82,8 @@ export default function OrgTeachers() {
   const [filter, setFilter] = useState('all');
   const [search, setSearch] = useState('');
   const [modal, setModal] = useState<OtModal | null>(null);
+  const [inviteModal, setInviteModal] = useState<{ email: string; name: string; role: string } | null>(null);
+  const [inviteBusy, setInviteBusy] = useState(false);
   const [block, setBlock] = useState<OtBlock | null>(null);
   const [seq, setSeq] = useState(100);
   // 학년부장 임명 모달: 대상 교사 + 담당 학년 선택
@@ -178,6 +180,26 @@ export default function OrgTeachers() {
   }, [orgId]);
 
   const openAdd = () => setModal({ mode: 'add', name: '', cls: '1-2반', role: '담임', email: '', code: '' });
+
+  const openInvite = () => setInviteModal({ email: '', name: '', role: 'teacher' });
+  const sendInvite = () => {
+    const im = inviteModal;
+    if (!im || !orgId) return;
+    const email = im.email.trim();
+    if (!email || !email.includes('@')) {
+      flashToast('올바른 이메일을 입력해 주세요.');
+      return;
+    }
+    setInviteBusy(true);
+    orgApi
+      .inviteTeacher(orgId, { email, name: im.name.trim() || undefined, role: im.role })
+      .then(() => {
+        setInviteModal(null);
+        flashToast('초대 메일을 보냈어요. 링크로 가입하면 기관·코드가 자동 입력돼요.');
+      })
+      .catch(() => flashToast('초대 발송에 실패했어요. 이메일을 확인해 주세요.'))
+      .finally(() => setInviteBusy(false));
+  };
 
   const openEdit = (id: string) => {
     const t = teachers.find((x) => x.id === id);
@@ -303,6 +325,13 @@ export default function OrgTeachers() {
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
+          <button
+            className="ot-addBtn"
+            onClick={openInvite}
+            style={{ background: '#fff', color: '#e85b2a', border: '1.5px solid #FFD9C7' }}
+          >
+            <i className="ph-fill ph-paper-plane-tilt" />교사 초대
+          </button>
           <button className="ot-addBtn" onClick={openAdd}>
             <i className="ph-fill ph-user-plus" />선생님 추가
           </button>
@@ -535,6 +564,69 @@ export default function OrgTeachers() {
                 <button className="ot-saveBtn" onClick={saveModal}>
                   <i className="ph-fill ph-check" />
                   {modal.mode === 'edit' ? '저장하기' : '선생님 추가'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 교사 초대 모달 */}
+      {inviteModal && (
+        <div className="ot-overlay" onClick={() => setInviteModal(null)}>
+          <div className="ot-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="ot-modalHead">
+              <div className="ot-modalHeadIcon">
+                <i className="ph-fill ph-paper-plane-tilt" />
+              </div>
+              <div className="ot-modalHeadText">
+                <div className="ot-modalTitle">교사 초대</div>
+                <div className="ot-modalSub">이메일로 초대 링크를 보내요. 링크로 가입하면 기관·코드가 자동 입력돼요.</div>
+              </div>
+              <button className="ot-modalClose" onClick={() => setInviteModal(null)}>
+                <i className="ph-bold ph-x" />
+              </button>
+            </div>
+            <div className="ot-modalBody">
+              <label className="ot-label">이메일</label>
+              <input
+                className="ot-nameInput"
+                type="email"
+                value={inviteModal.email}
+                placeholder="teacher@example.com"
+                onChange={(e) => setInviteModal((m) => (m ? { ...m, email: e.target.value } : m))}
+              />
+
+              <label className="ot-label">이름 (선택)</label>
+              <input
+                className="ot-nameInput"
+                value={inviteModal.name}
+                maxLength={10}
+                placeholder="예) 이수진"
+                onChange={(e) => setInviteModal((m) => (m ? { ...m, name: e.target.value.slice(0, 10) } : m))}
+              />
+
+              <label className="ot-label">역할</label>
+              <div className="ot-roleRow">
+                {[
+                  { k: 'teacher', l: '교사' },
+                  { k: 'grade_head', l: '학년부장' },
+                ].map(({ k, l }) => (
+                  <button
+                    key={k}
+                    className={inviteModal.role === k ? 'ot-roleBtn ot-roleBtnOn' : 'ot-roleBtn'}
+                    onClick={() => setInviteModal((m) => (m ? { ...m, role: k } : m))}
+                  >
+                    {l}
+                  </button>
+                ))}
+              </div>
+
+              <div className="ot-modalBtns">
+                <button className="ot-cancelBtn" onClick={() => setInviteModal(null)}>취소</button>
+                <button className="ot-saveBtn" onClick={sendInvite} disabled={inviteBusy}>
+                  <i className="ph-fill ph-paper-plane-tilt" />
+                  {inviteBusy ? '보내는 중…' : '초대 보내기'}
                 </button>
               </div>
             </div>

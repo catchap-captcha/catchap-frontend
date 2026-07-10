@@ -4,6 +4,9 @@ import './InstitutionPicker.css';
 
 export interface PickedInstitution {
   id: string;
+  // CatChap에 등록된 기관이면 그 organization_id, 미등록(디렉터리만 있는) 기관이면 null.
+  // 교사/학생 가입에는 이 값이 필요하다 (institution.id가 아니라). null이면 가입 불가.
+  organizationId: string | null;
   name: string;
   type: string;
   sido: string;
@@ -14,14 +17,14 @@ export interface PickedInstitution {
 
 // TODO(api): API 실패 시 원본 handoff 하드코딩 8건 fallback (디자인 유지용)
 const FALLBACK: PickedInstitution[] = [
-  { id: 'haetsal-elem', name: '햇살초등학교', type: '초등학교', sido: '서울특별시', sigungu: '강남구', dong: '역삼동', road: '서울 강남구 테헤란로 123' },
-  { id: 'daechi-saem', name: '대치샘유치원', type: '유치원', sido: '서울특별시', sigungu: '강남구', dong: '대치동', road: '서울 강남구 삼성로 456' },
-  { id: 'gwangjin-saessak', name: '광진 새싹초등학교', type: '초등학교', sido: '서울특별시', sigungu: '광진구', dong: '화양동', road: '서울 광진구 능동로 120' },
-  { id: 'sanggye-forest', name: '상계 푸른숲 어린이집', type: '어린이집', sido: '서울특별시', sigungu: '노원구', dong: '상계동', road: '서울 노원구 동일로 789' },
-  { id: 'byeolbit-elem', name: '별빛초등학교', type: '초등학교', sido: '경기도', sigungu: '성남시 분당구', dong: '정자동', road: '경기 성남시 분당구 불정로 55' },
-  { id: 'gwanggyo-rainbow', name: '광교 무지개유치원', type: '유치원', sido: '경기도', sigungu: '수원시 영통구', dong: '이의동', road: '경기 수원시 영통구 광교로 22' },
-  { id: 'centum-pureunsol', name: '센텀 푸른솔초등학교', type: '초등학교', sido: '부산광역시', sigungu: '해운대구', dong: '우동', road: '부산 해운대구 센텀로 30' },
-  { id: 'haeundae-bada', name: '해운대 바다어린이집', type: '어린이집', sido: '부산광역시', sigungu: '해운대구', dong: '좌동', road: '부산 해운대구 좌동순환로 40' },
+  { id: 'haetsal-elem', organizationId: null, name: '햇살초등학교', type: '초등학교', sido: '서울특별시', sigungu: '강남구', dong: '역삼동', road: '서울 강남구 테헤란로 123' },
+  { id: 'daechi-saem', organizationId: null, name: '대치샘유치원', type: '유치원', sido: '서울특별시', sigungu: '강남구', dong: '대치동', road: '서울 강남구 삼성로 456' },
+  { id: 'gwangjin-saessak', organizationId: null, name: '광진 새싹초등학교', type: '초등학교', sido: '서울특별시', sigungu: '광진구', dong: '화양동', road: '서울 광진구 능동로 120' },
+  { id: 'sanggye-forest', organizationId: null, name: '상계 푸른숲 어린이집', type: '어린이집', sido: '서울특별시', sigungu: '노원구', dong: '상계동', road: '서울 노원구 동일로 789' },
+  { id: 'byeolbit-elem', organizationId: null, name: '별빛초등학교', type: '초등학교', sido: '경기도', sigungu: '성남시 분당구', dong: '정자동', road: '경기 성남시 분당구 불정로 55' },
+  { id: 'gwanggyo-rainbow', organizationId: null, name: '광교 무지개유치원', type: '유치원', sido: '경기도', sigungu: '수원시 영통구', dong: '이의동', road: '경기 수원시 영통구 광교로 22' },
+  { id: 'centum-pureunsol', organizationId: null, name: '센텀 푸른솔초등학교', type: '초등학교', sido: '부산광역시', sigungu: '해운대구', dong: '우동', road: '부산 해운대구 센텀로 30' },
+  { id: 'haeundae-bada', organizationId: null, name: '해운대 바다어린이집', type: '어린이집', sido: '부산광역시', sigungu: '해운대구', dong: '좌동', road: '부산 해운대구 좌동순환로 40' },
 ];
 
 const SHORT_SIDO: Record<string, string> = {
@@ -46,6 +49,7 @@ function pillClass(type: string) {
 function toPicked(o: Institution): PickedInstitution {
   return {
     id: o.id,
+    organizationId: o.organization_id ?? null,
     name: o.name,
     type: o.type,
     sido: o.sido,
@@ -61,14 +65,16 @@ function uniq(a: string[]) {
 
 interface InstitutionPickerProps {
   onSelect?: (inst: PickedInstitution | null) => void;
+  // 초대링크 프리필처럼 기관이 이미 정해진 경우 초기 선택값(마운트 시 1회 반영).
+  initialSelected?: PickedInstitution | null;
 }
 
-export default function InstitutionPicker({ onSelect }: InstitutionPickerProps) {
+export default function InstitutionPicker({ onSelect, initialSelected }: InstitutionPickerProps) {
   const [q, setQ] = useState('');
   const [sido, setSido] = useState('');
   const [sigungu, setSigungu] = useState('');
   const [dong, setDong] = useState('');
-  const [selected, setSelected] = useState<PickedInstitution | null>(null);
+  const [selected, setSelected] = useState<PickedInstitution | null>(initialSelected ?? null);
   const [open, setOpen] = useState(false);
   const [allOrgs, setAllOrgs] = useState<PickedInstitution[]>(FALLBACK);
   const [serverSearch, setServerSearch] = useState<PickedInstitution[] | null>(null);

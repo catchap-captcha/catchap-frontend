@@ -89,4 +89,22 @@ export const authApi = {
         code,
       })
       .then((r) => r.data),
+
+  /** 교사 초대링크 검증 → 가입화면 프리필용 기관·교사코드 반환 (토큰이 곧 인증) */
+  getInvite: (token: string) =>
+    client
+      .get<{
+        valid: boolean;
+        organization_id: string;
+        organization_name: string;
+        email: string;
+        role: string;
+        teacher_code: string;
+        inst_type: string;
+        sido: string;
+        sigungu: string;
+        dong: string;
+        road_address: string;
+      }>(`/auth/invite/${encodeURIComponent(token)}`)
+      .then((r) => r.data),
 };

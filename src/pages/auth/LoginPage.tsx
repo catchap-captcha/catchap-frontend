@@ -5,6 +5,7 @@ import { parentApi } from '../../api/parents';
 import mascot from '../../assets/characters/catchap-logo.png';
 import InstitutionPicker, { type PickedInstitution } from '../../components/auth/InstitutionPicker';
 import ForestCaptcha from '../../components/captcha/ForestCaptcha';
+import { INVITE_PREFILL_KEY } from './InvitePage';
 import { useAuth } from '../../hooks/useAuth';
 import { PATHS } from '../../routes/paths';
 import { ROLE_HOME } from '../../routes/roleRoutes';
@@ -115,6 +116,7 @@ export default function LoginPage() {
   const [captcha, setCaptcha] = useState(false);
   const [signupDone, setSignupDone] = useState(false);
   const [codeSent, setCodeSent] = useState(false);
+  const [codeSecondsLeft, setCodeSecondsLeft] = useState(0); // 이메일 인증코드 유효시간(5분) 카운트다운
   const [verified, setVerified] = useState(false);
   const [orgStep, setOrgStep] = useState<OrgStep>('form');
   const [orgPlan, setOrgPlan] = useState('basic');
@@ -157,6 +159,58 @@ export default function LoginPage() {
     },
     [],
   );
+
+  // 초대링크(/invite)로 들어온 경우: InvitePage가 담아둔 프리필을 읽어 교사 가입을 자동 구성.
+  // 기관·교사코드는 서버 검증을 이미 통과한 값이라 코드 상태를 'valid'로 세팅(재검증 불필요).
+  useEffect(() => {
+    const raw = sessionStorage.getItem(INVITE_PREFILL_KEY);
+    if (!raw) return;
+    sessionStorage.removeItem(INVITE_PREFILL_KEY);
+    try {
+      const p = JSON.parse(raw) as {
+        organizationId: string;
+        organizationName: string;
+        teacherCode: string;
+        email: string;
+        role: string;
+        instType?: string;
+        sido?: string;
+        sigungu?: string;
+        dong?: string;
+        road?: string;
+      };
+      if (!p.organizationId || !p.teacherCode) return;
+      setView('signup');
+      setRole('org');
+      setOrgKind('teacher');
+      setSignupInst({
+        id: p.organizationId,
+        organizationId: p.organizationId,
+        name: p.organizationName,
+        type: p.instType ?? '',
+        sido: p.sido ?? '',
+        sigungu: p.sigungu ?? '',
+        dong: p.dong ?? '',
+        road: p.road ?? '',
+      });
+      setOrgCode(p.teacherCode);
+      setOrgCodeStatus('valid');
+      setEmail(p.email);
+    } catch {
+      /* 프리필 파싱 실패 시 일반 로그인 화면 유지 */
+    }
+  }, []);
+
+  // 이메일 인증코드 5분 카운트다운 — 코드 발송 후 매초 감소, 인증 완료/미발송 시 정지.
+  useEffect(() => {
+    if (!codeSent || verified || codeSecondsLeft <= 0) return;
+    const t = window.setInterval(() => {
+      setCodeSecondsLeft((s) => (s <= 1 ? 0 : s - 1));
+    }, 1000);
+    return () => window.clearInterval(t);
+  }, [codeSent, verified, codeSecondsLeft > 0]);
+
+  const mmss = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 
   const isTeacher = role === 'org' && orgKind === 'teacher';
   const orgChoose = role === 'org' && orgKind === null;
@@ -253,7 +307,7 @@ export default function LoginPage() {
     if (role === 'student') {
       req = authApi.registerStudent({
         name,
-        organization_id: signupInst?.id ?? '',
+        organization_id: signupInst?.organizationId ?? '',
         org_code: orgCode.trim(),
         email,
         email_code: emailCode,
@@ -268,7 +322,7 @@ export default function LoginPage() {
         email,
         password: pw,
         email_code: emailCode,
-        organization_id: signupInst?.id ?? '',
+        organization_id: signupInst?.organizationId ?? '',
         teacher_code: orgCode.trim(),
       });
     }
@@ -389,6 +443,7 @@ export default function LoginPage() {
       .then(() => {
         setCodeSent(true);
         setVerified(false);
+        setCodeSecondsLeft(300); // 5분 카운트다운 시작(재전송 시 초기화)
       })
       .catch((err) => {
         const status = (err as { response?: { status?: number } })?.response?.status;
@@ -433,9 +488,15 @@ export default function LoginPage() {
       setOrgCodeStatus('empty');
       return;
     }
+    // 검색으로 고른 학교가 CatChap 미등록(organizationId=null)이면 가입 대상이 아니다 — 코드 검증 불가.
+    const orgId = signupInst?.organizationId ?? '';
+    if (!orgId) {
+      setOrgCodeStatus('invalid');
+      return;
+    }
     const req = isTeacher
-      ? authApi.verifyTeacherCode(signupInst?.id ?? '', v)
-      : authApi.verifyOrgCode(signupInst?.id ?? '', v);
+      ? authApi.verifyTeacherCode(orgId, v)
+      : authApi.verifyOrgCode(orgId, v);
     req
       .then((r) => setOrgCodeStatus(r.valid ? 'valid' : 'invalid'))
       .catch(() => setOrgCodeStatus('invalid'));
@@ -618,6 +679,7 @@ export default function LoginPage() {
     }
     setView('signup');
     setCodeSent(false);
+    setCodeSecondsLeft(0);
     setVerified(false);
     setOrgStep('form');
   };
@@ -821,6 +883,7 @@ export default function LoginPage() {
                     onClick={() => {
                       setOrgKind('teacher');
                       setCodeSent(false);
+                      setCodeSecondsLeft(0);
                       setVerified(false);
                     }}
                     className="lg-kind"
@@ -883,7 +946,7 @@ export default function LoginPage() {
                   <>
                     <label className="lg-label">소속 기관</label>
                     <div className="lg-mb15">
-                      <InstitutionPicker onSelect={setSignupInst} />
+                      <InstitutionPicker onSelect={setSignupInst} initialSelected={signupInst} />
                     </div>
 
                     <label className="lg-label">기관 코드</label>
@@ -931,7 +994,14 @@ export default function LoginPage() {
                   </>
                 )}
 
-                <label className="lg-label">이메일 (본인 확인)</label>
+                <label className="lg-label">
+                  이메일 {role === 'parent' || isTeacher ? '(로그인 아이디)' : '(본인 확인)'}
+                </label>
+                {(role === 'parent' || isTeacher) && (
+                  <p className="lg-helper" style={{ margin: '-2px 0 8px' }}>
+                    이 이메일이 로그인 아이디가 돼요. 교사·학부모는 이메일로 로그인합니다.
+                  </p>
+                )}
                 <div className="lg-inline lg-mb12">
                   <div className="lg-field-grow">
                     <i className="ph-fill ph-envelope-simple lg-field-icon" />
@@ -991,7 +1061,13 @@ export default function LoginPage() {
                     {!verified && (
                       <div className="lg-notverified">
                         <i className="ph-fill ph-timer" />
-                        <span>입력하신 이메일로 인증코드를 보냈어요. 5분 안에 코드를 입력해 주세요.</span>
+                        {codeSecondsLeft > 0 ? (
+                          <span>
+                            인증코드를 보냈어요. 남은 시간 <b>{mmss(codeSecondsLeft)}</b> · 시간이 지나면 재전송해 주세요.
+                          </span>
+                        ) : (
+                          <span>인증코드가 만료됐어요. <b>재전송</b>을 눌러 새 코드를 받아 주세요.</span>
+                        )}
                       </div>
                     )}
                   </>
@@ -1033,9 +1109,10 @@ export default function LoginPage() {
                   </>
                 )}
 
-                <label className="lg-label">아이디</label>
-                {role === 'student' ? (
+                {/* 아이디는 학생만 사용(전역 유일 로그인 아이디). 교사·학부모는 이메일로 로그인하므로 아이디 칸 없음. */}
+                {role === 'student' && (
                   <>
+                    <label className="lg-label">아이디</label>
                     {/* 학생 아이디는 전역 유일 — 중복 확인 통과해야 가입 가능 */}
                     <div className="lg-inline lg-mb9">
                       <div className="lg-field-grow">
@@ -1074,16 +1151,6 @@ export default function LoginPage() {
                     )}
                     <div className="lg-mb15" />
                   </>
-                ) : (
-                  <div className="lg-field lg-mb15">
-                    <i className="ph-fill ph-user-circle lg-field-icon" />
-                    <input
-                      type="text"
-                      data-req="아이디"
-                      placeholder="사용할 아이디를 입력해 주세요"
-                      className="lg-input"
-                    />
-                  </div>
                 )}
 
                 <label className="lg-label">비밀번호</label>

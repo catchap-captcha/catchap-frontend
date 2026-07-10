@@ -16,6 +16,7 @@ export const PATHS = {
   LOGIN: '/login',
   PASSWORD_RESET: '/password-reset',
   CAPTCHA: '/captcha',
+  INVITE: '/invite', // 교사 초대링크 (?token=) → 검증 후 프리필된 가입화면으로
 
   // 학생 — handoff: CatChap 학습 홈 외
   STUDENT_HOME: '/student/home',
