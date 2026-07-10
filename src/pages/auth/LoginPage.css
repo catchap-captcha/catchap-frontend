@@ -2196,4 +2196,33 @@
   border-color: #ff5a4d;
   background: #fff1ec;
   color: #ff5a4d;
+/* ===== 반응형 (모바일 ≤768px): 좌측 브랜드 패널 숨기고 폼을 풀폭으로 ===== */
+@media (max-width: 768px) {
+  .lg-left {
+    display: none; /* 좁은 화면에선 브랜드 일러스트 패널 숨김 — 폼이 전면 */
+  }
+
+  .lg-right {
+    flex: 1 1 100%;
+    padding: 28px 18px;
+  }
+
+  .lg-h2 {
+    font-size: 25px;
+  }
+}
+
+@media (max-width: 480px) {
+  .lg-right {
+    padding: 22px 14px;
+  }
+
+  .lg-h2 {
+    font-size: 23px;
+  }
+
+  /* 역할 탭이 좁은 폭에서 넘치면 줄바꿈 허용 */
+  .lg-tabs {
+    flex-wrap: wrap;
+  }
 }

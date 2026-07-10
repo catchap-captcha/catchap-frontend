@@ -722,3 +722,15 @@
   .mr-card { transition: none; }
   .mr-card:hover { transform: none; }
 }
+
+/* ===== 모바일 반응형 (레이아웃만 조정) ===== */
+@media (max-width: 768px) {
+  .mr-section { padding: 0 16px; }
+  .mr-statgrid { grid-template-columns: repeat(2, 1fr); }
+  .mr-row2 { grid-template-columns: 1fr; }
+}
+@media (max-width: 480px) {
+  .mr-section { padding: 0 13px; }
+  .mr-statgrid { grid-template-columns: 1fr; }
+  .mr-card { padding: 20px; }
+}

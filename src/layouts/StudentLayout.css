@@ -173,3 +173,151 @@
   font-size: 14px;
   color: #3a3340;
 }
+
+/* ── 햄버거 버튼: 데스크톱에선 숨김, 모바일에서만 노출 ── */
+.sl-burger {
+  display: none;
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 14px;
+  background: #fff1e9;
+  cursor: pointer;
+  padding: 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  margin-left: auto;
+}
+
+.sl-burger span {
+  display: block;
+  width: 20px;
+  height: 2.5px;
+  border-radius: 2px;
+  background: #8a8072;
+  transition: transform 0.2s, opacity 0.2s;
+}
+
+.sl-burger-open span:nth-child(1) {
+  transform: translateY(7.5px) rotate(45deg);
+}
+
+.sl-burger-open span:nth-child(2) {
+  opacity: 0;
+}
+
+.sl-burger-open span:nth-child(3) {
+  transform: translateY(-7.5px) rotate(-45deg);
+}
+
+/* ── 태블릿/모바일 (≤768px): 메뉴를 드롭다운으로, 햄버거 노출 ── */
+@media (max-width: 768px) {
+  .sl-navinner {
+    padding: 10px 16px;
+    gap: 12px;
+  }
+
+  .sl-logosub {
+    display: none; /* 좁은 폭에서 로고 부제 숨김 */
+  }
+
+  .sl-logoimg {
+    width: 40px;
+    height: 40px;
+  }
+
+  .sl-logotitle {
+    font-size: 22px;
+  }
+
+  .sl-burger {
+    display: flex;
+  }
+
+  /* 메뉴: 네비 아래로 떨어지는 드롭다운 패널 */
+  .sl-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 2px;
+    margin-left: 0;
+    padding: 8px 12px 14px;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(12px);
+    border-bottom: 2px solid #ffe7dc;
+    box-shadow: 0 12px 24px -12px rgba(120, 90, 70, 0.35);
+    /* 닫힌 상태: 접힘 */
+    display: none;
+  }
+
+  .sl-menu.sl-menu-open {
+    display: flex;
+  }
+
+  .sl-navlink {
+    padding: 13px 16px;
+    font-size: 16px;
+    border-radius: 12px;
+  }
+
+  /* 로고(좌) — 우측아이콘 + 햄버거(우측 묶음). auto 마진은 .sl-right 하나만. */
+  .sl-logo {
+    order: 1;
+  }
+
+  .sl-right {
+    margin-left: auto;
+    order: 2;
+    gap: 8px;
+  }
+
+  .sl-burger {
+    margin-left: 0;
+    order: 3;
+  }
+
+  .sl-profilename {
+    display: none; /* 좁은 폭에선 아바타만 */
+  }
+
+  .sl-iconbtn {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+/* ── 작은 폰 (≤480px): 더 압축 ── */
+@media (max-width: 480px) {
+  .sl-navinner {
+    padding: 9px 12px;
+    gap: 8px;
+  }
+
+  .sl-logotitle {
+    font-size: 20px;
+  }
+
+  .sl-logoimg {
+    width: 36px;
+    height: 36px;
+  }
+
+  .sl-right {
+    gap: 6px;
+  }
+
+  .sl-iconbtn {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+  }
+
+  .sl-profile {
+    padding: 4px;
+  }
+}

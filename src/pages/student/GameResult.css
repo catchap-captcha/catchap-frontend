@@ -637,3 +637,18 @@ animation: grFloat 4s ease-in-out infinite;
   .gr-btn-primary:hover, .gr-btn-primary:active,
   .gr-btn-secondary:hover, .gr-btn-secondary:active { transform: none; }
 }
+
+
+/* ===== 모바일 반응형 (레이아웃만: 패딩·flex 방향·폭) ===== */
+@media (max-width: 768px) {
+  .gr-content { padding: 36px 16px 48px; }
+  .gr-scorecard { padding: 28px; gap: 24px; }
+}
+@media (max-width: 480px) {
+  .gr-content { padding: 30px 13px 40px; }
+  .gr-title { font-size: 30px; }
+  .gr-scorecard { padding: 22px 18px; }
+  .gr-stats { min-width: 0; flex-basis: 100%; }
+  .gr-btn-primary,
+  .gr-btn-secondary { flex-basis: 100%; min-width: 0; }
+}

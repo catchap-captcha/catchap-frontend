@@ -833,3 +833,17 @@
   background: rgba(255, 255, 255, 0.35);
 }
 .dq-card-segs .dq-seg-on { background: #fff; }
+/* ===== 모바일 반응형 (레이아웃만 조정) ===== */
+@media (max-width: 768px) {
+  .dq-navinner { padding: 12px 16px; gap: 14px; flex-wrap: wrap; }
+  .dq-sec-hero, .dq-sec-progress, .dq-sec-cards, .dq-sec-streak, .dq-sec-curric { padding-left: 16px; padding-right: 16px; }
+  .dq-herocard { flex-direction: column; align-items: flex-start; gap: 20px; padding: 26px; }
+  .dq-grid { grid-template-columns: repeat(2, 1fr); }
+  .dq-bottomgrid { grid-template-columns: 1fr; }
+}
+@media (max-width: 480px) {
+  .dq-navinner { padding: 10px 13px; }
+  .dq-sec-hero, .dq-sec-progress, .dq-sec-cards, .dq-sec-streak, .dq-sec-curric { padding-left: 13px; padding-right: 13px; }
+  .dq-grid { grid-template-columns: 1fr; }
+  .dq-herocount { width: 100%; }
+}

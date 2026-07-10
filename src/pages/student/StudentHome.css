@@ -1293,3 +1293,76 @@
   gap: 7px;
 }
 .sh-linkpop-ok:hover { filter: brightness(1.05); }
+
+/* ================= 반응형 (태블릿 ≤768px) ================= */
+@media (max-width: 768px) {
+  .sh-hero-sec,
+  .sh-today-sec,
+  .sh-quick-sec,
+  .sh-growth-sec,
+  .sh-footer {
+    padding: 0 16px;
+    margin-top: 34px;
+  }
+
+  /* 히어로: 마스코트+텍스트 세로 스택 */
+  .sh-hero {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+    padding: 32px 26px;
+    border-radius: 28px;
+  }
+
+  /* 카테고리 카드 3→2열 */
+  .sh-cards {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+
+  /* 빠른 이동 8→4열 */
+  .sh-quick-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  /* 성장 2열→1열 */
+  .sh-growth-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ================= 반응형 (작은 폰 ≤480px) ================= */
+@media (max-width: 480px) {
+  .sh-hero-sec,
+  .sh-today-sec,
+  .sh-quick-sec,
+  .sh-growth-sec,
+  .sh-footer {
+    padding: 0 13px;
+    margin-top: 28px;
+  }
+
+  .sh-hero {
+    padding: 26px 20px;
+    border-radius: 24px;
+  }
+
+  /* 카테고리 카드 1열 */
+  .sh-cards {
+    grid-template-columns: 1fr;
+  }
+
+  /* 빠른 이동 4→3열 */
+  .sh-quick-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  /* KPI 3→ 유지하되 촘촘하게 */
+  .sh-stats {
+    gap: 10px;
+  }
+
+  .sh-quick {
+    padding: 18px 14px;
+  }
+}

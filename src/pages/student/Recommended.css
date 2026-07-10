@@ -525,3 +525,16 @@
 .rc-startall i {
   font-size: 24px;
 }
+
+/* ===== 모바일 반응형 (레이아웃만 조정) ===== */
+@media (max-width: 768px) {
+  .rc-navinner { padding: 12px 16px; gap: 14px; flex-wrap: wrap; }
+  .rc-herosec, .rc-summarysec, .rc-chipsec, .rc-listsec, .rc-startsec { padding-left: 16px; padding-right: 16px; }
+  .rc-hero { flex-direction: column; align-items: flex-start; gap: 20px; padding: 26px; }
+}
+@media (max-width: 480px) {
+  .rc-navinner { padding: 10px 13px; }
+  .rc-herosec, .rc-summarysec, .rc-chipsec, .rc-listsec, .rc-startsec { padding-left: 13px; padding-right: 13px; }
+  .rc-item { flex-wrap: wrap; }
+  .rc-solve { width: 100%; justify-content: center; }
+}

@@ -627,3 +627,19 @@ animation: bdFloat 4.5s ease-in-out infinite;
 .bd-awardbtns { display: flex; gap: 8px; flex-shrink: 0; }
 .bd-awarddl--ghost { background: #fff !important; background-image: none !important; color: #C98A00; border: 1.5px solid #FBE2A8; padding: 10px 12px; }
 .bd-award--green .bd-awarddl--ghost { color: #17B08C; border-color: #BEE8D2; }
+
+
+/* ===== 모바일 반응형 (레이아웃만: 열 수·패딩·폭) ===== */
+@media (max-width: 768px) {
+  .bd-section { padding: 0 16px; }
+  .bd-navinner { padding: 12px 16px; gap: 14px; flex-wrap: wrap; }
+  .bd-hero { padding: 28px 24px; gap: 24px; }
+  .bd-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 480px) {
+  .bd-section { padding: 0 13px; }
+  .bd-navinner { padding: 10px 13px; gap: 10px; }
+  .bd-hero { padding: 22px 18px; }
+  .bd-herotitle { font-size: 28px; }
+  .bd-award { flex-wrap: wrap; }
+}

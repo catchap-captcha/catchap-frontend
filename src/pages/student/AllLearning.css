@@ -769,3 +769,15 @@ a.al-ls:hover {
 .dq-cur-future .dq-cur-topic { color: #9A9187; }
 @media (prefers-reduced-motion: reduce) { .dq-cur-playable, .dq-cur-playable:hover { transition: none; transform: none; } }
 
+/* ===== 모바일 반응형 (레이아웃만 조정) ===== */
+@media (max-width: 768px) {
+  .al-navinner { padding: 12px 16px; gap: 14px; flex-wrap: wrap; }
+  .al-header-section, .al-cats { padding: 0 16px; }
+  .al-cat { grid-template-columns: 1fr; gap: 18px; padding: 18px; }
+  .al-lessons { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 480px) {
+  .al-navinner { padding: 10px 13px; }
+  .al-header-section, .al-cats { padding: 0 13px; }
+  .al-lessons { grid-template-columns: repeat(2, 1fr); }
+}

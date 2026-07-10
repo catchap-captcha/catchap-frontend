@@ -673,3 +673,72 @@
 }
 .gs-live-daybar i { font-size: 15px; }
 .gs-live-daybar--replay { background: #EDE6FF; color: #6A4FCC; }
+
+/* ── 모바일 (≤768px): 사이드 패널을 본문 아래로 스택, 상단바 줄바꿈 ── */
+@media (max-width: 768px) {
+  .gs-topbar-inner {
+    flex-wrap: wrap;
+    padding: 10px 14px;
+    gap: 10px 12px;
+  }
+
+  .gs-progress {
+    order: 3;
+    flex: 1 0 100%; /* 진행바는 한 줄 전체 차지 */
+    max-width: none;
+    margin: 0;
+  }
+
+  .gs-play {
+    grid-template-columns: 1fr; /* 320px 사이드 패널을 본문 아래로 */
+    gap: 18px;
+    padding: 18px 14px 24px;
+  }
+
+  .gs-main {
+    padding: 20px 18px;
+    border-radius: 24px;
+  }
+
+  /* 사이드(마스코트/응원 카드)는 가로로 눕혀 공간 절약 */
+  .gs-side {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .gs-side > * {
+    flex: 1 1 100%;
+  }
+
+  .gs-mascotimg {
+    width: 72px;
+    height: 72px;
+  }
+}
+
+/* ── 작은 폰 (≤480px) ── */
+@media (max-width: 480px) {
+  .gs-main {
+    padding: 16px 13px;
+    border-radius: 20px;
+  }
+
+  .gs-live {
+    padding: 18px 12px 16px;
+  }
+
+  .gs-live-options {
+    grid-template-columns: 1fr; /* 보기 1열 */
+    gap: 10px;
+  }
+
+  .gs-gametitle {
+    font-size: 16px;
+  }
+
+  .gs-quit {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+}

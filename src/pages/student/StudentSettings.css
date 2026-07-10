@@ -468,3 +468,16 @@
   .st-fbtn:hover, .st-fbtn:active,
   .st-profilebtn:hover, .st-profilebtn:active { transform: none; }
 }
+
+
+/* ===== 모바일 반응형 (레이아웃만: 패딩·flex 방향) ===== */
+@media (max-width: 768px) {
+  .st-navinner { padding: 12px 16px; }
+  .st-main { padding: 0 16px; }
+}
+@media (max-width: 480px) {
+  .st-navinner { padding: 10px 13px; }
+  .st-main { padding: 0 13px; }
+  .st-profile { flex-wrap: wrap; padding: 20px 18px; }
+  .st-card { padding: 8px 18px; }
+}

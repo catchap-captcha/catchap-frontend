@@ -56,12 +56,14 @@ export function StudentNav({
   const { me } = useAuth();
   const location = useLocation();
   const [avatar] = useState<AvatarState>(readAvatar);
+  const [menuOpen, setMenuOpen] = useState(false); // 모바일 햄버거 메뉴 열림 상태
   const unread = useUnreadNotifications(); // 서버 read_at 기준 — 재로그인해도 유지
 
   const current = active === undefined ? (ROUTE_ACTIVE[location.pathname] ?? null) : active;
   const name = (me?.name ?? '하은').trim() || '하은';
 
   const cls = (key: StudentNavKey) => `sl-navlink${current === key ? ' sl-active' : ''}`;
+  const closeMenu = () => setMenuOpen(false);
 
   return (
     <div className="sl-navbar">
@@ -73,29 +75,40 @@ export function StudentNav({
             <span className="sl-logosub">놀면서 배우는 캡챠 학습</span>
           </div>
         </Link>
-        <nav className="sl-menu">
+        <nav className={`sl-menu${menuOpen ? ' sl-menu-open' : ''}`}>
           {onHomeClick ? (
-            <a href="#" onClick={onHomeClick} className={cls('home')}>
+            <a href="#" onClick={() => { closeMenu(); onHomeClick(); }} className={cls('home')}>
               홈
             </a>
           ) : (
-            <Link to={PATHS.STUDENT_HOME} className={cls('home')}>
+            <Link to={PATHS.STUDENT_HOME} className={cls('home')} onClick={closeMenu}>
               홈
             </Link>
           )}
-          <Link to={PATHS.STUDENT_ALL_LEARNING} className={cls('all')}>
+          <Link to={PATHS.STUDENT_ALL_LEARNING} className={cls('all')} onClick={closeMenu}>
             전체 학습
           </Link>
-          <Link to={PATHS.STUDENT_CONCEPTS} className={cls('concepts')}>
+          <Link to={PATHS.STUDENT_CONCEPTS} className={cls('concepts')} onClick={closeMenu}>
             개념 설명
           </Link>
-          <Link to={PATHS.STUDENT_AI_TEACHER} className={cls('ai')}>
+          <Link to={PATHS.STUDENT_AI_TEACHER} className={cls('ai')} onClick={closeMenu}>
             AI 선생님
           </Link>
-          <Link to={PATHS.STUDENT_RECORDS} className={cls('records')}>
+          <Link to={PATHS.STUDENT_RECORDS} className={cls('records')} onClick={closeMenu}>
             나의 기록
           </Link>
         </nav>
+        <button
+          type="button"
+          className={`sl-burger${menuOpen ? ' sl-burger-open' : ''}`}
+          aria-label="메뉴 열기"
+          aria-expanded={menuOpen}
+          onClick={() => setMenuOpen((v) => !v)}
+        >
+          <span />
+          <span />
+          <span />
+        </button>
         <div className="sl-right">
           <Link to={PATHS.STUDENT_SEARCH} title="검색" className="sl-iconbtn">
             <i className="ph-bold ph-magnifying-glass" />

@@ -578,3 +578,15 @@
 .nt-emptycta {
   background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0) 55%);
 }
+
+
+/* ===== 모바일 반응형 (레이아웃만: 패딩·폭) ===== */
+@media (max-width: 768px) {
+  .nt-navinner { padding: 12px 16px; gap: 14px; flex-wrap: wrap; }
+  .nt-section { padding: 0 16px; }
+}
+@media (max-width: 480px) {
+  .nt-navinner { padding: 10px 13px; gap: 10px; }
+  .nt-section { padding: 0 13px; }
+  .nt-title { font-size: 26px; }
+}

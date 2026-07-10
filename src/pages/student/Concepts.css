@@ -803,3 +803,20 @@ animation: cpFloat 4.5s ease-in-out infinite;
   .cp-card { transition: none; }
   .cp-card:hover { transform: none; }
 }
+
+/* ===== 모바일 반응형 (레이아웃만 조정) ===== */
+@media (max-width: 768px) {
+  .cp-navinner { padding: 12px 16px; }
+  .cp-container { padding: 0 16px; }
+  .cp-hero { flex-direction: column; align-items: flex-start; gap: 20px; padding: 26px; }
+  .cp-heroright { width: 100%; align-items: center; }
+  .cp-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 480px) {
+  .cp-navinner { padding: 10px 13px; }
+  .cp-container { padding: 0 13px; }
+  .cp-hero { padding: 22px; }
+  .cp-grid { grid-template-columns: 1fr; }
+  .cp-sheetbody { padding: 22px 20px 24px; }
+  .cp-overlay { padding: 14px; }
+}
