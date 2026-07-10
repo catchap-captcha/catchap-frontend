@@ -15,6 +15,13 @@ export const teacherApi = {
     client.delete(`/teacher/class/students/${studentId}`).then((r) => r.data),
   studentDetail: (studentId: string) =>
     client.get<any>(`/teacher/class/students/${studentId}`).then((r) => r.data),
+  /** 자기 반 학생 비밀번호 초기화 (담임만) → 임시 비번 1회 반환 */
+  resetStudentPassword: (studentId: string) =>
+    client
+      .post<{ ok: boolean; temp_password: string }>(
+        `/teacher/class/students/${studentId}/reset-password`,
+      )
+      .then((r) => r.data),
 
   /** 전체 학생 조회(전교) */
   allStudents: (params?: any) =>

@@ -17,6 +17,11 @@ export default function ActivatePage() {
   const [params] = useSearchParams();
   const [step, setStep] = useState<1 | 2>(1);
   const [code, setCode] = useState((params.get('code') ?? '').toUpperCase());
+  const [loginId, setLoginId] = useState('');
+  // 아이디 중복 확인 상태 — 'available'이어야 가입 진행 가능
+  const [idCheck, setIdCheck] = useState<'idle' | 'checking' | 'available' | 'taken' | 'empty'>('idle');
+  // 중복일 때 서버가 주는 사용 가능한 추천 아이디 (아이가 중복으로 계속 막히지 않도록)
+  const [suggestions, setSuggestions] = useState<string[]>([]);
   const [nickname, setNickname] = useState('');
   const [pw, setPw] = useState('');
   const [pw2, setPw2] = useState('');
@@ -32,14 +37,47 @@ export default function ActivatePage() {
     setStep(2);
   };
 
+  const checkId = (idArg?: string) => {
+    const id = (idArg ?? loginId).trim();
+    if (id.length < 3) {
+      setIdCheck('empty');
+      setSuggestions([]);
+      return;
+    }
+    setIdCheck('checking');
+    authApi
+      .checkStudentId(id)
+      .then((r) => {
+        setIdCheck(r.available ? 'available' : 'taken');
+        setSuggestions(r.available ? [] : r.suggestions);
+      })
+      .catch(() => {
+        setIdCheck('taken');
+        setSuggestions([]);
+      });
+  };
+
+  // 추천 아이디를 누르면 그 값으로 채우고 바로 다시 확인 (사용 가능 표시)
+  const pickSuggestion = (id: string) => {
+    setLoginId(id);
+    setSuggestions([]);
+    checkId(id);
+  };
+
   const submit = async () => {
+    if (idCheck !== 'available') return setErr('아이디 중복 확인을 먼저 해주세요.');
     if (!nickname.trim()) return setErr('별명을 정해 주세요.');
     if (pw.length < 4) return setErr('비밀번호는 4자 이상으로 정해 주세요.');
     if (pw !== pw2) return setErr('비밀번호가 서로 달라요.');
     setErr('');
     setBusy(true);
     try {
-      const tokens = await authApi.activateStudent({ code: code.trim(), nickname: nickname.trim(), password: pw });
+      const tokens = await authApi.activateStudent({
+        code: code.trim(),
+        student_login_id: loginId.trim(),
+        nickname: nickname.trim(),
+        password: pw,
+      });
       setTokens(tokens.access_token, tokens.refresh_token);
       await reloadMe();
       navigate(PATHS.STUDENT_HOME, { replace: true });
@@ -84,7 +122,46 @@ export default function ActivatePage() {
         ) : (
           <>
             <h1 className="ac-title">나를 꾸며볼까?</h1>
-            <p className="ac-sub">별명과 비밀번호만 정하면 가입 끝! <b>이메일은 필요 없어요.</b></p>
+            <p className="ac-sub">아이디·별명·비밀번호만 정하면 가입 끝! <b>이메일은 필요 없어요.</b></p>
+            <label className="ac-lbl">아이디</label>
+            <div className="ac-idrow">
+              <input
+                className="ac-input ac-input--grow"
+                value={loginId}
+                onChange={(e) => { setLoginId(e.target.value); setIdCheck('idle'); }}
+                placeholder="로그인할 때 쓸 아이디 (3자 이상)"
+                maxLength={30}
+              />
+              <button
+                type="button"
+                className={'ac-idbtn' + (idCheck === 'available' ? ' ac-idbtn--ok' : '')}
+                onClick={() => checkId()}
+                disabled={idCheck === 'checking'}
+              >
+                {idCheck === 'available' ? '사용 가능' : idCheck === 'checking' ? '확인 중…' : '중복 확인'}
+              </button>
+            </div>
+            {idCheck === 'available' && (
+              <p className="ac-idmsg ac-idmsg--ok"><i className="ph-fill ph-check-circle" />이 아이디를 쓸 수 있어요.</p>
+            )}
+            {idCheck === 'taken' && (
+              <p className="ac-idmsg ac-idmsg--bad"><i className="ph-fill ph-warning-circle" />이미 쓰고 있는 아이디예요. 다른 걸로 정해 줘.</p>
+            )}
+            {idCheck === 'taken' && suggestions.length > 0 && (
+              <div className="ac-suggests">
+                <span className="ac-suggests-lb"><i className="ph-fill ph-lightbulb" />이런 아이디는 어때?</span>
+                <div className="ac-suggests-row">
+                  {suggestions.map((s) => (
+                    <button key={s} type="button" className="ac-suggest" onClick={() => pickSuggestion(s)}>
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+            {idCheck === 'empty' && (
+              <p className="ac-idmsg ac-idmsg--bad"><i className="ph-fill ph-warning-circle" />아이디를 3자 이상 넣고 중복 확인을 눌러 줘.</p>
+            )}
             <label className="ac-lbl">별명</label>
             <input className="ac-input" value={nickname} onChange={(e) => setNickname(e.target.value)} placeholder="예: 용감한 냥이" maxLength={20} />
             <label className="ac-lbl">비밀번호</label>

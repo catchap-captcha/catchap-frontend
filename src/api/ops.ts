@@ -53,6 +53,26 @@ export interface OpsAuditLog {
   created_at: string | null;
 }
 
+/** 감사로그 필터·페이지네이션 응답 (실무 수준) */
+export interface OpsAuditLogPage {
+  items: OpsAuditLog[];
+  total: number;
+  page: number;
+  page_size: number;
+  actions: string[]; // 행동 필터 선택지
+  orgs: { id: string; name: string }[]; // 기관 필터 선택지
+}
+
+/** 감사로그 조회 필터 */
+export interface OpsLogFilter {
+  action?: string;
+  organization_id?: string;
+  date_from?: string; // YYYY-MM-DD
+  date_to?: string; // YYYY-MM-DD
+  page?: number;
+  page_size?: number;
+}
+
 /** 감사로그 문의답변 미리보기 — 원래 질문 + 그 문의에 달린 모든 답변 */
 export interface OpsAuditInquiryDetail {
   question: string | null;
@@ -275,7 +295,10 @@ export const opsApi = {
     client.post<OpsOperatorCreated>('/ops/operators', body).then((r) => r.data),
   updateOperator: (id: string, body: { name?: string; status?: string }) =>
     client.patch<OpsOperator>(`/ops/operators/${id}`, body).then((r) => r.data),
-  logs: () => client.get<OpsAuditLog[]>('/ops/logs').then((r) => r.data),
+  logs: (filter?: OpsLogFilter) =>
+    client
+      .get<OpsAuditLogPage>('/ops/logs', { params: filter && Object.keys(filter).length ? filter : undefined })
+      .then((r) => r.data),
   inquiries: (status?: string) =>
     client
       .get<OpsInquiry[]>('/ops/inquiries', {

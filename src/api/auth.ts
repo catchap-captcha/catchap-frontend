@@ -31,10 +31,10 @@ export const authApi = {
       .post('/auth/email/send', { email, purpose, for_account: forAccount })
       .then((r) => r.data),
 
-  /** 학생 아이디 전역 중복 확인 (회원가입 '중복 확인' 버튼) */
+  /** 학생 아이디 전역 중복 확인 — 중복이면 사용 가능한 추천 아이디(suggestions) 동반 */
   checkStudentId: (studentLoginId: string) =>
     client
-      .post<{ available: boolean }>('/auth/check-student-id', {
+      .post<{ available: boolean; suggestions: string[] }>('/auth/check-student-id', {
         student_login_id: studentLoginId,
       })
       .then((r) => r.data),
@@ -53,9 +53,13 @@ export const authApi = {
   registerStudent: (req: RegisterStudentRequest) =>
     client.post('/auth/register/student', req).then((r) => r.data),
 
-  /** 학교 발급 가입 코드로 학생 활성화 → 즉시 로그인(토큰) */
-  activateStudent: (req: { code: string; nickname: string; password: string }) =>
-    client.post<TokenPair>('/auth/activate-student', req).then((r) => r.data),
+  /** 학교 발급 가입 코드로 학생 활성화 → 즉시 로그인(토큰). 아이디는 학생이 직접 정함(중복 확인). */
+  activateStudent: (req: {
+    code: string;
+    student_login_id: string;
+    nickname: string;
+    password: string;
+  }) => client.post<TokenPair>('/auth/activate-student', req).then((r) => r.data),
 
   registerOrg: (req: RegisterOrgRequest) =>
     client.post('/auth/register/org', req).then((r) => r.data),

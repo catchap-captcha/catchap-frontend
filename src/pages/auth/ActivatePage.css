@@ -108,3 +108,34 @@
 .ac-foot { text-align: center; margin: 18px 0 0; color: #9b9086; font-weight: 600; font-size: 13.5px; }
 .ac-link { color: #ff5a4d; font-weight: 800; text-decoration: none; }
 .ac-link:hover { text-decoration: underline; }
+
+/* 아이디 입력 + 중복 확인 (학생이 직접 아이디를 정함) */
+.ac-idrow { display: flex; gap: 8px; align-items: stretch; }
+.ac-input--grow { flex: 1; width: auto; }
+.ac-idbtn {
+  flex-shrink: 0; border: 2px solid #ffd0c4; background: #fff2ee; color: #ff5a4d;
+  border-radius: 14px; padding: 0 16px; font-weight: 800; font-size: 13.5px;
+  cursor: pointer; white-space: nowrap; transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.ac-idbtn:hover:not(:disabled) { background: #ffe4dc; }
+.ac-idbtn:disabled { opacity: 0.6; cursor: default; }
+.ac-idbtn--ok { background: #e1f5ec; border-color: #b6e6d1; color: #17916f; }
+.ac-idmsg { display: flex; align-items: center; gap: 6px; margin: 8px 0 0; font-weight: 700; font-size: 12.5px; }
+.ac-idmsg--ok { color: #17916f; }
+.ac-idmsg--bad { color: #e23d3d; }
+
+/* 중복 아이디일 때 추천 아이디 칩 (아이가 계속 막히지 않도록) */
+.ac-suggests { margin-top: 10px; }
+.ac-suggests-lb {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-weight: 800; font-size: 12.5px; color: #b0791d; margin-bottom: 7px;
+}
+.ac-suggests-lb i { color: #f0a92a; }
+.ac-suggests-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.ac-suggest {
+  border: 2px solid #ffe0b8; background: #fff8ec; color: #b0791d;
+  border-radius: 999px; padding: 7px 14px; font-weight: 800; font-size: 13.5px;
+  cursor: pointer; transition: background 0.15s, border-color 0.15s, transform 0.1s;
+}
+.ac-suggest:hover { background: #ffefcf; border-color: #ffd08a; transform: translateY(-1px); }
+.ac-suggest:active { transform: translateY(0); }

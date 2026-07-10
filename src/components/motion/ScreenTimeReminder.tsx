@@ -2,28 +2,28 @@ import { useEffect, useRef, useState } from 'react';
 
 /**
  * handoff `screen-time-reminder.js` 포팅.
- * 로그인 시점(localStorage 'catchap_login_ts')부터 60분마다 눈 휴식 팝업을 띄운다.
- * 탭 포커스와 무관하게 경과 시간 기준(원본 스펙 유지). 15초 간격 재확인.
+ * 로그인 후 "실제 활동 시간"이 60분 쌓일 때마다 눈 휴식 팝업을 띄운다.
+ * 벽시계 경과가 아니라 탭이 실제로 보이는 동안(document.visibilityState==='visible')만
+ * 누적한다 — 탭을 백그라운드에 두거나 기기가 절전이면 시간이 흐르지 않는다.
+ * 누적치는 현재 로그인(login_ts)에 귀속되며 새 로그인마다 0으로 초기화된다. 15초 tick.
  */
-const PERIOD = 60 * 60 * 1000;
-const TS_KEY = 'catchap_login_ts';
-const SHOWN_KEY = 'catchap_break_shown';
+const PERIOD = 60 * 60 * 1000; // 실제 활동 60분마다 팝업
+const TICK = 15000; // 15초 간격 누적 tick
+const TS_KEY = 'catchap_login_ts'; // 현재 로그인 세션 식별자 (authStore가 관리)
+const ACTIVE_KEY = 'catchap_active_ms'; // 이 세션의 누적 실제 활동 시간(ms)
+const FOR_KEY = 'catchap_active_for'; // 위 누적치가 귀속된 login_ts
+const SHOWN_KEY = 'catchap_break_shown'; // 이미 팝업을 띄운 블록 수
 
 const MESSAGES = [
   '눈이 피곤하지 않나요? 20초만 먼 곳을 바라보세요 👀',
   '{n}시간 동안 열공했어요! 잠시 눈을 쉬어줄까요?',
   '잠깐! 자리에서 일어나 기지개를 쭉 펴볼까요? 🙆',
   '물 한 잔 마시고 다시 시작해요. 몸도 쉬어야 해요 💧',
-  '냥냥이도 잠깐 쉬는 중이에요~ 5분만 함께 쉬어가요 🐾',
+  '냥냥이도 잠깐 쉬는 중이에요~ 20초만 함께 쉬어가요 🐾',
 ];
 
-function ensureLoginTs(): number {
-  let v = localStorage.getItem(TS_KEY);
-  if (!v) {
-    localStorage.setItem(TS_KEY, String(Date.now()));
-    v = localStorage.getItem(TS_KEY);
-  }
-  return parseInt(v ?? '', 10) || Date.now();
+function readInt(key: string): number {
+  return parseInt(localStorage.getItem(key) ?? '0', 10) || 0;
 }
 
 function fmt(ms: number): string {
@@ -48,20 +48,43 @@ export default function ScreenTimeReminder() {
   const restTimer = useRef<number | null>(null);
 
   useEffect(() => {
-    ensureLoginTs();
-    const check = () => {
-      const elapsed = Date.now() - ensureLoginTs();
-      const block = Math.floor(elapsed / PERIOD);
-      if (block < 1) return;
-      const shown = parseInt(localStorage.getItem(SHOWN_KEY) ?? '0', 10);
-      if (block > shown) {
+    // 새 로그인(login_ts 변경) 시 누적치·표시기록을 초기화한다.
+    const session = localStorage.getItem(TS_KEY) ?? '';
+    if (localStorage.getItem(FOR_KEY) !== session) {
+      localStorage.setItem(FOR_KEY, session);
+      localStorage.setItem(ACTIVE_KEY, '0');
+      localStorage.setItem(SHOWN_KEY, '0');
+    }
+
+    let lastTick = Date.now();
+    const tick = () => {
+      const now = Date.now();
+      const delta = now - lastTick;
+      lastTick = now;
+      // 탭이 실제로 보이는 동안만 누적. 절전/백그라운드로 인한 큰 점프(> TICK*3)는 버린다.
+      if (document.visibilityState !== 'visible' || delta <= 0 || delta > TICK * 3) return;
+
+      const active = readInt(ACTIVE_KEY) + delta;
+      localStorage.setItem(ACTIVE_KEY, String(active));
+
+      const block = Math.floor(active / PERIOD);
+      if (block > readInt(SHOWN_KEY)) {
         localStorage.setItem(SHOWN_KEY, String(block));
-        setPopup({ msg: pickMessage(block), elapsed });
+        setPopup({ msg: pickMessage(block), elapsed: active });
       }
     };
-    check();
-    const iv = window.setInterval(check, 15000);
-    return () => window.clearInterval(iv);
+
+    const iv = window.setInterval(tick, TICK);
+    // 탭을 다시 볼 때 기준 시각을 리셋 → 숨겨져 있던 동안의 시간은 누적되지 않는다.
+    const onVis = () => {
+      if (document.visibilityState === 'visible') lastTick = Date.now();
+    };
+    document.addEventListener('visibilitychange', onVis);
+
+    return () => {
+      window.clearInterval(iv);
+      document.removeEventListener('visibilitychange', onVis);
+    };
   }, []);
 
   useEffect(

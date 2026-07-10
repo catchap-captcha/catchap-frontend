@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import OrgLayout from '../../layouts/OrgLayout';
 import { useAuth } from '../../hooks/useAuth';
 import { orgApi } from '../../api/org';
@@ -42,37 +42,8 @@ export default function OrgStudents() {
   const [issued, setIssued] = useState<{ login_id: string; join_code: string }[] | null>(null);
   const [creating, setCreating] = useState(false);
   const [createErr, setCreateErr] = useState('');
-
-  // 실배정 학생 명단 로딩 (기존엔 호출 자체가 없어 하드코딩 4행만 보이던 것 해소)
-  useEffect(() => {
-    const orgId = me?.organization_id;
-    if (!orgId) return;
-    let on = true;
-    orgApi
-      .roster(orgId)
-      .then((res: any) => {
-        if (!on) return;
-        const studs = Array.isArray(res?.students) ? res.students : [];
-        if (!studs.length) return; // 학생 없으면 FALLBACK 유지(화면 빈 것 방지)
-        setRows(
-          studs.map((s: any) => ({
-            id: String(s.id),
-            nickname: String(s.nickname ?? s.name ?? ''),
-            login_id: String(s.login_id ?? s.code ?? ''),
-            className: String(s.cls ?? ''),
-            status: s.status === 'pending' ? 'pending' : 'active',
-            join_code: null, // 가입코드는 등록/발급 액션에서만 노출(서버 발급)
-            invite_code: null, // 학부모 초대코드는 발급 버튼으로 생성
-          })),
-        );
-      })
-      .catch(() => {
-        // 실패 시 FALLBACK 유지
-      });
-    return () => {
-      on = false;
-    };
-  }, [me?.organization_id]);
+  // 교장 비상 초기화 결과(임시비번) 또는 담임에게 넘기라는 안내 메시지
+  const [resetInfo, setResetInfo] = useState<{ name: string; temp?: string; msg?: string } | null>(null);
 
   const flash = (m: string) => {
     setToast(m);
@@ -157,6 +128,22 @@ export default function OrgStudents() {
     setRows((prev) => prev.map((r) => (r.id === id ? { ...r, invite_code: code } : r)));
     flash(`학부모 초대코드(예시): ${code}`);
   };
+  // 학생 비번 초기화 — 원칙은 담임 교사. 교장은 '담임 없는 반'만 서버가 허용(그 외 403 안내).
+  const emergencyReset = async (r: StudentRow) => {
+    const orgId = me?.organization_id;
+    if (!orgId || !isRealId(r.id)) {
+      flash('데모 학생은 초기화할 수 없어요.');
+      return;
+    }
+    try {
+      const res = await orgApi.resetStudentPassword(orgId, r.id);
+      setResetInfo({ name: r.nickname, temp: res.temp_password });
+    } catch (e: any) {
+      // 담임이 있는 반 → 403 + "담임 X 선생님께 요청" 안내를 그대로 보여준다
+      const msg = e?.response?.data?.detail || '초기화할 수 없어요. 담당 선생님에게 요청해 주세요.';
+      setResetInfo({ name: r.nickname, msg });
+    }
+  };
   const changeClass = async (id: string, label: string) => {
     setRows((prev) => prev.map((r) => (r.id === id ? { ...r, className: label } : r)));
     const orgId = me?.organization_id;
@@ -172,20 +159,6 @@ export default function OrgStudents() {
     flash(`반을 ${label}(으)로 옮겼어요.`);
   };
 
-  const resetPw = async (id: string, nick: string) => {
-    const orgId = me?.organization_id;
-    if (orgId && isRealId(id)) {
-      try {
-        const res = await orgApi.resetStudentPassword(orgId, id);
-        flash(`${nick} 임시 비번: ${res.temp_password} · 기존 세션 로그아웃됨`);
-      } catch {
-        // 권한 없음(학년부장) 등 서버 거부 시 성공으로 위장하지 않음
-        flash('비밀번호 초기화에 실패했어요. 권한이 없다면 교장에게 요청하세요.');
-      }
-      return;
-    }
-    flash(`${nick} (예시) 비밀번호 초기화 안내 — 실제 학생이 아니에요.`);
-  };
 
   return (
     <OrgLayout active="students" widget="none">
@@ -247,9 +220,12 @@ export default function OrgStudents() {
                 <button className="os-mini" onClick={() => issueInvite(r.id)} title="학부모 초대코드">
                   <i className="ph-fill ph-user-circle-plus" />{r.invite_code ? '초대코드 재발급' : '학부모 초대'}
                 </button>
-                <button className="os-mini os-mini--warn" onClick={() => resetPw(r.id, r.nickname)} title="비밀번호 초기화">
-                  <i className="ph-fill ph-key" />비번 초기화
-                </button>
+                {/* 비번 초기화는 원칙적으로 담임 교사. 교장은 '담임 없는 반'만 비상 초기화(그 외 서버가 담임에게 안내) */}
+                {r.status === 'active' && isRealId(r.id) && (
+                  <button className="os-mini os-mini--warn" onClick={() => emergencyReset(r)} title="담임 없는 반 학생만 비상 초기화">
+                    <i className="ph-fill ph-key" />비번 초기화
+                  </button>
+                )}
               </span>
             </div>
           ))}
@@ -311,6 +287,42 @@ export default function OrgStudents() {
                 </div>
                 <div className="os-modal-actions">
                   <button className="os-btn-primary" onClick={() => { setAddOpen(false); flash('학생이 추가됐어요.'); }}>완료</button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* 비번 초기화 결과 — 임시비번(비상 초기화 성공) 또는 담임에게 요청 안내 */}
+      {resetInfo && (
+        <div className="os-modal-bg" onClick={() => setResetInfo(null)}>
+          <div className="os-modal" onClick={(e) => e.stopPropagation()}>
+            {resetInfo.temp ? (
+              <>
+                <h3 className="os-modal-title"><i className="ph-fill ph-key" />{resetInfo.name} 비번 초기화됨</h3>
+                <p className="os-modal-sub">
+                  담임이 없는 반이라 <b>교장 권한으로 비상 초기화</b>했어요. 아래 임시 비밀번호를 학생에게 전달하세요.
+                  학생은 다음 로그인 때 <b>새 비밀번호를 스스로 정하게</b> 됩니다. 이 초기화는 감사 기록에 남습니다.
+                </p>
+                <div className="os-issued">
+                  <div className="os-issued-row">
+                    <span className="os-mono">임시 비밀번호</span>
+                    <button className="os-code" onClick={() => copy(resetInfo.temp!, '임시 비밀번호')}>
+                      <i className="ph-bold ph-key" />{resetInfo.temp}<i className="ph-bold ph-copy os-code-copy" />
+                    </button>
+                  </div>
+                </div>
+                <div className="os-modal-actions">
+                  <button className="os-btn-primary" onClick={() => setResetInfo(null)}>완료</button>
+                </div>
+              </>
+            ) : (
+              <>
+                <h3 className="os-modal-title"><i className="ph-fill ph-info" />담임 선생님에게 요청하세요</h3>
+                <p className="os-modal-sub">{resetInfo.msg}</p>
+                <div className="os-modal-actions">
+                  <button className="os-btn-primary" onClick={() => setResetInfo(null)}>확인</button>
                 </div>
               </>
             )}

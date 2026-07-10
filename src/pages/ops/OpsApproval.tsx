@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
-import { opsApi, type OrgRegRequest } from '../../api/ops';
+import { opsApi, type OrgRegRequest, type OpsAdminCredential } from '../../api/ops';
 import OpsNav from '../../components/ops/OpsNav';
 import CountUp from '../../components/motion/CountUp';
 import './OpsApproval.css';
@@ -23,6 +23,11 @@ export default function OpsApproval() {
   const [kpi, setKpi] = useState({ organizations: 0, open_inquiries: 0, audit_logs: 0 });
   const [busy, setBusy] = useState<string | null>(null);
   const [toast, setToast] = useState('');
+  // 승인 시 발급된 관리자 임시 비밀번호 — 담당자에게 전달용(응답에서만 1회 노출)
+  const [creds, setCreds] = useState<OpsAdminCredential[] | null>(null);
+  // 임시 비번 이메일 발송 상태(담당자별)
+  const [sendingEmail, setSendingEmail] = useState<string | null>(null);
+  const [sendMsg, setSendMsg] = useState<Record<string, string>>({});
 
   const load = () => {
     opsApi
@@ -51,8 +56,10 @@ export default function OpsApproval() {
   const act = async (id: string, kind: 'approve' | 'reject') => {
     setBusy(id);
     try {
-      if (kind === 'approve') await opsApi.approve(id);
-      else await opsApi.reject(id);
+      if (kind === 'approve') {
+        const res = await opsApi.approve(id);
+        if (res?.admin_credentials?.length) setCreds(res.admin_credentials);
+      } else await opsApi.reject(id);
       setToast(kind === 'approve' ? '기관을 승인했어요.' : '신청을 거절했어요.');
       load();
     } catch {
@@ -178,6 +185,74 @@ export default function OpsApproval() {
       </main>
 
       {toast && <div className="op-toast"><i className="ph-fill ph-check-circle" />{toast}</div>}
+
+      {creds && (
+        <div className="op-cred-backdrop" onClick={() => setCreds(null)}>
+          <div className="op-cred-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="op-cred-head">
+              <i className="ph-fill ph-key" />
+              <h3>관리자 임시 비밀번호</h3>
+            </div>
+            <p className="op-cred-desc">
+              아래 임시 비밀번호는 <b>지금만 확인</b>할 수 있어요. 담당자에게 전달해 주세요.
+              관리자는 이 비밀번호로 로그인한 뒤 새 비밀번호로 변경하면 됩니다.
+            </p>
+            {creds.map((c) => (
+              <div key={c.email} className="op-cred-row">
+                <div className="op-cred-field">
+                  <span className="op-cred-k">이메일</span>
+                  <span className="op-cred-v">{c.email}</span>
+                </div>
+                <div className="op-cred-field">
+                  <span className="op-cred-k">임시 비밀번호</span>
+                  <code className="op-cred-pw">{c.temp_password}</code>
+                  <button
+                    className="op-cred-copy"
+                    onClick={() => navigator.clipboard?.writeText(c.temp_password)}
+                  >
+                    <i className="ph-bold ph-copy" />복사
+                  </button>
+                  <button
+                    className="op-cred-send"
+                    disabled={sendingEmail === c.email}
+                    onClick={async () => {
+                      setSendingEmail(c.email);
+                      try {
+                        const r = await opsApi.sendAdminCredentials(
+                          c.organization_id,
+                          c.email,
+                          c.temp_password,
+                        );
+                        const label =
+                          r.email_status === 'sent'
+                            ? '담당자 이메일로 발송했어요.'
+                            : r.email_status === 'dry_run'
+                              ? '개발 모드(dry-run) — 콘솔에 출력됨(실발송 아님).'
+                              : '발송 실패 — SMTP 설정을 확인해 주세요.';
+                        setSendMsg((m) => ({ ...m, [c.email]: label }));
+                      } catch {
+                        setSendMsg((m) => ({
+                          ...m,
+                          [c.email]: '발송 요청에 실패했어요. 다시 시도해 주세요.',
+                        }));
+                      } finally {
+                        setSendingEmail(null);
+                      }
+                    }}
+                  >
+                    <i className="ph-bold ph-paper-plane-tilt" />
+                    {sendingEmail === c.email ? '발송 중…' : '이메일로 발송'}
+                  </button>
+                </div>
+                {sendMsg[c.email] && <div className="op-cred-sent">{sendMsg[c.email]}</div>}
+              </div>
+            ))}
+            <button className="op-cred-done" onClick={() => setCreds(null)}>
+              확인했어요
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

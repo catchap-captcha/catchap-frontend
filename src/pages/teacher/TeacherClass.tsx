@@ -15,7 +15,6 @@ interface TcStudent {
   id: string;
   name: string;
   age: number;
-  gender?: string; // '' | male | female | other (선생님이 관리)
   code: string;
   avatarBg: string;
   today: Today;
@@ -35,7 +34,7 @@ interface DirEntry {
 
 type TcModal =
   | { mode: 'add'; code: string }
-  | { mode: 'edit'; id: string; name: string; age: number; gender: string; status: string }
+  | { mode: 'edit'; id: string; name: string; age: number; status: string }
   | null;
 
 /** GET /teacher/class/students/{id} 상세 — skills/comment (없으면 로컬 합성 fallback) */
@@ -112,7 +111,6 @@ function mapStudents(res: any): TcStudent[] | null {
       id: String(r.id ?? r.student_id ?? `s${i + 1}`),
       name: String(r.name ?? ''),
       age: Number(r.age ?? 7),
-      gender: r.gender ?? '',
       code: String(r.code ?? r.student_code ?? ''),
       avatarBg: r.avatarBg ?? r.avatar_bg ?? fb?.avatarBg ?? pal.avatarBg,
       today: r.today === 'done' || r.today_done ? 'done' : 'none',
@@ -230,7 +228,7 @@ export default function TeacherClass() {
     const s = students.find((x) => x.id === (id || selId));
     if (!s) return;
     setSelId(s.id);
-    setModal({ mode: 'edit', id: s.id, name: s.name, age: s.age, gender: s.gender ?? '', status: s.status });
+    setModal({ mode: 'edit', id: s.id, name: s.name, age: s.age, status: s.status });
   };
 
   const deleteStudent = (id: string | null) => {
@@ -242,6 +240,22 @@ export default function TeacherClass() {
       .then(() => loadStudents())
       .catch(() => {
         // TODO(api): 실패 시 원본 로컬 삭제 흐름 유지
+      });
+  };
+
+  // 자기 반 학생 비밀번호 초기화 — 임시 비번을 결과 모달로 1회 노출
+  const [resetResult, setResetResult] = useState<
+    { name: string; temp: string; error?: string } | null
+  >(null);
+  const resetPw = (id: string | null) => {
+    const s = students.find((x) => x.id === (id || selId));
+    if (!s || !id) return;
+    teacherApi
+      .resetStudentPassword(id)
+      .then((r) => setResetResult({ name: s.name, temp: r.temp_password }))
+      .catch((e: unknown) => {
+        const detail = (e as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
+        setResetResult({ name: s.name, temp: '', error: detail ?? '초기화에 실패했어요.' });
       });
   };
 
@@ -281,12 +295,12 @@ export default function TeacherClass() {
     } else {
       const name = (modal.name || '').trim();
       if (!name) return;
-      const { id, age, gender, status } = modal;
-      setStudents((prev) => prev.map((x) => (x.id === id ? { ...x, name, age, gender, status } : x)));
+      const { id, age, status } = modal;
+      setStudents((prev) => prev.map((x) => (x.id === id ? { ...x, name, age, status } : x)));
       setModal(null);
       teacherApi
         // 교사가 고치는 이름은 학교용 실명(real_name) — 학생 닉네임은 학생 소유라 건드리지 않음
-        .updateStudent(id, { real_name: name, age, gender, status })
+        .updateStudent(id, { real_name: name, age, status })
         .then(() => loadStudents())
         .catch(() => {
           // TODO(api): 실패 시 원본 로컬 수정 흐름 유지
@@ -505,6 +519,9 @@ export default function TeacherClass() {
                 <button onClick={() => openEdit()} className="tc-editBtn">
                   <i className="ph-fill ph-pencil-simple" />정보 수정
                 </button>
+                <button onClick={() => resetPw(selId)} className="tc-editBtn">
+                  <i className="ph-fill ph-key" />비번 초기화
+                </button>
                 <button onClick={() => deleteStudent(selId)} className="tc-delBtn">
                   <i className="ph-fill ph-trash" />삭제
                 </button>
@@ -608,25 +625,6 @@ export default function TeacherClass() {
                       ))}
                     </div>
 
-                    <label className="tc-label">성별</label>
-                    <div className="tc-statusRow">
-                      {([
-                        { v: '', label: '미입력' },
-                        { v: 'male', label: '남아' },
-                        { v: 'female', label: '여아' },
-                      ] as const).map((g) => (
-                        <button
-                          key={g.v || 'none'}
-                          onClick={() =>
-                            setModal((m) => (m && m.mode === 'edit' ? { ...m, gender: g.v } : m))
-                          }
-                          className={`tc-statusChip ${modal.gender === g.v ? 'tc-st-on' : 'tc-st-off'}`}
-                        >
-                          {g.label}
-                        </button>
-                      ))}
-                    </div>
-
                     <label className="tc-label">상태</label>
                     <div className="tc-statusRow">
                       {['좋음', '학습 뜸함', '도움 필요'].map((label) => (
@@ -648,6 +646,53 @@ export default function TeacherClass() {
                   <button onClick={() => setModal(null)} className="tc-cancelBtn">취소</button>
                   <button onClick={saveModal} className={`tc-saveBtn${saveDisabled ? ' tc-saveDisabled' : ''}`}>
                     <i className="ph-fill ph-check" />{isEdit ? '저장하기' : '연동하기'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 비밀번호 초기화 결과 (임시 비번 1회 노출) */}
+        {resetResult && (
+          <div onClick={() => setResetResult(null)} className="tc-overlay">
+            <div className="tc-modal" onClick={(e) => e.stopPropagation()}>
+              <div className="tc-modalHead">
+                <div className="tc-modalIconBox"><i className="ph-fill ph-key" /></div>
+                <div className="tc-modalTitleWrap">
+                  <div className="tc-modalTitle">
+                    {resetResult.error ? '초기화 실패' : '비밀번호를 초기화했어요'}
+                  </div>
+                  <div className="tc-modalSub">{resetResult.name}</div>
+                </div>
+                <button onClick={() => setResetResult(null)} className="tc-modalClose">
+                  <i className="ph-bold ph-x" />
+                </button>
+              </div>
+              <div className="tc-modalBody">
+                {resetResult.error ? (
+                  <div className="tc-noMatch">
+                    <i className="ph-fill ph-warning-circle" />
+                    <span>{resetResult.error}</span>
+                  </div>
+                ) : (
+                  <>
+                    <div className="tc-infoBox">
+                      <i className="ph-fill ph-info" />
+                      <span>
+                        임시 비밀번호를 학생에게 전달하세요. 학생이 다음에 로그인하면
+                        <b> 새 비밀번호를 반드시 정하게</b> 돼요.
+                      </span>
+                    </div>
+                    <label className="tc-label">임시 비밀번호</label>
+                    <div className="tc-codeInput" style={{ userSelect: 'all', fontWeight: 800 }}>
+                      {resetResult.temp}
+                    </div>
+                  </>
+                )}
+                <div className="tc-modalActions">
+                  <button onClick={() => setResetResult(null)} className="tc-saveBtn">
+                    <i className="ph-fill ph-check" />확인
                   </button>
                 </div>
               </div>

@@ -467,6 +467,12 @@
   font-size: 13px;
 }
 
+/* 주차 캐러셀 칼럼 — grid 1fr 트랙이 카드 총폭으로 늘어나 페이지가 넘치는 것 방지.
+   min-width:0 이 있어야 안쪽 .al-lessons 의 overflow-x 스크롤이 실제로 작동한다. */
+.al-weeks-col {
+  min-width: 0;
+}
+
 .al-lessons {
   display: flex;
   gap: 11px;

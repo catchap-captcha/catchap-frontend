@@ -30,6 +30,11 @@ const RESULT_META: Record<string, { label: string; cls: string }> = {
   incorrect: { label: '실패', cls: 'no' },
   fail: { label: '실패', cls: 'no' },
 };
+const GRADE_BAND_LABEL: Record<string, string> = {
+  kindergarten: '유아',
+  elementary_low: '초등 저학년',
+  elementary_high: '초등 고학년',
+};
 const DATASET_OPTS = [
   { key: 'candidate', label: '후보', cls: 'cand' },
   { key: 'included', label: '포함', cls: 'inc' },
@@ -45,6 +50,27 @@ function metricsText(r: BehaviorRecord): string {
   return (
     `${(r.solve_time_ms / 1000).toFixed(1)}s · 경로 ${Math.round(r.path_length)}` +
     ` · 속도 ${r.avg_speed.toFixed(2)} · 멈춤 ${r.pause_count} · 재시도 ${r.retry_count}`
+  );
+}
+
+// 목록 인라인 궤적 미리보기 — 운영자가 클릭 없이 드래그 모양을 한눈에 보고
+// 학습셋(후보/포함/제외)을 판단하도록 돕는다. 서버가 내려준 다운샘플 [x,y]를 그린다.
+function TraceSparkline({ points }: { points: [number, number][] }) {
+  const W = 76;
+  const H = 32;
+  const pad = 3;
+  const map = (v: number, size: number) => pad + v * (size - 2 * pad);
+  const d = points
+    .map((pt, i) => `${i === 0 ? 'M' : 'L'}${map(pt[0], W).toFixed(1)},${map(pt[1], H).toFixed(1)}`)
+    .join(' ');
+  const first = points[0];
+  const last = points[points.length - 1];
+  return (
+    <svg className="op-bh-spark" viewBox={`0 0 ${W} ${H}`} width={W} height={H} aria-hidden="true">
+      <path d={d} fill="none" stroke="#7a5bd6" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx={map(first[0], W)} cy={map(first[1], H)} r="2" fill="#17b08c" />
+      <circle cx={map(last[0], W)} cy={map(last[1], H)} r="2" fill="#ff5a4d" />
+    </svg>
   );
 }
 
@@ -144,9 +170,9 @@ export default function OpsBehavior() {
         }
       }
       const capped = all.slice(0, EXPORT_CAP);
-      // 모델 학습용 — 아동 개인정보 최소화: 실명·닉네임·정확한 나이는 넣지 않는다 (가명 코드·학년밴드만)
+      // 모델 학습용 — 아동 개인정보 최소화: 실명·닉네임·학생코드·정확한 나이는 넣지 않는다 (익명 코드·학년밴드만)
       const header = [
-        '수집시각', '출처', '그룹', '학생코드', '학년밴드', '기관',
+        '수집시각', '출처', '그룹', '익명코드', '학년밴드', '기관',
         '풀이시간ms', '경로길이', '평균속도', '멈춤수', '재시도수', '드롭거리norm',
         '결과', '위험도', '입력방식', '라벨', '학습셋',
       ];
@@ -154,7 +180,7 @@ export default function OpsBehavior() {
         header,
         ...capped.map((r) => [
           r.occurred_at ?? r.created_at, r.source_type, r.student ? 'child' : 'anonymous',
-          r.student?.student_code, r.student?.grade_band, r.organization_name,
+          r.student?.anon_code, r.student?.grade_band, r.organization_name,
           r.solve_time_ms, r.path_length, r.avg_speed, r.pause_count, r.retry_count,
           r.drop_distance_norm, r.interaction_result, r.risk_level,
           r.input_type, r.sample_label, r.dataset_status,
@@ -315,10 +341,11 @@ export default function OpsBehavior() {
                   <span className="op-bh-who">
                     {r.student ? (
                       <>
-                        <b>{r.student.nickname}</b>
+                        {/* 아동 PII 비노출 — 서버가 내려주는 익명 코드만 표시 */}
+                        <b>학생 {r.student.anon_code}</b>
                         <small>
-                          {r.student.student_code}
-                          {r.student.age != null ? ` · ${r.student.age}세` : ''}
+                          {GRADE_BAND_LABEL[r.student.grade_band] ?? r.student.grade_band}
+                          {r.organization_name ? ` · ${r.organization_name}` : ''}
                         </small>
                       </>
                     ) : (
@@ -328,15 +355,20 @@ export default function OpsBehavior() {
                       </>
                     )}
                   </span>
-                  <span className="op-mono">
-                    {metricsText(r)}
+                  <span className="op-mono op-bh-metrics">
+                    <span className="op-bh-metrics-txt">{metricsText(r)}</span>
                     {r.trace_points != null && (
                       <button
                         className="op-bh-tracebtn"
                         onClick={() => openTrace(r)}
-                        title="원시 포인터 궤적 보기"
+                        title="원시 포인터 궤적 크게 보기"
                       >
-                        <i className="ph-fill ph-wave-sine" /> 궤적 {r.trace_points}점
+                        {r.trace_preview && r.trace_preview.length > 1 ? (
+                          <TraceSparkline points={r.trace_preview} />
+                        ) : (
+                          <i className="ph-fill ph-wave-sine" />
+                        )}
+                        <span className="op-bh-tracen">궤적 {r.trace_points}점</span>
                       </button>
                     )}
                   </span>
@@ -417,7 +449,7 @@ export default function OpsBehavior() {
                   </button>
                 </div>
                 <div className="op-bh-modal-meta">
-                  {rec.student ? `${rec.student.nickname} (${rec.student.student_code})` : '익명'} ·{' '}
+                  {rec.student ? `학생 ${rec.student.anon_code}` : '익명'} ·{' '}
                   {SOURCE_LABEL[rec.source_type] ?? rec.source_type} · {trace.point_count}점 ·{' '}
                   {(trace.duration_ms / 1000).toFixed(1)}초
                   {trace.box_w > 0 ? ` · 영역 ${trace.box_w}×${trace.box_h}px` : ''}
