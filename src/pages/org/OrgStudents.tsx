@@ -20,16 +20,16 @@ const CH = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 const seg = (n: number) => Array.from({ length: n }, () => CH[Math.floor(Math.random() * CH.length)]).join('');
 const genInvite = () => `LINK-${seg(4)}-${seg(4)}`;
 
-// 앱 전체(학급·선생님 관리, 백엔드)와 동일한 "N-M반" 표기로 통일 — 라벨 불일치로 중복 학급 생성 방지
-const CLASSES = ['1-2반', '2-1반', '3-3반'];
-
 export default function OrgStudents() {
   const { me } = useAuth();
   const [rows, setRows] = useState<StudentRow[]>([]);
+  // 실제 학급 목록 — 학급 현황(OrgClasses)에서 만든 것과 동일한 소스(GET /orgs/{id}/classes).
+  // 정적 하드코딩('1-2반' 등)을 쓰면 학급 현황과 연동이 안 돼 실제 만든 학급이 안 보인다.
+  const [classOptions, setClassOptions] = useState<string[]>([]);
   const [filter, setFilter] = useState<string>('all');
   const [toast, setToast] = useState('');
   const [addOpen, setAddOpen] = useState(false);
-  const [addClass, setAddClass] = useState(CLASSES[0]);
+  const [addClass, setAddClass] = useState('');
   const [addCount, setAddCount] = useState(1);
   const [addNames, setAddNames] = useState(''); // 학생 실명 목록 (줄바꿈 구분, 교사·기관 화면 전용)
   const [issued, setIssued] = useState<{ login_id: string; join_code: string }[] | null>(null);
@@ -52,6 +52,19 @@ export default function OrgStudents() {
     const orgId = me?.organization_id;
     if (!orgId) return;
     let on = true;
+    // 실제 학급 목록 로드 — 학급 현황과 동일 소스. 드롭다운·필터가 실제 만든 학급을 쓴다.
+    orgApi
+      .classes(orgId)
+      .then((res: any) => {
+        const arr = Array.isArray(res) ? res : res?.classes;
+        if (!on || !Array.isArray(arr)) return;
+        const names = arr.map((c: any) => c.name ?? (c.key ? `${c.key}반` : '')).filter(Boolean);
+        setClassOptions(names);
+        setAddClass((prev) => prev || names[0] || '');
+      })
+      .catch(() => {
+        /* 실패 시 빈 목록 유지 */
+      });
     orgApi
       .roster(orgId)
       .then((res: any) => {
@@ -208,7 +221,7 @@ export default function OrgStudents() {
 
         <div className="os-filters">
           <button className={`os-chip${filter === 'all' ? ' os-chip--on' : ''}`} onClick={() => setFilter('all')}>전체</button>
-          {CLASSES.map((c) => (
+          {classOptions.map((c) => (
             <button key={c} className={`os-chip${filter === c ? ' os-chip--on' : ''}`} onClick={() => setFilter(c)}>{c}</button>
           ))}
         </div>
@@ -228,8 +241,8 @@ export default function OrgStudents() {
                   <span className="os-nick">{r.nickname}</span>
                   <span className={`os-badge os-badge--${r.status}`}>{r.status === 'active' ? '가입 완료' : '가입 대기'}</span>
                   <select className="os-clssel" value={r.className} onChange={(e) => changeClass(r.id, e.target.value)} title="반 배정/이동">
-                    {CLASSES.map((c) => <option key={c} value={c}>{c}</option>)}
-                    {!CLASSES.includes(r.className) && <option value={r.className}>{r.className}</option>}
+                    {classOptions.map((c) => <option key={c} value={c}>{c}</option>)}
+                    {!classOptions.includes(r.className) && <option value={r.className}>{r.className}</option>}
                   </select>
                 </span>
               </span>
@@ -273,9 +286,15 @@ export default function OrgStudents() {
                 <h3 className="os-modal-title"><i className="ph-fill ph-user-plus" />학생 추가</h3>
                 <p className="os-modal-sub">학급과 인원을 정하면 학생 슬롯이 생기고, 각 학생의 1회용 가입 코드가 발급돼요.</p>
                 <label className="os-lbl">학급</label>
-                <select className="os-select" value={addClass} onChange={(e) => setAddClass(e.target.value)}>
-                  {CLASSES.map((c) => <option key={c}>{c}</option>)}
-                </select>
+                {classOptions.length === 0 ? (
+                  <p className="os-names-hint" style={{ color: '#E23D3D' }}>
+                    <i className="ph-fill ph-warning-circle" /> 아직 만든 학급이 없어요. 먼저 <b>학급 현황</b>에서 학급을 만든 뒤 학생을 추가해 주세요.
+                  </p>
+                ) : (
+                  <select className="os-select" value={addClass} onChange={(e) => setAddClass(e.target.value)}>
+                    {classOptions.map((c) => <option key={c}>{c}</option>)}
+                  </select>
+                )}
                 <label className="os-lbl">추가 인원</label>
                 <div className="os-counter">
                   <button onClick={() => setAddCount((n) => Math.max(1, n - 1))}><i className="ph-bold ph-minus" /></button>
@@ -300,7 +319,7 @@ export default function OrgStudents() {
                 )}
                 <div className="os-modal-actions">
                   <button className="os-btn-ghost" onClick={() => setAddOpen(false)} disabled={creating}>취소</button>
-                  <button className="os-btn-primary" onClick={createStudents} disabled={creating}>
+                  <button className="os-btn-primary" onClick={createStudents} disabled={creating || classOptions.length === 0}>
                     <i className="ph-bold ph-ticket" />{creating ? '발급 중…' : '코드 발급'}
                   </button>
                 </div>

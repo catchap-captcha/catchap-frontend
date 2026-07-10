@@ -30,10 +30,11 @@ const PALETTE = [
   'linear-gradient(135deg,#FFC24B,#FF8A5B)',
 ];
 
+// 역할(담임/교과/보조)·학년(1~6) 개념은 고정 라벨 템플릿이라 그대로 둔다.
+// 학급 배정은 실제 존재하는 학급(GET /orgs/{id}/classes)에서 고른다 — 정적 '1-2반' 등을 쓰면
+// 학급 현황(OrgClasses)에서 만든 학급과 연동이 안 돼 없는 반을 배정할 수 있다. 학생 수도 실데이터를 쓴다.
 const ROLES = ['담임', '교과', '보조'];
 const GRADES = [1, 2, 3, 4, 5, 6];
-const BANS = [1, 2, 3, 4, 5, 6];
-const COUNTS: Record<string, number> = { '1-2반': 22, '2-1반': 24, '1-3반': 25, '3-2반': 27 };
 
 function parseCls(cls: string) {
   const m = /^(\d+)\s*-\s*(\d+)/.exec(cls || '');
@@ -69,6 +70,10 @@ export default function OrgTeachers() {
   const isPrincipal = me?.role === 'org_admin';
 
   const [teachers, setTeachers] = useState<OtTeacher[]>([]);
+  // 실제 학급 목록·학생 수 — 학급 현황(OrgClasses)과 동일 소스(GET /orgs/{id}/classes).
+  // 담당 학급 배정 드롭다운·삭제 차단 학생 수 계산에 쓴다(하드코딩 COUNTS 제거).
+  const [classOptions, setClassOptions] = useState<string[]>([]);
+  const [classCounts, setClassCounts] = useState<Record<string, number>>({});
   const [filter, setFilter] = useState('all');
   const [search, setSearch] = useState('');
   const [modal, setModal] = useState<OtModal | null>(null);
@@ -138,6 +143,28 @@ export default function OrgTeachers() {
   useEffect(() => {
     if (!orgId) return;
     let on = true;
+    // 실제 학급 목록·학생 수 로드 — 담당 학급 드롭다운/삭제 차단 판정에 사용
+    orgApi
+      .classes(orgId)
+      /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+      .then((res: any) => {
+        const list = Array.isArray(res) ? res : res?.classes;
+        if (!on || !Array.isArray(list)) return;
+        const names: string[] = [];
+        const counts: Record<string, number> = {};
+        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+        list.forEach((c: any) => {
+          const name = c.name ?? (c.key ? `${String(c.key).replace('반', '')}반` : '');
+          if (!name) return;
+          names.push(name);
+          counts[name] = c.count ?? c.student_count ?? 0;
+        });
+        setClassOptions(names);
+        setClassCounts(counts);
+      })
+      .catch(() => {
+        /* 실패 시 빈 목록 유지 — 가짜 학급/학생수를 만들지 않는다 */
+      });
     orgApi
       .teachers(orgId)
       /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
@@ -169,7 +196,8 @@ export default function OrgTeachers() {
     };
   }, [orgId]);
 
-  const openAdd = () => setModal({ mode: 'add', name: '', cls: '1-2반', role: '담임', email: '', code: '' });
+  const openAdd = () =>
+    setModal({ mode: 'add', name: '', cls: classOptions[0] ?? '', role: '담임', email: '', code: '' });
 
   const openInvite = () => setInviteModal({ email: '', name: '', role: 'teacher' });
   const sendInvite = () => {
@@ -215,12 +243,12 @@ export default function OrgTeachers() {
             setBlock({
               name: detail.name ?? t.name,
               cls: detail.cls ?? detail.class_name ?? t.cls,
-              count: detail.count ?? detail.student_count ?? COUNTS[t.cls] ?? 0,
+              count: detail.count ?? detail.student_count ?? classCounts[t.cls] ?? 0,
             });
             return;
           }
-          // TODO(api): 실패 시 원본 로컬 로직 유지 (담임 + 학생>0 → 차단)
-          const count = COUNTS[t.cls] || 0;
+          // 실패 시 로컬 판정: 담임 + 실제 학생 수>0 → 차단
+          const count = classCounts[t.cls] || 0;
           if (t.role === '담임' && count > 0) {
             setBlock({ name: t.name, cls: t.cls, count });
             return;
@@ -229,7 +257,7 @@ export default function OrgTeachers() {
         });
       return;
     }
-    const count = COUNTS[t.cls] || 0;
+    const count = classCounts[t.cls] || 0;
     if (t.role === '담임' && count > 0) {
       setBlock({ name: t.name, cls: t.cls, count });
       return;
@@ -250,6 +278,11 @@ export default function OrgTeachers() {
     if (m.mode === 'add') {
       const code = (m.code || '').trim();
       if (!code) return;
+      // 실제 학급이 없으면 배정할 수 없음 — 학급을 먼저 만들도록 안내(없는 반 배정 금지)
+      if (!m.cls) {
+        flashToast('먼저 학급 현황에서 학급을 만든 뒤 배정해 주세요.');
+        return;
+      }
       apiBody.teacher_code = code;
       const pal = PALETTE[teachers.length % PALETTE.length];
       const localId = `n${seq}`;
@@ -288,8 +321,6 @@ export default function OrgTeachers() {
   const filtered = teachers
     .filter((t) => filter === 'all' || String(parseCls(t.cls).grade) === filter)
     .filter((t) => !search.trim() || t.name.includes(search.trim()));
-
-  const cur = modal ? parseCls(modal.cls) : { grade: 1, ban: 1 };
 
   return (
     <OrgLayout active="teachers" widget="semester">
@@ -476,36 +507,31 @@ export default function OrgTeachers() {
               />
 
               <label className="ot-label">담당 학급</label>
-              <div className="ot-selectRow">
+              {classOptions.length === 0 ? (
+                <div className="ot-blockInfo">
+                  <i className="ph-fill ph-info" />
+                  <span>
+                    아직 만든 학급이 없어요. 먼저 <b>학급 현황</b>에서 학급을 만든 뒤 선생님을 배정해 주세요.
+                  </span>
+                </div>
+              ) : (
                 <div className="ot-selectWrap">
                   <select
                     className="ot-select"
-                    value={String(cur.grade)}
-                    onChange={(e) =>
-                      setModal((m) => (m ? { ...m, cls: `${e.target.value}-${parseCls(m.cls).ban}반` } : m))
-                    }
+                    value={modal.cls}
+                    onChange={(e) => setModal((m) => (m ? { ...m, cls: e.target.value } : m))}
                   >
-                    {GRADES.map((g) => (
-                      <option key={g} value={String(g)}>{g}학년</option>
+                    {classOptions.map((c) => (
+                      <option key={c} value={c}>{c}</option>
                     ))}
+                    {/* 기존 배정이 현재 학급 목록에 없으면(예: 해체된 반) 그 값도 유지 */}
+                    {modal.cls && !classOptions.includes(modal.cls) && (
+                      <option value={modal.cls}>{modal.cls}</option>
+                    )}
                   </select>
                   <i className="ph-bold ph-caret-down ot-selectCaret" />
                 </div>
-                <div className="ot-selectWrap">
-                  <select
-                    className="ot-select"
-                    value={String(cur.ban)}
-                    onChange={(e) =>
-                      setModal((m) => (m ? { ...m, cls: `${parseCls(m.cls).grade}-${e.target.value}반` } : m))
-                    }
-                  >
-                    {BANS.map((b) => (
-                      <option key={b} value={String(b)}>{b}반</option>
-                    ))}
-                  </select>
-                  <i className="ph-bold ph-caret-down ot-selectCaret" />
-                </div>
-              </div>
+              )}
 
               <label className="ot-label">역할</label>
               <div className="ot-roleRow">
@@ -551,7 +577,11 @@ export default function OrgTeachers() {
 
               <div className="ot-modalBtns">
                 <button className="ot-cancelBtn" onClick={() => setModal(null)}>취소</button>
-                <button className="ot-saveBtn" onClick={saveModal}>
+                <button
+                  className="ot-saveBtn"
+                  onClick={saveModal}
+                  disabled={modal.mode === 'add' && classOptions.length === 0}
+                >
                   <i className="ph-fill ph-check" />
                   {modal.mode === 'edit' ? '저장하기' : '선생님 추가'}
                 </button>
