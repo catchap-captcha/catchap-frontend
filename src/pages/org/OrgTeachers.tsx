@@ -35,16 +35,6 @@ const GRADES = [1, 2, 3, 4, 5, 6];
 const BANS = [1, 2, 3, 4, 5, 6];
 const COUNTS: Record<string, number> = { '1-2반': 22, '2-1반': 24, '1-3반': 25, '3-2반': 27 };
 
-// TODO(api): orgApi.teachers 실패 시 원본 하드코딩 목록 유지
-const FALLBACK_TEACHERS: OtTeacher[] = [
-  { id: 't1', name: '이수진', cls: '1-2반', role: '담임', email: 'sujin.lee@haetsal.kr', code: 'T-4821', years: 8, status: 'active', avatarBg: 'linear-gradient(135deg,#8B6BFF,#B08AFF)' },
-  { id: 't2', name: '박민호', cls: '2-1반', role: '담임', email: 'minho.park@haetsal.kr', code: 'T-5093', years: 5, status: 'active', avatarBg: 'linear-gradient(135deg,#4AA6FF,#2E7BFF)' },
-  { id: 't3', name: '최유나', cls: '1-3반', role: '담임', email: 'yuna.choi@haetsal.kr', code: 'T-6270', years: 3, status: 'active', avatarBg: 'linear-gradient(135deg,#33C892,#17B0A0)' },
-  { id: 't4', name: '정하늘', cls: '3-2반', role: '담임', email: 'haneul.jung@haetsal.kr', code: 'T-3388', years: 11, status: 'active', avatarBg: 'linear-gradient(135deg,#FF93BE,#FF6DA6)' },
-  { id: 't5', name: '김서연', cls: '1-2반', role: '교과', email: 'seoyeon.kim@haetsal.kr', code: 'T-7145', years: 2, status: 'pending', avatarBg: 'linear-gradient(135deg,#FFC24B,#FF8A5B)' },
-  { id: 't6', name: '오지훈', cls: '2-1반', role: '보조', email: 'jihoon.oh@haetsal.kr', code: 'T-8802', years: 1, status: 'active', avatarBg: 'linear-gradient(135deg,#8B6BFF,#B08AFF)' },
-];
-
 function parseCls(cls: string) {
   const m = /^(\d+)\s*-\s*(\d+)/.exec(cls || '');
   return { grade: m ? +m[1] : 1, ban: m ? +m[2] : 1 };
@@ -78,7 +68,7 @@ export default function OrgTeachers() {
   // 학년부장 임명/해제는 교장(org_admin)만. 학년부장 본인이 이 화면을 봐도 임명 버튼은 숨김.
   const isPrincipal = me?.role === 'org_admin';
 
-  const [teachers, setTeachers] = useState<OtTeacher[]>(FALLBACK_TEACHERS);
+  const [teachers, setTeachers] = useState<OtTeacher[]>([]);
   const [filter, setFilter] = useState('all');
   const [search, setSearch] = useState('');
   const [modal, setModal] = useState<OtModal | null>(null);
@@ -153,7 +143,7 @@ export default function OrgTeachers() {
       /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
       .then((res: any) => {
         const list = Array.isArray(res) ? res : res?.teachers;
-        if (!on || !Array.isArray(list) || list.length === 0) return;
+        if (!on || !Array.isArray(list)) return;
         setTeachers(
           /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
           list.map((t: any, i: number): OtTeacher => ({

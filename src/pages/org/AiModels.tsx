@@ -58,7 +58,8 @@ export default function AiModels() {
   const orgId = me?.organization_id ?? null;
 
   const [models, setModels] = useState<AmModel[]>(FALLBACK_MODELS);
-  const [changelog, setChangelog] = useState<AmLog[]>(FALLBACK_CHANGELOG);
+  // 변경이력은 실제 업데이트 이벤트라 빈 상태로 시작 — API가 주면 채움(가짜 이력 표시 금지)
+  const [changelog, setChangelog] = useState<AmLog[]>([]);
   const [registryVersion, setRegistryVersion] = useState(FALLBACK_REGISTRY);
   const [secondsAgo, setSecondsAgo] = useState(0);
   const [spinning, setSpinning] = useState(false);
@@ -182,6 +183,9 @@ export default function AiModels() {
             <h3 className="am-cardTitle">최근 버전 업데이트</h3>
           </div>
           <div className="am-logList">
+            {changelog.length === 0 && (
+              <div style={{ padding: '20px 4px', color: '#9AA0B0', fontSize: 14 }}>최근 업데이트 내역이 없어요.</div>
+            )}
             {changelog.map((c) => (
               <div className="am-logItem" key={`${c.model}-${c.version}`}>
                 <span className="am-logDot" style={{ background: c.dot }} />

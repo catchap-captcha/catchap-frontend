@@ -39,16 +39,6 @@ const TIERS: { key: Tier; name: string; feats: string[] }[] = [
   { key: 'Enterprise', name: 'Enterprise', feats: ['학생 최대 1,000석', ...COMMON_FEATS] },
 ];
 
-// TODO(api): orgApi.me 실패 시 원본 하드코딩 기관 정보 유지
-const FALLBACK_ORG = {
-  name: '햇살초등학교',
-  type: '초등학교',
-  admin: '김서연',
-  phone: '02-1234-5678',
-  email: 'admin@haetsal.es.kr',
-  addr: '서울특별시 강서구 화곡로 123',
-};
-
 interface OmCard {
   name: string;
   exp: string;
@@ -76,20 +66,6 @@ interface OmAdmin {
 const FALLBACK_CARDS: OmCard[] = [
   { name: '신한 법인카드 ···· 4821', exp: '2027 / 08', primary: true },
   { name: '국민 법인카드 ···· 7702', exp: '2026 / 11', primary: false },
-];
-
-const FALLBACK_INVOICES: OmInvoice[] = [
-  { date: '2026. 6. 22', item: 'Pro 요금제 월 구독', amount: '290,000원', status: '결제완료' },
-  { date: '2026. 5. 22', item: 'Pro 요금제 월 구독', amount: '290,000원', status: '결제완료' },
-  { date: '2026. 4. 22', item: 'Pro 요금제 월 구독', amount: '290,000원', status: '결제완료' },
-  { date: '2026. 3. 22', item: '학생 좌석 추가 (50석)', amount: '150,000원', status: '결제완료' },
-];
-
-// TODO(api): orgApi.admins 실패 시 원본 하드코딩 관리자 목록 유지
-const FALLBACK_ADMINS: OmAdmin[] = [
-  { name: '김서연', email: 'admin@haetsal.es.kr', initial: '김', avatarBg: 'linear-gradient(135deg,#FFC24B,#FF8A5B)', role: '최고 관리자', roleBg: '#FFF0EE', roleColor: '#B5453B' },
-  { name: '박지훈', email: 'jihoon.p@haetsal.es.kr', initial: '박', avatarBg: 'linear-gradient(135deg,#8B6BFF,#B08AFF)', role: '결제 관리자', roleBg: '#EDE9FF', roleColor: '#6A55C0' },
-  { name: '이수민', email: 'sumin.lee@haetsal.es.kr', initial: '이', avatarBg: 'linear-gradient(135deg,#4AA6FF,#2E7BFF)', role: '조회 전용', roleBg: '#E6F0FF', roleColor: '#2168D8' },
 ];
 
 const ADMIN_ROLE_STYLE: Record<string, { bg: string; color: string }> = {
@@ -175,24 +151,31 @@ export default function OrgMyPage() {
   const { toast, flash } = useToast();
 
   const [tab, setTab] = useState<OmTab>('info');
-  const [org, setOrg] = useState(FALLBACK_ORG);
-  const [orgCode, setOrgCode] = useState('HS-EDU-2041');
+  const [org, setOrg] = useState(() => ({
+    name: me?.organization_name ?? '',
+    type: '',
+    admin: me?.name ?? '',
+    phone: '',
+    email: me?.email ?? '',
+    addr: '',
+  }));
+  const [orgCode, setOrgCode] = useState('');
   const [codeRemainDays, setCodeRemainDays] = useState<number | null>(null);
-  const [bizNo, setBizNo] = useState('123-45-67890');
-  const [taxEmail, setTaxEmail] = useState('account@haetsal.es.kr');
+  const [bizNo, setBizNo] = useState('');
+  const [taxEmail, setTaxEmail] = useState('');
   const [cycle, setCycle] = useState<Cycle>('month');
   const [plan, setPlan] = useState<{ tier: Tier; cycle: Cycle }>({ tier: 'Pro', cycle: 'month' });
-  const [students, setStudents] = useState(248);
+  const [students, setStudents] = useState(0);
   const [prices, setPrices] = useState<OmPlanData['prices']>(PRICES);
   const [seats, setSeats] = useState<OmPlanData['seats']>(SEATS);
   const [seatLabels, setSeatLabels] = useState<OmPlanData['seatLabels']>(SEATLABEL);
   const [tiers, setTiers] = useState<OmPlanData['tiers']>(TIERS);
-  const [nextBilling, setNextBilling] = useState('2026년 7월 22일');
-  const [apiUsage, setApiUsage] = useState({ label: 'CAPTCHA API 호출', used: 34000, quota: 50000 });
-  const [teacherSeats, setTeacherSeats] = useState({ used: 18, quota: 25 });
-  const [cards, setCards] = useState<OmCard[]>(FALLBACK_CARDS);
-  const [invoices, setInvoices] = useState<OmInvoice[]>(FALLBACK_INVOICES);
-  const [admins, setAdmins] = useState<OmAdmin[]>(FALLBACK_ADMINS);
+  const [nextBilling, setNextBilling] = useState('');
+  const [apiUsage, setApiUsage] = useState({ label: 'CAPTCHA API 호출', used: 0, quota: 0 });
+  const [teacherSeats, setTeacherSeats] = useState({ used: 0, quota: 0 });
+  const [cards, setCards] = useState<OmCard[]>([]);
+  const [invoices, setInvoices] = useState<OmInvoice[]>([]);
+  const [admins, setAdmins] = useState<OmAdmin[]>([]);
   const [payState, setPayState] = useState<{ tier: Tier; cycle: Cycle } | null>(null);
   const [payBusy, setPayBusy] = useState(false);
   const [warnText, setWarnText] = useState<string | null>(null);
@@ -273,7 +256,7 @@ export default function OrgMyPage() {
       /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
       .then((res: any) => {
         const list = Array.isArray(res) ? res : res?.admins;
-        if (!on || !Array.isArray(list) || list.length === 0) return;
+        if (!on || !Array.isArray(list)) return;
         setAdmins(
           /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
           list.map((a: any, i: number): OmAdmin => {
@@ -410,9 +393,8 @@ export default function OrgMyPage() {
   const payAmount = payState ? prices[payState.tier][payState.cycle] : '';
   const payCycleLabel = payState?.cycle === 'year' ? '연 결제' : '월 결제';
 
-  // TODO(api): /orgs/me code_remain_days 미제공 시에만 원본 하드코딩 만료일 기준 계산 유지
-  const codeRemain =
-    codeRemainDays ?? Math.max(0, Math.ceil((new Date('2026-12-30').getTime() - Date.now()) / 86400000));
+  // /orgs/me 가 code_remain_days 를 주면 그 값, 없으면 0 (가짜 만료일 계산 금지)
+  const codeRemain = codeRemainDays ?? 0;
 
   return (
     <OrgLayout active={null} widget="pro" profileHighlight orgNameOverride={org.name}>
@@ -617,6 +599,11 @@ export default function OrgMyPage() {
                 </button>
               </div>
               <div className="om-cardList">
+                {cards.length === 0 && (
+                  <div style={{ padding: '20px 4px', color: '#9AA0B0', fontSize: 14 }}>
+                    등록된 결제 수단이 없어요. ‘카드 추가’로 등록해 주세요.
+                  </div>
+                )}
                 {cards.map((c) => (
                   <div className="om-payRow" key={c.name}>
                     <span className="om-cardChip">
@@ -682,6 +669,9 @@ export default function OrgMyPage() {
               <span>상태</span>
               <span className="om-invoiceHeadRight">증빙</span>
             </div>
+            {invoices.length === 0 && (
+              <div style={{ padding: '20px 4px', color: '#9AA0B0', fontSize: 14 }}>아직 결제 내역이 없어요.</div>
+            )}
             {invoices.map((v) => (
               <div className="om-invoiceRow" key={`${v.date}-${v.item}`}>
                 <span className="om-invoiceDate">{v.date}</span>
@@ -714,6 +704,9 @@ export default function OrgMyPage() {
               </button>
             </div>
             <div className="om-adminList">
+              {admins.length === 0 && (
+                <div style={{ padding: '20px 4px', color: '#9AA0B0', fontSize: 14 }}>등록된 관리자가 없어요.</div>
+              )}
               {admins.map((a) => (
                 <div className="om-payRow" key={a.email}>
                   <span className="om-adminAvatar" style={{ background: a.avatarBg }}>{a.initial}</span>

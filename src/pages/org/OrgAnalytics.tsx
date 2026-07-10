@@ -49,6 +49,22 @@ const FALLBACK: Record<Period, OaPeriodData> = {
   },
 };
 
+/** 빈 기관(실집계 없음)용 0/빈 분석 데이터 — 축·부제 라벨은 유지하고 수치만 0으로 */
+function zeroPeriodA(p: Period): OaPeriodData {
+  const f = FALLBACK[p];
+  return {
+    ...f,
+    kAcc: '0',
+    kAccDelta: '',
+    kActive: '0',
+    kSolved: '0',
+    kHelp: '0',
+    accPct: f.accPct.map(() => 0),
+  };
+}
+
+const EMPTY_AI = { strength: '', warning: '', recommend: '' };
+
 const SUBJ_LAST: Record<string, number> = { 국어: 94, 영어: 82, 수학: 71, 과학: 90, 사회: 85, 생활: 88 };
 
 const SUBJECTS = [
@@ -255,11 +271,11 @@ export default function OrgAnalytics() {
   const [trendSubject, setTrendSubject] = useState('all');
   const [remote, setRemote] = useState<{ key: string; data: Partial<OaPeriodData> } | null>(null);
   const [demo, setDemo] = useState(false); // 학습 실집계 없어 그래프·표가 데모값이면 true
-  const [subjects, setSubjects] = useState<OaSubject[]>(SUBJECTS);
-  const [grades, setGrades] = useState<OaGrade[]>(GRADES);
-  const [classes, setClasses] = useState<OaClassRow[]>(CLASSES);
-  const [reasons, setReasons] = useState<OaReason[]>(REASONS);
-  const [aiSummary, setAiSummary] = useState<OaAiSummary>(AI_SUMMARY);
+  const [subjects, setSubjects] = useState<OaSubject[]>([]);
+  const [grades, setGrades] = useState<OaGrade[]>([]);
+  const [classes, setClasses] = useState<OaClassRow[]>([]);
+  const [reasons, setReasons] = useState<OaReason[]>([]);
+  const [aiSummary, setAiSummary] = useState<OaAiSummary>(EMPTY_AI);
   const [subjTarget, setSubjTarget] = useState(SUBJ_TARGET);
   const [gradeTarget, setGradeTarget] = useState(GRADE_TARGET);
 
@@ -274,17 +290,24 @@ export default function OrgAnalytics() {
       .then((res: any) => {
         if (!on || !res || typeof res !== 'object') return;
         const blob = res[period] ?? res;
-        setDemo(!!blob.demo);
+        // demo=true → 실집계 없음. 데모 수치 대신 0/빈으로 렌더(디자인 데모 금지).
+        if (blob.demo) {
+          setDemo(true);
+          setSubjects([]);
+          setGrades([]);
+          setClasses([]);
+          setReasons([]);
+          setAiSummary(EMPTY_AI);
+          setRemote(null);
+          return;
+        }
+        setDemo(false);
         const mapped = mapAnalytics(blob);
         if (mapped.kAcc || Array.isArray(mapped.accPct)) setRemote({ key: `${period}|${trendSubject}`, data: mapped });
-        const subj = mapSubjects(blob.subjects);
-        if (subj) setSubjects(subj);
-        const grd = mapGradeRows(blob.grades);
-        if (grd) setGrades(grd);
-        const cls = mapClassRows(blob.classes);
-        if (cls) setClasses(cls);
-        const rsn = mapReasons(blob.reasons);
-        if (rsn) setReasons(rsn);
+        setSubjects(mapSubjects(blob.subjects) ?? []);
+        setGrades(mapGradeRows(blob.grades) ?? []);
+        setClasses(mapClassRows(blob.classes) ?? []);
+        setReasons(mapReasons(blob.reasons) ?? []);
         const ai = mapAiSummary(blob.ai_summary);
         if (ai) setAiSummary(ai);
         if (typeof blob.subjTarget === 'string' && blob.subjTarget) setSubjTarget(blob.subjTarget);
@@ -298,14 +321,15 @@ export default function OrgAnalytics() {
     };
   }, [orgId, period, trendSubject]);
 
-  const d: OaPeriodData = {
-    ...FALLBACK[period],
-    ...(remote && remote.key === remoteKey ? remote.data : {}),
-  };
+  // 실집계가 확인된 경우에만 FALLBACK 라벨 위에 실데이터를 덮어씀. 그 전(로딩)·demo면 0/빈 상태.
+  const hasReal = !demo && !!remote && remote.key === remoteKey;
+  const d: OaPeriodData = hasReal
+    ? { ...FALLBACK[period], ...(remote as { data: Partial<OaPeriodData> }).data }
+    : zeroPeriodA(period);
 
-  // 과목 선택 시 시리즈 이동 (원본 로직) — API가 accPct를 안 준 경우
+  // 과목 선택 시 시리즈 이동 (원본 로직) — 실데이터일 때만, API가 accPct를 안 준 경우에 합성
   let accSeries = d.accPct;
-  if (trendSubject !== 'all' && (!remote || remote.key !== remoteKey || !Array.isArray(remote.data.accPct))) {
+  if (hasReal && trendSubject !== 'all' && !Array.isArray(remote?.data.accPct)) {
     const shift = SUBJ_LAST[trendSubject] - d.accPct[d.accPct.length - 1];
     accSeries = d.accPct.map((v) => Math.max(45, Math.min(99, v + shift)));
   }
@@ -324,7 +348,7 @@ export default function OrgAnalytics() {
             <span>학습 분석</span>
           </div>
           <h1 className="oa-title">학습 분석</h1>
-          <p className="oa-subtitle">{me?.organization_name || '햇살초등학교'} · 과목별·학급별 학습 성취와 오답 패턴을 살펴봐요.</p>
+          <p className="oa-subtitle">{me?.organization_name ? `${me.organization_name} · ` : ''}과목별·학급별 학습 성취와 오답 패턴을 살펴봐요.</p>
         </div>
         <div className="oa-headerRight">
           <div className="oa-periodBox">
@@ -422,6 +446,11 @@ export default function OrgAnalytics() {
             </span>
           </div>
           <div className="oa-barList">
+            {subjects.length === 0 && (
+              <div style={{ padding: '20px 4px', textAlign: 'center', color: '#9AA0B0', fontSize: 14 }}>
+                아직 과목별 학습 데이터가 없어요.
+              </div>
+            )}
             {subjects.map((s) => {
               const c = Math.round((s.total * s.pct) / 100);
               const up = s.delta >= 0;
@@ -461,6 +490,11 @@ export default function OrgAnalytics() {
             </span>
           </div>
           <div className="oa-barList oa-barListGrade">
+            {grades.length === 0 && (
+              <div style={{ padding: '20px 4px', textAlign: 'center', color: '#9AA0B0', fontSize: 14 }}>
+                아직 학년별 학습 데이터가 없어요.
+              </div>
+            )}
             {grades.map((g) => {
               const up = g.delta >= 0;
               return (
@@ -494,6 +528,11 @@ export default function OrgAnalytics() {
           <h3 className="oa-reasonTitle">오답 원인 분포 (추정)</h3>
           <p className="oa-reasonSub">estimated_reason 기반 · 조작 미숙은 별도 집계</p>
           <div className="oa-reasonList">
+            {reasons.length === 0 && (
+              <div style={{ padding: '20px 4px', textAlign: 'center', color: '#9AA0B0', fontSize: 14 }}>
+                아직 오답 데이터가 없어요.
+              </div>
+            )}
             {reasons.map((r) => (
               <div key={r.label}>
                 <div className="oa-reasonHead">
@@ -621,6 +660,11 @@ export default function OrgAnalytics() {
             ))}
           </tbody>
         </table>
+        {classes.length === 0 && (
+          <div style={{ padding: '28px 16px', textAlign: 'center', color: '#9AA0B0', fontSize: 14 }}>
+            아직 학급별 학습 데이터가 없어요.
+          </div>
+        )}
       </div>
 
       {/* AI INSIGHT */}
@@ -634,15 +678,15 @@ export default function OrgAnalytics() {
         <div className="oa-aiGrid">
           <div className="oa-aiCard">
             <div className="oa-aiCardTitle">📈 강점</div>
-            <p className="oa-aiCardText">{aiSummary.strength}</p>
+            <p className="oa-aiCardText">{aiSummary.strength || '아직 분석할 학습 데이터가 없어요.'}</p>
           </div>
           <div className="oa-aiCard">
             <div className="oa-aiCardTitle">⚠️ 주의</div>
-            <p className="oa-aiCardText">{aiSummary.warning}</p>
+            <p className="oa-aiCardText">{aiSummary.warning || '아직 분석할 학습 데이터가 없어요.'}</p>
           </div>
           <div className="oa-aiCard">
             <div className="oa-aiCardTitle">💡 추천</div>
-            <p className="oa-aiCardText">{aiSummary.recommend}</p>
+            <p className="oa-aiCardText">{aiSummary.recommend || '아직 분석할 학습 데이터가 없어요.'}</p>
           </div>
         </div>
       </div>

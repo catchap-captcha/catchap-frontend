@@ -80,15 +80,12 @@ const DOCS: Record<SyTab, SyDoc> = {
 
 const TAB_KEYS = Object.keys(DOCS) as SyTab[];
 
-// TODO(api): orgApi.securityStats 실패 시 원본 하드코딩 완료율 유지
-const FALLBACK_CONSENT_RATE = '98.6';
-
 export default function SecurityPolicy() {
   const { me } = useAuth();
   const orgId = me?.organization_id ?? null;
   const [tab, setTab] = useState<SyTab>('privacy');
-  // 단위 %는 별도 span으로 렌더 — 숫자 부분만 상태로 관리 (API는 "98.6%" 문자열)
-  const [consentRate, setConsentRate] = useState(FALLBACK_CONSENT_RATE);
+  // 단위 %는 별도 span으로 렌더 — 숫자 부분만 상태로 관리 (API는 "98.6%" 문자열). 실집계 전엔 0.
+  const [consentRate, setConsentRate] = useState('0');
   const doc = DOCS[tab];
 
   useEffect(() => {

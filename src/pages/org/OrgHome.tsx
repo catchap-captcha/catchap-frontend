@@ -107,6 +107,29 @@ const FALLBACK: Record<Period, OhPeriodData> = {
   },
 };
 
+/** 빈 기관(실집계 없음)용 0/빈 대시보드 — 라벨(축·부제)은 유지하고 수치만 0으로 */
+function zeroPeriod(p: Period): OhPeriodData {
+  const f = FALLBACK[p];
+  return {
+    ...f,
+    subtitle: '',
+    kStudents: '0',
+    kTeachers: '0',
+    kTeachersSub: '교사 / 0 학급',
+    kApi: '0',
+    kPass: '0',
+    kAvg: '0',
+    kFail: '0',
+    block: f.block.map(() => 0),
+    pass: f.pass.map(() => 0),
+    dLow: 0,
+    dReview: 0,
+    dElevated: 0,
+    r: f.r.map(() => 0),
+    apiCallValue: '0',
+  };
+}
+
 const GRADES = [
   { name: '초등학교 1학년', count: '42명', acc: '86%', wrong: '22%', time: '13.2초', c: '#FFB43C', bg: '#FFF3D6' },
   { name: '초등학교 2학년', count: '40명', acc: '89%', wrong: '19%', time: '12.4초', c: '#FF6DA6', bg: '#FFE9F1' },
@@ -134,13 +157,13 @@ const CLASS_ROWS = [
   { name: '2-3반', teacher: '강도현', count: 23, acc: '81%', accColor: '#F0A400', fail: '13%', risk: '주의' },
 ];
 
-// TODO(api): orgApi.siteStatus 실패 시 원본 하드코딩 값 유지 (site_key 마스킹 표시 그대로)
+// 빈 기관 기본값 — 사이트 키/도메인/지표는 실제 연동 전까지 빈 값(가짜 도메인·키 노출 금지)
 const FALLBACK_SITE = {
   message: '모든 서비스 정상 작동 중',
-  siteKey: 'ck_live_8f2•••a1',
-  domain: 'school.hatsal.kr',
-  errorRate: '0.3%',
-  avgResponse: '142ms',
+  siteKey: '',
+  domain: '',
+  errorRate: '',
+  avgResponse: '',
   activeKeys: 0,
   subjectUsage: {} as Record<string, number>,
 };
@@ -290,9 +313,9 @@ export default function OrgHome() {
   const [barPage, setBarPage] = useState(0);
   const [remote, setRemote] = useState<Partial<Record<Period, Partial<OhPeriodData>>>>({});
   const [demo, setDemo] = useState(false); // 학습 실집계 없어 정답률·학급표가 데모값이면 true
-  const [grades, setGrades] = useState<OhGrade[]>(GRADES);
-  const [bars, setBars] = useState<OhBar[]>(BARS);
-  const [classRows, setClassRows] = useState<OhClassRow[]>(CLASS_ROWS);
+  const [grades, setGrades] = useState<OhGrade[]>([]);
+  const [bars, setBars] = useState<OhBar[]>([]);
+  const [classRows, setClassRows] = useState<OhClassRow[]>([]);
   const [site, setSite] = useState(FALLBACK_SITE);
 
   useEffect(() => {
@@ -304,15 +327,24 @@ export default function OrgHome() {
       .then((res: any) => {
         if (!on || !res || typeof res !== 'object') return;
         const blob = res[period] ?? res;
-        setDemo(!!blob.demo);
+        // demo=true → 실집계 없음. 데모 수치 대신 0/빈으로 렌더(디자인 데모 금지).
+        if (blob.demo) {
+          setDemo(true);
+          setGrades([]);
+          setBars([]);
+          setClassRows([]);
+          setRemote((r) => ({ ...r, [period]: undefined }));
+          return;
+        }
+        setDemo(false);
         const mapped = mapDashboard(blob);
         if (mapped.kStudents) setRemote((r) => ({ ...r, [period]: mapped }));
         const g = mapDashGrades(blob);
-        if (g) setGrades(g);
+        setGrades(g ?? []);
         const b = mapDashBars(blob);
-        if (b) setBars(b);
+        setBars(b ?? []);
         const cls = mapDashClasses(blob);
-        if (cls) setClassRows(cls);
+        setClassRows(cls ?? []);
       })
       .catch(() => {
         // TODO(api): 실패 시 FALLBACK 유지
@@ -351,7 +383,14 @@ export default function OrgHome() {
     };
   }, [orgId]);
 
-  const d: OhPeriodData = { ...FALLBACK[period], ...(remote[period] ?? {}) };
+  // 실집계가 확인된 경우에만 FALLBACK 라벨 위에 실데이터를 덮어씀. 그 전(로딩)·demo면 0/빈 상태.
+  const hasReal = !demo && !!remote[period];
+  const d: OhPeriodData = hasReal
+    ? { ...FALLBACK[period], ...(remote[period] as Partial<OhPeriodData>) }
+    : zeroPeriod(period);
+  const subtitle = me?.organization_name
+    ? `${me.organization_name}${hasReal ? ' · 실시간 집계' : ''}`
+    : '';
 
   const bot = buildBot(d.block, d.pass);
   const g1 = (d.dLow / 100).toFixed(4);
@@ -377,7 +416,7 @@ export default function OrgHome() {
       <div className="oh-header">
         <div>
           <h1 className="oh-title">기관 요약 대시보드</h1>
-          <p className="oh-subtitle">{d.subtitle}</p>
+          <p className="oh-subtitle">{subtitle}</p>
         </div>
         <div className="oh-headerRight">
           <div className="oh-periodBox">
@@ -590,6 +629,11 @@ export default function OrgHome() {
         </button>
       </div>
       <div className="oh-gradeGrid">
+        {gradeCards.length === 0 && (
+          <div style={{ gridColumn: '1 / -1', padding: '28px 16px', textAlign: 'center', color: '#9AA0B0', fontSize: 14 }}>
+            아직 학년별 학습 데이터가 없어요. 학생이 문제를 풀면 채워져요.
+          </div>
+        )}
         {gradeCards.map((g) => (
           <div className="oh-gradeCard" key={g.name} style={{ '--oh-grade-c': g.c } as CSSProperties}>
             <div className="oh-gradeHead">
@@ -645,6 +689,11 @@ export default function OrgHome() {
               ))}
             </tbody>
           </table>
+          {classRows.length === 0 && (
+            <div style={{ padding: '28px 16px', textAlign: 'center', color: '#9AA0B0', fontSize: 14 }}>
+              아직 학급별 데이터가 없어요.
+            </div>
+          )}
         </div>
         <div className="oh-card">
           <h3 className="oh-apiTitle">API · 사이트 상태</h3>

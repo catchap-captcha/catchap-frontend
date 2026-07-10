@@ -32,31 +32,6 @@ interface OcStudent {
   avatarBg: string;
 }
 
-// TODO(api): orgApi.classes 실패 시 원본 하드코딩 목록 유지
-const FALLBACK_CLASSES: OcClass[] = [
-  { key: '1-2', name: '1-2반', teacher: '이수진', count: 22, acc: 90, risk: '낮음', icon: 'ph-fill ph-number-circle-one' },
-  { key: '1-3', name: '1-3반', teacher: '최유나', count: 25, acc: 84, risk: '주의', icon: 'ph-fill ph-number-circle-one' },
-  { key: '2-1', name: '2-1반', teacher: '박민호', count: 24, acc: 92, risk: '낮음', icon: 'ph-fill ph-number-circle-two' },
-  { key: '2-2', name: '2-2반', teacher: '한지원', count: 23, acc: 88, risk: '낮음', icon: 'ph-fill ph-number-circle-two' },
-  { key: '3-1', name: '3-1반', teacher: '오세훈', count: 26, acc: 79, risk: '주의', icon: 'ph-fill ph-number-circle-three' },
-  { key: '3-2', name: '3-2반', teacher: '정하늘', count: 27, acc: 95, risk: '낮음', icon: 'ph-fill ph-number-circle-three' },
-  { key: '4-1', name: '4-1반', teacher: '김도현', count: 28, acc: 91, risk: '낮음', icon: 'ph-fill ph-number-circle-four' },
-  { key: '5-2', name: '5-2반', teacher: '서다은', count: 29, acc: 86, risk: '낮음', icon: 'ph-fill ph-number-circle-five' },
-  { key: '6-1', name: '6-1반', teacher: '장민석', count: 30, acc: 93, risk: '낮음', icon: 'ph-fill ph-number-circle-six' },
-];
-
-// TODO(api): orgApi.roster 실패 시 원본 하드코딩 명단 유지
-const FALLBACK_ROSTER: OcStudent[] = [
-  { name: '김하은', initial: '하', age: 7, cls: '1-2반', code: 'CAT-4823', link: true, acc: 96, risk: '낮음', avatarBg: 'linear-gradient(135deg,#FFC24B,#FF8A5B)' },
-  { name: '박도윤', initial: '박', age: 7, cls: '1-2반', code: 'CAT-5119', link: true, acc: 62, risk: '주의', avatarBg: 'linear-gradient(135deg,#FFC24B,#FF8A5B)' },
-  { name: '최서아', initial: '최', age: 6, cls: '1-3반', code: 'CAT-6042', link: false, acc: 81, risk: '주의', avatarBg: 'linear-gradient(135deg,#8B6BFF,#B08AFF)' },
-  { name: '김하람', initial: '람', age: 7, cls: '1-2반', code: 'CAT-6188', link: true, acc: 78, risk: '낮음', avatarBg: 'linear-gradient(135deg,#4AA6FF,#2E7BFF)' },
-  { name: '이준서', initial: '준', age: 8, cls: '3-2반', code: 'CAT-6205', link: true, acc: 93, risk: '낮음', avatarBg: 'linear-gradient(135deg,#33C892,#17B0A0)' },
-  { name: '정유나', initial: '유', age: 7, cls: '2-1반', code: 'CAT-6317', link: false, acc: 88, risk: '낮음', avatarBg: 'linear-gradient(135deg,#FF93BE,#FF6DA6)' },
-  { name: '강시우', initial: '시', age: 6, cls: '1-3반', code: 'CAT-6402', link: true, acc: 74, risk: '낮음', avatarBg: 'linear-gradient(135deg,#4AA6FF,#2E7BFF)' },
-  { name: '윤아린', initial: '아', age: 7, cls: '2-1반', code: 'CAT-6588', link: true, acc: 91, risk: '낮음', avatarBg: 'linear-gradient(135deg,#8B6BFF,#B08AFF)' },
-];
-
 const AVATAR_PALETTE = [
   'linear-gradient(135deg,#FFC24B,#FF8A5B)',
   'linear-gradient(135deg,#8B6BFF,#B08AFF)',
@@ -74,7 +49,6 @@ const CARD_PALETTE = [
   { iconBg: '#E1F5EC', iconColor: '#17B08C' },
 ];
 
-const ORG_CODE = 'HS-EDU-2041';
 const PAGE = 4;
 
 function accColor(a: number) {
@@ -95,13 +69,12 @@ export default function OrgClasses() {
   const { me } = useAuth();
   const orgId = me?.organization_id ?? null;
 
-  const [classList, setClassList] = useState<OcClass[]>(FALLBACK_CLASSES);
-  const [rosterList, setRosterList] = useState<OcStudent[]>(FALLBACK_ROSTER);
-  const [rosterTotal, setRosterTotal] = useState(248);
-  // TODO(api): roster(class_count/teacher_count) 로딩 전·실패 시 원본 하드코딩 수치 유지
-  const [classCount, setClassCount] = useState(12);
-  const [teacherCount, setTeacherCount] = useState(16);
-  const [orgCode, setOrgCode] = useState(ORG_CODE);
+  const [classList, setClassList] = useState<OcClass[]>([]);
+  const [rosterList, setRosterList] = useState<OcStudent[]>([]);
+  const [rosterTotal, setRosterTotal] = useState(0);
+  const [classCount, setClassCount] = useState(0);
+  const [teacherCount, setTeacherCount] = useState(0);
+  const [orgCode, setOrgCode] = useState('');
   const [cls, setCls] = useState('all');
   const [copied, setCopied] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
@@ -211,7 +184,7 @@ export default function OrgClasses() {
       /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
       .then((res: any) => {
         const list = Array.isArray(res) ? res : res?.classes;
-        if (!on || !Array.isArray(list) || list.length === 0) return;
+        if (!on || !Array.isArray(list)) return;
         setClassList(
           /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
           list.map((c: any): OcClass => {
@@ -245,7 +218,7 @@ export default function OrgClasses() {
         if (typeof res?.class_count === 'number') setClassCount(res.class_count);
         if (typeof res?.teacher_count === 'number') setTeacherCount(res.teacher_count);
         if (typeof res?.org_join_code === 'string' && res.org_join_code) setOrgCode(res.org_join_code);
-        if (!Array.isArray(list) || list.length === 0) return;
+        if (!Array.isArray(list)) return;
         setRosterList(
           /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
           list.map((r: any, i: number): OcStudent => ({
@@ -355,7 +328,7 @@ export default function OrgClasses() {
         <div>
           <h1 className="oc-title">학급 · 학생 관리</h1>
           <p className="oc-subtitle">
-            {me?.organization_name || '햇살초등학교'} · {classCount}개 학급 · {rosterTotal}명 · 교사 {teacherCount}명
+            {me?.organization_name || ''} · {classCount}개 학급 · {rosterTotal}명 · 교사 {teacherCount}명
           </p>
         </div>
         <div className="oc-headerRight">
@@ -483,6 +456,11 @@ export default function OrgClasses() {
             </button>
           );
         })}
+        {classesPage.length === 0 && (
+          <div style={{ gridColumn: '1 / -1', padding: '28px 16px', textAlign: 'center', color: '#9AA0B0', fontSize: 14 }}>
+            아직 학급이 없어요. ‘새 반 만들기’로 학급을 추가해 보세요.
+          </div>
+        )}
       </div>
 
       {/* ROSTER */}
@@ -648,6 +626,11 @@ export default function OrgClasses() {
             })}
           </tbody>
         </table>
+        {roster.length === 0 && (
+          <div style={{ padding: '28px 16px', textAlign: 'center', color: '#9AA0B0', fontSize: 14 }}>
+            아직 등록된 학생이 없어요.
+          </div>
+        )}
         <div className="oc-rosterFoot">
           <span className="oc-rosterFootNote">
             {activeClass ? activeClass.count : rosterTotal}명 중 {roster.length}명 표시 · 개인정보는 가명 처리되어 표시됩니다

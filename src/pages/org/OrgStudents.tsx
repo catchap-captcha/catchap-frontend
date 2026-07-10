@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import OrgLayout from '../../layouts/OrgLayout';
 import { useAuth } from '../../hooks/useAuth';
 import { orgApi } from '../../api/org';
@@ -20,19 +20,12 @@ const CH = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 const seg = (n: number) => Array.from({ length: n }, () => CH[Math.floor(Math.random() * CH.length)]).join('');
 const genInvite = () => `LINK-${seg(4)}-${seg(4)}`;
 
-const FALLBACK: StudentRow[] = [
-  { id: 's1', nickname: '하은', login_id: 'haetsal-1-012', className: '1학년 2반', status: 'active', join_code: null, invite_code: 'LINK-7QX3-9K2M' },
-  { id: 's2', nickname: '도윤', login_id: 'haetsal-1-013', className: '1학년 2반', status: 'active', join_code: null, invite_code: 'LINK-3F8P-2W9Z' },
-  { id: 's3', nickname: '(가입 대기)', login_id: 'haetsal-1-014', className: '1학년 2반', status: 'pending', join_code: 'JOIN-8F2K-9QX3', invite_code: null },
-  { id: 's4', nickname: '(가입 대기)', login_id: 'haetsal-2-021', className: '2학년 1반', status: 'pending', join_code: 'JOIN-4B7M-1D6R', invite_code: null },
-];
-
 // 앱 전체(학급·선생님 관리, 백엔드)와 동일한 "N-M반" 표기로 통일 — 라벨 불일치로 중복 학급 생성 방지
 const CLASSES = ['1-2반', '2-1반', '3-3반'];
 
 export default function OrgStudents() {
   const { me } = useAuth();
-  const [rows, setRows] = useState<StudentRow[]>(FALLBACK);
+  const [rows, setRows] = useState<StudentRow[]>([]);
   const [filter, setFilter] = useState<string>('all');
   const [toast, setToast] = useState('');
   const [addOpen, setAddOpen] = useState(false);
@@ -53,6 +46,40 @@ export default function OrgStudents() {
     navigator.clipboard?.writeText(v).catch(() => {});
     flash(`${label} 복사됨: ${v}`);
   };
+
+  // 실제 학생 명단 로드 — GET /orgs/{id}/roster. 빈 기관이면 빈 배열이 그대로 반영돼 데모가 남지 않는다.
+  useEffect(() => {
+    const orgId = me?.organization_id;
+    if (!orgId) return;
+    let on = true;
+    orgApi
+      .roster(orgId)
+      .then((res: any) => {
+        // 응답 형태: { total, shown, students: [...] } 또는 배열
+        const arr = Array.isArray(res) ? res : res?.students ?? res?.roster;
+        if (!on || !Array.isArray(arr)) return;
+        setRows(
+          arr.map((r: any): StudentRow => {
+            const status: 'active' | 'pending' = r.status === 'pending' ? 'pending' : 'active';
+            return {
+              id: String(r.id ?? ''),
+              nickname: r.nickname ?? r.name ?? (status === 'pending' ? '(가입 대기)' : ''),
+              login_id: r.login_id ?? '',
+              className: r.cls ?? r.class_name ?? '',
+              status,
+              join_code: status === 'pending' ? (r.code ?? r.join_code ?? null) : null,
+              invite_code: r.invite_code ?? null,
+            };
+          }),
+        );
+      })
+      .catch(() => {
+        /* 실패 시 빈 목록 유지 — 가짜 학생을 만들지 않는다 */
+      });
+    return () => {
+      on = false;
+    };
+  }, [me?.organization_id]);
 
   const list = useMemo(
     () => (filter === 'all' ? rows : rows.filter((r) => r.className === filter)),
@@ -229,6 +256,11 @@ export default function OrgStudents() {
               </span>
             </div>
           ))}
+          {list.length === 0 && (
+            <div style={{ padding: '28px 16px', textAlign: 'center', color: '#9AA0B0', fontSize: 14 }}>
+              아직 등록된 학생이 없어요. ‘학생 추가’로 계정을 만들고 가입 코드를 배부해 주세요.
+            </div>
+          )}
         </div>
       </div>
 
