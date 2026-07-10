@@ -4,6 +4,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { PATHS } from '../../routes/paths';
 import mascot from '../../assets/characters/catchap-logo.png';
 import './OpsLogin.css';
+import PasswordInput from '../../components/common/PasswordInput';
 
 /**
  * 운영자(ops) 전용 로그인.
@@ -78,8 +79,7 @@ export default function OpsLogin() {
         <label className="opl-label">비밀번호</label>
         <div className="opl-field">
           <i className="ph-fill ph-lock-key" />
-          <input
-            type="password"
+          <PasswordInput
             autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}

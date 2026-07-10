@@ -4,6 +4,7 @@ import { PATHS } from '../../routes/paths';
 import { authApi } from '../../api/auth';
 import mascot from '../../assets/characters/catchap-logo.png';
 import './PasswordResetPage.css';
+import PasswordInput from '../../components/common/PasswordInput';
 
 type Step = 'email' | 'code' | 'reset' | 'done';
 
@@ -300,8 +301,7 @@ export default function PasswordResetPage() {
               <label className="pr-label">새 비밀번호</label>
               <div className="pr-field pr-field-pw1">
                 <i className="ph-fill ph-lock-key pr-input-icon"></i>
-                <input
-                  type="password"
+                <PasswordInput
                   placeholder="8자 이상 입력해 주세요"
                   className={`pr-input${pw1Err ? ' pr-input-error' : ''}`}
                   value={pw1}
@@ -315,8 +315,7 @@ export default function PasswordResetPage() {
               <label className="pr-label">새 비밀번호 확인</label>
               <div className="pr-field pr-field-pw2">
                 <i className="ph-fill ph-lock-key-open pr-input-icon"></i>
-                <input
-                  type="password"
+                <PasswordInput
                   placeholder="비밀번호를 다시 입력해 주세요"
                   className={`pr-input${pw2Err ? ' pr-input-error' : ''}`}
                   value={pw2}

@@ -10,6 +10,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { PATHS } from '../../routes/paths';
 import { ROLE_HOME } from '../../routes/roleRoutes';
 import './LoginPage.css';
+import PasswordInput from '../../components/common/PasswordInput';
 
 type RoleTab = 'student' | 'parent' | 'org';
 type OrgStep = 'form' | 'submitted' | 'plans' | 'contract' | 'done';
@@ -429,6 +430,25 @@ export default function LoginPage() {
       idEl?.focus();
       return;
     }
+    // 비밀번호 길이·일치 검증 (개인 가입) — 서버 422 전에 어떤 칸이 왜 틀렸는지 명확히 안내
+    if (kind === 'personal') {
+      const min = role === 'student' ? 4 : 8;
+      const pwEl = root.querySelector<HTMLInputElement>('[data-req="비밀번호"]');
+      const pw2El = root.querySelector<HTMLInputElement>('[data-req="비밀번호 확인"]');
+      const pwv = pwEl?.value ?? '';
+      if (pwEl && pwv.length < min) {
+        markField(pwEl, true);
+        setFormError(`비밀번호는 ${min}자 이상이어야 해요.`);
+        pwEl.focus();
+        return;
+      }
+      if (pw2El && pwv !== (pw2El.value ?? '')) {
+        markField(pw2El, true);
+        setFormError('비밀번호가 서로 달라요. 다시 확인해 주세요.');
+        pw2El.focus();
+        return;
+      }
+    }
     setFormError('');
     if (kind === 'org') submitOrgRegistration();
     else submitPersonalRegistration();
@@ -810,8 +830,7 @@ export default function LoginPage() {
             <label className="lg-label">비밀번호</label>
             <div className="lg-field lg-mb12">
               <i className="ph-fill ph-lock-key lg-field-icon" />
-              <input
-                type="password"
+              <PasswordInput
                 ref={loginPwRef}
                 placeholder="비밀번호를 입력해 주세요"
                 onInput={() => setLoginBad(false)}
@@ -1164,8 +1183,7 @@ export default function LoginPage() {
                 <label className="lg-label">비밀번호</label>
                 <div className="lg-field lg-mb12">
                   <i className="ph-fill ph-lock-key lg-field-icon" />
-                  <input
-                    type="password"
+                  <PasswordInput
                     data-req="비밀번호"
                     placeholder="8자 이상 입력해 주세요"
                     className="lg-input"
@@ -1175,8 +1193,7 @@ export default function LoginPage() {
                 <label className="lg-label">비밀번호 확인</label>
                 <div className="lg-field lg-mb16">
                   <i className="ph-fill ph-lock-key-open lg-field-icon" />
-                  <input
-                    type="password"
+                  <PasswordInput
                     data-req="비밀번호 확인"
                     placeholder="비밀번호를 다시 입력해 주세요"
                     className="lg-input"

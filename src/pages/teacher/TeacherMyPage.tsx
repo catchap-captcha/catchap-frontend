@@ -8,6 +8,7 @@ import { settingsApi } from '../../api/settings';
 import { useToast } from '../../hooks/useToast';
 import TeacherLayout from '../../layouts/TeacherLayout';
 import './TeacherMyPage.css';
+import PasswordInput from '../../components/common/PasswordInput';
 
 /**
  * handoff `CatChap 선생님 마이페이지.dc.html` 포팅.
@@ -552,29 +553,26 @@ export default function TeacherMyPage() {
                 <div className="tp-pw-col">
                   <div>
                     <label className="tp-flabel">현재 비밀번호</label>
-                    <input
+                    <PasswordInput
                       value={curPw}
                       onChange={(e) => setCurPw(e.target.value)}
-                      type="password"
                       className="tp-input"
                     />
                   </div>
                   <div>
                     <label className="tp-flabel">새 비밀번호</label>
-                    <input
+                    <PasswordInput
                       value={newPw}
                       onChange={(e) => setNewPw(e.target.value)}
-                      type="password"
                       placeholder="8자 이상, 숫자와 문자 포함"
                       className="tp-input"
                     />
                   </div>
                   <div>
                     <label className="tp-flabel">새 비밀번호 확인</label>
-                    <input
+                    <PasswordInput
                       value={confirmPw}
                       onChange={(e) => setConfirmPw(e.target.value)}
-                      type="password"
                       className="tp-input"
                     />
                   </div>

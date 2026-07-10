@@ -6,6 +6,7 @@ import { setTokens } from '../../api/client';
 import { useAuth } from '../../hooks/useAuth';
 import mascot from '../../assets/characters/catchap-logo.png';
 import './ActivatePage.css';
+import PasswordInput from '../../components/common/PasswordInput';
 
 /**
  * 학생 코드 활성화 가입 — 학교가 준 가입 코드로 별명·비밀번호만 정하면 끝.
@@ -165,9 +166,9 @@ export default function ActivatePage() {
             <label className="ac-lbl">별명</label>
             <input className="ac-input" value={nickname} onChange={(e) => setNickname(e.target.value)} placeholder="예: 용감한 냥이" maxLength={20} />
             <label className="ac-lbl">비밀번호</label>
-            <input className="ac-input" type="password" value={pw} onChange={(e) => setPw(e.target.value)} placeholder="4자 이상" />
+            <PasswordInput className="ac-input" value={pw} onChange={(e) => setPw(e.target.value)} placeholder="4자 이상" />
             <label className="ac-lbl">비밀번호 확인</label>
-            <input className="ac-input" type="password" value={pw2} onChange={(e) => setPw2(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && submit()} placeholder="한 번 더" />
+            <PasswordInput className="ac-input" value={pw2} onChange={(e) => setPw2(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && submit()} placeholder="한 번 더" />
             {err && <div className="ac-err"><i className="ph-fill ph-warning-circle" />{err}</div>}
             <div className="ac-row">
               <button className="ac-ghost" onClick={() => { setErr(''); setStep(1); }}>뒤로</button>

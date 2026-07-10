@@ -3,6 +3,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { studentApi } from '../../api/students';
 import { settingsApi } from '../../api/settings';
 import './ForcePasswordGate.css';
+import PasswordInput from '../common/PasswordInput';
 
 /**
  * 학생 비밀번호 초기화(교사/기관) 후 첫 로그인 시, 새 비밀번호를 정하기 전까지
@@ -45,8 +46,8 @@ export default function ForcePasswordGate() {
             ? '선생님이 비밀번호를 초기화했어요. 나만 아는 새 비밀번호로 바꿔야 시작할 수 있어요.'
             : '임시 비밀번호로 로그인했어요. 보안을 위해 새 비밀번호로 변경해야 시작할 수 있어요.'}
         </p>
-        <input className="fpg-input" type="password" value={pw} onChange={(e) => setPw(e.target.value)} placeholder={`새 비밀번호 (${minLen}자 이상)`} autoFocus />
-        <input className="fpg-input" type="password" value={pw2} onChange={(e) => setPw2(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && submit()} placeholder="한 번 더" />
+        <PasswordInput className="fpg-input" value={pw} onChange={(e) => setPw(e.target.value)} placeholder={`새 비밀번호 (${minLen}자 이상)`} autoFocus />
+        <PasswordInput className="fpg-input" value={pw2} onChange={(e) => setPw2(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && submit()} placeholder="한 번 더" />
         {err && <div className="fpg-err"><i className="ph-fill ph-warning-circle" />{err}</div>}
         <button className="fpg-btn" onClick={submit} disabled={busy}>
           <i className="ph-fill ph-check" />{busy ? '바꾸는 중…' : '바꾸고 시작!'}

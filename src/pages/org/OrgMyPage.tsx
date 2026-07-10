@@ -7,6 +7,7 @@ import { settingsApi } from '../../api/settings';
 import { inquiryApi } from '../../api/misc';
 import OrgLayout from '../../layouts/OrgLayout';
 import './OrgMyPage.css';
+import PasswordInput from '../../components/common/PasswordInput';
 
 /** handoff `CatChap 기관 마이페이지.dc.html` 포팅 — 기관 정보/요금제/결제/관리자/보안 */
 
@@ -737,13 +738,12 @@ export default function OrgMyPage() {
               <div className="om-pwFields">
                 <div>
                   <label className="om-label">현재 비밀번호</label>
-                  <input className="om-input" type="password" value={curPw} onChange={(e) => setCurPw(e.target.value)} />
+                  <PasswordInput className="om-input" value={curPw} onChange={(e) => setCurPw(e.target.value)} />
                 </div>
                 <div>
                   <label className="om-label">새 비밀번호</label>
-                  <input
+                  <PasswordInput
                     className="om-input"
-                    type="password"
                     placeholder="8자 이상, 숫자와 문자 포함"
                     value={newPw}
                     onChange={(e) => setNewPw(e.target.value)}
@@ -751,7 +751,7 @@ export default function OrgMyPage() {
                 </div>
                 <div>
                   <label className="om-label">새 비밀번호 확인</label>
-                  <input className="om-input" type="password" value={confirmPw} onChange={(e) => setConfirmPw(e.target.value)} />
+                  <PasswordInput className="om-input" value={confirmPw} onChange={(e) => setConfirmPw(e.target.value)} />
                 </div>
               </div>
               <div className="om-pwFoot">
