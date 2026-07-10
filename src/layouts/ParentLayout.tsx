@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { PATHS } from '../routes/paths';
 import { useAuth } from '../hooks/useAuth';
@@ -34,6 +34,7 @@ export default function ParentLayout({ bell, className, children }: ParentLayout
   const { me } = useAuth();
   const { pathname } = useLocation();
   const name = me?.name || '김서연';
+  const [menuOpen, setMenuOpen] = useState(false); // 모바일 햄버거 메뉴 열림 상태
 
   const menu = [
     { label: '주간 요약', to: PATHS.PARENT_HOME },
@@ -52,17 +53,29 @@ export default function ParentLayout({ bell, className, children }: ParentLayout
               <span className="pl-logo-sub">학부모 센터</span>
             </div>
           </Link>
-          <nav className="pl-menu">
+          <nav className={'pl-menu' + (menuOpen ? ' pl-menu-open' : '')}>
             {menu.map((it) => (
               <Link
                 key={it.label}
                 to={it.to}
                 className={'pl-menu-link' + (pathname === it.to ? ' pl-active' : '')}
+                onClick={() => setMenuOpen(false)}
               >
                 {it.label}
               </Link>
             ))}
           </nav>
+          <button
+            type="button"
+            className={'pl-burger' + (menuOpen ? ' pl-burger-open' : '')}
+            aria-label="메뉴 열기"
+            aria-expanded={menuOpen}
+            onClick={() => setMenuOpen((v) => !v)}
+          >
+            <span />
+            <span />
+            <span />
+          </button>
           <div className="pl-right">
             {bell}
             <Link

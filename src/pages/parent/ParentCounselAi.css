@@ -532,3 +532,15 @@
   .pc-aicard { transition: none; }
   .pc-aicard:hover { transform: none; }
 }
+
+
+/* ===== 모바일 반응형 (레이아웃만; 색·폰트·톤 불변) ===== */
+@media (max-width: 768px) {
+  .pc-body { grid-template-columns: 1fr; padding: 0 16px; gap: 16px; }
+  .pc-aside { position: static; top: auto; }
+  .pc-chat { position: static; top: auto; height: auto; min-height: 70vh; max-height: none; }
+}
+@media (max-width: 480px) {
+  .pc-body { padding: 0 13px; }
+  .pc-bubble { max-width: 86%; }
+}

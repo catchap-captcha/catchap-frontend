@@ -1331,3 +1331,24 @@
 .ph-reportBtn {
   background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0) 55%);
 }
+
+
+/* ===== 모바일 반응형 (레이아웃만; 색·폰트·톤 불변) ===== */
+@media (max-width: 768px) {
+  .ph-container { padding: 0 16px; }
+  .ph-switcher { flex-wrap: wrap; }
+  .ph-hero { padding: 24px 22px; gap: 16px; }
+  .ph-statsGrid { grid-template-columns: repeat(2, 1fr); }
+  .ph-swGrid { grid-template-columns: 1fr; }
+  .ph-reasonGrid { grid-template-columns: repeat(2, 1fr); }
+  .ph-bottomGrid { grid-template-columns: 1fr; }
+  .ph-notifDrop { width: min(344px, calc(100vw - 32px)); }
+  .ph-toast { width: auto; left: 16px; right: 16px; }
+}
+@media (max-width: 480px) {
+  .ph-container { padding: 0 13px; }
+  .ph-hero { flex-direction: column; align-items: flex-start; }
+  .ph-heroTitle { font-size: 23px; }
+  .ph-statsGrid { grid-template-columns: 1fr; }
+  .ph-reasonGrid { grid-template-columns: 1fr; }
+}

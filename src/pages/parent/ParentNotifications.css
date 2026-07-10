@@ -402,3 +402,16 @@
 .pn-emptycta {
   background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0) 55%);
 }
+
+
+/* ===== 모바일 반응형 (레이아웃만; 색·폰트·톤 불변) ===== */
+@media (max-width: 768px) {
+  .pn-section { padding: 0 16px; }
+  .pn-empty { padding: 44px 22px; }
+}
+@media (max-width: 480px) {
+  .pn-section { padding: 0 13px; }
+  .pn-title { font-size: 26px; }
+  .pn-card { padding: 14px 15px; }
+  .pn-empty { padding: 36px 16px; }
+}

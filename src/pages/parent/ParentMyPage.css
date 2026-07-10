@@ -1329,3 +1329,21 @@
 .pm-verify-btn {
   background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0) 55%);
 }
+
+
+/* ===== 모바일 반응형 (레이아웃만; 색·폰트·톤 불변) ===== */
+@media (max-width: 768px) {
+  .pm-header { padding: 0 16px; }
+  .pm-body { grid-template-columns: 1fr; padding: 0 16px; }
+  .pm-tabnav { position: static; top: auto; flex-direction: row; flex-wrap: wrap; }
+  .pm-tab { width: auto; flex: 1 1 auto; }
+  .pm-card { padding: 22px; }
+  .pm-form { grid-template-columns: 1fr; }
+}
+@media (max-width: 480px) {
+  .pm-header { padding: 0 13px; }
+  .pm-body { padding: 0 13px; }
+  .pm-title { font-size: 26px; }
+  .pm-card { padding: 18px 16px; }
+  .pm-ch-stats { grid-template-columns: 1fr; }
+}

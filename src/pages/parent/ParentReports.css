@@ -907,3 +907,21 @@
 .prt-dl-btn {
   background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0) 55%);
 }
+
+
+/* ===== 모바일 반응형 (레이아웃만; 색·폰트·톤 불변) ===== */
+@media (max-width: 768px) {
+  .prt-container { padding: 0 16px; }
+  .prt-sheet { padding: 24px 20px; }
+  .prt-kpis { grid-template-columns: repeat(2, 1fr); }
+  .prt-sw-grid { grid-template-columns: 1fr; }
+  .prt-trend-stats { grid-template-columns: repeat(2, 1fr); }
+  .prt-reasons { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 480px) {
+  .prt-container { padding: 0 13px; }
+  .prt-sheet { padding: 20px 16px; }
+  .prt-title { font-size: 22px; }
+  .prt-kpis { grid-template-columns: 1fr; }
+  .prt-reasons { grid-template-columns: 1fr; }
+}
