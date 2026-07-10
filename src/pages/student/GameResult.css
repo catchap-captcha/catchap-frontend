@@ -716,3 +716,47 @@ animation: grFloat 4s ease-in-out infinite;
   padding: 8px 15px;
   border-radius: 16px;
 }
+
+/* ── 챕터 결과: 5단계 진행 행 ── */
+.gr-stagerow {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 6px;
+}
+.gr-stagenode {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+}
+.gr-stagecircle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 800;
+  background: #fff;
+  border: 2px solid #f0e4d8;
+  color: #b7ab9d;
+}
+.gr-stagecircle-done { color: #fff; }
+.gr-stagecircle-done i { font-size: 17px; }
+.gr-stagecircle-next { border-width: 2.5px; background: #fff; }
+.gr-stagelabel {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #8a8072;
+}
+
+/* ── 문제 다시 보기 개수 라벨 ── */
+.gr-reviewhead-left { display: flex; flex-direction: column; gap: 2px; }
+.gr-reviewcount {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #8a8072;
+}

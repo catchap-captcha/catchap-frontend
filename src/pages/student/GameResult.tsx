@@ -199,7 +199,16 @@ export default function GameResult() {
   const circ = 339.29;
   const offset = (circ * (1 - pct / 100)).toFixed(2);
 
-  const review = Array.from({ length: total }, (_, i) => i + 1 > s.correct);
+  // 문제 다시 보기 — 이번 세션에 '실제로 푼' 문항만(맞음 초록 + 틀림 빨강).
+  // 세션 정보 없으면(직접 진입) 서버 집계 기준 total칸으로 폴백.
+  const review = sess
+    ? [
+        ...Array<boolean>(Math.max(0, sess.correct)).fill(false),
+        ...Array<boolean>(Math.max(0, sess.wrong)).fill(true),
+      ]
+    : Array.from({ length: total }, (_, i) => i + 1 > s.correct);
+  const answeredCount = sess ? sess.correct + sess.wrong : total;
+  const isChapter = !!sess?.chapter;
 
   // 다시 하기 = 복습 모드(replay=1): 기록은 남되 오늘의퀴즈 상태·코인 중복 반영 없음.
   // 일차 플레이였으면 같은 일차(day)로 다시 들어간다.
@@ -335,7 +344,7 @@ export default function GameResult() {
               <div>
                 <div className="gr-statnum">
                   <CountUp value={s.correct} />
-                  <span>/{total}</span>
+                  <span>/{answeredCount}</span>
                 </div>
                 <div className="gr-statlabel">맞힌 문제</div>
               </div>
@@ -370,7 +379,57 @@ export default function GameResult() {
           </div>
         </div>
 
-        {/* TODAY MAP (6과목) */}
+        {/* 전체 학습(챕터) 결과: 6과목 지도 대신 '이 챕터 5단계 진행'을 보여준다. */}
+        {isChapter && sess && (
+          <div className="gr-mapcard">
+            <div className="gr-maphead">
+              <div className="gr-maphead-left">
+                <span className="gr-mapicon">
+                  <i className="ph-fill ph-steps" />
+                </span>
+                <div>
+                  <h3 className="gr-maptitle">{subjectKey} {sess.chapter}챕터 진행</h3>
+                  <p className="gr-mapsub">
+                    {sess.finished
+                      ? '다섯 단계를 모두 끝냈어요! 🏆'
+                      : `${sess.lastDoneStage}/5단계 완료 — 이어서 하면 돼요`}
+                  </p>
+                </div>
+              </div>
+              <span
+                className="gr-todaybadge"
+                style={{
+                  background: sess.finished ? '#DFF6ED' : s.soft,
+                  color: sess.finished ? '#17B08C' : s.solid,
+                }}
+              >
+                <i className={sess.finished ? 'ph-fill ph-check-circle' : 'ph-fill ph-flag'} />
+                {sess.finished ? '챕터 완주! 🎉' : `남은 단계 ${5 - sess.lastDoneStage}개`}
+              </span>
+            </div>
+            <div className="gr-stagerow">
+              {Array.from({ length: 5 }, (_, i) => {
+                const no = i + 1;
+                const isDone = no <= sess.lastDoneStage;
+                const isNext = !sess.finished && no === sess.lastDoneStage + 1;
+                return (
+                  <div key={no} className="gr-stagenode">
+                    <div
+                      className={`gr-stagecircle${isDone ? ' gr-stagecircle-done' : isNext ? ' gr-stagecircle-next' : ''}`}
+                      style={isDone ? { background: s.solid, borderColor: s.solid } : isNext ? { borderColor: s.solid, color: s.solid } : {}}
+                    >
+                      {isDone ? <i className="ph-fill ph-check" /> : no}
+                    </div>
+                    <span className="gr-stagelabel">{no}단계</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* 오늘의 퀴즈 결과: 6과목 학습 지도. (챕터 결과에는 표시하지 않는다) */}
+        {!isChapter && (
         <div className="gr-mapcard">
           <div className="gr-maphead">
             <div className="gr-maphead-left">
@@ -437,6 +496,7 @@ export default function GameResult() {
             })}
           </div>
         </div>
+        )}
 
         {/* AI COMMENT */}
         <div className="gr-aicard">
@@ -455,25 +515,33 @@ export default function GameResult() {
           </Link>
         </div>
 
-        {/* QUESTION REVIEW (5문제) */}
-        <div className="gr-reviewcard">
-          <div className="gr-reviewhead">
-            <h3 className="gr-reviewtitle">문제 다시 보기</h3>
-            <Link to={PATHS.STUDENT_WRONG_NOTES} className="gr-wronglink">
-              오답만 모아보기 →
-            </Link>
+        {/* QUESTION REVIEW — 이번에 실제로 푼 문항만(맞음/틀림). 중도 종료면 푼 만큼만 표시. */}
+        {answeredCount > 0 && (
+          <div className="gr-reviewcard">
+            <div className="gr-reviewhead">
+              <div className="gr-reviewhead-left">
+                <h3 className="gr-reviewtitle">문제 다시 보기</h3>
+                <span className="gr-reviewcount">
+                  이번에 푼 {answeredCount}문제 · 맞음 {sess ? sess.correct : s.correct} · 틀림{' '}
+                  {sess ? sess.wrong : Math.max(0, total - s.correct)}
+                </span>
+              </div>
+              <Link to={PATHS.STUDENT_WRONG_NOTES} className="gr-wronglink">
+                오답만 모아보기 →
+              </Link>
+            </div>
+            <div className="gr-reviewchips">
+              {review.map((isWrong, i) => (
+                <span
+                  key={i}
+                  className={`gr-reviewchip ${isWrong ? 'gr-reviewchip-wrong' : 'gr-reviewchip-ok'}`}
+                >
+                  <i className={isWrong ? 'ph-fill ph-x' : 'ph-fill ph-check'} />
+                </span>
+              ))}
+            </div>
           </div>
-          <div className="gr-reviewchips">
-            {review.map((isWrong, i) => (
-              <span
-                key={i}
-                className={`gr-reviewchip ${isWrong ? 'gr-reviewchip-wrong' : 'gr-reviewchip-ok'}`}
-              >
-                <i className={isWrong ? 'ph-fill ph-x' : 'ph-fill ph-check'} />
-              </span>
-            ))}
-          </div>
-        </div>
+        )}
 
         {/* ACTIONS */}
         {sess?.chapter ? (

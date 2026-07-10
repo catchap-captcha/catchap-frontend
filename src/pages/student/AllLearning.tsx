@@ -253,7 +253,6 @@ export default function AllLearning() {
           const cur = c.chapters.find((ch) => ch.no === c.currentChapter) || c.chapters[0];
           const curDone = cur ? cur.stagesDone : 0;
           const curStages = cur ? cur.stages : 5;
-          const pct = curStages ? Math.round((curDone / curStages) * 100) : 0;
           // 오늘의 퀴즈와 같은 위젯(GameScreen)으로 통일 — 이어할 챕터의 다음 미완료 단계를 연다.
           // 이미 5단계를 다 끝낸 챕터면 복습 모드(1단계부터, 코인·진도 미적립)로 들어간다.
           const curFinished = !!cur && curDone >= curStages;
@@ -276,23 +275,9 @@ export default function AllLearning() {
                 <h3 className="al-panel-title">{c.title}</h3>
                 <p className="al-panel-desc">{c.desc}</p>
                 {c.available && cur ? (
-                  <>
-                    <div className="al-panel-meta">
-                      <span className="al-panel-donelabel">
-                        {cur.no}주차 · {curDone}/{curStages}단계
-                      </span>
-                      <span>{pct}%</span>
-                    </div>
-                    {/* 이번 주 챕터의 5단계 세그먼트 바 (홈 sh-card-segs와 동일 개념) */}
-                    <div className="al-panel-segs">
-                      {Array.from({ length: curStages }, (_, i) => (
-                        <div key={i} className={`al-seg${i < curDone ? ' al-seg-on' : ''}`} />
-                      ))}
-                    </div>
-                    {c.accuracy > 0 && (
-                      <div className="al-panel-acc">숙련도 {Math.round(c.accuracy)}%</div>
-                    )}
-                  </>
+                  <div className="al-panel-meta">
+                    <span className="al-panel-donelabel">{cur.no}주차</span>
+                  </div>
                 ) : (
                   <div className="al-panel-soon">
                     <i className="ph-fill ph-puzzle-piece" /> 문제 준비 중
@@ -323,7 +308,7 @@ function ChapterWeeks({ cat, playHref }: { cat: Cat; playHref: string }) {
   return (
     <div className="al-weeks-col">
       <div className="al-lessons-head">
-        <span className="al-lessons-label">주차별 챕터 (1챕터 = 1주 · 5단계)</span>
+        <span className="al-lessons-label">주차별 챕터</span>
         {cat.available && cur && (
           <div className="al-weeks-headright">
             <div className="al-weeks-arrows">
@@ -357,12 +342,6 @@ function ChapterWeeks({ cat, playHref }: { cat: Cat; playHref: string }) {
                   </span>
                 </div>
                 <div className="al-ls-name">{ch.name}</div>
-                {/* 챕터별 5단계 미니 바 */}
-                <div className="al-ls-segs">
-                  {Array.from({ length: ch.stages }, (_, i) => (
-                    <div key={i} className={`al-ls-seg${i < ch.stagesDone ? ' al-ls-seg-on' : ''}`} />
-                  ))}
-                </div>
                 <div className="al-ls-state">
                   {ch.state === 'locked'
                     ? ch.no - cat.unlockedChapters <= 1
