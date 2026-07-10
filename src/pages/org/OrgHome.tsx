@@ -401,7 +401,7 @@ export default function OrgHome() {
                 <button className="oh-exportBtn" onClick={() => downloadCSV(`기관리포트_${period}_${dateSuffix()}.csv`, exportRows)}>
                   <i className="ph-fill ph-export" />CSV
                 </button>
-                <button className="oh-exportBtn" onClick={() => tableToPdf(`기관리포트_${period}_${dateSuffix()}.pdf`, '기관 요약 리포트', exportRows)}>
+                <button className="oh-exportBtn" onClick={() => tableToPdf(`기관리포트_${period}_${dateSuffix()}.pdf`, '기관 요약 리포트', exportRows).catch((e) => console.error('PDF 저장 실패', e))}>
                   <i className="ph-fill ph-file-pdf" />PDF
                 </button>
               </>

@@ -334,7 +334,7 @@ export default function Badges() {
                       <div className="bd-awardbtns">
                         <button
                           className="bd-awarddl"
-                          onClick={() => canvasToPdf(`상장_${a.title}_${dateSuffix()}.pdf`, makeCanvas())}
+                          onClick={() => canvasToPdf(`상장_${a.title}_${dateSuffix()}.pdf`, makeCanvas()).catch((e) => console.error('PDF 저장 실패', e))}
                         >
                           <i className="ph-fill ph-download-simple" />상장 받기 (PDF)
                         </button>

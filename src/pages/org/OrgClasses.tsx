@@ -390,8 +390,11 @@ export default function OrgClasses() {
                 <button
                   className="oc-exportBtn"
                   onClick={() => {
-                    tableToPdf(`학급학생현황_${dateSuffix()}.pdf`, '학급 · 학생 현황', exportRows);
-                    flashToast('학급·학생 현황 PDF를 저장했어요.');
+                    // 성공 토스트는 실제 저장 후에만 — 실패를 성공처럼 보이지 않게(가짜 성공 금지)
+                    tableToPdf(`학급학생현황_${dateSuffix()}.pdf`, '학급 · 학생 현황', exportRows).then(
+                      () => flashToast('학급·학생 현황 PDF를 저장했어요.'),
+                      () => flashToast('PDF 저장에 실패했어요. 잠시 후 다시 시도해 주세요.'),
+                    );
                   }}
                 >
                   <i className="ph-fill ph-file-pdf" />PDF

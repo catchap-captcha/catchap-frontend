@@ -324,7 +324,7 @@ export default function TeacherHome() {
                     <i className="ph-fill ph-export" />
                     CSV
                   </button>
-                  <button className="th-export-btn" onClick={() => tableToPdf(`${cls}_학급리포트_${dateSuffix()}.pdf`, `${cls} 학급 리포트`, exportRows)}>
+                  <button className="th-export-btn" onClick={() => tableToPdf(`${cls}_학급리포트_${dateSuffix()}.pdf`, `${cls} 학급 리포트`, exportRows).catch((e) => console.error('PDF 저장 실패', e))}>
                     <i className="ph-fill ph-file-pdf" />
                     PDF
                   </button>

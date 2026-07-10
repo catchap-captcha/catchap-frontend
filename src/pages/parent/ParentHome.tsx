@@ -563,7 +563,7 @@ export default function ParentHome() {
     toastTimerRef.current = window.setTimeout(() => setToast(null), 5200);
   };
 
-  const downloadReport = (format: 'pdf' | 'png' = 'pdf') => {
+  const downloadReport = async (format: 'pdf' | 'png' = 'pdf') => {
     try {
       // 화면 실데이터로 주간 리포트를 그려 즉시 파일 저장 (기본 PDF, 이미지도 선택 가능)
       const canvas = drawWeeklyReport({
@@ -574,7 +574,9 @@ export default function ParentHome() {
         weaknesses: weaknesses.map((b) => ({ label: b.label, pct: b.pct })),
         recommends: recommends.map((r) => r.text),
       });
-      if (format === 'pdf') canvasToPdf(`${childName}_주간리포트_${dateSuffix()}.pdf`, canvas);
+      // await 필수 — canvasToPdf가 async(jspdf 지연 로드)라 안 기다리면 실패가
+      // catch에 안 걸리고 성공 토스트만 뜬다(가짜 성공 금지)
+      if (format === 'pdf') await canvasToPdf(`${childName}_주간리포트_${dateSuffix()}.pdf`, canvas);
       else downloadCanvasPng(`${childName}_주간리포트_${dateSuffix()}.png`, canvas);
       flashToast({
         id: 'dl-ok-' + Date.now(), icon: 'ph-fill ph-check-circle', color: '#17B08C', bg: '#E1F5EC',

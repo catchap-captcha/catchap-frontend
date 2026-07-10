@@ -373,7 +373,7 @@ export default function ParentReports() {
       '.',
   );
 
-  const download = (format: 'pdf' | 'png' = 'pdf') => {
+  const download = async (format: 'pdf' | 'png' = 'pdf') => {
     // 실파일 저장: 리포트 화면 데이터를 그려 PDF/PNG로 다운로드
     const pctNum = (v: string) => {
       const m = /(\d+)/.exec(String(v));
@@ -387,9 +387,14 @@ export default function ParentReports() {
       weaknesses: weaknesses.map((s: any) => ({ label: s.name ?? s.label, pct: pctNum(s.pct) })),
       recommends: recs.map((rc: any) => rc.text),
     });
-    if (format === 'pdf') canvasToPdf(`${cur.name}_리포트_${dateSuffix()}.pdf`, canvas);
-    else downloadCanvasPng(`${cur.name}_리포트_${dateSuffix()}.png`, canvas);
-    flash(`${cur.name} 리포트 ${format === 'pdf' ? 'PDF' : '이미지'}를 저장했어요`);
+    try {
+      // await 필수 — 실패가 성공 토스트로 가려지지 않게(가짜 성공 금지)
+      if (format === 'pdf') await canvasToPdf(`${cur.name}_리포트_${dateSuffix()}.pdf`, canvas);
+      else downloadCanvasPng(`${cur.name}_리포트_${dateSuffix()}.png`, canvas);
+      flash(`${cur.name} 리포트 ${format === 'pdf' ? 'PDF' : '이미지'}를 저장했어요`);
+    } catch {
+      flash('리포트 저장에 실패했어요. 잠시 후 다시 시도해 주세요.');
+    }
   };
 
   return (

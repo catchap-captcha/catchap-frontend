@@ -402,7 +402,7 @@ export default function TeacherAnalytics() {
                   <button className="ta-exportBtn" onClick={() => downloadCSV(`${className}_학습분석_${period}_${dateSuffix()}.csv`, exportRows)}>
                     <i className="ph-fill ph-export" />CSV
                   </button>
-                  <button className="ta-exportBtn" onClick={() => tableToPdf(`${className}_학습분석_${period}_${dateSuffix()}.pdf`, `${className} 학습 분석`, exportRows)}>
+                  <button className="ta-exportBtn" onClick={() => tableToPdf(`${className}_학습분석_${period}_${dateSuffix()}.pdf`, `${className} 학습 분석`, exportRows).catch((e) => console.error('PDF 저장 실패', e))}>
                     <i className="ph-fill ph-file-pdf" />PDF
                   </button>
                 </>
