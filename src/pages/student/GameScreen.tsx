@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
 import { studentApi } from '../../api/students';
 import { getFreshAccessToken } from '../../api/client';
@@ -107,14 +107,25 @@ const REWARDS: Record<string, number> = { '국어': 3, '영어': 1, '수학': 4,
 export default function GameScreen() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const location = useLocation();
 
-  /* 원본 componentDidMount: ?subject= 쿼리 → 없으면 hash → 기본 국어 */
+  /* 파라미터 소스: 내부 상태(navigate state) 우선, 없으면 쿼리스트링(딥링크·구버전 호환).
+     이렇게 하면 앱 내 이동 시 주소창은 '/student/game' 만 깔끔히 보이고 파라미터는 노출 안 된다. */
+  const navState = (location.state ?? null) as {
+    subject?: string; chapter?: number; stage?: number; day?: number; replay?: boolean;
+  } | null;
+  const numQ = (k: string) => (searchParams.get(k) ? Number(searchParams.get(k)) : NaN);
+  const pSubject = navState?.subject ?? searchParams.get('subject') ?? undefined;
+  const pReplay = navState?.replay ?? (searchParams.get('replay') === '1');
+  const pDay = navState?.day ?? numQ('day');
+  const pChapter = navState?.chapter ?? numQ('chapter');
+  const pStage = navState?.stage ?? numQ('stage');
+
+  /* 원본 componentDidMount: subject → 없으면 hash → 기본 국어 */
   const [subjectIdx, setSubjectIdx] = useState(() => {
-    let name = '국어';
+    let name = pSubject || '국어';
     try {
-      const q = searchParams.get('subject');
-      if (q) name = q;
-      else if (window.location.hash) {
+      if (!pSubject && window.location.hash) {
         const h = decodeURIComponent(window.location.hash.slice(1));
         if (h) name = h;
       }
@@ -135,20 +146,20 @@ export default function GameScreen() {
 
   const s = subjects[subjectIdx];
   const key = s.key;
-  // 복습 모드(?replay=1): 전날 다시풀기·완료 후 재도전 — 기록은 남지만 오늘의퀴즈 상태·코인 보상 없음
-  const isReplay = searchParams.get('replay') === '1';
+  // 복습 모드(replay): 전날 다시풀기·완료 후 재도전 — 기록은 남지만 오늘의퀴즈 상태·코인 보상 없음
+  const isReplay = pReplay;
 
   /* ===== 교육형 위젯 세션 (전 과목 공통 — 실전 모드 대체) =====
      문항 발급·채점은 교육형 API가 담당하고, 위젯이 학생 토큰(data-auth)을 실어 보내
      서버가 채점 시점에 학습기록(코인·진도·오늘의퀴즈)을 적립한다.
      위젯 이벤트: 문항마다 catchap:answer, 세션(EDU_TOTAL문항) 완료 진행 시 catchap:finished. */
-  // ?day=abc/0 같은 비정상 값은 무시 — NaN이 배너("NaN일차")로 새지 않게 1 이상 정수만 인정
-  const dayParam = Number(searchParams.get('day'));
+  // day=abc/0 같은 비정상 값은 무시 — NaN이 배너("NaN일차")로 새지 않게 1 이상 정수만 인정
+  const dayParam = pDay;
   const day = Number.isInteger(dayParam) && dayParam >= 1 ? dayParam : undefined;
-  // 전체학습 주간 챕터 모드: ?chapter=&stage= → 그 단계(2문항)를 같은 위젯으로 플레이.
-  const chapterParam = Number(searchParams.get('chapter'));
+  // 전체학습 주간 챕터 모드: chapter&stage → 그 단계(2문항)를 같은 위젯으로 플레이.
+  const chapterParam = pChapter;
   const chapter = Number.isInteger(chapterParam) && chapterParam >= 1 ? chapterParam : undefined;
-  const stageParam = Number(searchParams.get('stage'));
+  const stageParam = pStage;
   // 1~5만 인정 — 범위 밖(stage=99 등)은 무시해 진행바(총문항 계산)가 음수로 새지 않게
   const stage =
     Number.isInteger(stageParam) && stageParam >= 1 && stageParam <= 5 ? stageParam : undefined;
@@ -157,6 +168,22 @@ export default function GameScreen() {
   // 챕터 연속 진행: URL의 stage는 시작 단계(없으면 1단계부터), 이후 단계는 상태로 전진(위젯 재마운트)
   const startStage = chapter ? (stage ?? 1) : stage;
   const [curStage, setCurStage] = useState<number | undefined>(startStage);
+
+  // 주소창 정리 — 쿼리스트링(?subject=%EC..&chapter=..)으로 들어오면 최초 1회 clean path
+  // '/student/game' 로 즉시 치환하고 파라미터는 navigate state로 보존한다(실서비스처럼 주소가 깔끔).
+  useEffect(() => {
+    const hasQuery = ['subject', 'chapter', 'stage', 'day', 'replay'].some(
+      (k) => searchParams.get(k) != null,
+    );
+    if (hasQuery) {
+      navigate(location.pathname, {
+        replace: true,
+        state: { subject: key, chapter, stage, day, replay: isReplay },
+      });
+    }
+    // 최초 1회만 — strip 후 쿼리가 비므로 재실행되지 않는다.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [stagesDone, setStagesDone] = useState(0); // 이번 세션에서 완료한 단계 수(시작 단계 기준 누적 아님 — 마지막 완료 단계 번호)
   const [stageBanner, setStageBanner] = useState<string | null>(null); // 비방해 전환 표시(토스트)
   const [quitAsk, setQuitAsk] = useState(false); // 그만하기 확인 팝업
@@ -212,9 +239,10 @@ export default function GameScreen() {
       if (navigatedRef.current) return; // finished 이중 발화 시 결과 페이지 중복 적재 방지
       navigatedRef.current = true;
       const bag = sessRef.current;
-      const dayQ = day ? `&day=${day}` : '';
-      navigate(`${PATHS.STUDENT_RESULT}?subject=${encodeURIComponent(key)}${dayQ}`, {
+      // 주소창 정리 — 쿼리 없이 clean path. subject는 sess.subject에, day는 state로 넘긴다.
+      navigate(PATHS.STUDENT_RESULT, {
         state: {
+          day: day ?? null,
           sess: {
             subject: key,
             chapter: chapter ?? null,
@@ -347,7 +375,7 @@ export default function GameScreen() {
 
     chain
       .then(() => {
-        navigate(`${PATHS.STUDENT_RESULT}?subject=${encodeURIComponent(s.key)}`);
+        navigate(PATHS.STUDENT_RESULT, { state: { subject: s.key } });
       })
       .catch(() => {
         // 저장 실패 → 완료/코인 화면으로 넘어가지 않고 재시도 유도

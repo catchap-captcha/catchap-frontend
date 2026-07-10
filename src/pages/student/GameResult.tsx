@@ -1,6 +1,6 @@
 import { useEffect, useState, type CSSProperties } from 'react';
 import CountUp from '../../components/motion/CountUp';
-import { Link, useLocation, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
 import { useAuth } from '../../hooks/useAuth';
 import { studentApi } from '../../api/students';
@@ -94,8 +94,14 @@ export default function GameResult() {
   const name = (me?.name ?? apiNick ?? '하은').trim() || '하은';
   const [searchParams] = useSearchParams();
   const location = useLocation();
+  const navigate = useNavigate();
+  // 파라미터 소스: navigate state 우선(주소창 깔끔), 없으면 쿼리(딥링크 폴백)
+  const navState = location.state as {
+    sess?: SessState; day?: number | string | null; subject?: string;
+  } | null;
   // 이번 세션 집계(GameScreen state) — 있으면 서버 집계보다 우선(챕터/중도종료도 정확)
-  const sess = ((location.state as { sess?: SessState } | null)?.sess ?? null) as SessState | null;
+  const sess = (navState?.sess ?? null) as SessState | null;
+  const dayVal = navState?.day ?? searchParams.get('day') ?? null;
   // 복습 비교: 지난 기록 정답률(이번 세션 시작 이전 시도만)
   const [lastAccuracy, setLastAccuracy] = useState<number | null>(null);
   useEffect(() => {
@@ -110,9 +116,11 @@ export default function GameResult() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  /* 원본 componentDidMount: ?subject= 쿼리 → 없으면 hash → 기본 국어 */
+  /* subject: sess/state → 쿼리 → hash → 기본 국어 */
   const [subjectKey] = useState(() => {
     try {
+      const fromState = sess?.subject ?? navState?.subject;
+      if (fromState && FALLBACK[fromState]) return fromState;
       const q = searchParams.get('subject');
       if (q && FALLBACK[q]) return q;
       if (window.location.hash) {
@@ -124,6 +132,17 @@ export default function GameResult() {
     }
     return '국어';
   });
+
+  // 주소창 정리 — 쿼리로 들어오면 clean path로 치환하고 파라미터는 state로 보존
+  useEffect(() => {
+    if (searchParams.get('subject') != null || searchParams.get('day') != null) {
+      navigate(location.pathname, {
+        replace: true,
+        state: { sess, day: dayVal, subject: subjectKey },
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const [data, setData] = useState<Record<string, ResultEntry>>(FALLBACK);
   const [todayDone, setTodayDone] = useState<string[]>(TODAY_DONE);
@@ -212,9 +231,9 @@ export default function GameResult() {
 
   // 다시 하기 = 복습 모드(replay=1): 기록은 남되 오늘의퀴즈 상태·코인 중복 반영 없음.
   // 일차 플레이였으면 같은 일차(day)로 다시 들어간다.
-  const dayParam = searchParams.get('day');
+  const dayParam = dayVal; // state 우선(strip 후에도 유지) — '같은 일차로 다시' 링크가 안 깨지게
   const gameHref = `${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(subjectKey)}${
-    dayParam ? `&day=${encodeURIComponent(dayParam)}` : ''
+    dayParam ? `&day=${encodeURIComponent(String(dayParam))}` : ''
   }&replay=1`;
   const primaryHref = allDoneToday
     ? PATHS.STUDENT_HOME
