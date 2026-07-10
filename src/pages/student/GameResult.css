@@ -705,3 +705,14 @@ animation: grFloat 4s ease-in-out infinite;
 .gr-compareline b {
   font-weight: 900;
 }
+.gr-savewarn {
+  margin: 12px auto 0;
+  display: inline-block;
+  background: #fff2f0;
+  border: 2px solid #ffc9c2;
+  color: #c2554a;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 8px 15px;
+  border-radius: 16px;
+}

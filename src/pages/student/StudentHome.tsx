@@ -270,7 +270,6 @@ export default function StudentHome() {
   // 학부모 연동 알림 팝업 (미읽음 parent_link 알림이 있으면 1회 노출)
   const [linkNotice, setLinkNotice] = useState<{ id: string; title: string; message: string } | null>(null);
   // 오늘의 생활 교육과정 과제 — '이어서 학습하기'를 실전 플레이로 연동 (실패 시 원본 데모 링크 유지)
-  const [lifeToday, setLifeToday] = useState<{ day: number; topic: string } | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -284,19 +283,7 @@ export default function StudentHome() {
       .catch(() => {
         // TODO(api): 백엔드 미구현/실패 시 FALLBACK 유지
       });
-    // 오늘의 생활 과제(커리큘럼) — HERO '이어서 학습하기' 실전 연동
-    studentApi
-      .curriculum('생활', 0, 0)
-      .then((d: any) => {
-        if (!mounted || !d?.available || !Array.isArray(d.days)) return;
-        const today = d.days.find((x: any) => x?.status === 'today');
-        if (today && typeof today.day === 'number') {
-          setLifeToday({ day: today.day, topic: String(today.topic ?? '') });
-        }
-      })
-      .catch(() => {
-        /* 실패 시 원본 데모 링크 유지 */
-      });
+    // (메인 CTA가 '오늘의 퀴즈'로 통일되면서 생활 일일 과제 조회는 오늘의퀴즈 페이지 몫)
     // 보호자 연동 알림: 안 읽은 parent_link 알림이 있으면 팝업으로 안내
     notificationApi
       .list()
@@ -352,6 +339,8 @@ export default function StudentHome() {
   const total = Math.max(1, data.todayTotal);
   const done = Math.min(total, Math.max(0, data.todayDone));
   const barWidth = Math.round((done / total) * 100) + '%';
+  // 오늘의 퀴즈에서 다음에 풀 과목(첫 미완료) — 다 끝냈으면 null
+  const nextQuizSubject = data.subjects.find((sub) => sub.done < sub.total)?.subject ?? null;
 
   return (
     <StudentLayout
@@ -372,7 +361,7 @@ export default function StudentHome() {
           <div className="sh-hero-left">
             <span className="sh-hero-tag">
               <i className="ph-fill ph-paw-print" />
-              오늘의 학습
+              오늘의 퀴즈
             </span>
             <h1 className="sh-hero-title">
               안녕, {name}! <br />
@@ -384,7 +373,7 @@ export default function StudentHome() {
 
             <div className="sh-progress">
               <div className="sh-progress-head">
-                <span className="sh-progress-label">오늘 학습 진행</span>
+                <span className="sh-progress-label">오늘의 퀴즈 진행</span>
                 <span className="sh-progress-count">
                   {done}
                   <span className="sh-progress-total">/{total} 완료</span>
@@ -396,17 +385,22 @@ export default function StudentHome() {
             </div>
 
             <div className="sh-cta-row">
+              {/* 메인은 '오늘의 퀴즈'로 통일 — 첫 미완료 과목의 퀴즈 세션으로 바로 진입.
+                  (생활 일일 과제·주간 챕터는 각각 오늘의퀴즈 페이지·전체 학습에서) */}
               <Link
                 to={
-                  lifeToday
-                    ? `${PATHS.STUDENT_GAME}?subject=${encodeURIComponent('생활')}&day=${lifeToday.day}`
-                    : `${PATHS.STUDENT_GAME}?subject=영어&chapter=2`
+                  nextQuizSubject
+                    ? `${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(nextQuizSubject)}`
+                    : PATHS.STUDENT_DAILY_QUIZ
                 }
                 className="sh-cta-primary"
-                title={lifeToday ? `오늘의 과제 · ${lifeToday.day}일차 「${lifeToday.topic}」` : undefined}
               >
                 <i className="ph-fill ph-play-circle" />
-                {lifeToday ? `오늘의 과제 시작하기` : '이어서 학습하기'}
+                {nextQuizSubject
+                  ? done > 0
+                    ? '오늘의 퀴즈 이어서 풀기'
+                    : '오늘의 퀴즈 시작하기'
+                  : '오늘의 퀴즈 다시 보기'}
               </Link>
               <Link to={PATHS.STUDENT_ALL_LEARNING} className="sh-cta-secondary">
                 전체 학습 보기
@@ -446,8 +440,8 @@ export default function StudentHome() {
               <i className="ph-fill ph-cards-three" />
             </span>
             <div>
-              <h2 className="sh-sectitle">오늘의 과목</h2>
-              <p className="sh-secsub">여섯 과목을 매일 하나씩, 오늘의 학습 여섯 개예요</p>
+              <h2 className="sh-sectitle">오늘의 퀴즈</h2>
+              <p className="sh-secsub">여섯 과목을 매일 5문제씩 — 오늘의 퀴즈로 하루 습관을 만들어요</p>
             </div>
           </div>
           <Link to={PATHS.STUDENT_CONCEPTS} className="sh-seclink">
@@ -469,8 +463,10 @@ export default function StudentHome() {
               }
             >
               <Link
-                to={`${PATHS.STUDENT_CHAPTERS}?subject=${s.subject}`}
-                aria-label={`${s.subject} 챕터 지도`}
+                to={`${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(s.subject)}${
+                  s.done >= s.total ? '&replay=1' : ''
+                }`}
+                aria-label={`${s.subject} 오늘의 퀴즈`}
                 className="sh-card-link"
               />
               <div className="sh-card-deco" />

@@ -149,7 +149,9 @@ export default function GameScreen() {
   const chapterParam = Number(searchParams.get('chapter'));
   const chapter = Number.isInteger(chapterParam) && chapterParam >= 1 ? chapterParam : undefined;
   const stageParam = Number(searchParams.get('stage'));
-  const stage = Number.isInteger(stageParam) && stageParam >= 1 ? stageParam : undefined;
+  // 1~5만 인정 — 범위 밖(stage=99 등)은 무시해 진행바(총문항 계산)가 음수로 새지 않게
+  const stage =
+    Number.isInteger(stageParam) && stageParam >= 1 && stageParam <= 5 ? stageParam : undefined;
   const EDU_TOTAL = chapter ? 2 : 5; // 위젯 마운트 1회 세션: 챕터 한 단계=2문항, 오늘의퀴즈=5문항
   const CHAPTER_STAGES = 5; // 챕터 = 5단계 — 단계 완료 시 끊지 않고 다음 단계로 이어 간다
   // 챕터 연속 진행: URL의 stage는 시작 단계(없으면 1단계부터), 이후 단계는 상태로 전진(위젯 재마운트)
@@ -165,14 +167,20 @@ export default function GameScreen() {
   const sessRef = useRef({
     answered: 0, correct: 0, wrong: 0,
     stagesDone: 0, coins: 0, sticker: false, stickerCoins: 0,
+    bumpFailed: false, // 단계 저장(chapterStageComplete) 실패 — 결과 화면에 경고 표시
   });
+  const navigatedRef = useRef(false); // 결과 이동 1회 가드(결과 보기 이중클릭 → 중복 내비 방지)
   useEffect(() => {
     setWidgetStats({ answered: 0, correct: 0, wrong: 0, streak: 0 });
     setAuthLost(false);
     setCurStage(startStage);
     setStagesDone(0);
     setStageBanner(null);
-    sessRef.current = { answered: 0, correct: 0, wrong: 0, stagesDone: 0, coins: 0, sticker: false, stickerCoins: 0 };
+    sessRef.current = {
+      answered: 0, correct: 0, wrong: 0, stagesDone: 0, coins: 0,
+      sticker: false, stickerCoins: 0, bumpFailed: false,
+    };
+    navigatedRef.current = false;
   }, [key, chapter, stage]);
 
   /* 포인터 궤적 캡처 (#captcha-mount 영역) — 폴백(데모) 모드 완료 저장용.
@@ -201,6 +209,8 @@ export default function GameScreen() {
   /* 결과 화면 이동 — 이번 세션 로컬 집계를 state로 실어 보낸다(서버 재조회 타이밍 무관) */
   const goResult = useCallback(
     (finished: boolean) => {
+      if (navigatedRef.current) return; // finished 이중 발화 시 결과 페이지 중복 적재 방지
+      navigatedRef.current = true;
       const bag = sessRef.current;
       const dayQ = day ? `&day=${day}` : '';
       navigate(`${PATHS.STUDENT_RESULT}?subject=${encodeURIComponent(key)}${dayQ}`, {
@@ -219,6 +229,7 @@ export default function GameScreen() {
             coins: bag.coins,
             sticker: bag.sticker,
             stickerCoins: bag.stickerCoins,
+            bumpFailed: bag.bumpFailed,
             startedIso: new Date(startedAt.current).toISOString(),
           },
         },
@@ -267,7 +278,9 @@ export default function GameScreen() {
         setStagesDone(done);
         // 복습(이미 완주한 챕터 재도전)은 진행 커서를 건드리지 않는다
         if (!isReplay) {
-          studentApi.chapterStageComplete({ subject: key, chapter, stage: done }).catch(() => {});
+          studentApi.chapterStageComplete({ subject: key, chapter, stage: done }).catch(() => {
+            sessRef.current.bumpFailed = true; // 결과 화면에 '진행 저장 불안정' 경고 표시
+          });
         }
         if (done < CHAPTER_STAGES) {
           // 비방해 전환 표시 후 다음 단계 위젯으로 재마운트 — 학생은 그대로 이어서 푼다

@@ -2196,6 +2196,8 @@
   border-color: #ff5a4d;
   background: #fff1ec;
   color: #ff5a4d;
+}
+
 /* ===== 반응형 (모바일 ≤768px): 좌측 브랜드 패널 숨기고 폼을 풀폭으로 ===== */
 @media (max-width: 768px) {
   .lg-left {

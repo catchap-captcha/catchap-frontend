@@ -203,9 +203,9 @@ export default function ChapterMap() {
       flash('이전 챕터를 먼저 완료해봐요 🐾');
       return;
     }
-    // 이미 완료한 챕터는 복습 모드(1단계부터, 코인·진도 미적립)로 다시 풀 수 있다
-    const replayQ = num <= done ? '&replay=1' : '';
-    navigate(`${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(key)}&chapter=${num}${replayQ}`);
+    // 복습 여부는 서버가 판정한다(ChapterProgress 기준 — 완주 단계 재플레이는 자동 미적립).
+    // 이 화면의 done은 옛 진도 축(chapters_done)이라 주간 챕터 완주 판정에 쓰면 어긋난다.
+    navigate(`${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(key)}&chapter=${num}`);
   };
 
   const themeVars = {

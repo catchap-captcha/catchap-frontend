@@ -77,6 +77,7 @@ interface SessState {
   coins: number;
   sticker: boolean;
   stickerCoins: number;
+  bumpFailed?: boolean;
   startedIso: string;
 }
 
@@ -187,7 +188,9 @@ export default function GameResult() {
   todayDone.forEach((k) => {
     doneSet[k] = true;
   });
-  doneSet[subjectKey] = true; // 방금 완료한 과목은 항상 완료
+  // 방금 과목을 완료로 칠하는 건 '오늘의퀴즈 세션을 끝까지 마쳤을 때'만 —
+  // 중도 종료·챕터 세션까지 칠하면 학습 지도(6과목)가 부풀고 다음 과목 추천이 어긋난다.
+  if (!sess || (sess.finished && !sess.chapter && !sess.replay)) doneSet[subjectKey] = true;
   const doneCount = order.filter((k) => doneSet[k]).length;
   const allDoneToday = doneCount >= order.length;
   const nextUndone = order.find((k) => !doneSet[k]) || null;
@@ -276,14 +279,25 @@ export default function GameResult() {
               🌟 오늘의 스티커 획득! 6과목 모두 완료 (+{sess.stickerCoins}코인)
             </div>
           )}
+          {sess?.bumpFailed && (
+            /* 단계 저장 실패를 성공처럼 감추지 않는다 — 이어하기 위치가 다를 수 있음을 고지 */
+            <div className="gr-savewarn">
+              ⚠️ 진행 저장이 불안정했어요. 다음에 이어하기 위치가 다를 수 있어요.
+            </div>
+          )}
           {sess?.replay && lastAccuracy != null && (
             /* 복습: 지난 기록 vs 이번 비교 한 줄 */
             <div className="gr-compareline">
               지난 기록 {lastAccuracy}% →{' '}
               <b>이번 {Math.round((sess.correct / Math.max(1, sess.answered)) * 100)}%</b>
-              {Math.round((sess.correct / Math.max(1, sess.answered)) * 100) > lastAccuracy
-                ? ' 늘었어요! 🎉'
-                : ' 다시 도전해봐요!'}
+              {(() => {
+                const now = Math.round((sess.correct / Math.max(1, sess.answered)) * 100);
+                return now > lastAccuracy
+                  ? ' 늘었어요! 🎉'
+                  : now === lastAccuracy
+                    ? ' 지난 기록 그대로예요!'
+                    : ' 다시 도전해봐요!';
+              })()}
             </div>
           )}
         </div>
