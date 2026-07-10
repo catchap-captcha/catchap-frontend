@@ -946,7 +946,15 @@ export default function LoginPage() {
                   <>
                     <label className="lg-label">소속 기관</label>
                     <div className="lg-mb15">
-                      <InstitutionPicker onSelect={setSignupInst} initialSelected={signupInst} />
+                      <InstitutionPicker
+                        onSelect={(inst) => {
+                          setSignupInst(inst);
+                          // 기관이 바뀌면 이전 기관에서 통과한 코드 검증은 무효 —
+                          // 유지하면 미등록 학교 + 옛 valid 상태로 빈 organization_id가 서버에 간다
+                          setOrgCodeStatus('idle');
+                        }}
+                        initialSelected={signupInst}
+                      />
                     </div>
 
                     <label className="lg-label">기관 코드</label>
