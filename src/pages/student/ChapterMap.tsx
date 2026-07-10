@@ -203,7 +203,9 @@ export default function ChapterMap() {
       flash('이전 챕터를 먼저 완료해봐요 🐾');
       return;
     }
-    navigate(`${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(key)}&chapter=${num}`);
+    // 이미 완료한 챕터는 복습 모드(1단계부터, 코인·진도 미적립)로 다시 풀 수 있다
+    const replayQ = num <= done ? '&replay=1' : '';
+    navigate(`${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(key)}&chapter=${num}${replayQ}`);
   };
 
   const themeVars = {

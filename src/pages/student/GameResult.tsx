@@ -1,6 +1,6 @@
 import { useEffect, useState, type CSSProperties } from 'react';
 import CountUp from '../../components/motion/CountUp';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
 import { useAuth } from '../../hooks/useAuth';
 import { studentApi } from '../../api/students';
@@ -62,11 +62,52 @@ const CONFETTI = [
   { left: '94%', bg: '#FFB43C', delay: '.4s' },
 ];
 
+/** GameScreen이 넘겨주는 이번 세션 로컬 집계 — 서버 재조회 없이 정확한 결과 표시 */
+interface SessState {
+  subject: string;
+  chapter: number | null;
+  startStage: number | null;
+  lastDoneStage: number;
+  finished: boolean;
+  answered: number;
+  correct: number;
+  wrong: number;
+  timeMs: number;
+  replay: boolean;
+  coins: number;
+  sticker: boolean;
+  stickerCoins: number;
+  startedIso: string;
+}
+
+function fmtTime(ms: number): string {
+  const sec = Math.max(0, Math.round(ms / 1000));
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return m > 0 ? `${m}분 ${s}초` : `${s}초`;
+}
+
 export default function GameResult() {
   const { me } = useAuth();
   const [apiNick, setApiNick] = useState<string | null>(null);
   const name = (me?.name ?? apiNick ?? '하은').trim() || '하은';
   const [searchParams] = useSearchParams();
+  const location = useLocation();
+  // 이번 세션 집계(GameScreen state) — 있으면 서버 집계보다 우선(챕터/중도종료도 정확)
+  const sess = ((location.state as { sess?: SessState } | null)?.sess ?? null) as SessState | null;
+  // 복습 비교: 지난 기록 정답률(이번 세션 시작 이전 시도만)
+  const [lastAccuracy, setLastAccuracy] = useState<number | null>(null);
+  useEffect(() => {
+    if (!sess?.replay || !sess.chapter) return;
+    studentApi
+      .chapterHistory(sess.subject, sess.chapter, sess.startedIso)
+      .then((d: any) => {
+        if (typeof d?.accuracy === 'number') setLastAccuracy(d.accuracy);
+      })
+      .catch(() => {});
+    // sess는 네비게이션 시점에 고정된 값 — 마운트 시 1회면 충분
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   /* 원본 componentDidMount: ?subject= 쿼리 → 없으면 hash → 기본 국어 */
   const [subjectKey] = useState(() => {
@@ -128,7 +169,17 @@ export default function GameResult() {
     };
   }, [subjectKey]);
 
-  const s = data[subjectKey] ?? data['국어'];
+  const server = data[subjectKey] ?? data['국어'];
+  // 이번 세션 집계가 있으면 그것으로 표시(정답/문항수/시간/획득코인) — 챕터·중도종료도 정확
+  const s = sess
+    ? {
+        ...server,
+        correct: sess.correct,
+        total: Math.max(1, sess.answered),
+        time: fmtTime(sess.timeMs),
+        score: sess.replay ? '+0' : `+${sess.coins + sess.stickerCoins}`,
+      }
+    : server;
   const total = s.total ?? 5;
 
   /* ---- 오늘의 학습 지도 (원본 renderVals 그대로) ---- */
@@ -177,7 +228,17 @@ export default function GameResult() {
         <div className="gr-hero">
           <div className="gr-herochip">
             <i className="ph-fill ph-confetti" />
-            {allDoneToday ? '오늘의 학습 끝!' : `${subjectKey} 완료!`}
+            {sess?.chapter
+              ? `${subjectKey} ${sess.chapter}챕터 ${
+                  sess.finished
+                    ? '완주!'
+                    : sess.lastDoneStage > 0
+                      ? `${sess.lastDoneStage}단계까지`
+                      : '도전'
+                }${sess.replay ? ' · 복습' : ''}`
+              : allDoneToday
+                ? '오늘의 학습 끝!'
+                : `${subjectKey} 완료!`}
           </div>
           <div className="gr-mascotwrap">
             <img src={mascot} alt="마스코트" className="gr-mascotimg" />
@@ -187,10 +248,44 @@ export default function GameResult() {
           </div>
           <h1 className="gr-title">참 잘했어요, {name}! 🎉</h1>
           <p className="gr-herosub">
-            {allDoneToday
-              ? `오늘 하루 학습을 다 마쳤어요! 여섯 과목을 모두 끝낸 ${name}, 정말 대단해요 🏆`
-              : `${subjectKey} 챕터를 멋지게 끝냈어요. 오늘도 한 뼘 더 자랐네요!`}
+            {sess?.chapter
+              ? sess.finished
+                ? `${sess.chapter}챕터 다섯 단계를 끝까지 해냈어요! 정말 대단해요 🏆`
+                : sess.lastDoneStage > 0
+                  ? `${sess.lastDoneStage}단계까지 완료했어요. 다음에 이어서 하면 돼요!`
+                  : '풀던 단계는 다음에 이어서 할 수 있어요!'
+              : allDoneToday
+                ? `오늘 하루 학습을 다 마쳤어요! 여섯 과목을 모두 끝낸 ${name}, 정말 대단해요 🏆`
+                : `${subjectKey} 챕터를 멋지게 끝냈어요. 오늘도 한 뼘 더 자랐네요!`}
           </p>
+          {sess?.chapter != null && (
+            /* 챕터 5단계 진행 뱃지 — 완료 단계 채움 */
+            <div className="gr-stagebadges">
+              {Array.from({ length: 5 }, (_, i) => (
+                <span
+                  key={i}
+                  className={`gr-stagebadge${i + 1 <= sess.lastDoneStage ? ' gr-stagebadge-on' : ''}`}
+                >
+                  {i + 1 <= sess.lastDoneStage ? <i className="ph-fill ph-check" /> : i + 1}
+                </span>
+              ))}
+            </div>
+          )}
+          {sess?.sticker && (
+            <div className="gr-stickerline">
+              🌟 오늘의 스티커 획득! 6과목 모두 완료 (+{sess.stickerCoins}코인)
+            </div>
+          )}
+          {sess?.replay && lastAccuracy != null && (
+            /* 복습: 지난 기록 vs 이번 비교 한 줄 */
+            <div className="gr-compareline">
+              지난 기록 {lastAccuracy}% →{' '}
+              <b>이번 {Math.round((sess.correct / Math.max(1, sess.answered)) * 100)}%</b>
+              {Math.round((sess.correct / Math.max(1, sess.answered)) * 100) > lastAccuracy
+                ? ' 늘었어요! 🎉'
+                : ' 다시 도전해봐요!'}
+            </div>
+          )}
         </div>
 
         {/* SCORE CARD */}
@@ -367,20 +462,54 @@ export default function GameResult() {
         </div>
 
         {/* ACTIONS */}
-        <div className="gr-actions">
-          <Link to={gameHref} className="gr-btn-secondary">
-            <i className="ph-fill ph-arrow-counter-clockwise" />
-            다시 하기
-          </Link>
-          <Link to={PATHS.STUDENT_ALL_LEARNING} className="gr-btn-secondary">
-            <i className="ph-fill ph-squares-four" />
-            다른 학습 하기
-          </Link>
-          <Link to={primaryHref} className="gr-btn-primary">
-            <i className={allDoneToday ? 'ph-fill ph-house' : 'ph-fill ph-arrow-right'} />
-            {allDoneToday ? '홈으로 가기' : '다음 과목 하러 가기'}
-          </Link>
-        </div>
+        {sess?.chapter ? (
+          sess.finished ? (
+            /* 5단계 완주: 한 번 더(복습) 또는 다음 학습 */
+            <div className="gr-actions">
+              <Link
+                to={`${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(subjectKey)}&chapter=${sess.chapter}&stage=1&replay=1`}
+                className="gr-btn-secondary"
+              >
+                <i className="ph-fill ph-arrow-counter-clockwise" />
+                한 번 더 풀기 (복습)
+              </Link>
+              <Link to={PATHS.STUDENT_ALL_LEARNING} className="gr-btn-primary">
+                <i className="ph-fill ph-arrow-right" />
+                전체 학습으로
+              </Link>
+            </div>
+          ) : (
+            /* 중도 종료: 첫 미완료 단계부터 이어서 */
+            <div className="gr-actions">
+              <Link to={PATHS.STUDENT_ALL_LEARNING} className="gr-btn-secondary">
+                <i className="ph-fill ph-squares-four" />
+                전체 학습으로
+              </Link>
+              <Link
+                to={`${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(subjectKey)}&chapter=${sess.chapter}&stage=${Math.min(5, sess.lastDoneStage + 1)}${sess.replay ? '&replay=1' : ''}`}
+                className="gr-btn-primary"
+              >
+                <i className="ph-fill ph-play" />
+                {Math.min(5, sess.lastDoneStage + 1)}단계 이어서 하기
+              </Link>
+            </div>
+          )
+        ) : (
+          <div className="gr-actions">
+            <Link to={gameHref} className="gr-btn-secondary">
+              <i className="ph-fill ph-arrow-counter-clockwise" />
+              다시 하기
+            </Link>
+            <Link to={PATHS.STUDENT_ALL_LEARNING} className="gr-btn-secondary">
+              <i className="ph-fill ph-squares-four" />
+              다른 학습 하기
+            </Link>
+            <Link to={primaryHref} className="gr-btn-primary">
+              <i className={allDoneToday ? 'ph-fill ph-house' : 'ph-fill ph-arrow-right'} />
+              {allDoneToday ? '홈으로 가기' : '다음 과목 하러 가기'}
+            </Link>
+          </div>
+        )}
       </div>
     </div>
   );

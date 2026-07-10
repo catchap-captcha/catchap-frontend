@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
 import { studentApi } from '../../api/students';
@@ -150,14 +150,30 @@ export default function GameScreen() {
   const chapter = Number.isInteger(chapterParam) && chapterParam >= 1 ? chapterParam : undefined;
   const stageParam = Number(searchParams.get('stage'));
   const stage = Number.isInteger(stageParam) && stageParam >= 1 ? stageParam : undefined;
-  const EDU_TOTAL = chapter ? 2 : 5; // 챕터 한 단계=2문항, 오늘의퀴즈=5문항
+  const EDU_TOTAL = chapter ? 2 : 5; // 위젯 마운트 1회 세션: 챕터 한 단계=2문항, 오늘의퀴즈=5문항
+  const CHAPTER_STAGES = 5; // 챕터 = 5단계 — 단계 완료 시 끊지 않고 다음 단계로 이어 간다
+  // 챕터 연속 진행: URL의 stage는 시작 단계(없으면 1단계부터), 이후 단계는 상태로 전진(위젯 재마운트)
+  const startStage = chapter ? (stage ?? 1) : stage;
+  const [curStage, setCurStage] = useState<number | undefined>(startStage);
+  const [stagesDone, setStagesDone] = useState(0); // 이번 세션에서 완료한 단계 수(시작 단계 기준 누적 아님 — 마지막 완료 단계 번호)
+  const [stageBanner, setStageBanner] = useState<string | null>(null); // 비방해 전환 표시(토스트)
+  const [quitAsk, setQuitAsk] = useState(false); // 그만하기 확인 팝업
   const [widgetStats, setWidgetStats] = useState({ answered: 0, correct: 0, wrong: 0, streak: 0 });
   // 인증이 풀려 채점은 되는데 적립(session 응답)이 빠지는 상태 — 조용히 유실되지 않게 경고
   const [authLost, setAuthLost] = useState(false);
+  // 이벤트 리스너 안에서 최신 값을 읽기 위한 세션 가방(ref) — 스테일 클로저 방지
+  const sessRef = useRef({
+    answered: 0, correct: 0, wrong: 0,
+    stagesDone: 0, coins: 0, sticker: false, stickerCoins: 0,
+  });
   useEffect(() => {
     setWidgetStats({ answered: 0, correct: 0, wrong: 0, streak: 0 });
     setAuthLost(false);
-  }, [key]);
+    setCurStage(startStage);
+    setStagesDone(0);
+    setStageBanner(null);
+    sessRef.current = { answered: 0, correct: 0, wrong: 0, stagesDone: 0, coins: 0, sticker: false, stickerCoins: 0 };
+  }, [key, chapter, stage]);
 
   /* 포인터 궤적 캡처 (#captcha-mount 영역) — 폴백(데모) 모드 완료 저장용.
      위젯 모드는 위젯 스크립트가 자체 캡처해 verify로 보낸다. */
@@ -176,15 +192,66 @@ export default function GameScreen() {
     tracerRef.current?.reset();
   }, [key]);
 
-  /* 위젯 이벤트 배선 — 사이드패널 통계·효과음·완료 시 결과 화면 이동 */
+  /* 세션 시작 시각 — 결과 화면 풀이 시간·지난 기록 비교(before) 계산용 */
+  const startedAt = useRef<number>(Date.now());
+  useEffect(() => {
+    startedAt.current = Date.now();
+  }, [key, chapter, stage]);
+
+  /* 결과 화면 이동 — 이번 세션 로컬 집계를 state로 실어 보낸다(서버 재조회 타이밍 무관) */
+  const goResult = useCallback(
+    (finished: boolean) => {
+      const bag = sessRef.current;
+      const dayQ = day ? `&day=${day}` : '';
+      navigate(`${PATHS.STUDENT_RESULT}?subject=${encodeURIComponent(key)}${dayQ}`, {
+        state: {
+          sess: {
+            subject: key,
+            chapter: chapter ?? null,
+            startStage: startStage ?? null,
+            lastDoneStage: bag.stagesDone, // 완료한 마지막 단계(0=하나도 못 끝냄)
+            finished, // true=끝까지(5단계 or 오늘의퀴즈 세션) 완료, false=그만하기 중도 종료
+            answered: bag.answered,
+            correct: bag.correct,
+            wrong: bag.wrong,
+            timeMs: Math.max(0, Date.now() - startedAt.current),
+            replay: isReplay,
+            coins: bag.coins,
+            sticker: bag.sticker,
+            stickerCoins: bag.stickerCoins,
+            startedIso: new Date(startedAt.current).toISOString(),
+          },
+        },
+      });
+    },
+    [key, day, chapter, stage, isReplay, navigate],
+  );
+
+  /* 위젯 이벤트 배선 — 사이드패널 통계·효과음·단계 연속 진행·완료 시 결과 화면 이동 */
   useEffect(() => {
     const el = mountRef.current;
     if (!el) return;
     const onAnswer = (e: Event) => {
-      const d = (e as CustomEvent).detail as { correct?: boolean; session?: unknown } | undefined;
+      const d = (e as CustomEvent).detail as
+        | { correct?: boolean; session?: { coins_earned?: number; sticker_awarded?: boolean; sticker_coins?: number } }
+        | undefined;
       playSfx(d?.correct ? 'correct' : 'wrong');
       // session이 빠졌다 = 서버가 학생 인증을 못 받아 적립이 안 됨 (로그인 만료 등)
       setAuthLost(!d?.session);
+      const bag = sessRef.current;
+      bag.answered += 1;
+      if (d?.correct) bag.correct += 1;
+      else bag.wrong += 1;
+      if (d?.session) {
+        bag.coins += d.session.coins_earned ?? 0;
+        if (d.session.sticker_awarded) {
+          bag.sticker = true;
+          bag.stickerCoins += d.session.sticker_coins ?? 0;
+          // 6과목 완주 순간 — 방해 없는 토스트로 축하 (자정에 초기화되는 오늘의 스티커)
+          setStageBanner(`🌟 오늘의 스티커 획득! 6과목 모두 완료 (+${d.session.sticker_coins ?? 0}코인)`);
+          window.setTimeout(() => setStageBanner(null), 3000);
+        }
+      }
       setWidgetStats((st) => ({
         answered: st.answered + 1,
         correct: st.correct + (d?.correct ? 1 : 0),
@@ -193,17 +260,26 @@ export default function GameScreen() {
       }));
     };
     const onFinished = () => {
-      // 챕터 모드: 단계 커서 전진(위젯 채점 경로라 별도 호출) 후 전체학습으로 복귀.
-      if (chapter && stage) {
-        studentApi
-          .chapterStageComplete({ subject: key, chapter, stage })
-          .catch(() => {})
-          .finally(() => navigate(PATHS.STUDENT_ALL_LEARNING));
+      // 챕터 모드: 단계 완료를 저장하고, 5단계 전이면 끊지 않고 다음 단계로 이어 간다.
+      if (chapter && curStage) {
+        const done = curStage;
+        sessRef.current.stagesDone = done;
+        setStagesDone(done);
+        // 복습(이미 완주한 챕터 재도전)은 진행 커서를 건드리지 않는다
+        if (!isReplay) {
+          studentApi.chapterStageComplete({ subject: key, chapter, stage: done }).catch(() => {});
+        }
+        if (done < CHAPTER_STAGES) {
+          // 비방해 전환 표시 후 다음 단계 위젯으로 재마운트 — 학생은 그대로 이어서 푼다
+          setStageBanner(`✨ ${done}단계 완료! ${done + 1}단계로 넘어가요`);
+          window.setTimeout(() => setStageBanner(null), 2200);
+          setCurStage(done + 1);
+          return;
+        }
+        goResult(true); // 5단계 완주 → 결과 화면
         return;
       }
-      // 결과 화면에 day를 넘겨 '다시 하기'가 같은 일차 복습으로 이어지게 한다
-      const dayQ = day ? `&day=${day}` : '';
-      navigate(`${PATHS.STUDENT_RESULT}?subject=${encodeURIComponent(key)}${dayQ}`);
+      goResult(true); // 오늘의퀴즈(일차) 세션 완료 → 결과 화면
     };
     el.addEventListener('catchap:answer', onAnswer);
     el.addEventListener('catchap:finished', onFinished);
@@ -211,13 +287,7 @@ export default function GameScreen() {
       el.removeEventListener('catchap:answer', onAnswer);
       el.removeEventListener('catchap:finished', onFinished);
     };
-  }, [key, day, chapter, stage, navigate]);
-
-  /* 세션 시작 시각 — 완료 시 실제 풀이 시간(solve_time_ms) 계산용 */
-  const startedAt = useRef<number>(Date.now());
-  useEffect(() => {
-    startedAt.current = Date.now();
-  }, [key]);
+  }, [key, day, chapter, stage, curStage, isReplay, navigate, goResult]);
 
   /* 완료 클릭 → 실제 학습기록 저장(오늘의퀴즈 done·코인·진도·연속도전 반영) 후 결과로 이동.
      저장 실패 시에는 결과/코인 화면으로 넘어가지 않고 실패를 노출한다(거짓 완료 금지). */
@@ -335,9 +405,12 @@ export default function GameScreen() {
     };
   }, [key]);
 
-  /* 위젯 모드: 이 세션에서 푼 문항 수 기준 진행 표시 (풀이 중 문항 = answered+1) */
-  const curNo = EDU_SITE_KEY ? Math.min(widgetStats.answered + 1, EDU_TOTAL) : s.current;
-  const curTotal = EDU_SITE_KEY ? EDU_TOTAL : s.total;
+  /* 위젯 모드: 이 세션에서 푼 문항 수 기준 진행 표시 (풀이 중 문항 = answered+1)
+     챕터 모드는 시작 단계~5단계까지 연속 진행이라 총 문항 = 남은 단계 수 × 2 */
+  const sessionTotal =
+    chapter && startStage ? (CHAPTER_STAGES - startStage + 1) * 2 : EDU_TOTAL;
+  const curNo = EDU_SITE_KEY ? Math.min(widgetStats.answered + 1, sessionTotal) : s.current;
+  const curTotal = EDU_SITE_KEY ? sessionTotal : s.total;
   const pct = Math.round(((EDU_SITE_KEY ? widgetStats.answered : s.current) / curTotal) * 100);
   const isLast = s.current >= s.total;
 
@@ -364,10 +437,18 @@ export default function GameScreen() {
       {/* TOP BAR */}
       <div className="gs-topbar">
         <div className="gs-topbar-inner">
-          <Link to={PATHS.STUDENT_HOME} className="gs-quit">
-            <i className="ph-bold ph-x" />
-            그만하기
-          </Link>
+          {EDU_SITE_KEY ? (
+            /* 위젯 모드: 그만하기 = 확인 팝업 → 여기까지 결과 보기 (그냥 증발하지 않음) */
+            <button type="button" className="gs-quit" onClick={() => setQuitAsk(true)}>
+              <i className="ph-bold ph-x" />
+              그만하기
+            </button>
+          ) : (
+            <Link to={PATHS.STUDENT_HOME} className="gs-quit">
+              <i className="ph-bold ph-x" />
+              그만하기
+            </Link>
+          )}
           <div className="gs-gamehead">
             <span className="gs-gameicon">
               <i className={s.gameIcon} />
@@ -454,6 +535,27 @@ export default function GameScreen() {
               {day}일차 커리큘럼{isReplay ? ' · 복습(코인 없음)' : ' · 오늘 과제'}
             </div>
           )}
+          {EDU_SITE_KEY && chapter != null && (
+            /* 챕터 연속 진행 표시 — 완료 단계는 채움, 현재 단계는 테두리 강조 */
+            <div className="gs-stagebar">
+              <span className="gs-stagebar-label">{chapter}챕터</span>
+              {Array.from({ length: CHAPTER_STAGES }, (_, i) => {
+                const no = i + 1;
+                const cls =
+                  no <= stagesDone
+                    ? ' gs-stageseg-done'
+                    : no === curStage
+                      ? ' gs-stageseg-cur'
+                      : '';
+                return (
+                  <span key={no} className={`gs-stageseg${cls}`}>
+                    {no}
+                  </span>
+                );
+              })}
+              {isReplay && <span className="gs-stagebar-replay">복습 · 코인 없음</span>}
+            </div>
+          )}
           {authLost && (
             <div className="gs-authwarn">
               <i className="ph-fill ph-warning-circle" />
@@ -471,10 +573,13 @@ export default function GameScreen() {
             data-question={curNo}
             className="gs-mount"
           >
-            <span className="gs-mount-tagleft">#captcha-mount</span>
             <span className="gs-mount-tagright">
               문제 {curNo}/{curTotal}
             </span>
+            {stageBanner && (
+              /* 비방해 전환/축하 토스트 — 위젯 조작을 막지 않는다(pointer-events 없음) */
+              <div className="gs-stagebanner">{stageBanner}</div>
+            )}
             {EDU_SITE_KEY ? (
               /* 1st-party 임베드 — 우리 앱이 교육형 API(위젯)를 직접 소비.
                  학생 토큰(auth)을 실어 서버가 채점 시점에 코인·진도·오늘의퀴즈를 적립하고,
@@ -488,7 +593,7 @@ export default function GameScreen() {
                 auth={getFreshAccessToken}
                 day={day}
                 chapter={chapter}
-                stage={stage}
+                stage={curStage}
                 replay={isReplay}
                 total={EDU_TOTAL}
               />
@@ -583,6 +688,39 @@ export default function GameScreen() {
                   <i className="ph-fill ph-arrow-right" />
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 그만하기 확인 팝업 — 푼 문제가 있으면 '여기까지 결과 보기'로, 없으면 그냥 나가기 */}
+      {quitAsk && (
+        <div className="gs-quitpop-back" onClick={() => setQuitAsk(false)}>
+          <div className="gs-quitpop" onClick={(e) => e.stopPropagation()}>
+            <div className="gs-quitpop-icon">🏁</div>
+            <div className="gs-quitpop-title">여기서 그만할까요?</div>
+            <div className="gs-quitpop-msg">
+              {widgetStats.answered > 0
+                ? `지금까지 ${widgetStats.answered}문제를 풀었어요. 결과를 보여드릴게요!`
+                : '아직 푼 문제가 없어요. 다음에 또 만나요!'}
+            </div>
+            <div className="gs-quitpop-btns">
+              <button type="button" className="gs-quitpop-stay" onClick={() => setQuitAsk(false)}>
+                계속 풀기
+              </button>
+              {widgetStats.answered > 0 ? (
+                <button type="button" className="gs-quitpop-go" onClick={() => goResult(false)}>
+                  결과 보기
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="gs-quitpop-go"
+                  onClick={() => navigate(PATHS.STUDENT_HOME)}
+                >
+                  나가기
+                </button>
+              )}
             </div>
           </div>
         </div>

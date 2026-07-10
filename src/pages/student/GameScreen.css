@@ -742,3 +742,143 @@
     font-size: 13px;
   }
 }
+
+/* ── 챕터 연속 진행: 단계바(1~5) — 완료=채움, 현재=테두리 강조 ── */
+.gs-stagebar {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 16px;
+  padding: 8px 14px;
+  border-radius: 20px;
+  background: var(--gs-soft);
+}
+.gs-stagebar-label {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--gs-solid);
+  margin-right: 3px;
+}
+.gs-stageseg {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12.5px;
+  font-weight: 800;
+  background: #fff;
+  color: #b7ab9d;
+  border: 2px solid transparent;
+}
+.gs-stageseg-done {
+  background: var(--gs-solid);
+  color: #fff;
+}
+.gs-stageseg-cur {
+  border-color: var(--gs-solid);
+  color: var(--gs-solid);
+}
+.gs-stagebar-replay {
+  margin-left: 4px;
+  font-size: 12px;
+  font-weight: 800;
+  color: #6a4fcc;
+  background: #ede6ff;
+  padding: 4px 10px;
+  border-radius: 14px;
+}
+
+/* ── 비방해 전환/축하 토스트 — 위젯 위에 떠 있고 조작을 막지 않는다 ── */
+.gs-stagebanner {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  pointer-events: none;
+  background: rgba(58, 50, 38, 0.88);
+  color: #fff;
+  font-weight: 800;
+  font-size: 14.5px;
+  padding: 11px 20px;
+  border-radius: 24px;
+  box-shadow: 0 10px 24px -10px rgba(58, 50, 38, 0.5);
+  animation: gsBannerIn 0.25s ease;
+  max-width: 90%;
+  text-align: center;
+}
+@keyframes gsBannerIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(-8px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gs-stagebanner { animation: none; }
+}
+
+/* ── 그만하기 확인 팝업 ── */
+.gs-quitpop-back {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  background: rgba(58, 50, 38, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.gs-quitpop {
+  background: #fff;
+  border-radius: 22px;
+  padding: 26px 24px 20px;
+  max-width: 340px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 24px 60px -24px rgba(58, 50, 38, 0.5);
+}
+.gs-quitpop-icon {
+  font-size: 40px;
+  margin-bottom: 8px;
+}
+.gs-quitpop-title {
+  font-family: 'Jua', sans-serif;
+  font-size: 20px;
+  color: #3a3340;
+  margin-bottom: 6px;
+}
+.gs-quitpop-msg {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #8a8072;
+  line-height: 1.6;
+  margin-bottom: 18px;
+}
+.gs-quitpop-btns {
+  display: flex;
+  gap: 9px;
+}
+.gs-quitpop-stay {
+  flex: 1;
+  padding: 12px;
+  border: 2px solid #f0e4d8;
+  border-radius: 13px;
+  background: #fff;
+  color: #8a8072;
+  font-weight: 800;
+  font-size: 14px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.gs-quitpop-go {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 13px;
+  background: var(--gs-solid, #ff5a4d);
+  color: #fff;
+  font-weight: 800;
+  font-size: 14px;
+  cursor: pointer;
+  font-family: inherit;
+}

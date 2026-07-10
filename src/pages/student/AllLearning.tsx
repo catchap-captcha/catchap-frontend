@@ -255,8 +255,12 @@ export default function AllLearning() {
           const curStages = cur ? cur.stages : 5;
           const pct = curStages ? Math.round((curDone / curStages) * 100) : 0;
           // 오늘의 퀴즈와 같은 위젯(GameScreen)으로 통일 — 이어할 챕터의 다음 미완료 단계를 연다.
+          // 이미 5단계를 다 끝낸 챕터면 복습 모드(1단계부터, 코인·진도 미적립)로 들어간다.
+          const curFinished = !!cur && curDone >= curStages;
           const playHref = cur
-            ? `${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(c.tag)}&chapter=${cur.no}&stage=${Math.min(cur.stages, curDone + 1)}`
+            ? curFinished
+              ? `${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(c.tag)}&chapter=${cur.no}&stage=1&replay=1`
+              : `${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(c.tag)}&chapter=${cur.no}&stage=${Math.min(cur.stages, curDone + 1)}`
             : '';
           return (
             <div key={c.key} className="al-cat">
@@ -339,7 +343,11 @@ function ChapterWeeks({ cat, playHref }: { cat: Cat; playHref: string }) {
       <div className="al-lessons" ref={trackRef}>
         {cat.available && cat.chapters.length ? (
           cat.chapters.map((ch) => {
-            const href = `${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(cat.tag)}&chapter=${ch.no}&stage=${Math.min(ch.stages, ch.stagesDone + 1)}`;
+            // 완주 챕터(5/5)는 복습 모드(1단계부터, 코인·진도 미적립)로 진입
+            const chFinished = ch.stagesDone >= ch.stages;
+            const href = chFinished
+              ? `${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(cat.tag)}&chapter=${ch.no}&stage=1&replay=1`
+              : `${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(cat.tag)}&chapter=${ch.no}&stage=${Math.min(ch.stages, ch.stagesDone + 1)}`;
             const inner = (
               <>
                 <div className="al-ls-head">
