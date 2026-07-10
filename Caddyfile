@@ -1,0 +1,9 @@
+# 프론트 VM — www.catchap5.com 자동 HTTPS → web(nginx) 컨테이너. apex는 www로 리다이렉트.
+www.catchap5.com {
+	reverse_proxy web:80
+	encode gzip
+}
+
+catchap5.com {
+	redir https://www.catchap5.com{uri} permanent
+}

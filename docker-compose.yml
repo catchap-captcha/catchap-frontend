@@ -1,0 +1,31 @@
+# 프론트 VM(210.109.14.25)용 — React 정적(nginx) + Caddy(자동 HTTPS, www.catchap5.com)
+# 실행: docker compose --env-file .env up -d --build   (.env 에 VITE_* 값)
+services:
+  web:
+    build:
+      context: .
+      args:
+        # 빌드 타임 주입 — Vite가 번들에 인라인. 값 바꾸면 --build 로 재빌드 필요.
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-https://api.catchap5.com}
+        VITE_CATCHAP_EDU_SITE_KEY: ${VITE_CATCHAP_EDU_SITE_KEY}
+    image: catchap-frontend:latest
+    restart: unless-stopped
+    expose:
+      - "80"
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - web
+
+volumes:
+  caddy_data:
+  caddy_config:
