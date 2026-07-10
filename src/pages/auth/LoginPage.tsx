@@ -119,6 +119,10 @@ export default function LoginPage() {
   const [codeSent, setCodeSent] = useState(false);
   const [codeSecondsLeft, setCodeSecondsLeft] = useState(0); // 이메일 인증코드 유효시간(5분) 카운트다운
   const [verified, setVerified] = useState(false);
+  // 교사 초대링크로 진입한 경우: 초대 토큰(가입 시 서버로 전달해 이메일 인증코드 생략)과
+  // 초대 시 관리자가 입력한 이름(이름칸 자동 입력). inviteToken이 있으면 '초대 가입' 모드.
+  const [inviteToken, setInviteToken] = useState<string | null>(null);
+  const [prefillName, setPrefillName] = useState('');
   const [orgStep, setOrgStep] = useState<OrgStep>('form');
   const [orgPlan, setOrgPlan] = useState('basic');
   const [contractType, setContractType] = useState('monthly');
@@ -169,9 +173,11 @@ export default function LoginPage() {
     sessionStorage.removeItem(INVITE_PREFILL_KEY);
     try {
       const p = JSON.parse(raw) as {
+        token?: string;
         organizationId: string;
         organizationName: string;
         teacherCode: string;
+        name?: string;
         email: string;
         role: string;
         instType?: string;
@@ -197,6 +203,10 @@ export default function LoginPage() {
       setOrgCode(p.teacherCode);
       setOrgCodeStatus('valid');
       setEmail(p.email);
+      if (p.token) setInviteToken(p.token);
+      if (p.name) setPrefillName(p.name);
+      // 초대 메일 수신으로 이메일 소유가 이미 증명됨 → 인증 완료 상태로 두고 코드 절차 생략
+      setVerified(true);
     } catch {
       /* 프리필 파싱 실패 시 일반 로그인 화면 유지 */
     }
@@ -213,7 +223,16 @@ export default function LoginPage() {
 
   const mmss = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 
+  // 초대 이름 자동 입력: 이름칸은 비제어(uncontrolled) 입력이라 가입 뷰가 렌더된 뒤 DOM 값을 채운다.
+  useEffect(() => {
+    if (!prefillName) return;
+    const el = formRef.current?.querySelector<HTMLInputElement>('[data-req="이름"]');
+    if (el && !el.value) el.value = prefillName;
+  }, [prefillName, view, orgKind]);
+
   const isTeacher = role === 'org' && orgKind === 'teacher';
+  // 초대 링크로 온 교사 가입: 기관·코드·이메일이 확정돼 있어 기관 선택/코드/이메일 인증 UI를 숨긴다.
+  const invited = isTeacher && !!inviteToken;
   const orgChoose = role === 'org' && orgKind === null;
   const personalSignup = role === 'student' || role === 'parent' || isTeacher;
   const showInstitution = role === 'student' || isTeacher;
@@ -325,6 +344,7 @@ export default function LoginPage() {
         email_code: emailCode,
         organization_id: signupInst?.organizationId ?? '',
         teacher_code: orgCode.trim(),
+        invite_token: inviteToken ?? undefined,
       });
     }
     req
@@ -961,7 +981,33 @@ export default function LoginPage() {
                   <input type="text" data-req="이름" placeholder={namePlaceholder} className="lg-input" />
                 </div>
 
-                {showInstitution && (
+                {showInstitution && invited && (
+                  <>
+                    <label className="lg-label">소속 기관</label>
+                    <div className="lg-invitedInst lg-mb15">
+                      <div className="lg-invitedInst-name">
+                        <i className="ph-fill ph-buildings" />
+                        <span>{signupInst?.name || '소속 기관'}</span>
+                      </div>
+                      {(() => {
+                        const addr = [
+                          signupInst?.sido,
+                          signupInst?.sigungu,
+                          signupInst?.dong,
+                          signupInst?.road,
+                        ]
+                          .filter((s) => s && s.trim())
+                          .join(' ');
+                        return addr ? <p className="lg-invitedInst-addr">{addr}</p> : null;
+                      })()}
+                      <p className="lg-invitedInst-note">
+                        <i className="ph-fill ph-check-circle" /> 초대받은 기관·교사 코드가 자동으로 확인됐어요.
+                      </p>
+                    </div>
+                  </>
+                )}
+
+                {showInstitution && !invited && (
                   <>
                     <label className="lg-label">소속 기관</label>
                     <div className="lg-mb15">
@@ -1038,17 +1084,31 @@ export default function LoginPage() {
                       placeholder="example@email.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className={'lg-input' + (emailInvalid ? ' lg-input--soft-invalid' : '')}
+                      readOnly={invited}
+                      className={
+                        'lg-input' +
+                        (emailInvalid ? ' lg-input--soft-invalid' : '') +
+                        (invited ? ' lg-input--readonly' : '')
+                      }
                     />
                   </div>
-                  <button
-                    type="button"
-                    onClick={sendCode}
-                    className={'lg-sendbtn' + (codeSent ? ' lg-sendbtn--sent' : '')}
-                  >
-                    {codeSent ? '재전송' : '인증코드 받기'}
-                  </button>
+                  {!invited && (
+                    <button
+                      type="button"
+                      onClick={sendCode}
+                      className={'lg-sendbtn' + (codeSent ? ' lg-sendbtn--sent' : '')}
+                    >
+                      {codeSent ? '재전송' : '인증코드 받기'}
+                    </button>
+                  )}
                 </div>
+
+                {invited && (
+                  <div className="lg-verified lg-mb9">
+                    <i className="ph-fill ph-check-circle" />
+                    <span>초대 메일로 이메일 인증이 완료됐어요. 비밀번호만 정하면 가입이 끝나요.</span>
+                  </div>
+                )}
 
                 {emailInvalid && (
                   <div className="lg-emailerr">
@@ -1720,12 +1780,18 @@ export default function LoginPage() {
 
               <h3>가입이 완료됐어요! 🎉</h3>
               <p className="lg-done-name">
-                {role === 'parent' ? '학부모님, 환영해요!' : '반가워요, 새 친구!'}
+                {role === 'parent'
+                  ? '학부모님, 환영해요!'
+                  : isTeacher
+                    ? '선생님, 환영해요!'
+                    : '반가워요, 새 친구!'}
               </p>
               <p className="lg-done-msg">
                 {role === 'parent'
                   ? '회원가입이 완료됐어요. 로그인 후 자녀 계정과 연결하면 학습 현황을 확인할 수 있어요.'
-                  : '회원가입이 완료됐어요. 이제 로그인해서 냥이와 함께 학습을 시작해요!'}
+                  : isTeacher
+                    ? '선생님 가입이 완료됐어요. 로그인하면 담당 학급과 학생들의 학습 현황을 관리할 수 있어요.'
+                    : '회원가입이 완료됐어요. 이제 로그인해서 냥이와 함께 학습을 시작해요!'}
               </p>
 
               <button

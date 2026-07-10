@@ -100,6 +100,7 @@ export const authApi = {
         email: string;
         role: string;
         teacher_code: string;
+        name: string | null;
         inst_type: string;
         sido: string;
         sigungu: string;

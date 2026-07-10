@@ -37,8 +37,9 @@ const ROLES = ['담임', '교과', '보조'];
 const GRADES = [1, 2, 3, 4, 5, 6];
 
 function parseCls(cls: string) {
+  // 담당 반이 없으면(미배정) grade=0 — 1학년으로 잘못 묶이지 않게 한다.
   const m = /^(\d+)\s*-\s*(\d+)/.exec(cls || '');
-  return { grade: m ? +m[1] : 1, ban: m ? +m[2] : 1 };
+  return { grade: m ? +m[1] : 0, ban: m ? +m[2] : 0 };
 }
 
 function roleClass(r: string) {
@@ -317,9 +318,25 @@ export default function OrgTeachers() {
     }
   };
 
-  const chips = [{ key: 'all', label: '전체' }].concat(GRADES.map((g) => ({ key: String(g), label: `${g}학년` })));
+  // 학년 필터 칩은 고정 1~6학년이 아니라 실제 교사가 배정된 학년만 노출한다(빈 학년 버튼 제거).
+  // 담당 반이 없는 교사가 있으면 '미배정' 칩을 덧붙인다.
+  const teacherCount = (key: string) =>
+    teachers.filter((t) => {
+      const g = parseCls(t.cls).grade;
+      if (key === 'none') return !(g >= 1 && g <= 6);
+      return String(g) === key;
+    }).length;
+  const gradesPresent = GRADES.filter((g) => teacherCount(String(g)) > 0);
+  const chips = [{ key: 'all', label: '전체' }]
+    .concat(gradesPresent.map((g) => ({ key: String(g), label: `${g}학년` })))
+    .concat(teacherCount('none') > 0 ? [{ key: 'none', label: '미배정' }] : []);
   const filtered = teachers
-    .filter((t) => filter === 'all' || String(parseCls(t.cls).grade) === filter)
+    .filter((t) => {
+      if (filter === 'all') return true;
+      const g = parseCls(t.cls).grade;
+      if (filter === 'none') return !(g >= 1 && g <= 6); // 미배정
+      return String(g) === filter;
+    })
     .filter((t) => !search.trim() || t.name.includes(search.trim()));
 
   return (
@@ -377,7 +394,7 @@ export default function OrgTeachers() {
           >
             {c.label}{' '}
             <span className="ot-chipCount">
-              {c.key === 'all' ? teachers.length : teachers.filter((t) => String(parseCls(t.cls).grade) === c.key).length}
+              {c.key === 'all' ? teachers.length : teacherCount(c.key)}
             </span>
           </button>
         ))}
@@ -416,7 +433,9 @@ export default function OrgTeachers() {
                   </div>
                 </td>
                 <td>
-                  <span className="ot-clsBadge">{t.cls}</span>
+                  <span className={'ot-clsBadge' + (t.cls ? '' : ' ot-clsBadge--none')}>
+                    {t.cls || '미배정'}
+                  </span>
                 </td>
                 <td>
                   <span className={roleClass(t.role)}>{t.role}</span>
@@ -428,14 +447,22 @@ export default function OrgTeachers() {
                   </span>
                 </td>
                 <td>
-                  <span
-                    className={
-                      t.status === 'active' ? 'ot-statusBadge ot-statusActive' : 'ot-statusBadge ot-statusPending'
-                    }
-                  >
-                    <i className={t.status === 'active' ? 'ph-fill ph-check-circle' : 'ph-fill ph-clock'} />
-                    {t.status === 'active' ? '배정 완료' : '승인 대기'}
-                  </span>
+                  {/* 상태: 초대만 하고 아직 가입 전이면 '가입 대기', 가입했지만 담당 반이 없으면
+                      '미배정', 가입 + 반 배정까지 끝났으면 '배정 완료'. */}
+                  {(() => {
+                    const st =
+                      t.status !== 'active'
+                        ? { cls: 'ot-statusPending', icon: 'ph-clock', label: '가입 대기' }
+                        : t.cls
+                          ? { cls: 'ot-statusActive', icon: 'ph-check-circle', label: '배정 완료' }
+                          : { cls: 'ot-statusUnassigned', icon: 'ph-user-circle', label: '미배정' };
+                    return (
+                      <span className={`ot-statusBadge ${st.cls}`}>
+                        <i className={`ph-fill ${st.icon}`} />
+                        {st.label}
+                      </span>
+                    );
+                  })()}
                 </td>
                 <td>
                   <div className="ot-actions">
@@ -454,7 +481,7 @@ export default function OrgTeachers() {
                           title="학년부장 임명"
                           disabled={t.status !== 'active'}
                           onClick={() =>
-                            setGhModal({ id: t.id, name: t.name, grade: parseCls(t.cls).grade })
+                            setGhModal({ id: t.id, name: t.name, grade: parseCls(t.cls).grade || t.managedGrade || 1 })
                           }
                         >
                           <i className="ph-bold ph-star" />

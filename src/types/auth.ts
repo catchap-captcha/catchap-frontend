@@ -67,6 +67,8 @@ export interface RegisterTeacherRequest {
   email_code: string;
   organization_id: string;
   teacher_code: string;
+  /** 초대 링크로 가입할 때 전달 — 서버가 이메일 소유를 확인해 인증코드를 생략한다 */
+  invite_token?: string;
 }
 
 export interface RegisterStudentRequest {

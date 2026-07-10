@@ -336,6 +336,19 @@
   color: #C98A00;
 }
 
+/* 가입은 했지만 담당 반이 아직 없는 교사 */
+.ot-statusUnassigned {
+  background: #EDEFF5;
+  color: #6B7185;
+}
+
+/* 담당 반 미배정 상태의 반 뱃지(옅게) */
+.ot-clsBadge--none {
+  background: #F1F1F4;
+  color: #A0A2AE;
+  font-weight: 700;
+}
+
 .ot-actions {
   display: flex;
   gap: 6px;

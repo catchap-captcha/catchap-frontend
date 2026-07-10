@@ -28,9 +28,11 @@ export default function InvitePage() {
         sessionStorage.setItem(
           INVITE_PREFILL_KEY,
           JSON.stringify({
+            token, // 가입 시 서버로 되돌려 이메일 인증코드를 생략(초대가 이메일 소유 증명)
             organizationId: inv.organization_id,
             organizationName: inv.organization_name,
             teacherCode: inv.teacher_code,
+            name: inv.name ?? '',
             email: inv.email,
             role: inv.role,
             instType: inv.inst_type,
