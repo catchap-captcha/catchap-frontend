@@ -19,13 +19,18 @@ declare global {
 }
 
 let scriptPromise: Promise<void> | null = null;
+// 앱 로드 1회 고정된 버전 토큰 — 위젯 <script> 캐시버스트용(페이지 새로고침마다 갱신).
+const WIDGET_VERSION = Math.floor(performance.timeOrigin);
 
 /** 위젯 스크립트를 1회만 로드하고 window.CatChap 준비를 보장한다. */
 function ensureScript(api: string): Promise<void> {
   if (window.CatChap) return Promise.resolve();
   if (scriptPromise) return scriptPromise;
   scriptPromise = new Promise<void>((resolve, reject) => {
-    const src = `${api.replace(/\/$/, '')}/widget/catchap-widget.js`;
+    // 캐시버스트: 페이지 로드 시각을 버전으로 붙여, 백엔드가 위젯을 갱신하면 다음 방문에
+    // 최신본을 받는다(브라우저가 옛 위젯을 무기한 캐시하던 문제 방지). SPA 내 재마운트는
+    // 아래 existing 재사용으로 재요청 없음.
+    const src = `${api.replace(/\/$/, '')}/widget/catchap-widget.js?v=${WIDGET_VERSION}`;
     const existing = document.querySelector<HTMLScriptElement>(`script[data-catchap-widget]`);
     if (existing) {
       existing.addEventListener('load', () => resolve());
