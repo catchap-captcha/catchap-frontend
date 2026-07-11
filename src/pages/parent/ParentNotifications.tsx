@@ -33,27 +33,6 @@ interface PnChip {
   label: string;
 }
 
-// TODO(api): notificationApi.list() 실패 시 원본 하드코딩 알림 목록 유지
-const FALLBACK_TODAY: PnItem[] = [
-  { id: 't1', title: '이수진 선생님 메시지', tag: '선생님', body: '"하은이가 오늘 숫자 놀이터를 끝까지 잘 해냈어요. 집에서도 칭찬 많이 해주세요!"', time: '방금 전', icon: 'ph-fill ph-chalkboard-teacher', color: '#FF5A4D', bg: '#FFE7E2', unread: true, child: '하은' },
-  { id: 't2', title: '주간 리포트 도착', tag: '리포트', body: '하은이의 6월 넷째 주 학습 요약이 준비됐어요. 지금 확인해 보세요.', time: '1시간 전', icon: 'ph-fill ph-file-text', color: '#8B6BFF', bg: '#EDE6FF', unread: true, child: '하은' },
-  { id: 't3', title: '새 배지 획득 🏅', body: '도윤이가 "첫 걸음" 배지를 얻었어요!', time: '3시간 전', icon: 'ph-fill ph-medal', color: '#F0A400', bg: '#FFF3D6', unread: true, child: '도윤' },
-];
-
-const FALLBACK_EARLIER: PnItem[] = [
-  { id: 'e1', title: '박민호 선생님 메시지', tag: '선생님', body: '"도윤이가 그림 찾기를 참 좋아해요. 오늘도 스스로 3판이나 했답니다."', time: '어제', icon: 'ph-fill ph-chalkboard-teacher', color: '#FF5A4D', bg: '#FFE7E2', unread: false, child: '도윤' },
-  { id: 'e2', title: '상담 AI 답변 준비 완료', body: '어제 남기신 질문에 대한 상담 AI 답변이 준비됐어요.', time: '어제', icon: 'ph-fill ph-robot', color: '#2E7BFF', bg: '#E6F0FF', unread: false, child: '하은' },
-  { id: 'e3', title: '학습 리마인드', body: '하은이가 3일 연속 학습 중이에요. 오늘도 함께 응원해 주세요!', time: '2일 전', icon: 'ph-fill ph-fire', color: '#FF922E', bg: '#FFEDE0', unread: false, child: '하은' },
-  { id: 'e4', title: '월간 리포트 안내', body: '6월 월간 리포트를 곧 보내드릴 예정이에요.', time: '4일 전', icon: 'ph-fill ph-calendar-check', color: '#17B08C', bg: '#DFF6ED', unread: false, child: '하은' },
-];
-
-/** 원본 CHILDREN 그대로 — parentApi.children() 성공 시 자녀 이름으로 재구성 */
-const FALLBACK_CHIPS: PnChip[] = [
-  { key: 'all', label: '전체' },
-  { key: '하은', label: '하은' },
-  { key: '도윤', label: '도윤' },
-];
-
 /** API 알림 category → 원본 알림 종류별 아이콘/색/태그 */
 const API_STYLE: Record<string, { icon: string; color: string; bg: string; tag?: string }> = {
   선생님: { icon: 'ph-fill ph-chalkboard-teacher', color: '#FF5A4D', bg: '#FFE7E2', tag: '선생님' },
@@ -104,10 +83,11 @@ function toItem(n: Notification, nameById: Record<string, string>): PnItem {
 }
 
 export default function ParentNotifications() {
-  const [today, setToday] = useState<PnItem[]>(FALLBACK_TODAY);
-  const [earlier, setEarlier] = useState<PnItem[]>(FALLBACK_EARLIER);
-  const [chips, setChips] = useState<PnChip[]>(FALLBACK_CHIPS);
-  const [view, setView] = useState<'list' | 'empty'>('list');
+  // 미연동/데이터 없음 시 데모 알림(하은) 대신 빈 상태 — 실제 알림이 있을 때만 채운다
+  const [today, setToday] = useState<PnItem[]>([]);
+  const [earlier, setEarlier] = useState<PnItem[]>([]);
+  const [chips, setChips] = useState<PnChip[]>([{ key: 'all', label: '전체' }]);
+  const [view, setView] = useState<'list' | 'empty'>('empty');
   const [allRead, setAllRead] = useState(false);
   const [child, setChild] = useState('all');
 
@@ -143,8 +123,9 @@ export default function ParentNotifications() {
         });
         setToday(t);
         setEarlier(e);
+        setView('list');
       }
-      // TODO(api): 백엔드 미구현 — 실패한 호출은 FALLBACK 유지
+      // 실패/비배열 응답은 빈 상태(기본값) 유지 — 데모 알림을 보이지 않음
     });
   }, []);
 

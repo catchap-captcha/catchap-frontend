@@ -118,16 +118,18 @@ function toChild(raw: any, i: number): ChildInfo {
 }
 
 export default function ParentCounselAi() {
-  const [children, setChildren] = useState<ChildInfo[]>(FALLBACK_CHILDREN);
-  const [activeId, setActiveId] = useState(FALLBACK_CHILDREN[0].id);
-  // 원본 state.messages === 하은 intro
-  const [messages, setMessages] = useState<ChatMessage[]>(introOf(FALLBACK_CHILDREN[0]));
+  // null=로딩중, []=연결된 자녀 없음 (미연동 시 데모 자녀 노출 방지)
+  const [children, setChildren] = useState<ChildInfo[] | null>(null);
+  const [activeId, setActiveId] = useState('');
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const messagesRef = useRef<HTMLDivElement>(null);
   /** 인트로 fetch 경합 방지 — 현재 선택된 자녀 id */
-  const activeIdRef = useRef(FALLBACK_CHILDREN[0].id);
+  const activeIdRef = useRef('');
 
-  const active = children.find((c) => c.id === activeId) ?? children[0];
+  const loaded = children !== null;
+  const childList = children ?? [];
+  const active = childList.find((c) => c.id === activeId) ?? childList[0];
 
   /** 자녀 인트로 로드 — API intro 성공 시 교체, 실패 시 기존 하드코딩 intro 유지 */
   const loadIntro = (c: ChildInfo) => {
@@ -137,7 +139,7 @@ export default function ParentCounselAi() {
       .then((data) => {
         const intro = typeof data?.intro === 'string' && data.intro ? data.intro : '';
         if (!intro || activeIdRef.current !== c.id) return;
-        setChildren((cs) => cs.map((x) => (x.id === c.id ? { ...x, intro } : x)));
+        setChildren((cs) => (cs ?? []).map((x) => (x.id === c.id ? { ...x, intro } : x)));
         setMessages(introOf({ ...c, intro }));
       })
       .catch(() => {
@@ -155,7 +157,10 @@ export default function ParentCounselAi() {
     parentApi
       .children()
       .then((list) => {
-        if (!Array.isArray(list) || list.length === 0) return;
+        if (!Array.isArray(list) || list.length === 0) {
+          setChildren([]); // 연결된 자녀 없음
+          return;
+        }
         const mapped = list.map(toChild);
         setChildren(mapped);
         setActiveId(mapped[0].id);
@@ -163,7 +168,7 @@ export default function ParentCounselAi() {
         loadIntro(mapped[0]);
       })
       .catch(() => {
-        /* TODO(api): 백엔드 미구현 — FALLBACK(하은/도윤) 유지 */
+        setChildren([]); // 조회 실패 시에도 데모 자녀 대신 빈 상태
       });
   }, []);
 
@@ -203,6 +208,23 @@ export default function ParentCounselAi() {
     ask(t);
   };
 
+  // 연결된 자녀가 없으면 상담 대상이 없으므로 빈 상태
+  if (loaded && childList.length === 0) {
+    return (
+      <ParentLayout className="pc-bg">
+        <section className="pc-body">
+          <div className="pc-empty">
+            <div className="pc-empty-ic"><i className="ph-fill ph-chats-circle" /></div>
+            <h2 className="pc-empty-title">상담할 자녀가 없어요</h2>
+            <p className="pc-empty-text">
+              자녀를 연결하면 학습 데이터를 바탕으로 AI 상담을 받을 수 있어요. 홈에서 <b>자녀 연결</b>을 먼저 해주세요.
+            </p>
+          </div>
+        </section>
+      </ParentLayout>
+    );
+  }
+
   return (
     <ParentLayout className="pc-bg">
       {/* BODY */}
@@ -230,7 +252,7 @@ export default function ParentCounselAi() {
               <span className="pc-childhint">자녀를 선택하세요</span>
             </div>
             <div className="pc-childlist">
-              {children.map((c) => {
+              {childList.map((c) => {
                 const isActive = c.id === active.id;
                 return (
                   <button

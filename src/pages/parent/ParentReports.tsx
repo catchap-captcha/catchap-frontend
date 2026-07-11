@@ -173,7 +173,7 @@ const numArr = (v: any): number[] | null =>
   Array.isArray(v) && v.length && v.every((x: any) => typeof x === 'number') ? (v as number[]) : null;
 
 export default function ParentReports() {
-  const [chips, setChips] = useState<ChildData[]>(FALLBACK_LIST);
+  const [chips, setChips] = useState<ChildData[] | null>(null); // null=로딩중, []=연결된 자녀 없음
   const [child, setChild] = useState('하은');
   const [period, setPeriod] = useState<'week' | 'month' | 'year'>('week');
   const [trendSubject, setTrendSubject] = useState('all');
@@ -187,7 +187,12 @@ export default function ParentReports() {
     parentApi
       .children()
       .then((list: any) => {
-        if (!mounted || !Array.isArray(list) || !list.length) return;
+        if (!mounted) return;
+        // 연결된 자녀가 없으면 빈 배열 — 데모 자녀·리포트를 실데이터처럼 보여주지 않는다.
+        if (!Array.isArray(list) || !list.length) {
+          setChips([]);
+          return;
+        }
         // API: [{id, nickname, age, status, student_code, class_name, ...}] — name/code 대신 nickname/student_code
         setChips(
           list.map((c: any, i: number) => {
@@ -207,14 +212,16 @@ export default function ParentReports() {
         );
       })
       .catch(() => {
-        // TODO(api): 백엔드 미구현/실패 시 FALLBACK 유지
+        if (mounted) setChips([]); // 실패해도 데모 자녀는 안 만든다
       });
     return () => {
       mounted = false;
     };
   }, []);
 
-  const cur = chips.find((c) => c.name === child) ?? chips[0] ?? FALLBACK.하은;
+  const loaded = chips !== null;
+  const chipList = chips ?? [];
+  const cur = chipList.find((c) => c.name === child) ?? chipList[0] ?? FALLBACK.하은;
 
   // TODO(api): 상세 리포트 — 실패·로딩 시 FALLBACK 유지(화면 골격 보존)
   useEffect(() => {
@@ -397,6 +404,23 @@ export default function ParentReports() {
     }
   };
 
+  // 연결된 자녀가 없으면 데모 리포트 대신 빈 상태 (미연동 시 데모값 노출 방지)
+  if (loaded && chipList.length === 0) {
+    return (
+      <ParentLayout className="prt-bg" bell={<ParentBellLink />}>
+        <div className="prt-container">
+          <div className="prt-empty">
+            <div className="prt-empty-ic"><i className="ph-fill ph-file-dashed" /></div>
+            <h2 className="prt-empty-title">아직 볼 리포트가 없어요</h2>
+            <p className="prt-empty-text">
+              자녀를 연결하면 주간·월간 학습 리포트를 볼 수 있어요. 홈에서 <b>자녀 연결</b>을 먼저 해주세요.
+            </p>
+          </div>
+        </div>
+      </ParentLayout>
+    );
+  }
+
   return (
     <ParentLayout className="prt-bg" bell={<ParentBellLink />}>
       <div className="prt-container">
@@ -406,7 +430,7 @@ export default function ParentReports() {
           <div className="prt-top-left">
             <span className="prt-top-label">리포트 대상</span>
             <div className="prt-chips">
-              {chips.map((c) => {
+              {chipList.map((c) => {
                 const on = c.name === cur.name;
                 return (
                   <button

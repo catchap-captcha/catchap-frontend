@@ -99,12 +99,6 @@ const CHILD_META: Record<string, { age: string; goal: string; goalMin: number | 
   'CAT-6188': { age: '5세', goal: '하루 10분', goalMin: 10, week: '8회 학습' },
 };
 
-// TODO(api): parentApi.children() 실패 시 원본 하드코딩 유지
-const FALLBACK_CHILDREN: ChildItem[] = [
-  { id: null, name: '김하은', initial: '하', code: 'CAT-4823', cls: '1-2반', avatarBg: AVATAR_BGS[0], age: '7세', goal: '하루 15분', goalMin: 15, week: '14회 학습', limitOn: true },
-  { id: null, name: '김하람', initial: '람', code: 'CAT-6188', cls: '1-2반', avatarBg: AVATAR_BGS[1], age: '5세', goal: '하루 10분', goalMin: 10, week: '8회 학습', limitOn: false },
-];
-
 // TODO(api): settingsApi.get() 실패 시 원본 기본값 유지
 const FALLBACK_NOTIF: Record<NotifKey, boolean> = { weekly: true, teacher: true, complete: true, recommend: false, badge: true };
 const FALLBACK_CHANNELS: Record<ChannelKey, boolean> = { push: true, email: true, sms: false };
@@ -117,7 +111,7 @@ export default function ParentMyPage() {
 
   const [tab, setTab] = useState<TabKey>('profile');
   const [profile, setProfile] = useState<ProfileData>(FALLBACK_PROFILE);
-  const [children, setChildren] = useState<ChildItem[]>(FALLBACK_CHILDREN);
+  const [children, setChildren] = useState<ChildItem[] | null>(null); // null=로딩중, []=연결된 자녀 없음
   const [notif, setNotif] = useState(FALLBACK_NOTIF);
   const [channels, setChannels] = useState(FALLBACK_CHANNELS);
   const [privacy, setPrivacy] = useState(FALLBACK_PRIVACY);
@@ -186,6 +180,9 @@ export default function ParentMyPage() {
     }));
   }, [me]);
 
+  const childLoaded = children !== null;
+  const childList = children ?? [];
+
   /* 자녀 목록 + 자녀별 설정(목표/시간제한) 로드 — 자녀 연결 후에도 재사용 */
   const fetchChildren = useCallback(async (): Promise<ChildItem[] | null> => {
     const rows = await parentApi.children();
@@ -229,10 +226,10 @@ export default function ParentMyPage() {
     let cancelled = false;
     fetchChildren()
       .then((detailed) => {
-        if (detailed && !cancelled) setChildren(detailed);
+        if (!cancelled) setChildren(detailed ?? []); // 미연동/실패 시 데모 대신 빈 목록
       })
       .catch(() => {
-        /* TODO(api): 실패 시 원본 FALLBACK_CHILDREN 유지 */
+        if (!cancelled) setChildren([]);
       });
     return () => {
       cancelled = true;
@@ -287,7 +284,7 @@ export default function ParentMyPage() {
 
   const toggleChildLimit = (child: ChildItem) => {
     const nextOn = !child.limitOn;
-    setChildren((cs) => cs.map((c) => (c === child ? { ...c, limitOn: nextOn } : c)));
+    setChildren((cs) => (cs ?? []).map((c) => (c === child ? { ...c, limitOn: nextOn } : c)));
     if (child.id) {
       parentApi
         .saveChildSettings(child.id, { daily_goal: child.goalMin ?? 5, time_limit_enabled: nextOn })
@@ -302,7 +299,7 @@ export default function ParentMyPage() {
       .unlink(child.id ?? child.code)
       .then(() => {
         // 서버가 실제로 해제한 뒤에만 목록에서 제거 (실패 시 목록에 남아 있는 모순 방지)
-        setChildren((cs) => cs.filter((c) => c !== child));
+        setChildren((cs) => (cs ?? []).filter((c) => c !== child));
         flash(`${child.name} 연결을 해제했어요`);
       })
       .catch(() => {
@@ -528,7 +525,7 @@ export default function ParentMyPage() {
                     <div className="pm-pro-name">{displayName}</div>
                     <div className="pm-pro-pill">
                       <i className="ph-fill ph-users-three" />
-                      연결된 자녀 {children.length}명
+                      연결된 자녀 {childList.length}명
                     </div>
                   </div>
                 </div>
@@ -581,7 +578,10 @@ export default function ParentMyPage() {
               <div className="pm-card pm-card--sm">
                 <div className="pm-card-title">연결된 자녀</div>
                 <div className="pm-kids">
-                  {children.map((c) => (
+                  {childLoaded && childList.length === 0 && (
+                    <div className="pm-kid-empty">아직 연결된 자녀가 없어요. 아래 자녀 관리에서 초대코드로 연결해 주세요.</div>
+                  )}
+                  {childList.map((c) => (
                     <div key={c.code} className="pm-kid">
                       <span className="pm-kid-ava" style={{ background: c.avatarBg }}>
                         {c.initial}
@@ -759,7 +759,17 @@ export default function ParentMyPage() {
                 </button>
               </div>
               <div className="pm-ch-list">
-                {children.map((c) => (
+                {childLoaded && childList.length === 0 && (
+                  <div className="pm-ch-empty">
+                    <div className="pm-ch-empty-ic"><i className="ph-fill ph-users-three" /></div>
+                    <div className="pm-ch-empty-title">아직 연결된 자녀가 없어요</div>
+                    <div className="pm-ch-empty-text">학교에서 받은 초대코드(LINK-XXXX-XXXX)로 자녀를 연결하면 학습 목표와 이용 시간을 관리할 수 있어요.</div>
+                    <button className="pm-connect-btn" onClick={connectChild}>
+                      <i className="ph-bold ph-plus" /> 자녀 연결하기
+                    </button>
+                  </div>
+                )}
+                {childList.map((c) => (
                   <div key={c.code} className="pm-ch-card">
                     <div className="pm-ch-row">
                       <span className="pm-ch-ava" style={{ background: c.avatarBg }}>

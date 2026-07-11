@@ -544,3 +544,10 @@
   .pc-body { padding: 0 13px; }
   .pc-bubble { max-width: 86%; }
 }
+
+/* 연결된 자녀 없음 — 상담 빈 상태 */
+.pc-empty { display:flex; flex-direction:column; align-items:center; text-align:center; padding:64px 24px; gap:12px; margin:auto; }
+.pc-empty-ic { width:76px; height:76px; border-radius:24px; background:#eef2ff; color:#6c8cff; display:flex; align-items:center; justify-content:center; font-size:38px; }
+.pc-empty-title { font-family:'Jua',sans-serif; font-size:22px; color:#3a3340; margin:0; }
+.pc-empty-text { color:#8a8072; font-weight:600; font-size:14px; line-height:1.6; max-width:400px; margin:0; }
+.pc-empty-text b { color:#6c8cff; }

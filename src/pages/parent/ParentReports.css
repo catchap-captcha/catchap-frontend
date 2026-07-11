@@ -925,3 +925,10 @@
   .prt-kpis { grid-template-columns: 1fr; }
   .prt-reasons { grid-template-columns: 1fr; }
 }
+
+/* 연결된 자녀 없음 — 리포트 빈 상태 */
+.prt-empty { display:flex; flex-direction:column; align-items:center; text-align:center; padding:60px 24px; gap:12px; }
+.prt-empty-ic { width:76px; height:76px; border-radius:24px; background:#fff1e9; color:#ff7a4d; display:flex; align-items:center; justify-content:center; font-size:38px; }
+.prt-empty-title { font-family:'Jua',sans-serif; font-size:22px; color:#3a3340; margin:0; }
+.prt-empty-text { color:#8a8072; font-weight:600; font-size:14px; line-height:1.6; max-width:400px; margin:0; }
+.prt-empty-text b { color:#ff5a4d; }

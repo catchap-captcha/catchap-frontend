@@ -1347,3 +1347,10 @@
   .pm-card { padding: 18px 16px; }
   .pm-ch-stats { grid-template-columns: 1fr; }
 }
+
+/* 연결된 자녀 없음 — 마이페이지 빈 상태 */
+.pm-kid-empty { color:#8a8072; font-weight:600; font-size:13px; line-height:1.6; padding:8px 2px; }
+.pm-ch-empty { display:flex; flex-direction:column; align-items:center; text-align:center; gap:10px; padding:40px 20px; }
+.pm-ch-empty-ic { width:64px; height:64px; border-radius:20px; background:#EDE6FF; color:#8B6BFF; display:flex; align-items:center; justify-content:center; font-size:32px; }
+.pm-ch-empty-title { font-family:'Jua',sans-serif; font-size:19px; color:#3a3340; }
+.pm-ch-empty-text { color:#8a8072; font-weight:600; font-size:13px; line-height:1.6; max-width:380px; }
