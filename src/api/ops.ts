@@ -327,7 +327,24 @@ export interface OpsRegRequestPage {
   counts: { pending: number; approved: number; rejected: number };
 }
 
+export interface OpsAiModel {
+  id: string;
+  category: string;
+  name: string;
+  provider: string;
+  version: string;
+  status: string; // 정상 | 베타 | 점검 | 중단
+  description: string | null;
+  updated_on: string | null;
+}
+export type OpsAiModelBody = Omit<OpsAiModel, 'id' | 'updated_on'>;
+
 export const opsApi = {
+  aiModels: () => client.get<OpsAiModel[]>('/ops/ai-models').then((r) => r.data),
+  createAiModel: (body: OpsAiModelBody) =>
+    client.post<OpsAiModel>('/ops/ai-models', body).then((r) => r.data),
+  updateAiModel: (id: string, body: OpsAiModelBody) =>
+    client.patch<OpsAiModel>(`/ops/ai-models/${id}`, body).then((r) => r.data),
   system: () => client.get<OpsSystemHealth>('/ops/system').then((r) => r.data),
   dashboard: () => client.get<OpsDashboard>('/ops/dashboard').then((r) => r.data),
   orgs: () => client.get<OpsOrg[]>('/ops/orgs').then((r) => r.data),

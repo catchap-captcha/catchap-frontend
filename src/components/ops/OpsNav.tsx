@@ -12,6 +12,7 @@ const LINKS = [
   { to: PATHS.OPS_BEHAVIOR, icon: 'ph-fingerprint', label: '행동 데이터' },
   { to: PATHS.OPS_BEHAVIOR_EXPORT, icon: 'ph-export', label: '외부 내보내기' },
   { to: PATHS.OPS_LOGS, icon: 'ph-scroll', label: '감사 로그' },
+  { to: PATHS.OPS_AI_MODELS, icon: 'ph-cpu', label: 'AI 모델' },
   { to: PATHS.OPS_SYSTEM, icon: 'ph-heartbeat', label: '시스템' },
 ];
 

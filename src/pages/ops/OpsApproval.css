@@ -1034,3 +1034,9 @@
 .ak-list-head { display: flex; align-items: center; gap: 10px; }
 .ak-list-filter { margin-left: auto; }
 .ak-list-total { color: #9b9086; font-weight: 800; font-size: 12.5px; }
+
+/* ── AI 모델 관리 ── */
+.op-aimodel-grid { display: grid; grid-template-columns: 0.9fr 1.8fr 0.9fr 0.7fr 0.7fr 0.9fr 0.7fr; gap: 12px; align-items: center; }
+.op-aimodel-cat { font-weight: 800; color: #6b6055; }
+.op-aimodel-desc { display: block; color: #9b9086; font-weight: 600; font-size: 11.5px; }
+.op-form-span2 { grid-column: span 2; }

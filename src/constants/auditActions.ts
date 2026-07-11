@@ -51,6 +51,8 @@ export const AUDIT_ACTION_META: Record<string, { label: string; icon: string; cl
   'ops.operator_create': { label: '운영자 계정 생성', icon: 'ph-user-circle-plus', cls: 'warn' },
   'ops.operator_update': { label: '운영자 권한 변경', icon: 'ph-user-circle-gear', cls: 'warn' },
   'ops.operator_password_reset': { label: '운영자 비밀번호 재설정', icon: 'ph-key', cls: 'warn' },
+  'ops.ai_model_create': { label: 'AI 모델 등록', icon: 'ph-cpu', cls: 'ok' },
+  'ops.ai_model_update': { label: 'AI 모델 수정', icon: 'ph-cpu', cls: 'neutral' },
   // 기관 관리자 — 학년부장/학급
   'org.grade_head_appoint': { label: '학년부장 임명', icon: 'ph-user-circle-gear', cls: 'ok' },
   'org.grade_head_dismiss': { label: '학년부장 해임', icon: 'ph-user-circle-minus', cls: 'warn' },
@@ -74,5 +76,6 @@ export const AUDIT_TARGET_LABEL: Record<string, string> = {
   api_key: 'API 키',
   captcha_setting: '캡차 설정',
   behavior_summary: '행동 데이터',
+  model_version: 'AI 모델',
   inquiry: '문의',
 };

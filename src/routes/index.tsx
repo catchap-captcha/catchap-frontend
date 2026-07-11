@@ -74,6 +74,7 @@ const OpsBehavior = lazy(() => import('../pages/ops/OpsBehavior'));
 const OpsBehaviorExport = lazy(() => import('../pages/ops/OpsBehaviorExport'));
 const OpsAuditLog = lazy(() => import('../pages/ops/OpsAuditLog'));
 const OpsSystem = lazy(() => import('../pages/ops/OpsSystem'));
+const OpsAiModels = lazy(() => import('../pages/ops/OpsAiModels'));
 const OpsOperators = lazy(() => import('../pages/ops/OpsOperators'));
 
 // 시스템
@@ -169,6 +170,7 @@ export default function AppRoutes() {
           <Route path={PATHS.OPS_BEHAVIOR_EXPORT} element={<OpsBehaviorExport />} />
           <Route path={PATHS.OPS_LOGS} element={<OpsAuditLog />} />
           <Route path={PATHS.OPS_SYSTEM} element={<OpsSystem />} />
+          <Route path={PATHS.OPS_AI_MODELS} element={<OpsAiModels />} />
           <Route path={PATHS.OPS_OPERATORS} element={<OpsOperators />} />
         </Route>
 
