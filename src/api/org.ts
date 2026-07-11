@@ -97,6 +97,12 @@ export const orgApi = {
     },
   ) => client.post<any>(`/orgs/${orgId}/students/register`, body).then((r) => r.data),
 
+  /** 미가입 학생의 가입 코드 재발급 (학생이 코드를 잊었을 때) — 옛 코드는 무효, 새 코드 1회 노출 */
+  reissueJoinCode: (orgId: string, codeId: string) =>
+    client
+      .post<any>(`/orgs/${orgId}/students/join-codes/${codeId}/reissue`)
+      .then((r) => r.data),
+
   /** 학생 1명 학부모 초대코드 발급 */
   issueInvite: (orgId: string, studentId: string) =>
     client.post<any>(`/orgs/${orgId}/students/${studentId}/invite-code`).then((r) => r.data),

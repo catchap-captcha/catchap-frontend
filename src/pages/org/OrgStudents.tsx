@@ -161,6 +161,28 @@ export default function OrgStudents() {
   };
 
   const isRealId = (id: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-/.test(id);
+
+  // 미가입 학생 가입 코드 재발급 — roster의 대기 행 id는 'jc-<코드id>' 형태
+  const reissueCode = async (rowId: string) => {
+    const orgId = me?.organization_id;
+    if (!orgId) return;
+    const codeId = rowId.startsWith('jc-') ? rowId.slice(3) : rowId;
+    try {
+      const res = await orgApi.reissueJoinCode(orgId, codeId);
+      const made = (res.issued ?? []).map((it: { login_id: string; join_code: string }) => ({
+        login_id: it.login_id,
+        join_code: it.join_code,
+      }));
+      if (made.length) {
+        setIssued(made); // 기존 '가입 코드 발급됨' 모달 재사용해 새 코드 노출·복사
+        setAddOpen(true);
+        flash('새 가입 코드를 발급했어요. 옛 코드는 이제 못 써요.');
+      }
+    } catch {
+      flash('코드 재발급에 실패했어요. 잠시 후 다시 시도해 주세요.');
+    }
+  };
+
   const issueInvite = async (id: string) => {
     const orgId = me?.organization_id;
     if (orgId && isRealId(id)) {
@@ -285,6 +307,12 @@ export default function OrgStudents() {
                 )}
               </span>
               <span className="os-col-act">
+                {/* 미가입 학생: 코드를 잊었으면 재발급(옛 코드 무효, 새 코드 1회 노출) */}
+                {r.status === 'pending' && (
+                  <button className="os-mini" onClick={() => reissueCode(r.id)} title="새 가입 코드 발급(옛 코드는 무효)">
+                    <i className="ph-fill ph-arrows-clockwise" />코드 재발급
+                  </button>
+                )}
                 {/* 학부모 초대·비번 초기화는 학생이 가입한 뒤에만 의미가 있다(대기 학생은 아직 계정이 없음) */}
                 {r.status === 'active' && (
                   <button className="os-mini" onClick={() => issueInvite(r.id)} title="학부모 초대코드">
