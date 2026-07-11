@@ -53,8 +53,10 @@ export const orgApi = {
   addTeacher: (orgId: string, body: any) =>
     client.post(`/orgs/${orgId}/teachers`, body).then((r) => r.data),
   /** 교사 초대링크 발송 — 이메일로 초대, 링크 클릭 시 기관·교사코드 자동입력 (교장/학년부장만) */
-  inviteTeacher: (orgId: string, body: { email: string; name?: string; role?: string }) =>
-    client.post(`/orgs/${orgId}/teacher-invites`, body).then((r) => r.data),
+  inviteTeacher: (
+    orgId: string,
+    body: { email: string; name?: string; role?: string; class_name?: string },
+  ) => client.post(`/orgs/${orgId}/teacher-invites`, body).then((r) => r.data),
   updateTeacher: (orgId: string, teacherId: string, body: any) =>
     client.patch(`/orgs/${orgId}/teachers/${teacherId}`, body).then((r) => r.data),
   deleteTeacher: (orgId: string, teacherId: string) =>

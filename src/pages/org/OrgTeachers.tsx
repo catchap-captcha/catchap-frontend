@@ -81,7 +81,7 @@ export default function OrgTeachers() {
   const [filter, setFilter] = useState('all');
   const [search, setSearch] = useState('');
   const [modal, setModal] = useState<OtModal | null>(null);
-  const [inviteModal, setInviteModal] = useState<{ email: string; name: string; role: string } | null>(null);
+  const [inviteModal, setInviteModal] = useState<{ email: string; name: string; role: string; cls: string } | null>(null);
   const [inviteBusy, setInviteBusy] = useState(false);
   const [block, setBlock] = useState<OtBlock | null>(null);
   const [seq, setSeq] = useState(100);
@@ -203,7 +203,7 @@ export default function OrgTeachers() {
   const openAdd = () =>
     setModal({ mode: 'add', name: '', cls: classOptions[0] ?? '', role: '담임', email: '', code: '' });
 
-  const openInvite = () => setInviteModal({ email: '', name: '', role: 'teacher' });
+  const openInvite = () => setInviteModal({ email: '', name: '', role: 'teacher', cls: '' });
   const sendInvite = () => {
     const im = inviteModal;
     if (!im || !orgId) return;
@@ -218,10 +218,19 @@ export default function OrgTeachers() {
     }
     setInviteBusy(true);
     orgApi
-      .inviteTeacher(orgId, { email, name: im.name.trim() || undefined, role: im.role })
+      .inviteTeacher(orgId, {
+        email,
+        name: im.name.trim() || undefined,
+        role: im.role,
+        class_name: im.cls || undefined,
+      })
       .then(() => {
         setInviteModal(null);
-        flashToast('초대 메일을 보냈어요. 링크로 가입하면 기관·코드가 자동 입력돼요.');
+        flashToast(
+          im.cls
+            ? `초대 메일을 보냈어요. 가입하면 ${im.cls} 담임으로 자동 배정돼요.`
+            : '초대 메일을 보냈어요. 링크로 가입하면 기관·코드가 자동 입력돼요.',
+        );
       })
       .catch(() => flashToast('초대 발송에 실패했어요. 이메일을 확인해 주세요.'))
       .finally(() => setInviteBusy(false));
@@ -675,6 +684,23 @@ export default function OrgTeachers() {
                   </button>
                 ))}
               </div>
+
+              <label className="ot-label">담당 학급 <span style={{ color: '#b0a79b', fontWeight: 600 }}>(선택 — 미리 배정)</span></label>
+              <select
+                className="ot-nameInput"
+                value={inviteModal.cls}
+                onChange={(e) => setInviteModal((m) => (m ? { ...m, cls: e.target.value } : m))}
+              >
+                <option value="">가입 후 배정 (지금 안 정함)</option>
+                {classOptions.map((c) => (
+                  <option key={c} value={c}>{c} 담임</option>
+                ))}
+              </select>
+              {inviteModal.cls && (
+                <p style={{ fontSize: 12, color: '#8a8072', margin: '6px 0 0' }}>
+                  이 선생님이 링크로 가입하면 <b>{inviteModal.cls} 담임</b>으로 자동 배정돼요.
+                </p>
+              )}
 
               <div className="ot-modalBtns">
                 <button className="ot-cancelBtn" onClick={() => setInviteModal(null)}>취소</button>
