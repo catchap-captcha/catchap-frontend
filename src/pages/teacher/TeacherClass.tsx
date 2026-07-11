@@ -231,15 +231,25 @@ export default function TeacherClass() {
     setModal({ mode: 'edit', id: s.id, name: s.name, age: s.age, status: s.status });
   };
 
+  // '학급에서 제외' — 계정/학습기록 삭제가 아니라 우리 반에서 빼는 것(class_id 해제). 확인창으로 오해 방지.
   const deleteStudent = (id: string | null) => {
     if (!id) return;
+    const s = students.find((x) => x.id === id);
+    const nm = s ? `${s.name} 학생을 ` : '';
+    if (
+      !window.confirm(
+        `${nm}우리 반에서 뺄까요?\n\n계정·학습기록·코인은 삭제되지 않아요. 나중에 학생 코드로 다시 반에 넣을 수 있어요.`,
+      )
+    )
+      return;
     setStudents((prev) => prev.filter((x) => x.id !== id));
     setSelId((prev) => (prev === id ? null : prev));
     teacherApi
       .removeStudent(id)
       .then(() => loadStudents())
       .catch(() => {
-        // TODO(api): 실패 시 원본 로컬 삭제 흐름 유지
+        // 실패 시 목록 재로딩으로 원상 복구
+        loadStudents();
       });
   };
 
@@ -461,8 +471,8 @@ export default function TeacherClass() {
                           <button onClick={() => openEdit(s.id)} title="수정" className="tc-btnEdit">
                             <i className="ph-fill ph-pencil-simple" />
                           </button>
-                          <button onClick={() => deleteStudent(s.id)} title="삭제" className="tc-btnDel">
-                            <i className="ph-fill ph-trash" />
+                          <button onClick={() => deleteStudent(s.id)} title="학급에서 제외(계정은 삭제 안 됨)" className="tc-btnDel">
+                            <i className="ph-fill ph-user-minus" />
                           </button>
                         </div>
                       </td>
@@ -545,8 +555,8 @@ export default function TeacherClass() {
                 <button onClick={() => resetPw(selId)} className="tc-editBtn">
                   <i className="ph-fill ph-key" />비번 초기화
                 </button>
-                <button onClick={() => deleteStudent(selId)} className="tc-delBtn">
-                  <i className="ph-fill ph-trash" />삭제
+                <button onClick={() => deleteStudent(selId)} className="tc-delBtn" title="우리 반에서 빼기(계정은 삭제 안 됨)">
+                  <i className="ph-fill ph-user-minus" />학급에서 제외
                 </button>
               </div>
             </div>
