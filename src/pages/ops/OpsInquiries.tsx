@@ -41,8 +41,16 @@ export default function OpsInquiries() {
         page_size: PAGE_SIZE,
       })
       .then((d) => {
-        setRows(d.items ?? []);
-        setTotal(d.total ?? 0);
+        const items = d.items ?? [];
+        const tot = d.total ?? 0;
+        const maxPage = Math.max(1, Math.ceil(tot / PAGE_SIZE));
+        // 마지막 페이지의 마지막 항목이 빠지면 빈 페이지에 갇힌다 — 유효 페이지로 보정(재조회 유발)
+        if (items.length === 0 && page > maxPage) {
+          setPage(maxPage);
+          return;
+        }
+        setRows(items);
+        setTotal(tot);
         setCounts(d.counts ?? { received: 0, resolved: 0, all: 0 });
         setState('ready');
       })
@@ -259,7 +267,7 @@ export default function OpsInquiries() {
           </div>
         )}
 
-        {state === 'ready' && total > PAGE_SIZE && (
+        {state === 'ready' && (total > PAGE_SIZE || page > 1) && (
           <div className="op-logpage">
             <span className="op-pageinfo">{page} / {totalPages} 페이지 · {total.toLocaleString()}건</span>
             <div className="op-pagebtns">

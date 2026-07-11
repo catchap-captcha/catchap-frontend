@@ -34,6 +34,7 @@ export default function OpsApiKeys() {
   const [keys, setKeys] = useState<OpsApiKey[]>([]);
   const [keyPage, setKeyPage] = useState(1);
   const [keyTotal, setKeyTotal] = useState(0);
+  const [activeTotal, setActiveTotal] = useState(0); // 전체 활성 키 수(서버 집계 — 페이지 국소값 아님)
   const [filterOrg, setFilterOrg] = useState(''); // 목록 기관 필터
   const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading');
   const [toast, setToast] = useState<string | null>(null);
@@ -69,6 +70,7 @@ export default function OpsApiKeys() {
         setOrgs(Array.isArray(o) ? o : []);
         setKeys(k.items ?? []);
         setKeyTotal(k.total ?? 0);
+        setActiveTotal(k.active_total ?? 0);
         setState('ready');
       })
       .catch(() => setState('error'));
@@ -140,7 +142,9 @@ export default function OpsApiKeys() {
           .then((k) => {
             setKeys(k.items ?? []);
             setKeyTotal(k.total ?? 0);
-          });
+            setActiveTotal(k.active_total ?? 0);
+          })
+          .catch(() => flash('목록 새로고침에 실패했어요 — 발급은 완료됐어요. 새로고침해 주세요.'));
       })
       .catch((err) => flash(errMsg(err, '발급에 실패했어요.')))
       .finally(() => setIssuing(false));
@@ -181,8 +185,7 @@ export default function OpsApiKeys() {
       k.product === 'edu' ? '\n     data-size="full"' : ''
     }></div>\n<script src="${API_BASE}/widget/catchap-widget.js" defer></script>`;
 
-  const activeCount = keys.filter((k) => k.status === 'active').length;
-
+  
   return (
     <div className="op-root">
       <OpsNav />
@@ -192,7 +195,7 @@ export default function OpsApiKeys() {
             <h1 className="op-title">API 발급 · 관리</h1>
             <p className="op-sub">
               메인 캡차 / 교육형 API 키를 요금제에 맞춰 발급하고, 외부 서비스에 붙일 수 있어요 · 활성 키{' '}
-              {activeCount}개
+              {activeTotal}개
             </p>
           </div>
           <button className="op-refresh" onClick={load}>

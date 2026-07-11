@@ -41,8 +41,16 @@ export default function OpsApproval() {
     opsApi
       .registrationRequestsPage({ status_filter: tab, page, page_size: PAGE_SIZE })
       .then((d) => {
-        setRows(d.items ?? []);
-        setTotal(d.total ?? 0);
+        const items = d.items ?? [];
+        const tot = d.total ?? 0;
+        const maxPage = Math.max(1, Math.ceil(tot / PAGE_SIZE));
+        // 마지막 페이지의 마지막 항목이 빠지면 빈 페이지에 갇힌다 — 유효 페이지로 보정(재조회 유발)
+        if (items.length === 0 && page > maxPage) {
+          setPage(maxPage);
+          return;
+        }
+        setRows(items);
+        setTotal(tot);
         setCounts(d.counts ?? { pending: 0, approved: 0, rejected: 0 });
         setListErr(false);
       })
@@ -117,7 +125,7 @@ export default function OpsApproval() {
 
         {/* KPI — 각 지표는 담당 섹션으로 바로 이동 (전체 학생 지표는 운영자 범위 밖이라 제거) */}
         <div className="op-kpis">
-          <button type="button" className="op-kpi op-kpi--link" onClick={() => setTab('pending')}>
+          <button type="button" className="op-kpi op-kpi--link" onClick={() => { setTab('pending'); setPage(1); }}>
             <span className="op-kpi-ic op-kpi-ic--pend"><i className="ph-fill ph-hourglass-medium" /></span>
             <div className="op-kpi-num"><CountUp value={counts.pending} /></div>
             <div className="op-kpi-lb">승인 대기 <i className="ph-bold ph-arrow-right op-kpi-go" /></div>
@@ -208,7 +216,7 @@ export default function OpsApproval() {
           </div>
         )}
 
-        {!listLoading && !listErr && total > PAGE_SIZE && (
+        {!listLoading && !listErr && (total > PAGE_SIZE || page > 1) && (
           <div className="op-logpage">
             <span className="op-pageinfo">{page} / {totalPages} 페이지 · {total.toLocaleString()}건</span>
             <div className="op-pagebtns">

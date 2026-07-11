@@ -1040,3 +1040,22 @@
 .op-aimodel-cat { font-weight: 800; color: #6b6055; }
 .op-aimodel-desc { display: block; color: #9b9086; font-weight: 600; font-size: 11.5px; }
 .op-form-span2 { grid-column: span 2; }
+
+/* ── 운영 콘솔 모바일 최소 대응 (375px): 네비 가로 스크롤 + KPI/그리드 접기 ── */
+@media (max-width: 760px) {
+  /* 네비 — 링크 9개가 한 줄 강제라 375px에서 뒤쪽 메뉴 접근 불가였음 → 가로 스크롤 허용 */
+  .op-nav-inner { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: thin; }
+  .op-nav-menu { flex-shrink: 0; }
+  .op-nav-right { flex-shrink: 0; }
+  .op-main { padding: 16px 12px; }
+  .op-kpis { grid-template-columns: 1fr 1fr; }
+  /* 목록 그리드 — 열 정의를 풀고 세로 스택(헤더 행은 숨김) */
+  .op-loghead { display: none; }
+  .op-logrow, .op-orgrow, .op-aimodel-grid { grid-template-columns: 1fr !important; gap: 6px; }
+  .op-bh-head-row { display: none; }
+  .op-bh-row { grid-template-columns: 1fr !important; gap: 6px; }
+  .op-col-right { text-align: left; }
+  .op-sys-grid { grid-template-columns: 1fr; }
+  .op-logfilters, .op-bh-filters { flex-wrap: wrap; }
+  .op-bh-charts { grid-template-columns: 1fr; }
+}

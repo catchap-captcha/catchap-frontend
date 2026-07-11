@@ -318,6 +318,7 @@ export interface OpsApiKeyPage {
   total: number;
   page: number;
   page_size: number;
+  active_total: number; // 전체 활성 키 수(필터 무관)
 }
 export interface OpsRegRequestPage {
   items: OrgRegRequest[];
