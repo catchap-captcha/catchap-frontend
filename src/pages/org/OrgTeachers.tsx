@@ -80,8 +80,8 @@ export default function OrgTeachers() {
   const [classCounts, setClassCounts] = useState<Record<string, number>>({});
   const [filter, setFilter] = useState('all');
   const [search, setSearch] = useState('');
-  // 담당 학급 정렬: off(기본) → asc(1반→6반) → desc → off. 미배정은 항상 끝으로.
-  const [clsSort, setClsSort] = useState<'off' | 'asc' | 'desc'>('off');
+  // 담당 학급 정렬: 기본이 asc(1반→6반). 헤더 클릭으로 asc→desc→off 토글. 미배정은 항상 끝으로.
+  const [clsSort, setClsSort] = useState<'off' | 'asc' | 'desc'>('asc');
   const [modal, setModal] = useState<OtModal | null>(null);
   const [inviteModal, setInviteModal] = useState<{ email: string; name: string; role: string; cls: string } | null>(null);
   const [inviteBusy, setInviteBusy] = useState(false);
