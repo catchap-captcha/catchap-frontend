@@ -31,6 +31,15 @@ export const authApi = {
       .post('/auth/email/send', { email, purpose, for_account: forAccount })
       .then((r) => r.data),
 
+  /** 학생 가입 코드를 소비하지 않고 상태만 확인 (아이디/비번 입력 전 먼저 막기) */
+  verifyJoinCode: (code: string) =>
+    client
+      .post<{ valid: boolean; reason: 'ok' | 'empty' | 'not_found' | 'used' | 'expired' }>(
+        '/auth/verify-join-code',
+        { code },
+      )
+      .then((r) => r.data),
+
   /** 학생 아이디 전역 중복 확인 — 중복이면 사용 가능한 추천 아이디(suggestions) 동반 */
   checkStudentId: (studentLoginId: string) =>
     client

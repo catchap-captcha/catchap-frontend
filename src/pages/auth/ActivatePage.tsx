@@ -29,13 +29,34 @@ export default function ActivatePage() {
   const [err, setErr] = useState('');
   const [busy, setBusy] = useState(false);
 
-  const next = () => {
-    if (code.trim().length < 6) {
+  const next = async () => {
+    const c = code.trim();
+    if (c.length < 6) {
       setErr('가입 코드를 정확히 입력해 주세요.');
       return;
     }
     setErr('');
-    setStep(2);
+    setBusy(true);
+    try {
+      // 아이디/비번 단계로 넘어가기 전에 코드를 먼저 서버 검증(소비 안 함).
+      // 없는 코드·이미 가입에 쓴 코드·만료 코드면 여기서 막는다.
+      const r = await authApi.verifyJoinCode(c);
+      if (!r.valid) {
+        setErr(
+          r.reason === 'used'
+            ? '이미 가입에 사용된 코드예요. 처음 가입할 때 받은 새 코드를 넣어 주세요.'
+            : r.reason === 'expired'
+              ? '코드가 만료됐어요. 선생님께 새 코드를 받아 주세요.'
+              : '가입 코드가 올바르지 않아요. 다시 확인해 주세요.',
+        );
+        return;
+      }
+      setStep(2);
+    } catch {
+      setErr('코드를 확인하지 못했어요. 잠시 후 다시 시도해 주세요.');
+    } finally {
+      setBusy(false);
+    }
   };
 
   const checkId = (idArg?: string) => {
@@ -117,7 +138,9 @@ export default function ActivatePage() {
               autoFocus
             />
             {err && <div className="ac-err"><i className="ph-fill ph-warning-circle" />{err}</div>}
-            <button className="ac-primary" onClick={next}><i className="ph-fill ph-arrow-right" />다음</button>
+            <button className="ac-primary" onClick={next} disabled={busy}>
+              <i className="ph-fill ph-arrow-right" />{busy ? '코드 확인 중…' : '다음'}
+            </button>
             <p className="ac-foot">이미 가입했나요? <Link to={PATHS.LOGIN} className="ac-link">로그인</Link></p>
           </>
         ) : (
