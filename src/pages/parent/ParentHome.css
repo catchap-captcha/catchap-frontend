@@ -1352,3 +1352,30 @@
   .ph-statsGrid { grid-template-columns: 1fr; }
   .ph-reasonGrid { grid-template-columns: 1fr; }
 }
+
+/* 연결된 자녀 없음 — 빈 상태 (데모 자녀 대신) */
+.ph-emptyState {
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+  padding: 60px 24px; gap: 12px;
+}
+.ph-emptyIcon {
+  width: 76px; height: 76px; border-radius: 24px; background: #fff1e9; color: #ff7a4d;
+  display: flex; align-items: center; justify-content: center; font-size: 38px; margin-bottom: 4px;
+}
+.ph-emptyTitle { font-family: 'Jua', sans-serif; font-size: 22px; color: #3a3340; margin: 0; }
+.ph-emptyText { color: #8a8072; font-weight: 600; font-size: 14px; line-height: 1.6; max-width: 380px; margin: 0; }
+.ph-emptyText b { color: #ff5a4d; }
+.ph-emptyBtn {
+  margin-top: 10px; display: inline-flex; align-items: center; gap: 7px;
+  background: linear-gradient(180deg, #ff6459, #ff5346); color: #fff;
+  font-weight: 800; font-size: 15px; padding: 13px 24px; border-radius: 14px; border: none; cursor: pointer;
+  box-shadow: 0 10px 22px -10px rgba(255, 90, 77, 0.5);
+}
+/* 데모(예시) 수치 알림 배너 */
+.ph-demoNotice {
+  display: flex; align-items: flex-start; gap: 8px;
+  background: #fff3d6; color: #a5761a; border-radius: 14px; padding: 12px 15px;
+  font-weight: 700; font-size: 13px; line-height: 1.55; margin-bottom: 16px;
+}
+.ph-demoNotice i { color: #d98a00; font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+.ph-demoNotice b { color: #b5610a; }

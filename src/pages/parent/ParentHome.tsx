@@ -298,46 +298,48 @@ function mapApiNotif(n: Notification): NotifItem {
 
 export default function ParentHome() {
   const [searchParams] = useSearchParams();
-  const viewKey: ViewKey = searchParams.get('child') === 'doyun' ? 'doyun' : 'haeun';
 
   /* ----- 자녀 목록 / 요약 ----- */
-  const [children, setChildren] = useState<any[] | null>(null);
+  const [children, setChildren] = useState<any[] | null>(null); // null=로딩중, []=연결된 자녀 없음
   const [summary, setSummary] = useState<any | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     parentApi
       .children()
+      // 연결된 자녀가 없으면 빈 배열 — 데모 자녀(FALLBACK)를 실데이터처럼 보여주지 않는다.
       .then((list) => {
-        if (!cancelled && Array.isArray(list) && list.length > 0) setChildren(list);
+        if (!cancelled) setChildren(Array.isArray(list) ? list : []);
       })
       .catch(() => {
-        // TODO(api): 자녀 목록 API 실패 — FALLBACK_CHILDREN 유지
+        if (!cancelled) setChildren([]);
       });
     return () => {
       cancelled = true;
     };
   }, []);
 
-  const rawChildren: any[] = children ?? FALLBACK_CHILDREN;
-  // API: [{id, nickname, age, status, student_code, class_name, ...}] — name/grade 키가 없어 nickname/class_name에서 매핑
-  const switcher = rawChildren.map((c: any, i: number) => ({
+  const loaded = children !== null;
+  const rawChildren: any[] = children ?? [];
+  // ?child= 숫자 인덱스로 자녀 전환(레거시 'doyun'→1). 실제 자녀 수로 클램프 → N명 지원.
+  const childParam = searchParams.get('child');
+  const reqIdx = childParam === 'doyun' ? 1 : childParam && /^\d+$/.test(childParam) ? parseInt(childParam, 10) : 0;
+  const activeIdx = Math.min(Math.max(0, reqIdx), Math.max(rawChildren.length - 1, 0));
+  // API: [{id, nickname, age, status, student_code, class_name, ...}] — name/grade는 nickname/class_name에서 매핑
+  const switcher = rawChildren.map((c: any) => ({
     id: c.id != null ? String(c.id) : null,
-    name: String(c.nickname ?? c.name ?? FALLBACK_CHILDREN[i]?.name ?? ''),
+    name: String(c.nickname ?? c.name ?? ''),
     grade: String(
       c.grade_label ??
         (typeof c.grade === 'number' ? `${c.grade}학년` : c.grade) ??
         gradeFromClass(c.class_name) ??
-        FALLBACK_CHILDREN[i]?.grade ??
         '',
     ),
   }));
-  const activeIdx = Math.min(viewKey === 'doyun' ? 1 : 0, Math.max(switcher.length - 1, 0));
 
   useEffect(() => {
     setSummary(null);
-    const idx = viewKey === 'doyun' ? 1 : 0;
-    const id = children?.[idx]?.id;
+    const id = rawChildren[activeIdx]?.id;
     if (id == null) return;
     let cancelled = false;
     parentApi
@@ -345,15 +347,18 @@ export default function ParentHome() {
       .then((data) => {
         if (!cancelled) setSummary(data);
       })
-      .catch(() => {
-        // TODO(api): 요약 API 실패 — FALLBACK 유지
-      });
+      .catch(() => {});
     return () => {
       cancelled = true;
     };
-  }, [children, viewKey]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [children, activeIdx]);
 
-  const fb = FALLBACK[viewKey];
+  // 시각 템플릿(배너 색/아이콘·통계 레이아웃)만 FALLBACK에서 — 값은 summary(실집계 or 데모)로 덮인다.
+  const fbKey: ViewKey = activeIdx === 1 ? 'doyun' : 'haeun';
+  const fb = FALLBACK[fbKey];
+  // 자녀에게 실제 학습 기록이 없어 백엔드가 프리셋을 내려준 경우(demo) — 화면에 '데모' 표시.
+  const isDemo = !!summary?.demo;
   const childName = switcher[activeIdx]?.name || fb.name;
   const status: string = summary?.status && fb.banners[summary.status] ? summary.status : fb.status;
   // API banner {title, body}는 이미 자녀 이름이 반영된 문구 — 색/아이콘 등 디자인 값은 status별 원본 유지
@@ -700,6 +705,21 @@ export default function ParentHome() {
   return (
     <ParentLayout className="ph-bg" bell={bell}>
       <div className="ph-container">
+        {!loaded ? (
+          <div className="ph-emptyState">불러오는 중…</div>
+        ) : rawChildren.length === 0 ? (
+          <div className="ph-emptyState">
+            <div className="ph-emptyIcon"><i className="ph-fill ph-users-three" /></div>
+            <h2 className="ph-emptyTitle">아직 연결된 자녀가 없어요</h2>
+            <p className="ph-emptyText">
+              학교에서 받은 <b>자녀 초대코드</b>를 입력하면 자녀의 학습 현황을 볼 수 있어요.
+            </p>
+            <button onClick={openLink} className="ph-emptyBtn">
+              <i className="ph-bold ph-plus" /> 자녀 연결하기
+            </button>
+          </div>
+        ) : (
+          <>
         {/* CHILD SWITCHER */}
         <div className="ph-switcher">
           <span className="ph-switcherLabel">자녀 선택</span>
@@ -718,7 +738,7 @@ export default function ParentHome() {
               ) : (
                 <Link
                   key={c.id ?? c.name}
-                  to={i === 0 ? PATHS.PARENT_HOME : `${PATHS.PARENT_HOME}?child=doyun`}
+                  to={i === 0 ? PATHS.PARENT_HOME : `${PATHS.PARENT_HOME}?child=${i}`}
                   className="ph-childLink"
                   style={{ '--ph-avatarBg': theme.avatarBg, '--ph-avatarColor': theme.avatarColor } as CSSProperties}
                 >
@@ -749,6 +769,14 @@ export default function ParentHome() {
             <p className="ph-heroText" style={{ color: banner.bodyColor }}>{banner.body}</p>
           </div>
         </div>
+
+        {/* 실제 학습 기록이 없어 예시(데모) 수치가 표시될 때 알림 — 실데이터로 오인 방지 */}
+        {isDemo && (
+          <div className="ph-demoNotice">
+            <i className="ph-fill ph-info" />
+            아직 자녀의 학습 기록이 없어 <b>예시(데모) 수치</b>를 보여드려요. 자녀가 학습을 시작하면 실제 데이터로 채워집니다.
+          </div>
+        )}
 
         {/* WEEKLY STATS */}
         <div className="ph-statsGrid">
@@ -872,6 +900,8 @@ export default function ParentHome() {
         </div>
 
         <p className="ph-footNote">연결된 자녀의 요약 정보만 표시됩니다 · 다른 학생의 이름·점수, 원본 행동 데이터는 제공되지 않아요.</p>
+          </>
+        )}
       </div>
 
       {/* ===== CHILD LINK MODAL ===== */}
