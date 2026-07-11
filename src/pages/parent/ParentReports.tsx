@@ -404,6 +404,17 @@ export default function ParentReports() {
     }
   };
 
+  // 로딩 중에는 데모(FALLBACK) 리포트가 잠깐 새지 않도록 로딩 상태만 표시
+  if (!loaded) {
+    return (
+      <ParentLayout className="prt-bg" bell={<ParentBellLink />}>
+        <div className="prt-container">
+          <div className="prt-empty"><p className="prt-empty-text">불러오는 중…</p></div>
+        </div>
+      </ParentLayout>
+    );
+  }
+
   // 연결된 자녀가 없으면 데모 리포트 대신 빈 상태 (미연동 시 데모값 노출 방지)
   if (loaded && chipList.length === 0) {
     return (
