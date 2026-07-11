@@ -231,3 +231,54 @@
   color: #8a8f9e;
   line-height: 1.5;
 }
+
+/* 학생 추가 — 이름별 성별 선택 */
+.os-genderList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 220px;
+  overflow-y: auto;
+  padding: 2px;
+}
+.os-genderRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.os-genderName {
+  font-weight: 800;
+  font-size: 13.5px;
+  color: #3a3340;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.os-genderBtns {
+  display: inline-flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.os-gBtn {
+  min-width: 46px;
+  padding: 7px 10px;
+  border-radius: 10px;
+  border: 2px solid #ffe0d6;
+  background: #fff;
+  color: #8a8072;
+  font-weight: 800;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.os-gBtn:hover {
+  background: #fff1e9;
+}
+.os-gBtnOn {
+  background: linear-gradient(180deg, #ff6459, #ff5346);
+  border-color: #ff5346;
+  color: #fff;
+}

@@ -32,6 +32,8 @@ export default function OrgStudents() {
   const [addClass, setAddClass] = useState('');
   const [addCount, setAddCount] = useState(1);
   const [addNames, setAddNames] = useState(''); // 학생 실명 목록 (줄바꿈 구분, 교사·기관 화면 전용)
+  // 입력한 이름 순서대로의 성별(선생님 입력, 아이가 안 고름). ''=미정 → 서버엔 null로 보냄.
+  const [addGenders, setAddGenders] = useState<('' | 'male' | 'female')[]>([]);
   const [issued, setIssued] = useState<{ login_id: string; join_code: string }[] | null>(null);
   const [creating, setCreating] = useState(false);
   const [createErr, setCreateErr] = useState('');
@@ -103,6 +105,8 @@ export default function OrgStudents() {
     active: rows.filter((r) => r.status === 'active').length,
     pending: rows.filter((r) => r.status === 'pending').length,
   };
+  // 추가 모달에서 입력한 실명(줄바꿈/쉼표 구분) — 성별 선택 행을 이 순서로 그린다.
+  const parsedAddNames = addNames.split(/[\n,]/).map((s) => s.trim()).filter(Boolean);
 
   // 학생 슬롯 생성 + 가입코드 발급 — 실백엔드 POST /orgs/{id}/students/register.
   // 서버 실패 시 가짜 코드를 만들지 않는다(위조 코드를 배부하면 아이들 전원 가입 실패).
@@ -120,10 +124,13 @@ export default function OrgStudents() {
     setCreating(true);
     setCreateErr('');
     try {
+      // 성별은 이름 순서(슬롯 순서)에 맞춰 전송 — 미정('')은 null. 서버가 male|female|other만 반영.
+      const genders = names.length ? names.map((_, i) => addGenders[i] || null) : undefined;
       const res = await orgApi.registerStudents(orgId, {
         count: addCount,
         class_label: addClass,
         names: names.length ? names : undefined,
+        genders,
       });
       const made: StudentRow[] = (res.issued ?? []).map(
         (it: { login_id: string; join_code: string; real_name?: string | null }, k: number) => ({
@@ -208,7 +215,7 @@ export default function OrgStudents() {
             <h1 className="os-title">학생 관리</h1>
             <p className="os-sub">학교가 학생 계정을 만들고, 학생별 <b>1회용 가입 코드</b>를 배부해요. 아이는 코드로 별명·비밀번호만 정하면 가입 완료.</p>
           </div>
-          <button className="os-addbtn" onClick={() => { setAddOpen(true); setIssued(null); setCreateErr(''); }}>
+          <button className="os-addbtn" onClick={() => { setAddOpen(true); setIssued(null); setCreateErr(''); setAddNames(''); setAddGenders([]); }}>
             <i className="ph-bold ph-user-plus" />학생 추가
           </button>
         </div>
@@ -307,11 +314,46 @@ export default function OrgStudents() {
                   value={addNames}
                   placeholder={'예)\n김하은\n박도윤'}
                   rows={Math.min(6, Math.max(3, addCount))}
-                  onChange={(e) => setAddNames(e.target.value)}
+                  onChange={(e) => {
+                    setAddNames(e.target.value);
+                    // 파싱된 이름 수에 맞춰 성별 배열 길이 동기화(기존 선택은 인덱스로 보존)
+                    const n = e.target.value.split(/[\n,]/).map((s) => s.trim()).filter(Boolean).length;
+                    setAddGenders((prev) => Array.from({ length: n }, (_, i) => prev[i] ?? ''));
+                  }}
                 />
                 <p className="os-names-hint">
                   실명은 <b>선생님·기관 화면에만</b> 보여요. 학생이 닉네임을 바꿔도 선생님은 실명으로 찾을 수 있어요.
                 </p>
+                {parsedAddNames.length > 0 && (
+                  <>
+                    <label className="os-lbl">성별 (선생님이 지정 — 아이는 못 바꿔요)</label>
+                    <div className="os-genderList">
+                      {parsedAddNames.map((nm, i) => (
+                        <div key={i} className="os-genderRow">
+                          <span className="os-genderName">{nm}</span>
+                          <div className="os-genderBtns">
+                            {([['male', '남'], ['female', '여'], ['', '미정']] as const).map(([val, lbl]) => (
+                              <button
+                                key={lbl}
+                                type="button"
+                                className={(addGenders[i] ?? '') === val ? 'os-gBtn os-gBtnOn' : 'os-gBtn'}
+                                onClick={() =>
+                                  setAddGenders((g) => {
+                                    const c = [...g];
+                                    c[i] = val;
+                                    return c;
+                                  })
+                                }
+                              >
+                                {lbl}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
                 {createErr && (
                   <p className="os-names-hint" style={{ color: '#E23D3D' }}>
                     <i className="ph-fill ph-warning-circle" /> {createErr}

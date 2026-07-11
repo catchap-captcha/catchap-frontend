@@ -87,7 +87,14 @@ export const orgApi = {
   /** 학생 슬롯 N개 생성 + 1회용 가입코드 발급 (온보딩). names=실명 목록(교사·기관 전용) */
   registerStudents: (
     orgId: string,
-    body: { count: number; class_label?: string; class_id?: string; names?: string[] },
+    body: {
+      count: number;
+      class_label?: string;
+      class_id?: string;
+      names?: string[];
+      // 성별(선생님 입력) — 이름/슬롯 순서대로. male|female|other|null(미정)
+      genders?: (string | null)[];
+    },
   ) => client.post<any>(`/orgs/${orgId}/students/register`, body).then((r) => r.data),
 
   /** 학생 1명 학부모 초대코드 발급 */
