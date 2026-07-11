@@ -622,7 +622,7 @@
 .op-bh-total { margin-left: auto; font-weight: 800; font-size: 13px; color: #9b9086; }
 
 .op-bh-head-row, .op-bh-row {
-  display: grid; grid-template-columns: 1fr 0.9fr 1.2fr 2.2fr 0.6fr 0.6fr 1.35fr;
+  display: grid; grid-template-columns: 26px 1fr 0.9fr 1.2fr 2.1fr 0.6fr 0.75fr 1.35fr;
   align-items: center; gap: 12px; padding: 13px 20px;
 }
 .op-bh-head-row { background: #fff7f3; font-weight: 800; font-size: 12px; color: #b0a79b; border-bottom: 1.5px solid #fff0e8; }
@@ -957,3 +957,43 @@
 .op-mailstat--ok { background: #e1f5ec; color: #17916f; }
 .op-mailstat--warn { background: #fff3d6; color: #b0791d; }
 .op-mailstat--bad { background: #ffe3e3; color: #d43a3a; }
+
+/* ── 행동데이터 콘솔 확장 (0712): 분포 차트·다중선택 라벨링·날짜 필터 ── */
+.op-bh-charts { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+@media (max-width: 900px) { .op-bh-charts { grid-template-columns: 1fr; } }
+.op-bh-chart { background: #fff; border-radius: 16px; padding: 14px 18px; box-shadow: 0 3px 12px rgba(80, 60, 40, 0.07); }
+.op-bh-chart-h { font-weight: 800; font-size: 13px; color: #6b6055; display: flex; align-items: center; gap: 6px; margin-bottom: 10px; }
+.op-bh-chart-h i { color: #ff8a5b; }
+.op-bh-chart-note { margin-top: 8px; font-size: 11px; font-weight: 700; color: #b0a79b; }
+.op-bh-hourbars { display: flex; align-items: flex-end; gap: 3px; height: 62px; }
+.op-bh-hourcol { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 2px; position: relative; height: 100%; }
+.op-bh-hourbar { width: 100%; border-radius: 3px 3px 0 0; background: #ffb08a; min-height: 2px; }
+.op-bh-hourbar--night { background: #8b6bff; } /* 심야(0~5시) — 봇 몰림 주의 구간 */
+.op-bh-hourlb { font-size: 9px; font-weight: 800; color: #b0a79b; white-space: nowrap; }
+.op-bh-hist { display: flex; align-items: flex-end; gap: 8px; height: 74px; }
+.op-bh-histcol { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 2px; height: 100%; }
+.op-bh-histbar { width: 100%; border-radius: 4px 4px 0 0; background: #7fd6b8; min-height: 2px; }
+.op-bh-histbar--danger { background: #ff5a4d; } /* <0.8s — 아이에게 불가능한 즉답 구간 */
+.op-bh-histbar--warn { background: #ffb02e; } /* 0.8~1.5s — 빠르지만 가능은 한 구간 */
+.op-bh-histlb { font-size: 9px; font-weight: 800; color: #b0a79b; white-space: nowrap; }
+.op-bh-date { border: 1.5px solid #f0e6dd; background: #fff; border-radius: 10px; padding: 8px 10px; font-size: 12.5px; font-weight: 700; color: #5f564c; }
+.op-bh-date:focus { outline: none; border-color: #ff5a4d; }
+.op-bh-datedash { color: #cabfae; font-weight: 800; }
+.op-bh-check { width: 15px; height: 15px; accent-color: #ff5a4d; cursor: pointer; }
+.op-bh-row--sel { background: #fff4ee; }
+.op-bh-selbar { display: flex; align-items: center; gap: 8px; background: #3a3340; border-radius: 14px; padding: 10px 16px; margin-bottom: 10px; }
+.op-bh-selcount { color: #fff; font-weight: 800; font-size: 13px; margin-right: 6px; }
+.op-bh-selbtn { display: inline-flex; align-items: center; gap: 5px; border: none; border-radius: 9px; padding: 7px 12px; font-weight: 800; font-size: 12px; cursor: pointer; background: #55505e; color: #e8e4ee; }
+.op-bh-selbtn:hover { background: #67616f; }
+.op-bh-selbtn:disabled { opacity: 0.5; cursor: default; }
+.op-bh-selbtn--hum { background: #17b08c; color: #fff; }
+.op-bh-selbtn--hum:hover { background: #129578; }
+.op-bh-selbtn--bot { background: #ff5a4d; color: #fff; }
+.op-bh-selbtn--bot:hover { background: #ea4437; }
+.op-bh-riskcell { display: flex; flex-direction: column; gap: 3px; align-items: flex-start; }
+.op-bh-label { font-size: 10px; font-weight: 900; border-radius: 6px; padding: 2px 7px; }
+.op-bh-label--bot { background: #ffe3e0; color: #d23b30; }
+.op-bh-label--hum { background: #dff4ec; color: #128a6e; }
+.op-bh-label--org { background: #f1ede6; color: #9b9086; }
+.ox-daterange { display: inline-flex; align-items: center; gap: 6px; color: #cabfae; font-weight: 800; }
+.ox-daterange input { border: 1.5px solid #f0e6dd; background: #fff; border-radius: 10px; padding: 7px 9px; font-size: 12.5px; font-weight: 700; color: #5f564c; }

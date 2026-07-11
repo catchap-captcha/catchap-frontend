@@ -36,6 +36,11 @@ const GRADE_BAND_LABEL: Record<string, string> = {
   elementary_low: '초등 저학년',
   elementary_high: '초등 고학년',
 };
+const LABEL_META: Record<string, { label: string; cls: string }> = {
+  organic: { label: '미검증', cls: 'org' },
+  human: { label: '사람', cls: 'hum' },
+  bot: { label: '봇', cls: 'bot' },
+};
 const DATASET_OPTS = [
   { key: 'candidate', label: '후보', cls: 'cand' },
   { key: 'included', label: '포함', cls: 'inc' },
@@ -75,6 +80,46 @@ function TraceSparkline({ points }: { points: [number, number][] }) {
   );
 }
 
+/** 최근 7일 시간대(0~23시) 분포 — 봇은 심야에 몰리는 경향이 보인다 */
+function HourBars({ data }: { data: number[] }) {
+  const max = Math.max(1, ...data);
+  return (
+    <div className="op-bh-hourbars">
+      {data.map((v, h) => (
+        <div key={h} className="op-bh-hourcol" title={`${h}시 · ${v}건`}>
+          <div
+            className={'op-bh-hourbar' + (h < 6 ? ' op-bh-hourbar--night' : '')}
+            style={{ height: `${Math.max(2, Math.round((v / max) * 44))}px` }}
+          />
+          {h % 6 === 0 && <span className="op-bh-hourlb">{h}시</span>}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/** 풀이시간 히스토그램 — 구간 경계는 위험 스코어링 임계값(0.8s/1.5s/3s)과 정렬 */
+function SolveHist({ edges, counts }: { edges: number[]; counts: number[] }) {
+  const max = Math.max(1, ...counts);
+  const lb = (i: number) => {
+    const fmtMs = (v: number) => (v >= 1000 ? `${v / 1000}s` : `${v}ms`);
+    return i < edges.length - 1 ? `${fmtMs(edges[i])}~${fmtMs(edges[i + 1])}` : `${fmtMs(edges[i])}+`;
+  };
+  return (
+    <div className="op-bh-hist">
+      {counts.map((v, i) => (
+        <div key={i} className="op-bh-histcol" title={`${lb(i)} · ${v}건`}>
+          <div
+            className={'op-bh-histbar' + (i === 0 ? ' op-bh-histbar--danger' : i === 1 ? ' op-bh-histbar--warn' : '')}
+            style={{ height: `${Math.max(2, Math.round((v / max) * 44))}px` }}
+          />
+          <span className="op-bh-histlb">{lb(i)}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function OpsBehavior() {
   const [ov, setOv] = useState<BehaviorOverview | null>(null);
   const [rows, setRows] = useState<BehaviorRecord[]>([]);
@@ -86,6 +131,13 @@ export default function OpsBehavior() {
   const [group, setGroup] = useState('');
   const [dataset, setDataset] = useState('');
   const [risk, setRisk] = useState('');
+  const [label, setLabel] = useState('');
+  const [fFrom, setFFrom] = useState('');
+  const [fTo, setFTo] = useState('');
+  // 다중 선택 → bot/human 일괄 라벨링 (지도학습 정답표 큐레이션)
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [labeling, setLabeling] = useState(false);
+  const [redteaming, setRedteaming] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [toast, setToast] = useState('');
   // 궤적 뷰어 모달 — 목록의 궤적 뱃지 클릭 시 원시 포인터 경로를 그려서 보여준다
@@ -102,6 +154,9 @@ export default function OpsBehavior() {
     ...(group ? { group } : {}),
     ...(dataset ? { dataset } : {}),
     ...(risk ? { risk } : {}),
+    ...(label ? { label } : {}),
+    ...(fFrom ? { date_from: fFrom } : {}),
+    ...(fTo ? { date_to: fTo } : {}),
   });
 
   // 필터 연속 변경 시 먼저 보낸 요청(이전 필터)의 늦은 응답이 최신 화면을 덮어쓰지 않도록 시퀀스 가드
@@ -120,6 +175,7 @@ export default function OpsBehavior() {
         setRows(d.items);
         setTotal(d.total);
         setOffset(off);
+        setSelected(new Set()); // 목록이 갈리면 선택도 초기화 (엉뚱한 행 라벨링 방지)
         setState('ready');
       })
       .catch(() => {
@@ -132,7 +188,7 @@ export default function OpsBehavior() {
   useEffect(() => {
     load(0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [source, result, group, dataset, risk]);
+  }, [source, result, group, dataset, risk, label, fFrom, fTo]);
 
   const openTrace = (rec: BehaviorRecord) => {
     opsApi
@@ -148,6 +204,45 @@ export default function OpsBehavior() {
       // 총 건수·KPI가 함께 맞아야 하므로 목록/overview를 통째로 다시 불러온다
       .then(() => load(offset))
       .catch(() => say('학습셋 상태 변경에 실패했어요. 다시 시도해 주세요.'));
+  };
+
+  const toggleSel = (id: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+  const toggleAll = () => {
+    setSelected((prev) =>
+      prev.size === rows.length ? new Set<string>() : new Set(rows.map((r) => r.id)),
+    );
+  };
+  const markLabel = (sl: string) => {
+    if (selected.size === 0 || labeling) return;
+    setLabeling(true);
+    opsApi
+      .markBehaviorLabel([...selected], sl)
+      .then((d) => {
+        say(`${d.changed}건을 '${LABEL_META[sl]?.label ?? sl}'로 라벨링했어요.`);
+        load(offset);
+      })
+      .catch(() => say('라벨 변경에 실패했어요. 다시 시도해 주세요.'))
+      .finally(() => setLabeling(false));
+  };
+  const genRedteam = () => {
+    if (redteaming) return;
+    if (!window.confirm('합성 봇 트래픽 100건을 생성할까요? 격리 org에 sample_label=bot으로 적재되고 고객 집계에는 잡히지 않아요.')) return;
+    setRedteaming(true);
+    opsApi
+      .behaviorRedteam(100)
+      .then((d) => {
+        say(`봇 표본 ${d.created}건을 생성했어요.`);
+        load(0);
+      })
+      .catch(() => say('봇 표본 생성에 실패했어요.'))
+      .finally(() => setRedteaming(false));
   };
 
   const exportCsv = async () => {
@@ -216,6 +311,10 @@ export default function OpsBehavior() {
             </p>
           </div>
           <div style={{ display: 'flex', gap: 10 }}>
+            <button className="op-refresh" onClick={genRedteam} disabled={redteaming} title="지도학습 음성 클래스(봇) 표본을 격리 org에 생성">
+              <i className="ph-bold ph-robot" />
+              {redteaming ? '생성 중…' : '봇 표본 생성'}
+            </button>
             <button className="op-refresh" onClick={exportCsv} disabled={exporting}>
               <i className="ph-bold ph-download-simple" />
               {exporting ? '내보내는 중…' : 'CSV 내보내기'}
@@ -284,6 +383,20 @@ export default function OpsBehavior() {
           </div>
         )}
 
+        {ov && (
+          <div className="op-bh-charts">
+            <div className="op-bh-chart">
+              <div className="op-bh-chart-h"><i className="ph-fill ph-clock" /> 최근 7일 시간대 분포 (KST)</div>
+              <HourBars data={ov.hourly_week ?? []} />
+            </div>
+            <div className="op-bh-chart">
+              <div className="op-bh-chart-h"><i className="ph-fill ph-chart-bar" /> 풀이시간 분포</div>
+              <SolveHist edges={ov.solve_hist?.edges_ms ?? []} counts={ov.solve_hist?.counts ?? []} />
+              <div className="op-bh-chart-note">0.8s 미만 정답=강신호 · 라벨: 미검증 {ov.by_label?.organic ?? 0} / 사람 {ov.by_label?.human ?? 0} / 봇 {ov.by_label?.bot ?? 0}</div>
+            </div>
+          </div>
+        )}
+
         <div className="op-bh-filters">
           <select className="op-bh-select" value={source} onChange={(e) => setSource(e.target.value)}>
             <option value="">출처 전체</option>
@@ -313,14 +426,48 @@ export default function OpsBehavior() {
             <option value="included">포함</option>
             <option value="excluded">제외</option>
           </select>
+          <select className="op-bh-select" value={label} onChange={(e) => setLabel(e.target.value)}>
+            <option value="">라벨 전체</option>
+            <option value="organic">미검증</option>
+            <option value="human">사람</option>
+            <option value="bot">봇</option>
+          </select>
+          <input className="op-bh-date" type="date" value={fFrom} max={fTo || undefined} onChange={(e) => setFFrom(e.target.value)} title="시작일" />
+          <span className="op-bh-datedash">~</span>
+          <input className="op-bh-date" type="date" value={fTo} min={fFrom || undefined} onChange={(e) => setFTo(e.target.value)} title="종료일" />
           <span className="op-bh-total">
             총 {total.toLocaleString()}건
             {ov ? ` · 궤적 ${ov.trace_count.toLocaleString()}건` : ''}
           </span>
         </div>
 
+        {selected.size > 0 && (
+          <div className="op-bh-selbar">
+            <span className="op-bh-selcount">{selected.size}건 선택됨</span>
+            <button className="op-bh-selbtn op-bh-selbtn--hum" disabled={labeling} onClick={() => markLabel('human')}>
+              <i className="ph-fill ph-user" /> 사람으로 라벨
+            </button>
+            <button className="op-bh-selbtn op-bh-selbtn--bot" disabled={labeling} onClick={() => markLabel('bot')}>
+              <i className="ph-fill ph-robot" /> 봇으로 라벨
+            </button>
+            <button className="op-bh-selbtn" disabled={labeling} onClick={() => markLabel('organic')}>
+              미검증으로 되돌리기
+            </button>
+            <button className="op-bh-selbtn" onClick={() => setSelected(new Set())}>선택 해제</button>
+          </div>
+        )}
+
         <div className="op-logcard">
           <div className="op-bh-head-row">
+            <span>
+              <input
+                type="checkbox"
+                className="op-bh-check"
+                checked={rows.length > 0 && selected.size === rows.length}
+                onChange={toggleAll}
+                title="현재 페이지 전체 선택"
+              />
+            </span>
             <span>수집 시각</span><span>출처</span><span>대상</span><span>행동 지표</span>
             <span>결과</span><span>위험도</span><span>학습셋</span>
           </div>
@@ -335,7 +482,15 @@ export default function OpsBehavior() {
             rows.map((r) => {
               const res = r.interaction_result ? RESULT_META[r.interaction_result] : null;
               return (
-                <div key={r.id} className="op-bh-row">
+                <div key={r.id} className={'op-bh-row' + (selected.has(r.id) ? ' op-bh-row--sel' : '')}>
+                  <span>
+                    <input
+                      type="checkbox"
+                      className="op-bh-check"
+                      checked={selected.has(r.id)}
+                      onChange={() => toggleSel(r.id)}
+                    />
+                  </span>
                   <span className="op-logcol-time">{fmt(r.occurred_at ?? r.created_at)}</span>
                   <span className={`op-bh-src op-bh-src--${r.source_type === 'edu-api' ? 'edu' : 'game'}`}>
                     {SOURCE_LABEL[r.source_type] ?? r.source_type}
@@ -383,8 +538,15 @@ export default function OpsBehavior() {
                       '-'
                     )}
                   </span>
-                  <span className={`op-bh-risk op-bh-risk--${r.risk_level}`}>
-                    {RISK_LABEL[r.risk_level] ?? r.risk_level}
+                  <span className="op-bh-riskcell">
+                    <span className={`op-bh-risk op-bh-risk--${r.risk_level}`}>
+                      {RISK_LABEL[r.risk_level] ?? r.risk_level}
+                    </span>
+                    {r.sample_label && r.sample_label !== 'organic' && (
+                      <span className={`op-bh-label op-bh-label--${LABEL_META[r.sample_label]?.cls ?? 'org'}`}>
+                        {LABEL_META[r.sample_label]?.label ?? r.sample_label}
+                      </span>
+                    )}
                   </span>
                   <span className="op-bh-ds">
                     {DATASET_OPTS.map((o) => (

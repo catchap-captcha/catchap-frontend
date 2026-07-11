@@ -32,11 +32,23 @@ export default function OpsBehaviorExport() {
   const [mode, setMode] = useState<Mode>('aggregate');
   const [dataset, setDataset] = useState('included');
   const [source, setSource] = useState('');
+  const [risk, setRisk] = useState('');
+  const [result, setResult] = useState('');
+  const [fFrom, setFFrom] = useState('');
+  const [fTo, setFTo] = useState('');
   const [preview, setPreview] = useState<BehaviorExportPreview | null>(null);
   const [state, setState] = useState<'idle' | 'loading' | 'error'>('idle');
   const [downloading, setDownloading] = useState(false);
 
-  const params = () => ({ mode, dataset, ...(source ? { source_type: source } : {}) });
+  const params = () => ({
+    mode,
+    dataset,
+    ...(source ? { source_type: source } : {}),
+    ...(risk ? { risk } : {}),
+    ...(result ? { result_filter: result } : {}),
+    ...(fFrom ? { date_from: fFrom } : {}),
+    ...(fTo ? { date_to: fTo } : {}),
+  });
 
   const loadPreview = () => {
     setState('loading');
@@ -131,6 +143,31 @@ export default function OpsBehaviorExport() {
                 </option>
               ))}
             </select>
+          </label>
+          <label className="ox-field">
+            위험도
+            <select value={risk} onChange={(e) => setRisk(e.target.value)}>
+              <option value="">전체</option>
+              <option value="low">낮음</option>
+              <option value="review">검토</option>
+              <option value="elevated">높음</option>
+            </select>
+          </label>
+          <label className="ox-field">
+            결과
+            <select value={result} onChange={(e) => setResult(e.target.value)}>
+              <option value="">전체</option>
+              <option value="pass">통과</option>
+              <option value="fail">실패</option>
+            </select>
+          </label>
+          <label className="ox-field">
+            기간
+            <span className="ox-daterange">
+              <input type="date" value={fFrom} max={fTo || undefined} onChange={(e) => setFFrom(e.target.value)} />
+              ~
+              <input type="date" value={fTo} min={fFrom || undefined} onChange={(e) => setFTo(e.target.value)} />
+            </span>
           </label>
           <button className="ox-download" onClick={download} disabled={downloading}>
             <i className="ph-bold ph-download-simple" />

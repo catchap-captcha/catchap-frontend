@@ -225,6 +225,9 @@ export interface BehaviorOverview {
   by_result: Record<string, number>; // correct/pass | incorrect/fail
   by_risk: Record<string, number>; // low | review | elevated
   by_dataset: Record<string, number>; // candidate | included | excluded
+  by_label: Record<string, number>; // organic | bot | human (지도학습 라벨)
+  hourly_week: number[]; // 최근 7일 KST 시간대(0~23)별 수집 건수
+  solve_hist: { edges_ms: number[]; counts: number[] }; // 풀이시간 분포
   comparison: BehaviorGroupMetrics[];
 }
 
@@ -276,6 +279,9 @@ export interface BehaviorRecordsFilter {
   risk?: string;
   group?: string;
   dataset?: string;
+  label?: string; // organic | bot | human
+  date_from?: string; // YYYY-MM-DD (KST)
+  date_to?: string;
   limit?: number;
   offset?: number;
 }
@@ -377,6 +383,19 @@ export const opsApi = {
         dataset_status,
       })
       .then((r) => r.data),
+  /** 지도학습 라벨(bot/human/organic) 일괄 변경 — 다중 선택 큐레이션 */
+  markBehaviorLabel: (ids: string[], sample_label: string) =>
+    client
+      .patch<{ ok: boolean; requested: number; changed: number }>(
+        '/ops/behavior/records/label',
+        { ids, sample_label },
+      )
+      .then((r) => r.data),
+  /** 레드팀 합성 봇 트래픽 생성 — sentinel org에 sample_label='bot' 적재 */
+  behaviorRedteam: (count: number) =>
+    client
+      .post<{ ok: boolean; created: number }>('/ops/behavior/redteam', { count })
+      .then((r) => r.data),
   behaviorTrace: (id: string) =>
     client.get<BehaviorTraceDetail>(`/ops/behavior/records/${id}/trace`).then((r) => r.data),
 
@@ -385,12 +404,24 @@ export const opsApi = {
     mode: 'aggregate' | 'rows';
     dataset?: string;
     source_type?: string;
+    risk?: string;
+    result_filter?: string;
+    date_from?: string;
+    date_to?: string;
   }) =>
     client
       .get<BehaviorExportPreview>('/ops/behavior/export', { params: { ...params, fmt: 'json' } })
       .then((r) => r.data),
   /** 외부 업체 제공용 익명 내보내기 — CSV 다운로드(blob) */
-  behaviorExportCsv: (params: { mode: 'aggregate' | 'rows'; dataset?: string; source_type?: string }) =>
+  behaviorExportCsv: (params: {
+    mode: 'aggregate' | 'rows';
+    dataset?: string;
+    source_type?: string;
+    risk?: string;
+    result_filter?: string;
+    date_from?: string;
+    date_to?: string;
+  }) =>
     client
       .get('/ops/behavior/export', { params: { ...params, fmt: 'csv' }, responseType: 'blob' })
       .then((r) => r.data as Blob),
