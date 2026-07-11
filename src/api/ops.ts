@@ -286,6 +286,14 @@ export interface BehaviorRecordsFilter {
   offset?: number;
 }
 
+export interface OpsInquiryPage {
+  items: OpsInquiry[];
+  total: number;
+  page: number;
+  page_size: number;
+  counts: { received: number; resolved: number; all: number };
+}
+
 export const opsApi = {
   dashboard: () => client.get<OpsDashboard>('/ops/dashboard').then((r) => r.data),
   orgs: () => client.get<OpsOrg[]>('/ops/orgs').then((r) => r.data),
@@ -308,11 +316,9 @@ export const opsApi = {
     client
       .get<OpsAuditLogPage>('/ops/logs', { params: filter && Object.keys(filter).length ? filter : undefined })
       .then((r) => r.data),
-  inquiries: (status?: string) =>
+  inquiries: (params?: { status_filter?: string; search?: string; page?: number; page_size?: number }) =>
     client
-      .get<OpsInquiry[]>('/ops/inquiries', {
-        params: status ? { status_filter: status } : undefined,
-      })
+      .get<OpsInquiryPage>('/ops/inquiries', { params })
       .then((r) => r.data),
   resolveInquiry: (id: string) =>
     client.post(`/ops/inquiries/${id}/resolve`).then((r) => r.data),

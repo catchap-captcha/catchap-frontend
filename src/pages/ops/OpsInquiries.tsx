@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { opsApi, type OpsInquiry } from '../../api/ops';
 import OpsNav from '../../components/ops/OpsNav';
 import './OpsApproval.css';
@@ -15,6 +15,8 @@ function fmt(ts: string | null): string {
   return ts.replace('T', ' ').slice(0, 16);
 }
 
+const PAGE_SIZE = 50;
+
 export default function OpsInquiries() {
   const [rows, setRows] = useState<OpsInquiry[]>([]);
   const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading');
@@ -22,30 +24,38 @@ export default function OpsInquiries() {
   const [busy, setBusy] = useState<string | null>(null);
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [toast, setToast] = useState('');
+  // 서버 페이지네이션·검색 — 문의는 단조 증가 테이블이라 전량 로드하지 않는다
+  const [search, setSearch] = useState('');
+  const [searchInput, setSearchInput] = useState('');
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [counts, setCounts] = useState({ received: 0, resolved: 0, all: 0 });
 
   const load = () => {
     setState('loading');
     opsApi
-      .inquiries()
+      .inquiries({
+        ...(tab !== 'all' ? { status_filter: tab } : {}),
+        ...(search ? { search } : {}),
+        page,
+        page_size: PAGE_SIZE,
+      })
       .then((d) => {
-        setRows(Array.isArray(d) ? d : []);
+        setRows(d.items ?? []);
+        setTotal(d.total ?? 0);
+        setCounts(d.counts ?? { received: 0, resolved: 0, all: 0 });
         setState('ready');
       })
       .catch(() => setState('error'));
   };
-  useEffect(load, []);
+  // 탭/검색/페이지가 바뀌면 재조회
+  useEffect(load, [tab, search, page]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const counts = useMemo(
-    () => ({
-      received: rows.filter((r) => r.status === 'received').length,
-      resolved: rows.filter((r) => r.status === 'resolved').length,
-      all: rows.length,
-    }),
-    [rows],
-  );
-  const list = rows.filter((r) => (tab === 'all' ? true : r.status === tab));
+  const list = rows;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   const resolve = async (id: string) => {
+    if (!window.confirm('답변을 보내지 않고 처리 완료로 표시할까요? 문의자에게는 아무 회신도 가지 않아요.')) return;
     setBusy(id);
     try {
       await opsApi.resolveInquiry(id);
@@ -113,12 +123,43 @@ export default function OpsInquiries() {
             <button
               key={t}
               className={`op-tab${tab === t ? ' op-tab--on' : ''}`}
-              onClick={() => setTab(t)}
+              onClick={() => {
+                setTab(t);
+                setPage(1);
+              }}
             >
               {TAB_LABEL[t]}
               <span className="op-tab-count">{counts[t]}</span>
             </button>
           ))}
+        </div>
+
+        <div className="op-inqsearch">
+          <i className="ph-bold ph-magnifying-glass" />
+          <input
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                setSearch(searchInput.trim());
+                setPage(1);
+              }
+            }}
+            placeholder="이름·이메일·소속·내용 검색 후 Enter"
+          />
+          {search && (
+            <button
+              className="op-inqsearch-x"
+              onClick={() => {
+                setSearch('');
+                setSearchInput('');
+                setPage(1);
+              }}
+            >
+              <i className="ph-bold ph-x" /> 해제
+            </button>
+          )}
+          <span className="op-inqsearch-total">{total.toLocaleString()}건</span>
         </div>
 
         {state === 'loading' && <div className="op-empty"><i className="ph-duotone ph-spinner" /><p>불러오는 중…</p></div>}
@@ -215,6 +256,20 @@ export default function OpsInquiries() {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {state === 'ready' && total > PAGE_SIZE && (
+          <div className="op-logpage">
+            <span className="op-pageinfo">{page} / {totalPages} 페이지 · {total.toLocaleString()}건</span>
+            <div className="op-pagebtns">
+              <button className="op-pagebtn" disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>
+                <i className="ph-bold ph-caret-left" />이전
+              </button>
+              <button className="op-pagebtn" disabled={page >= totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))}>
+                다음<i className="ph-bold ph-caret-right" />
+              </button>
+            </div>
           </div>
         )}
       </main>

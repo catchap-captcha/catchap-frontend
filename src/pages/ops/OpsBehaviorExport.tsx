@@ -39,6 +39,7 @@ export default function OpsBehaviorExport() {
   const [preview, setPreview] = useState<BehaviorExportPreview | null>(null);
   const [state, setState] = useState<'idle' | 'loading' | 'error'>('idle');
   const [downloading, setDownloading] = useState(false);
+  const [dlErr, setDlErr] = useState('');
 
   const params = () => ({
     mode,
@@ -63,6 +64,9 @@ export default function OpsBehaviorExport() {
   };
 
   const download = () => {
+    // 외부 업체 제공용 반출 — 익명이지만 반출 자체가 민감 행위라 확인을 받는다
+    if (!window.confirm(`익명 행동데이터(${mode === 'aggregate' ? '집계' : '행단위 가명'})를 CSV로 반출할까요? 반출은 감사 로그에 기록돼요.`)) return;
+    setDlErr('');
     setDownloading(true);
     opsApi
       .behaviorExportCsv(params())
@@ -76,6 +80,10 @@ export default function OpsBehaviorExport() {
         a.click();
         a.remove();
         URL.revokeObjectURL(url);
+      })
+      .catch(() => {
+        // 실패를 무음으로 넘기지 않는다 — 에러 응답이 파일로 저장되거나 성공으로 보이면 안 됨
+        setDlErr('CSV 반출에 실패했어요. 잠시 후 다시 시도해 주세요.');
       })
       .finally(() => setDownloading(false));
   };
@@ -173,6 +181,9 @@ export default function OpsBehaviorExport() {
             <i className="ph-bold ph-download-simple" />
             {downloading ? '내보내는 중…' : 'CSV 다운로드'}
           </button>
+          {dlErr && (
+            <span className="ox-dlerr"><i className="ph-fill ph-warning-circle" /> {dlErr}</span>
+          )}
         </div>
 
         {/* 미리보기 */}

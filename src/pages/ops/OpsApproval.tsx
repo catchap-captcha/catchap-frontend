@@ -20,7 +20,9 @@ export default function OpsApproval() {
   // 가짜(데모) 신청을 절대 보여주지 않는다 — 실제 데이터/상태만 표시
   const [rows, setRows] = useState<OrgRegRequest[]>([]);
   const [listErr, setListErr] = useState(false);
-  const [kpi, setKpi] = useState({ organizations: 0, open_inquiries: 0, audit_logs: 0 });
+  const [listLoading, setListLoading] = useState(true);
+  // null = 아직 못 불러옴(실패 포함) — 0으로 위장하지 않고 '—'로 표시
+  const [kpi, setKpi] = useState<{ organizations: number; open_inquiries: number; audit_logs: number } | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [toast, setToast] = useState('');
   // 승인 시 발급된 관리자 임시 비밀번호 — 담당자에게 전달용(응답에서만 1회 노출)
@@ -30,13 +32,15 @@ export default function OpsApproval() {
   const [sendMsg, setSendMsg] = useState<Record<string, string>>({});
 
   const load = () => {
+    setListLoading(true);
     opsApi
       .registrationRequests()
       .then((d) => {
         setRows(Array.isArray(d) ? d : []);
         setListErr(false);
       })
-      .catch(() => setListErr(true));
+      .catch(() => setListErr(true))
+      .finally(() => setListLoading(false));
     opsApi
       .dashboard()
       .then(
@@ -48,12 +52,25 @@ export default function OpsApproval() {
             audit_logs: d.audit_logs,
           }),
       )
-      .catch(() => {});
+      .catch(() => {
+        setKpi(null); // 실패를 0으로 위장하지 않는다 — 렌더에서 '—' 표시
+      });
   };
 
   useEffect(load, []);
 
   const act = async (id: string, kind: 'approve' | 'reject') => {
+    // 승인 = 실기관·관리자 계정 생성 + 임시비번 이메일 발송까지 비가역 실행 — 원클릭 방지
+    const req = rows.find((r) => r.id === id);
+    const who = req ? `'${req.org_name}'` : '이 신청';
+    if (
+      !window.confirm(
+        kind === 'approve'
+          ? `${who}을(를) 승인할까요? 기관·관리자 계정이 만들어지고 임시 비밀번호가 이메일로 발송돼요.`
+          : `${who}을(를) 거절할까요?`,
+      )
+    )
+      return;
     setBusy(id);
     try {
       if (kind === 'approve') {
@@ -104,17 +121,17 @@ export default function OpsApproval() {
           </button>
           <button type="button" className="op-kpi op-kpi--link" onClick={() => navigate(PATHS.OPS_ORGS)}>
             <span className="op-kpi-ic op-kpi-ic--org"><i className="ph-fill ph-buildings" /></span>
-            <div className="op-kpi-num"><CountUp value={kpi.organizations} /></div>
+            <div className="op-kpi-num">{kpi ? <CountUp value={kpi.organizations} /> : '—'}</div>
             <div className="op-kpi-lb">등록 기관 <i className="ph-bold ph-arrow-right op-kpi-go" /></div>
           </button>
           <button type="button" className="op-kpi op-kpi--link" onClick={() => navigate(PATHS.OPS_INQUIRIES)}>
             <span className="op-kpi-ic op-kpi-ic--inq"><i className="ph-fill ph-chat-circle-dots" /></span>
-            <div className="op-kpi-num"><CountUp value={kpi.open_inquiries} /></div>
+            <div className="op-kpi-num">{kpi ? <CountUp value={kpi.open_inquiries} /> : '—'}</div>
             <div className="op-kpi-lb">미처리 문의 <i className="ph-bold ph-arrow-right op-kpi-go" /></div>
           </button>
           <button type="button" className="op-kpi op-kpi--link" onClick={() => navigate(PATHS.OPS_LOGS)}>
             <span className="op-kpi-ic op-kpi-ic--log"><i className="ph-fill ph-scroll" /></span>
-            <div className="op-kpi-num"><CountUp value={kpi.audit_logs} /></div>
+            <div className="op-kpi-num">{kpi ? <CountUp value={kpi.audit_logs} /> : '—'}</div>
             <div className="op-kpi-lb">감사 로그 <i className="ph-bold ph-arrow-right op-kpi-go" /></div>
           </button>
         </div>
@@ -130,7 +147,12 @@ export default function OpsApproval() {
         </div>
 
         {/* LIST */}
-        {listErr ? (
+        {listLoading ? (
+          <div className="op-empty">
+            <i className="ph-duotone ph-spinner-gap" />
+            <p>신청 목록을 불러오는 중…</p>
+          </div>
+        ) : listErr ? (
           <div className="op-empty">
             <i className="ph-duotone ph-warning" />
             <p>신청 목록을 불러오지 못했어요. 새로고침해 주세요.</p>

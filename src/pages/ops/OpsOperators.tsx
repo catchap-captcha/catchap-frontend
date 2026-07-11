@@ -80,6 +80,12 @@ export default function OpsOperators() {
 
   const toggle = async (op: OpsOperator) => {
     const next = op.status === 'active' ? 'disabled' : 'active';
+    // 중지는 그 운영자의 콘솔 접근을 즉시 끊는다 — 원클릭 방지(재활성화는 확인 불필요)
+    if (
+      next === 'disabled' &&
+      !window.confirm(`'${op.name}' 운영자를 중지할까요? 즉시 콘솔에 접근할 수 없게 돼요.`)
+    )
+      return;
     setBusyId(op.id);
     try {
       await opsApi.updateOperator(op.id, { status: next });
