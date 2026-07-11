@@ -294,7 +294,19 @@ export interface OpsInquiryPage {
   counts: { received: number; resolved: number; all: number };
 }
 
+export interface OpsSystemService {
+  name: string;
+  status: string; // ok | degraded | error | dry-run | not_deployed
+  latency_ms: number | null;
+  detail: string | null;
+}
+export interface OpsSystemHealth {
+  services: OpsSystemService[];
+  checked_at: string;
+}
+
 export const opsApi = {
+  system: () => client.get<OpsSystemHealth>('/ops/system').then((r) => r.data),
   dashboard: () => client.get<OpsDashboard>('/ops/dashboard').then((r) => r.data),
   orgs: () => client.get<OpsOrg[]>('/ops/orgs').then((r) => r.data),
   createOrg: (body: OpsOrgCreateInput) =>
