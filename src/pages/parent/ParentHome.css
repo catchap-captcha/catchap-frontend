@@ -1379,3 +1379,6 @@
 }
 .ph-demoNotice i { color: #d98a00; font-size: 16px; flex-shrink: 0; margin-top: 1px; }
 .ph-demoNotice b { color: #b5610a; }
+
+/* 빈 알림 드롭다운 */
+.ph-notifEmpty { padding:28px 16px; text-align:center; color:#9a9186; font-weight:600; font-size:13px; }

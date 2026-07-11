@@ -234,20 +234,7 @@ function mapSwList(list: any, fb: { label: string; pct: number }[]): { label: st
   }));
 }
 
-/* ===== 알림 (원본 SEED/INCOMING — API 실패 시 시뮬레이션 fallback) ===== */
-
-// TODO(api): notificationApi.list() 실패 시 원본 SEED+INCOMING 시뮬레이션 유지
-const SEED = [
-  { icon: 'ph-fill ph-file-text', color: '#2E7BFF', bg: '#E6F0FF', title: '주간 리포트가 도착했어요', preview: '이번 주 평균 정답률 89% · 학습 14회', time: '2시간 전' },
-  { icon: 'ph-fill ph-medal', color: '#F0A400', bg: '#FFF3D6', title: '새 배지를 획득했어요', preview: "하은이가 '꾸준왕' 배지를 받았어요", time: '어제' },
-];
-
-const INCOMING = [
-  { icon: 'ph-fill ph-check-circle', color: '#17B08C', bg: '#E1F5EC', title: '하은이가 오늘 학습을 마쳤어요', preview: '국어 챕터 2 · 정답률 92% · 12분 학습' },
-  { icon: 'ph-fill ph-lightbulb', color: '#8B6BFF', bg: '#EAE2FF', title: 'AI 복습 추천이 도착했어요', preview: '수학에서 복습하면 좋을 문제 3개를 골랐어요' },
-  { icon: 'ph-fill ph-timer', color: '#FF922E', bg: '#FFEDD6', title: '하은이가 30분 넘게 집중했어요', preview: '잠깐 눈을 쉬어가도 좋아요 👀' },
-  { icon: 'ph-fill ph-star', color: '#FF5A6E', bg: '#FFE3E9', title: '이번 주 목표를 달성했어요', preview: '주 5회 학습 목표를 모두 채웠어요! 🎉' },
-];
+/* ===== 알림 — 실제 notificationApi.list()만 사용 (데모 시뮬레이션 제거) ===== */
 
 /** API 알림 type/category → 원본 아이콘·색 매핑 (미지정 시 원본 토스트 기본색) */
 const NOTIF_STYLES: Record<string, { icon: string; color: string; bg: string }> = {
@@ -419,9 +406,6 @@ export default function ParentHome() {
   const notifOpenRef = useRef(false);
   const apiModeRef = useRef(false);
   const seenIdsRef = useRef<Set<string>>(new Set());
-  const queueRef = useRef<typeof INCOMING>([]);
-  const seedTimerRef = useRef<number | null>(null);
-  const pumpIvRef = useRef<number | null>(null);
   const pollIvRef = useRef<number | null>(null);
   const toastTimerRef = useRef<number | null>(null);
   const bellTimerRef = useRef<number | null>(null);
@@ -443,27 +427,6 @@ export default function ParentHome() {
 
   useEffect(() => {
     let cancelled = false;
-
-    const startFallbackSim = () => {
-      // TODO(api): 알림 API 실패 — 원본 SEED + INCOMING(3.5초 후 시작, 9초 간격) 시뮬레이션 유지
-      setNotifs(SEED.map((n, i) => ({ ...n, id: 's' + i, unread: false })));
-      queueRef.current = INCOMING.slice();
-      seedTimerRef.current = window.setTimeout(() => {
-        const first = queueRef.current.shift();
-        if (first) receive({ ...first, id: 'n' + Date.now(), time: '방금', unread: true });
-        pumpIvRef.current = window.setInterval(() => {
-          const next = queueRef.current.shift();
-          if (!next) {
-            if (pumpIvRef.current) {
-              window.clearInterval(pumpIvRef.current);
-              pumpIvRef.current = null;
-            }
-            return;
-          }
-          receive({ ...next, id: 'n' + Date.now(), time: '방금', unread: true });
-        }, 9000);
-      }, 3500);
-    };
 
     notificationApi
       .list()
@@ -497,13 +460,12 @@ export default function ParentHome() {
         }, 10000);
       })
       .catch(() => {
-        if (!cancelled) startFallbackSim();
+        // 알림 조회 실패 시 데모 시뮬레이션 대신 빈 알림 유지
+        if (!cancelled) setNotifs([]);
       });
 
     return () => {
       cancelled = true;
-      if (seedTimerRef.current) window.clearTimeout(seedTimerRef.current);
-      if (pumpIvRef.current) window.clearInterval(pumpIvRef.current);
       if (pollIvRef.current) window.clearInterval(pollIvRef.current);
       if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current);
       if (bellTimerRef.current) window.clearTimeout(bellTimerRef.current);
@@ -671,6 +633,9 @@ export default function ParentHome() {
               <button onClick={markAllRead} className="ph-markAll">모두 읽음</button>
             </div>
             <div className="ph-notifList">
+              {notifs.length === 0 && (
+                <div className="ph-notifEmpty">아직 새로운 알림이 없어요</div>
+              )}
               {notifs.map((n) => (
                 <div key={n.id} className={'ph-notifRow' + (n.unread ? ' ph-notifRowUnread' : '')}>
                   <span className="ph-notifRowIcon" style={{ background: n.bg, color: n.color }}>
