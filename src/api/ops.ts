@@ -305,10 +305,35 @@ export interface OpsSystemHealth {
   checked_at: string;
 }
 
+export interface OpsOrgPage {
+  items: OpsOrg[];
+  total: number;
+  page: number;
+  page_size: number;
+  total_all: number;
+  total_students: number;
+}
+export interface OpsApiKeyPage {
+  items: OpsApiKey[];
+  total: number;
+  page: number;
+  page_size: number;
+}
+export interface OpsRegRequestPage {
+  items: OrgRegRequest[];
+  total: number;
+  page: number;
+  page_size: number;
+  counts: { pending: number; approved: number; rejected: number };
+}
+
 export const opsApi = {
   system: () => client.get<OpsSystemHealth>('/ops/system').then((r) => r.data),
   dashboard: () => client.get<OpsDashboard>('/ops/dashboard').then((r) => r.data),
   orgs: () => client.get<OpsOrg[]>('/ops/orgs').then((r) => r.data),
+  /** 기관 목록 — 서버 페이지네이션+검색 (기관 관리 화면용) */
+  orgsPage: (params: { search?: string; page: number; page_size?: number }) =>
+    client.get<OpsOrgPage>('/ops/orgs', { params }).then((r) => r.data),
   createOrg: (body: OpsOrgCreateInput) =>
     client.post<OpsOrgCreated>('/ops/orgs', body).then((r) => r.data),
   updateOrg: (id: string, body: OpsOrgUpdateInput) =>
@@ -347,6 +372,9 @@ export const opsApi = {
         params: status ? { status_filter: status } : undefined,
       })
       .then((r) => r.data),
+  /** 가입 신청 목록 — 서버 페이지네이션 + 탭 배지 counts */
+  registrationRequestsPage: (params: { status_filter?: string; page: number; page_size?: number }) =>
+    client.get<OpsRegRequestPage>('/ops/registration-requests', { params }).then((r) => r.data),
   approve: (id: string) =>
     client
       .post<OpsApproveResult>(`/ops/registration-requests/${id}/approve`)
@@ -365,6 +393,9 @@ export const opsApi = {
   /** 캡차/교육형 API 키 관리 */
   plans: () => client.get<OpsPlansResponse>('/ops/plans').then((r) => r.data),
   apiKeys: () => client.get<OpsApiKey[]>('/ops/api-keys').then((r) => r.data),
+  /** API 키 목록 — 서버 페이지네이션(+기관 필터) */
+  apiKeysPage: (params: { organization_id?: string; page: number; page_size?: number }) =>
+    client.get<OpsApiKeyPage>('/ops/api-keys', { params }).then((r) => r.data),
   issueApiKey: (body: {
     organization_id: string;
     product: string;

@@ -1031,3 +1031,6 @@
 .op-sys-body { margin-top: 10px; display: flex; align-items: baseline; gap: 10px; }
 .op-sys-lat { font-family: monospace; font-weight: 900; font-size: 18px; color: #4a4438; }
 .op-sys-detail { color: #8a8072; font-weight: 700; font-size: 12.5px; }
+.ak-list-head { display: flex; align-items: center; gap: 10px; }
+.ak-list-filter { margin-left: auto; }
+.ak-list-total { color: #9b9086; font-weight: 800; font-size: 12.5px; }

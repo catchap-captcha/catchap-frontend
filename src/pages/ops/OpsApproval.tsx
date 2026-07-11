@@ -14,9 +14,14 @@ const TAB_LABEL: Record<Tab, string> = {
   rejected: '거절',
 };
 
+const PAGE_SIZE = 50;
+
 export default function OpsApproval() {
   const navigate = useNavigate();
   const [tab, setTab] = useState<Tab>('pending');
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [counts, setCounts] = useState({ pending: 0, approved: 0, rejected: 0 });
   // 가짜(데모) 신청을 절대 보여주지 않는다 — 실제 데이터/상태만 표시
   const [rows, setRows] = useState<OrgRegRequest[]>([]);
   const [listErr, setListErr] = useState(false);
@@ -34,9 +39,11 @@ export default function OpsApproval() {
   const load = () => {
     setListLoading(true);
     opsApi
-      .registrationRequests()
+      .registrationRequestsPage({ status_filter: tab, page, page_size: PAGE_SIZE })
       .then((d) => {
-        setRows(Array.isArray(d) ? d : []);
+        setRows(d.items ?? []);
+        setTotal(d.total ?? 0);
+        setCounts(d.counts ?? { pending: 0, approved: 0, rejected: 0 });
         setListErr(false);
       })
       .catch(() => setListErr(true))
@@ -57,7 +64,7 @@ export default function OpsApproval() {
       });
   };
 
-  useEffect(load, []);
+  useEffect(load, [tab, page]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const act = async (id: string, kind: 'approve' | 'reject') => {
     // 승인 = 실기관·관리자 계정 생성 + 임시비번 이메일 발송까지 비가역 실행 — 원클릭 방지
@@ -92,12 +99,8 @@ export default function OpsApproval() {
     }
   };
 
-  const counts = {
-    pending: rows.filter((r) => r.status === 'pending').length,
-    approved: rows.filter((r) => r.status === 'approved').length,
-    rejected: rows.filter((r) => r.status === 'rejected').length,
-  };
-  const list = rows.filter((r) => r.status === tab);
+  const list = rows; // 서버가 tab(status_filter)으로 걸러 내려준다
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (
     <div className="op-root">
@@ -139,7 +142,7 @@ export default function OpsApproval() {
         {/* TABS */}
         <div className="op-tabs">
           {(Object.keys(TAB_LABEL) as Tab[]).map((t) => (
-            <button key={t} className={`op-tab${tab === t ? ' op-tab--on' : ''}`} onClick={() => setTab(t)}>
+            <button key={t} className={`op-tab${tab === t ? ' op-tab--on' : ''}`} onClick={() => { setTab(t); setPage(1); }}>
               {TAB_LABEL[t]}
               <span className="op-tab-count">{counts[t]}</span>
             </button>
@@ -202,6 +205,20 @@ export default function OpsApproval() {
                 )}
               </div>
             ))}
+          </div>
+        )}
+
+        {!listLoading && !listErr && total > PAGE_SIZE && (
+          <div className="op-logpage">
+            <span className="op-pageinfo">{page} / {totalPages} 페이지 · {total.toLocaleString()}건</span>
+            <div className="op-pagebtns">
+              <button className="op-pagebtn" disabled={page <= 1} onClick={() => setPage((v) => Math.max(1, v - 1))}>
+                <i className="ph-bold ph-caret-left" />이전
+              </button>
+              <button className="op-pagebtn" disabled={page >= totalPages} onClick={() => setPage((v) => Math.min(totalPages, v + 1))}>
+                다음<i className="ph-bold ph-caret-right" />
+              </button>
+            </div>
           </div>
         )}
       </main>

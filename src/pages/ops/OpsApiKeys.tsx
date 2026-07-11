@@ -26,10 +26,15 @@ function errMsg(e: unknown, fallback: string): string {
   return detail || fallback;
 }
 
+const PAGE_SIZE = 50;
+
 export default function OpsApiKeys() {
   const [plans, setPlans] = useState<OpsPlansResponse | null>(null);
   const [orgs, setOrgs] = useState<OpsOrg[]>([]);
   const [keys, setKeys] = useState<OpsApiKey[]>([]);
+  const [keyPage, setKeyPage] = useState(1);
+  const [keyTotal, setKeyTotal] = useState(0);
+  const [filterOrg, setFilterOrg] = useState(''); // 목록 기관 필터
   const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading');
   const [toast, setToast] = useState<string | null>(null);
 
@@ -54,16 +59,21 @@ export default function OpsApiKeys() {
 
   const load = () => {
     setState('loading');
-    Promise.all([opsApi.plans(), opsApi.orgs(), opsApi.apiKeys()])
+    Promise.all([
+      opsApi.plans(),
+      opsApi.orgs(), // 발급 모달 드롭다운용 — 전체 기관 필요(무페이지)
+      opsApi.apiKeysPage({ ...(filterOrg ? { organization_id: filterOrg } : {}), page: keyPage, page_size: PAGE_SIZE }),
+    ])
       .then(([p, o, k]) => {
         setPlans(p);
         setOrgs(Array.isArray(o) ? o : []);
-        setKeys(Array.isArray(k) ? k : []);
+        setKeys(k.items ?? []);
+        setKeyTotal(k.total ?? 0);
         setState('ready');
       })
       .catch(() => setState('error'));
   };
-  useEffect(load, []);
+  useEffect(load, [filterOrg, keyPage]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const flash = (m: string) => {
     setToast(m);
@@ -125,7 +135,12 @@ export default function OpsApiKeys() {
         setFirstParty(false);
         flash('API 키를 발급했어요. secret_key는 지금만 볼 수 있어요.');
         // 목록 갱신
-        opsApi.apiKeys().then((k) => setKeys(Array.isArray(k) ? k : []));
+        opsApi
+          .apiKeysPage({ ...(filterOrg ? { organization_id: filterOrg } : {}), page: keyPage, page_size: PAGE_SIZE })
+          .then((k) => {
+            setKeys(k.items ?? []);
+            setKeyTotal(k.total ?? 0);
+          });
       })
       .catch((err) => flash(errMsg(err, '발급에 실패했어요.')))
       .finally(() => setIssuing(false));
@@ -356,7 +371,24 @@ export default function OpsApiKeys() {
         </form>
 
         {/* 발급된 키 목록 */}
-        <div className="ak-list-head">발급된 키</div>
+        <div className="ak-list-head">
+          발급된 키
+          <select
+            className="op-bh-select ak-list-filter"
+            value={filterOrg}
+            onChange={(e) => {
+              setFilterOrg(e.target.value);
+              setKeyPage(1);
+            }}
+            title="기관 필터"
+          >
+            <option value="">전체 기관</option>
+            {orgs.map((o) => (
+              <option key={o.id} value={o.id}>{o.name}</option>
+            ))}
+          </select>
+          <span className="ak-list-total">{keyTotal.toLocaleString()}개</span>
+        </div>
 
         {state === 'loading' && <div className="op-empty"><p>불러오는 중…</p></div>}
         {state === 'error' && (
@@ -368,7 +400,7 @@ export default function OpsApiKeys() {
         {state === 'ready' && keys.length === 0 && (
           <div className="op-empty">
             <i className="ph-fill ph-key" />
-            <p>아직 발급된 API 키가 없어요. 위에서 첫 키를 발급해 보세요.</p>
+            <p>{filterOrg ? '이 기관에 발급된 키가 없어요.' : '아직 발급된 API 키가 없어요. 위에서 첫 키를 발급해 보세요.'}</p>
           </div>
         )}
 
@@ -479,6 +511,26 @@ export default function OpsApiKeys() {
               );
             })}
         </div>
+
+        {state === 'ready' && keyTotal > PAGE_SIZE && (
+          <div className="op-logpage">
+            <span className="op-pageinfo">
+              {keyPage} / {Math.max(1, Math.ceil(keyTotal / PAGE_SIZE))} 페이지 · {keyTotal.toLocaleString()}개
+            </span>
+            <div className="op-pagebtns">
+              <button className="op-pagebtn" disabled={keyPage <= 1} onClick={() => setKeyPage((v) => Math.max(1, v - 1))}>
+                <i className="ph-bold ph-caret-left" />이전
+              </button>
+              <button
+                className="op-pagebtn"
+                disabled={keyPage >= Math.ceil(keyTotal / PAGE_SIZE)}
+                onClick={() => setKeyPage((v) => v + 1)}
+              >
+                다음<i className="ph-bold ph-caret-right" />
+              </button>
+            </div>
+          </div>
+        )}
       </main>
 
       {/* secret 1회 노출 모달 (발급·재발급 공용) */}

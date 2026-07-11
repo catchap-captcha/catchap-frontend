@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   opsApi,
   type OpsOrg,
@@ -47,10 +47,16 @@ const EMPTY_FORM: FormState = {
 
 type Modal = { mode: 'create' } | { mode: 'edit'; org: OpsOrg } | null;
 
+const PAGE_SIZE = 50;
+
 export default function OpsOrgs() {
   const [rows, setRows] = useState<OpsOrg[]>([]);
   const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading');
   const [q, setQ] = useState('');
+  const [search, setSearch] = useState(''); // Enter로 확정된 서버 검색어
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [totals, setTotals] = useState({ all: 0, students: 0 });
   const [modal, setModal] = useState<Modal>(null);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
@@ -68,24 +74,19 @@ export default function OpsOrgs() {
   const load = () => {
     setState('loading');
     opsApi
-      .orgs()
+      .orgsPage({ ...(search ? { search } : {}), page, page_size: PAGE_SIZE })
       .then((d) => {
-        setRows(Array.isArray(d) ? d : []);
+        setRows(d.items ?? []);
+        setTotal(d.total ?? 0);
+        setTotals({ all: d.total_all ?? 0, students: d.total_students ?? 0 });
         setState('ready');
       })
       .catch(() => setState('error'));
   };
-  useEffect(load, []);
+  useEffect(load, [search, page]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const filtered = useMemo(() => {
-    const kw = q.trim().toLowerCase();
-    if (!kw) return rows;
-    return rows.filter(
-      (o) => o.name.toLowerCase().includes(kw) || o.code.toLowerCase().includes(kw),
-    );
-  }, [rows, q]);
-
-  const totalStudents = useMemo(() => rows.reduce((s, o) => s + (o.students || 0), 0), [rows]);
+  const filtered = rows;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   const openCreate = () => {
     setForm(EMPTY_FORM);
@@ -189,7 +190,7 @@ export default function OpsOrgs() {
           <div>
             <h1 className="op-title">기관 관리</h1>
             <p className="op-sub">
-              등록된 전체 기관 {rows.length}곳 · 소속 학생 합계 {totalStudents.toLocaleString()}명
+              등록된 전체 기관 {totals.all}곳 · 소속 학생 합계 {totals.students.toLocaleString()}명
             </p>
           </div>
           <div style={{ display: 'flex', gap: 10 }}>
@@ -210,8 +211,26 @@ export default function OpsOrgs() {
             <input
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder="기관명 또는 코드로 검색"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  setSearch(q.trim());
+                  setPage(1);
+                }
+              }}
+              placeholder="기관명·코드·담당 이메일 검색 후 Enter"
             />
+            {search && (
+              <button
+                className="op-inqsearch-x"
+                onClick={() => {
+                  setSearch('');
+                  setQ('');
+                  setPage(1);
+                }}
+              >
+                <i className="ph-bold ph-x" /> 해제
+              </button>
+            )}
           </div>
         </div>
 
@@ -230,7 +249,7 @@ export default function OpsOrgs() {
             <div className="op-logrow">기관 목록을 불러오지 못했어요. 새로고침해 주세요.</div>
           )}
           {state === 'ready' && filtered.length === 0 && (
-            <div className="op-logrow">{q ? '검색 결과가 없어요.' : '등록된 기관이 아직 없어요.'}</div>
+            <div className="op-logrow">{search ? '검색 결과가 없어요.' : '등록된 기관이 아직 없어요.'}</div>
           )}
           {state === 'ready' &&
             filtered.map((o) => {
@@ -263,6 +282,20 @@ export default function OpsOrgs() {
               );
             })}
         </div>
+
+        {state === 'ready' && total > PAGE_SIZE && (
+          <div className="op-logpage">
+            <span className="op-pageinfo">{page} / {totalPages} 페이지 · {total.toLocaleString()}곳</span>
+            <div className="op-pagebtns">
+              <button className="op-pagebtn" disabled={page <= 1} onClick={() => setPage((v) => Math.max(1, v - 1))}>
+                <i className="ph-bold ph-caret-left" />이전
+              </button>
+              <button className="op-pagebtn" disabled={page >= totalPages} onClick={() => setPage((v) => Math.min(totalPages, v + 1))}>
+                다음<i className="ph-bold ph-caret-right" />
+              </button>
+            </div>
+          </div>
+        )}
       </main>
 
       {/* 생성/수정 모달 */}
