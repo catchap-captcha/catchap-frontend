@@ -7,7 +7,8 @@ import './OrgStudents.css';
 /* eslint-disable @typescript-eslint/no-explicit-any */
 interface StudentRow {
   id: string;
-  nickname: string;
+  realName: string; // 선생님이 입력한 실명(기관 화면 표시용, 학생이 별명 바꿔도 유지)
+  nickname: string; // 학생이 정한 별명(게임 내 이름) — 보조 표시
   login_id: string; // 학교 발급 · 전역 유일
   className: string;
   status: 'active' | 'pending'; // 활성 | 가입 대기(코드 미사용)
@@ -78,7 +79,9 @@ export default function OrgStudents() {
             const status: 'active' | 'pending' = r.status === 'pending' ? 'pending' : 'active';
             return {
               id: String(r.id ?? ''),
-              nickname: r.nickname ?? r.name ?? (status === 'pending' ? '(가입 대기)' : ''),
+              // 표시 이름은 실명 우선(백엔드 name = student_display_name, 실명 최우선). 별명은 보조.
+              realName: r.name ?? r.nickname ?? (status === 'pending' ? '(가입 대기)' : ''),
+              nickname: r.nickname ?? '',
               login_id: r.login_id ?? '',
               className: r.cls ?? r.class_name ?? '',
               status,
@@ -135,7 +138,8 @@ export default function OrgStudents() {
       const made: StudentRow[] = (res.issued ?? []).map(
         (it: { login_id: string; join_code: string; real_name?: string | null }, k: number) => ({
           id: `srv-${it.login_id}-${k}`,
-          nickname: it.real_name ? `${it.real_name} (가입 대기)` : '(가입 대기)',
+          realName: it.real_name || '(이름 미입력)',
+          nickname: '',
           login_id: it.login_id,
           className: addClass,
           status: 'pending' as const,
@@ -184,7 +188,7 @@ export default function OrgStudents() {
     }
     try {
       const res = await orgApi.resetStudentPassword(orgId, r.id);
-      setResetInfo({ name: r.nickname, temp: res.temp_password });
+      setResetInfo({ name: r.realName, temp: res.temp_password });
     } catch (e: any) {
       // 담임이 있는 반 → 403 + "담임 X 선생님께 요청" 안내를 그대로 보여준다
       const msg = e?.response?.data?.detail || '초기화할 수 없어요. 담당 선생님에게 요청해 주세요.';
@@ -243,11 +247,23 @@ export default function OrgStudents() {
           {list.map((r) => (
             <div key={r.id} className="os-row">
               <span className="os-col-name">
-                <span className={`os-avatar os-avatar--${r.status}`}>{r.status === 'active' ? r.nickname[0] || '?' : '?'}</span>
+                <span className={`os-avatar os-avatar--${r.status}`}>{r.status === 'active' ? r.realName[0] || '?' : '?'}</span>
                 <span className="os-name-wrap">
-                  <span className="os-nick">{r.nickname}</span>
+                  <span className="os-nick">
+                    {r.realName}
+                    {/* 학생이 정한 별명(게임 내 이름)은 실명 옆에 보조로 — 실명으로 식별 우선 */}
+                    {r.status === 'active' && r.nickname && r.nickname !== r.realName && (
+                      <span className="os-subnick">별명 {r.nickname}</span>
+                    )}
+                  </span>
                   <span className={`os-badge os-badge--${r.status}`}>{r.status === 'active' ? '가입 완료' : '가입 대기'}</span>
-                  <select className="os-clssel" value={r.className} onChange={(e) => changeClass(r.id, e.target.value)} title="반 배정/이동">
+                  <select
+                    className="os-clssel"
+                    value={r.className}
+                    onChange={(e) => changeClass(r.id, e.target.value)}
+                    disabled={r.status === 'pending'}
+                    title={r.status === 'pending' ? '가입 후 반을 옮길 수 있어요' : '반 배정/이동'}
+                  >
                     {classOptions.map((c) => <option key={c} value={c}>{c}</option>)}
                     {!classOptions.includes(r.className) && <option value={r.className}>{r.className}</option>}
                   </select>
@@ -259,14 +275,22 @@ export default function OrgStudents() {
                   <button className="os-code" onClick={() => copy(r.join_code!, '가입 코드')} title="복사">
                     <i className="ph-bold ph-ticket" />{r.join_code}<i className="ph-bold ph-copy os-code-copy" />
                   </button>
+                ) : r.status === 'pending' ? (
+                  // 코드 원문은 발급 시 1회만 볼 수 있어 재열람 불가 — 대기 상태만 표시
+                  <span className="os-code-used os-code-pending" title="가입 코드는 발급 시에만 볼 수 있어요">
+                    <i className="ph-fill ph-hourglass-medium" />미가입
+                  </span>
                 ) : (
                   <span className="os-code-used"><i className="ph-fill ph-check" />사용됨</span>
                 )}
               </span>
               <span className="os-col-act">
-                <button className="os-mini" onClick={() => issueInvite(r.id)} title="학부모 초대코드">
-                  <i className="ph-fill ph-user-circle-plus" />{r.invite_code ? '초대코드 재발급' : '학부모 초대'}
-                </button>
+                {/* 학부모 초대·비번 초기화는 학생이 가입한 뒤에만 의미가 있다(대기 학생은 아직 계정이 없음) */}
+                {r.status === 'active' && (
+                  <button className="os-mini" onClick={() => issueInvite(r.id)} title="학부모 초대코드">
+                    <i className="ph-fill ph-user-circle-plus" />{r.invite_code ? '초대코드 재발급' : '학부모 초대'}
+                  </button>
+                )}
                 {/* 비번 초기화는 원칙적으로 담임 교사. 교장은 '담임 없는 반'만 비상 초기화(그 외 서버가 담임에게 안내) */}
                 {r.status === 'active' && isRealId(r.id) && (
                   <button className="os-mini os-mini--warn" onClick={() => emergencyReset(r)} title="담임 없는 반 학생만 비상 초기화">
