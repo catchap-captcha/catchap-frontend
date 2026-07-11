@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { opsApi, type OpsOperator, type OpsOperatorCreated } from '../../api/ops';
+import { settingsApi } from '../../api/settings';
 import { useAuth } from '../../hooks/useAuth';
 import OpsNav from '../../components/ops/OpsNav';
 import './OpsApproval.css';
@@ -24,8 +25,16 @@ export default function OpsOperators() {
   const [saving, setSaving] = useState(false);
   const [formErr, setFormErr] = useState('');
   const [created, setCreated] = useState<OpsOperatorCreated | null>(null);
+  const [resetMode, setResetMode] = useState(false); // created 모달을 '재설정' 문구로 표시
   const [busyId, setBusyId] = useState<string | null>(null);
   const [toast, setToast] = useState('');
+  // 본인 비밀번호 변경 모달
+  const [pwOpen, setPwOpen] = useState(false);
+  const [curPw, setCurPw] = useState('');
+  const [newPw, setNewPw] = useState('');
+  const [newPw2, setNewPw2] = useState('');
+  const [pwErr, setPwErr] = useState('');
+  const [pwSaving, setPwSaving] = useState(false);
 
   const say = (m: string) => {
     setToast(m);
@@ -85,6 +94,52 @@ export default function OpsOperators() {
     }
   };
 
+  const resetPw = async (op: OpsOperator) => {
+    const self = me?.id === op.id;
+    const msg = self
+      ? '내 임시 비밀번호를 재설정할까요? 기존 세션이 로그아웃되고, 새 임시 비번을 이메일로 받게 돼요.'
+      : `${op.name} 운영자의 임시 비밀번호를 재설정할까요? 새 임시 비번이 이메일로 발송되고 기존 세션은 폐기됩니다.`;
+    if (!window.confirm(msg)) return;
+    setBusyId(op.id);
+    try {
+      const res = await opsApi.resetOperatorPassword(op.id);
+      setResetMode(true);
+      setCreated(res); // 임시 비밀번호 1회 노출(재설정 문구)
+      load();
+    } catch (e) {
+      const err = e as { response?: { data?: { detail?: string } } };
+      say(err.response?.data?.detail ?? '재설정에 실패했어요.');
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const openMyPw = () => {
+    setCurPw('');
+    setNewPw('');
+    setNewPw2('');
+    setPwErr('');
+    setPwOpen(true);
+  };
+  const changeMyPw = async () => {
+    if (!curPw) return setPwErr('현재 비밀번호를 입력해 주세요.');
+    if (newPw.length < 8) return setPwErr('새 비밀번호는 8자 이상으로 정해 주세요.');
+    if (newPw !== newPw2) return setPwErr('새 비밀번호가 서로 달라요.');
+    if (newPw === curPw) return setPwErr('현재 비밀번호와 다른 비밀번호로 정해 주세요.');
+    setPwSaving(true);
+    setPwErr('');
+    try {
+      await settingsApi.changePassword(curPw, newPw);
+      setPwOpen(false);
+      say('비밀번호를 변경했어요.');
+    } catch (e) {
+      const err = e as { response?: { data?: { detail?: string } } };
+      setPwErr(err.response?.data?.detail ?? '변경에 실패했어요. 현재 비밀번호를 확인해 주세요.');
+    } finally {
+      setPwSaving(false);
+    }
+  };
+
   return (
     <div className="op-root">
       <OpsNav />
@@ -98,6 +153,10 @@ export default function OpsOperators() {
             </p>
           </div>
           <div style={{ display: 'flex', gap: 10 }}>
+            <button className="op-refresh" onClick={openMyPw}>
+              <i className="ph-bold ph-lock-key" />
+              내 비밀번호 변경
+            </button>
             <button className="op-addbtn" onClick={openAdd}>
               <i className="ph-bold ph-plus" />
               운영자 추가
@@ -138,7 +197,15 @@ export default function OpsOperators() {
                     <span className={`op-orgstatus op-orgstatus--${m.cls}`}>{m.label}</span>
                   </span>
                   <span className="op-op-login">{fmt(o.last_login_at)}</span>
-                  <span className="op-col-right">
+                  <span className="op-col-right" style={{ display: 'inline-flex', gap: 8, justifyContent: 'flex-end' }}>
+                    <button
+                      className="op-op-toggle op-op-toggle--reset"
+                      disabled={busyId === o.id}
+                      title="임시 비밀번호 재설정 → 이메일 발송"
+                      onClick={() => resetPw(o)}
+                    >
+                      <i className="ph-bold ph-key" /> 비번 재설정
+                    </button>
                     <button
                       className={
                         'op-op-toggle' + (o.status === 'active' ? ' op-op-toggle--off' : ' op-op-toggle--on')
@@ -192,18 +259,30 @@ export default function OpsOperators() {
         </div>
       )}
 
-      {/* 생성 결과 — 임시 비밀번호 1회 노출 */}
+      {/* 생성/재설정 결과 — 임시 비밀번호 1회 노출 */}
       {created && (
-        <div className="op-bh-overlay" onClick={() => setCreated(null)}>
+        <div className="op-bh-overlay" onClick={() => { setCreated(null); setResetMode(false); }}>
           <div className="op-formmodal" onClick={(e) => e.stopPropagation()}>
             <div className="op-bh-modal-h">
-              <span><i className="ph-fill ph-check-circle" /> 운영자를 추가했어요</span>
-              <button className="op-bh-modal-x" onClick={() => setCreated(null)}><i className="ph-bold ph-x" /></button>
+              <span>
+                <i className="ph-fill ph-check-circle" />{' '}
+                {resetMode ? '임시 비밀번호를 재설정했어요' : '운영자를 추가했어요'}
+              </span>
+              <button className="op-bh-modal-x" onClick={() => { setCreated(null); setResetMode(false); }}><i className="ph-bold ph-x" /></button>
             </div>
             <div className="op-form">
               <p className="op-form-hint">
-                <b>{created.name}</b> 운영자 계정을 만들었어요. 임시 비밀번호를 <b>{created.email}</b>로
-                자동 발송했고, 이 계정은 <b>첫 로그인 시 새 비밀번호를 반드시 설정</b>해야 합니다.
+                {resetMode ? (
+                  <>
+                    <b>{created.name}</b> 운영자의 임시 비밀번호를 재설정했어요. 새 임시 비밀번호를 <b>{created.email}</b>로
+                    발송했고, 기존 세션은 폐기됐습니다. <b>첫 로그인 시 새 비밀번호를 반드시 설정</b>해야 합니다.
+                  </>
+                ) : (
+                  <>
+                    <b>{created.name}</b> 운영자 계정을 만들었어요. 임시 비밀번호를 <b>{created.email}</b>로
+                    자동 발송했고, 이 계정은 <b>첫 로그인 시 새 비밀번호를 반드시 설정</b>해야 합니다.
+                  </>
+                )}
               </p>
               {/* 이메일 발송 결과 — 실패/dry-run이면 아래 임시 비번을 수동 전달 */}
               {created.email_status === 'sent' ? (
@@ -239,7 +318,42 @@ export default function OpsOperators() {
                 </div>
               </div>
               <div className="op-form-actions">
-                <button className="op-btn op-btn--approve" onClick={() => setCreated(null)}>확인</button>
+                <button className="op-btn op-btn--approve" onClick={() => { setCreated(null); setResetMode(false); }}>확인</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 본인 비밀번호 변경 모달 */}
+      {pwOpen && (
+        <div className="op-bh-overlay" onClick={() => !pwSaving && setPwOpen(false)}>
+          <div className="op-formmodal" onClick={(e) => e.stopPropagation()}>
+            <div className="op-bh-modal-h">
+              <span><i className="ph-fill ph-lock-key" /> 내 비밀번호 변경</span>
+              <button className="op-bh-modal-x" onClick={() => !pwSaving && setPwOpen(false)}><i className="ph-bold ph-x" /></button>
+            </div>
+            <div className="op-form">
+              <p className="op-form-hint">현재 비밀번호를 확인한 뒤 새 비밀번호(8자 이상)로 바꿔요.</p>
+              <label className="op-form-row">
+                <span className="op-form-lb">현재 비밀번호 <b>*</b></span>
+                <input className="op-form-in" type="password" value={curPw} onChange={(e) => setCurPw(e.target.value)} placeholder="현재 비밀번호" />
+              </label>
+              <label className="op-form-row">
+                <span className="op-form-lb">새 비밀번호 <b>*</b></span>
+                <input className="op-form-in" type="password" value={newPw} onChange={(e) => setNewPw(e.target.value)} placeholder="8자 이상" />
+              </label>
+              <label className="op-form-row">
+                <span className="op-form-lb">새 비밀번호 확인 <b>*</b></span>
+                <input className="op-form-in" type="password" value={newPw2} onChange={(e) => setNewPw2(e.target.value)} placeholder="새 비밀번호 다시" />
+              </label>
+              {pwErr && <div className="op-form-err"><i className="ph-fill ph-warning-circle" />{pwErr}</div>}
+              <div className="op-form-actions">
+                <button className="op-btn op-btn--reject" disabled={pwSaving} onClick={() => setPwOpen(false)}>취소</button>
+                <button className="op-btn op-btn--approve" disabled={pwSaving} onClick={changeMyPw}>
+                  <i className="ph-bold ph-check" />
+                  {pwSaving ? '변경 중…' : '비밀번호 변경'}
+                </button>
               </div>
             </div>
           </div>

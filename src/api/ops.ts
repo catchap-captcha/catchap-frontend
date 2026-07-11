@@ -295,6 +295,9 @@ export const opsApi = {
     client.post<OpsOperatorCreated>('/ops/operators', body).then((r) => r.data),
   updateOperator: (id: string, body: { name?: string; status?: string }) =>
     client.patch<OpsOperator>(`/ops/operators/${id}`, body).then((r) => r.data),
+  /** 운영자 임시 비밀번호 재설정 → 새 임시 비번 이메일 발송(1회 노출) + 기존 세션 폐기 */
+  resetOperatorPassword: (id: string) =>
+    client.post<OpsOperatorCreated>(`/ops/operators/${id}/reset-password`).then((r) => r.data),
   logs: (filter?: OpsLogFilter) =>
     client
       .get<OpsAuditLogPage>('/ops/logs', { params: filter && Object.keys(filter).length ? filter : undefined })

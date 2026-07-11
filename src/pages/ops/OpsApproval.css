@@ -948,6 +948,8 @@
 }
 .op-op-toggle--off:hover:not(:disabled) { background: #ffe3e3; border-color: #ffc7c7; color: #e23d3d; }
 .op-op-toggle--on:hover:not(:disabled) { background: #e1f5ec; border-color: #b6e6d1; color: #17916f; }
+.op-op-toggle--reset { display: inline-flex; align-items: center; gap: 4px; border-color: #e0d6ff; color: #7a5bd6; }
+.op-op-toggle--reset:hover:not(:disabled) { background: #f1ecff; border-color: #c9b8ff; }
 .op-op-toggle:disabled { opacity: 0.4; cursor: default; }
 /* 운영자 계정 발급 — 이메일 발송 결과 배너 */
 .op-mailstat { display: flex; align-items: flex-start; gap: 7px; border-radius: 12px; padding: 10px 13px; font-weight: 700; font-size: 12.5px; line-height: 1.55; }
