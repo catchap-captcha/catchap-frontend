@@ -9,7 +9,7 @@ interface StudentRow {
   id: string;
   realName: string; // 선생님이 입력한 실명(기관 화면 표시용, 학생이 별명 바꿔도 유지)
   nickname: string; // 학생이 정한 별명(게임 내 이름) — 보조 표시
-  login_id: string; // 학교 발급 · 전역 유일
+  code: string; // 학생 코드(CAT-xxxx) — 동명이인 구분용 고유 번호(로그인 자격증명 아님)
   className: string;
   status: 'active' | 'pending'; // 활성 | 가입 대기(코드 미사용)
   join_code: string | null; // 1회용 가입 코드 (미가입 학생만)
@@ -35,7 +35,8 @@ export default function OrgStudents() {
   const [addNames, setAddNames] = useState(''); // 학생 실명 목록 (줄바꿈 구분, 교사·기관 화면 전용)
   // 입력한 이름 순서대로의 성별(선생님 입력, 아이가 안 고름). ''=미정 → 서버엔 null로 보냄.
   const [addGenders, setAddGenders] = useState<('' | 'male' | 'female')[]>([]);
-  const [issued, setIssued] = useState<{ login_id: string; join_code: string }[] | null>(null);
+  // 발급 결과 모달 — 학생 이름 + 가입 코드(로그인 아이디는 노출 안 함)
+  const [issued, setIssued] = useState<{ name: string; join_code: string }[] | null>(null);
   const [creating, setCreating] = useState(false);
   const [createErr, setCreateErr] = useState('');
   // 교장 비상 초기화 결과(임시비번) 또는 담임에게 넘기라는 안내 메시지
@@ -84,10 +85,11 @@ export default function OrgStudents() {
               // 표시 이름은 실명 우선(백엔드 name = student_display_name, 실명 최우선). 별명은 보조.
               realName: r.name ?? r.nickname ?? (status === 'pending' ? '(가입 대기)' : ''),
               nickname: r.nickname ?? '',
-              login_id: r.login_id ?? '',
+              // 학생 코드(CAT-xxxx) — 동명이인 구분용. 활성 학생만 있고(가입 시 부여), 미가입은 빈값.
+              code: status === 'active' ? (r.code ?? '') : '',
               className: r.cls ?? r.class_name ?? '',
               status,
-              join_code: status === 'pending' ? (r.code ?? r.join_code ?? null) : null,
+              join_code: status === 'pending' ? (r.join_code ?? null) : null,
               invite_code: r.invite_code ?? null,
             };
           }),
@@ -102,9 +104,15 @@ export default function OrgStudents() {
   }, [me?.organization_id]);
 
   const list = useMemo(
-    () => (filter === 'all' ? rows : rows.filter((r) => r.className === filter)),
+    () =>
+      filter === 'all'
+        ? rows
+        : filter === '__unassigned'
+          ? rows.filter((r) => !r.className) // 미배정(반 없는 학생)
+          : rows.filter((r) => r.className === filter),
     [rows, filter],
   );
+  const unassignedCount = useMemo(() => rows.filter((r) => !r.className).length, [rows]);
   const stats = {
     total: rows.length,
     active: rows.filter((r) => r.status === 'active').length,
@@ -142,7 +150,7 @@ export default function OrgStudents() {
           id: `srv-${it.login_id}-${k}`,
           realName: it.real_name || '(이름 미입력)',
           nickname: '',
-          login_id: it.login_id,
+          code: '', // 학생 코드는 활성화 시 부여 — 미가입 단계엔 없음
           className: addClass,
           status: 'pending' as const,
           join_code: it.join_code,
@@ -154,7 +162,7 @@ export default function OrgStudents() {
         return;
       }
       setRows((prev) => [...made, ...prev]);
-      setIssued(made.map((m) => ({ login_id: m.login_id, join_code: m.join_code! })));
+      setIssued(made.map((m) => ({ name: m.realName, join_code: m.join_code! })));
     } catch {
       setCreateErr('가입 코드 발급에 실패했어요. 잠시 후 다시 시도해 주세요.');
     } finally {
@@ -171,8 +179,8 @@ export default function OrgStudents() {
     const codeId = rowId.startsWith('jc-') ? rowId.slice(3) : rowId;
     try {
       const res = await orgApi.reissueJoinCode(orgId, codeId);
-      const made = (res.issued ?? []).map((it: { login_id: string; join_code: string }) => ({
-        login_id: it.login_id,
+      const made = (res.issued ?? []).map((it: { real_name?: string | null; join_code: string }) => ({
+        name: it.real_name || '(이름 미입력)',
         join_code: it.join_code,
       }));
       if (made.length) {
@@ -260,12 +268,19 @@ export default function OrgStudents() {
           {classOptions.map((c) => (
             <button key={c} className={`os-chip${filter === c ? ' os-chip--on' : ''}`} onClick={() => setFilter(c)}>{c}</button>
           ))}
+          {unassignedCount > 0 && (
+            <button
+              className={`os-chip os-chip--unassigned${filter === '__unassigned' ? ' os-chip--on' : ''}`}
+              onClick={() => setFilter('__unassigned')}
+            >
+              미배정 {unassignedCount}
+            </button>
+          )}
         </div>
 
         <div className="os-tablecard">
           <div className="os-thead">
             <span className="os-col-name">학생</span>
-            <span className="os-col-id">로그인 아이디</span>
             <span className="os-col-code">가입 코드</span>
             <span className="os-col-act">관리</span>
           </div>
@@ -280,6 +295,8 @@ export default function OrgStudents() {
                     {r.status === 'active' && r.nickname && r.nickname !== r.realName && (
                       <span className="os-subnick">별명 {r.nickname}</span>
                     )}
+                    {/* 동명이인 구분용 학생 코드(로그인 아이디 아님) */}
+                    {r.code && <span className="os-subcode os-mono">{r.code}</span>}
                   </span>
                   <span className={`os-badge os-badge--${r.status}`}>{r.status === 'active' ? '가입 완료' : '가입 대기'}</span>
                   <select
@@ -294,7 +311,6 @@ export default function OrgStudents() {
                   </select>
                 </span>
               </span>
-              <span className="os-col-id os-mono">{r.login_id}</span>
               <span className="os-col-code">
                 {r.join_code ? (
                   <button className="os-code" onClick={() => copy(r.join_code!, '가입 코드')} title="복사">
@@ -426,9 +442,9 @@ export default function OrgStudents() {
                 <h3 className="os-modal-title"><i className="ph-fill ph-check-circle" />가입 코드 {issued.length}개 발급됨</h3>
                 <p className="os-modal-sub">아래 코드를 아이에게 전달해 주세요. 코드는 <b>1회용</b>이라 가입하면 사라져요.</p>
                 <div className="os-issued">
-                  {issued.map((it) => (
-                    <div key={it.login_id} className="os-issued-row">
-                      <span className="os-mono">{it.login_id}</span>
+                  {issued.map((it, i) => (
+                    <div key={`${it.join_code}-${i}`} className="os-issued-row">
+                      <span className="os-issued-name">{it.name}</span>
                       <button className="os-code" onClick={() => copy(it.join_code, '가입 코드')}><i className="ph-bold ph-ticket" />{it.join_code}<i className="ph-bold ph-copy os-code-copy" /></button>
                     </div>
                   ))}

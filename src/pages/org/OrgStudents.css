@@ -91,11 +91,16 @@
 }
 .os-thead, .os-row {
   display: grid;
-  grid-template-columns: 2fr 1.3fr 1.4fr 1.7fr;
+  grid-template-columns: 2.4fr 1.4fr 1.7fr;
   align-items: center;
   gap: 12px;
   padding: 14px 22px;
 }
+/* 동명이인 구분용 학생 코드(작은 회색) — 로그인 아이디는 기관 화면에 노출 안 함 */
+.os-subcode { font-size: 11px; font-weight: 700; color: #b0a79b; letter-spacing: 0.3px; }
+/* 미배정 필터 칩 */
+.os-chip--unassigned { color: #d98a00; }
+.os-chip--unassigned.os-chip--on { background: #fff3d6; color: #b0791d; }
 .os-thead {
   background: #fff7f3;
   font-weight: 800; font-size: 12px; color: #b0a79b; letter-spacing: 0.3px;
@@ -286,3 +291,5 @@
   border-color: #ff5346;
   color: #fff;
 }
+
+.os-issued-name { font-weight: 800; font-size: 14px; color: #3a3340; }
