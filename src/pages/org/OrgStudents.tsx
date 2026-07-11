@@ -40,6 +40,8 @@ export default function OrgStudents() {
   const [createErr, setCreateErr] = useState('');
   // 교장 비상 초기화 결과(임시비번) 또는 담임에게 넘기라는 안내 메시지
   const [resetInfo, setResetInfo] = useState<{ name: string; temp?: string; msg?: string } | null>(null);
+  // 학부모 초대 코드 결과 모달(학생 코드 창처럼 복사) — 발급/재발급 공용
+  const [inviteReveal, setInviteReveal] = useState<{ name: string; code: string } | null>(null);
 
   const flash = (m: string) => {
     setToast(m);
@@ -183,23 +185,24 @@ export default function OrgStudents() {
     }
   };
 
-  const issueInvite = async (id: string) => {
+  const issueInvite = async (row: StudentRow) => {
     const orgId = me?.organization_id;
-    if (orgId && isRealId(id)) {
+    if (orgId && isRealId(row.id)) {
       try {
-        const res = await orgApi.issueInvite(orgId, id);
-        setRows((prev) => prev.map((r) => (r.id === id ? { ...r, invite_code: res.invite_code } : r)));
-        flash(`학부모 초대코드 발급: ${res.invite_code}`);
+        const res = await orgApi.issueInvite(orgId, row.id);
+        setRows((prev) => prev.map((r) => (r.id === row.id ? { ...r, invite_code: res.invite_code } : r)));
+        // 학생 코드 창처럼 결과 모달로 노출·복사
+        setInviteReveal({ name: row.realName, code: res.invite_code });
       } catch {
         // 서버가 거부(권한 없음 등)하면 가짜 코드를 보여주지 않는다 — 실제 상황 안내
-        flash('초대코드 발급에 실패했어요. 권한이 없다면 교장에게 요청하세요.');
+        flash('초대코드 발급에 실패했어요. 담당(담임/학년부장/교장)만 발급할 수 있어요.');
       }
       return;
     }
     // 데모 행(실제 학생 아님)만 예시 코드 표시
     const code = genInvite();
-    setRows((prev) => prev.map((r) => (r.id === id ? { ...r, invite_code: code } : r)));
-    flash(`학부모 초대코드(예시): ${code}`);
+    setRows((prev) => prev.map((r) => (r.id === row.id ? { ...r, invite_code: code } : r)));
+    setInviteReveal({ name: row.realName, code });
   };
   // 학생 비번 초기화 — 원칙은 담임 교사. 교장은 '담임 없는 반'만 서버가 허용(그 외 403 안내).
   const emergencyReset = async (r: StudentRow) => {
@@ -315,7 +318,7 @@ export default function OrgStudents() {
                 )}
                 {/* 학부모 초대·비번 초기화는 학생이 가입한 뒤에만 의미가 있다(대기 학생은 아직 계정이 없음) */}
                 {r.status === 'active' && (
-                  <button className="os-mini" onClick={() => issueInvite(r.id)} title="학부모 초대코드">
+                  <button className="os-mini" onClick={() => issueInvite(r)} title="학부모 초대코드">
                     <i className="ph-fill ph-user-circle-plus" />{r.invite_code ? '초대코드 재발급' : '학부모 초대'}
                   </button>
                 )}
@@ -471,6 +474,30 @@ export default function OrgStudents() {
                 </div>
               </>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* 학부모 초대 코드 결과 모달 (학생 코드 창처럼 복사) */}
+      {inviteReveal && (
+        <div className="os-modal-bg" onClick={() => setInviteReveal(null)}>
+          <div className="os-modal" onClick={(e) => e.stopPropagation()}>
+            <h3 className="os-modal-title"><i className="ph-fill ph-user-circle-plus" />{inviteReveal.name} 학부모 초대 코드</h3>
+            <p className="os-modal-sub">
+              이 코드를 학부모님께 전달하세요. 학부모 가입 화면에서 코드를 넣으면 이 학생과 연결돼요.
+              <b> 최대 2회</b> 쓸 수 있고(부모 두 분), <b>14일</b> 뒤 만료됩니다.
+            </p>
+            <div className="os-issued">
+              <div className="os-issued-row">
+                <span className="os-mono">초대 코드</span>
+                <button className="os-code" onClick={() => copy(inviteReveal.code, '학부모 초대 코드')}>
+                  <i className="ph-bold ph-ticket" />{inviteReveal.code}<i className="ph-bold ph-copy os-code-copy" />
+                </button>
+              </div>
+            </div>
+            <div className="os-modal-actions">
+              <button className="os-btn-primary" onClick={() => setInviteReveal(null)}>완료</button>
+            </div>
           </div>
         </div>
       )}
