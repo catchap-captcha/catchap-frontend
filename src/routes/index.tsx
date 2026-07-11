@@ -54,6 +54,7 @@ const TeacherMyPage = lazy(() => import('../pages/teacher/TeacherMyPage'));
 const OrgHome = lazy(() => import('../pages/org/OrgHome'));
 const OrgClasses = lazy(() => import('../pages/org/OrgClasses'));
 const OrgTeachers = lazy(() => import('../pages/org/OrgTeachers'));
+const OrgAuditLog = lazy(() => import('../pages/org/OrgAuditLog'));
 const OrgAnalytics = lazy(() => import('../pages/org/OrgAnalytics'));
 const CaptchaSettings = lazy(() => import('../pages/org/CaptchaSettings'));
 const OrgApiKeys = lazy(() => import('../pages/org/OrgApiKeys'));
@@ -137,6 +138,7 @@ export default function AppRoutes() {
         <Route element={<ProtectedRoute roles={['grade_head', 'org_admin', 'ops']} />}>
           <Route path={PATHS.ORG_CLASSES} element={<OrgClasses />} />
           <Route path={PATHS.ORG_TEACHERS} element={<OrgTeachers />} />
+          <Route path={PATHS.ORG_AUDIT} element={<OrgAuditLog />} />
           <Route path={PATHS.ORG_STUDENTS} element={<OrgStudents />} />
           <Route path={PATHS.ORG_CONTACT} element={<OrgContact />} />
         </Route>

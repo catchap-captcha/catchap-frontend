@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { parseServerDate } from '../../utils/format';
 import {
   opsApi,
   type OpsApiKey,
@@ -420,11 +421,11 @@ export default function OpsApiKeys() {
                     <span>이번 달 호출: {k.usage_month.toLocaleString('ko-KR')}회</span>
                     <span>
                       마지막 사용:{' '}
-                      {k.last_used_at ? new Date(k.last_used_at).toLocaleString('ko-KR') : '없음'}
+                      {k.last_used_at ? parseServerDate(k.last_used_at).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }) : '없음'}
                     </span>
                     <span>
                       발급:{' '}
-                      {k.created_at ? new Date(k.created_at).toLocaleDateString('ko-KR') : '-'}
+                      {k.created_at ? parseServerDate(k.created_at).toLocaleDateString('ko-KR', { timeZone: 'Asia/Seoul' }) : '-'}
                     </span>
                   </div>
 

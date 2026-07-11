@@ -6,6 +6,7 @@ import { teacherApi } from '../../api/teacher';
 import { useToast } from '../../hooks/useToast';
 import TeacherLayout from '../../layouts/TeacherLayout';
 import './FamilyNotice.css';
+import { parseServerDate } from '../../utils/format';
 
 /**
  * handoff `CatChap 가정안내.dc.html` 포팅.
@@ -63,7 +64,8 @@ const FALLBACK_SENT: SentMessage[] = [
 
 /** API created_at(ISO) → '방금 전/N분 전/N시간 전/어제/N일 전' 상대 시각 */
 function koreanAgo(iso: string): string {
-  const t = new Date(iso).getTime();
+  // 서버는 KST naive 문자열 — parseServerDate로 절대시각 고정
+  const t = parseServerDate(iso).getTime();
   if (!Number.isFinite(t)) return '';
   const min = Math.floor((Date.now() - t) / 60000);
   if (min < 1) return '방금 전';

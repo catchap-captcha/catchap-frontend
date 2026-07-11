@@ -14,6 +14,7 @@ import CountUp from '../../components/motion/CountUp';
 import { PATHS } from '../../routes/paths';
 import { parentApi } from '../../api/parents';
 import { notificationApi, type Notification } from '../../api/notifications';
+import { parseServerDate } from '../../utils/format';
 import { reportApi } from '../../api/misc';
 import { dateSuffix, downloadCanvasPng } from '../../utils/download';
 import { canvasToPdf } from '../../utils/pdf';
@@ -257,7 +258,8 @@ function notifStyle(n: Notification) {
 }
 
 function timeLabel(iso: string): string {
-  const t = new Date(iso).getTime();
+  // 서버는 KST naive 문자열 — parseServerDate로 절대시각 고정
+  const t = parseServerDate(iso).getTime();
   if (Number.isNaN(t)) return '방금';
   const min = Math.floor((Date.now() - t) / 60000);
   if (min < 1) return '방금';

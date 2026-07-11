@@ -61,6 +61,7 @@ export const PATHS = {
   ORG_API_KEYS: '/org/api-keys',
   ORG_AI_MODELS: '/org/ai-models',
   ORG_SECURITY_POLICY: '/org/security-policy',
+  ORG_AUDIT: '/org/audit', // 기관 활동 기록 (자기 기관 감사로그)
   ORG_MYPAGE: '/org/mypage',
   ORG_CONTACT: '/org/contact', // 관리자 문의 폼 (사이드바 '문의하기' 버튼)
 

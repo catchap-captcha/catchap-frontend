@@ -23,11 +23,11 @@ const INITIAL_MESSAGES: ChatMessage[] = [
 
 /** 대화 시작 시각 — 원본 '오늘 오후 3:24' 하드코딩 대신 실제 현재 시각 */
 function nowLabel(): string {
-  const d = new Date();
-  const h = d.getHours();
-  const ampm = h < 12 ? '오전' : '오후';
-  const h12 = h % 12 === 0 ? 12 : h % 12;
-  return `오늘 ${ampm} ${h12}:${String(d.getMinutes()).padStart(2, '0')}`;
+  // KST 고정 — 브라우저 시간대 무관
+  const parts = new Intl.DateTimeFormat('ko-KR', {
+    timeZone: 'Asia/Seoul', hour: 'numeric', minute: '2-digit', hour12: true,
+  }).format(new Date());
+  return `오늘 ${parts}`;
 }
 
 // TODO(api): 백엔드 미구현 — aiChatApi.studentChat 실패 시 원본 DCLogic ask()의 canned 응답 사용

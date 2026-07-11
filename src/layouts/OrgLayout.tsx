@@ -21,7 +21,8 @@ export type OrgMenuKey =
   | 'api'
   | 'apikeys'
   | 'ai'
-  | 'security';
+  | 'security'
+  | 'audit';
 
 export type OrgSideWidget = 'pro' | 'semester' | 'insight' | 'compliance' | 'none';
 
@@ -35,6 +36,7 @@ const MENU: { key: OrgMenuKey; label: string; icon: string; to: string }[] = [
   { key: 'apikeys', label: 'API 키 발급', icon: 'ph-fill ph-key', to: PATHS.ORG_API_KEYS },
   { key: 'ai', label: 'AI 모델', icon: 'ph-fill ph-cpu', to: PATHS.ORG_AI_MODELS },
   { key: 'security', label: '보안·정책', icon: 'ph-fill ph-shield-check', to: PATHS.ORG_SECURITY_POLICY },
+  { key: 'audit', label: '활동 기록', icon: 'ph-fill ph-clock-counter-clockwise', to: PATHS.ORG_AUDIT },
 ];
 
 const WIDGETS: Record<

@@ -55,7 +55,7 @@ function newPage(title: string, pageNo: number): { canvas: HTMLCanvasElement; ct
   ctx.fillStyle = '#9AA0B0';
   ctx.font = `700 22px ${F}`;
   ctx.textAlign = 'right';
-  ctx.fillText(`CatChap · ${new Date().toLocaleDateString('ko-KR')} · ${pageNo}쪽`, PAGE_W - MARGIN, 96);
+  ctx.fillText(`CatChap · ${new Date().toLocaleDateString('ko-KR', { timeZone: 'Asia/Seoul' })} · ${pageNo}쪽`, PAGE_W - MARGIN, 96);
   ctx.textAlign = 'left';
   return { canvas, ctx, y: 150 };
 }

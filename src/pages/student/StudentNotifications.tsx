@@ -5,6 +5,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { useStudentSettings } from '../../stores/studentSettingsStore';
 import { notifyNotificationsUpdated } from '../../hooks/useUnreadNotifications';
 import { notificationApi, type Notification } from '../../api/notifications';
+import { kstDateString, parseServerDate } from '../../utils/format';
 import mascot from '../../assets/characters/catchap-logo.png';
 import './StudentNotifications.css';
 
@@ -82,7 +83,8 @@ const API_STYLE: Record<string, { icon: string; color: string; bg: string }> = {
 const API_STYLE_DEFAULT = { icon: 'ph-fill ph-check-circle', color: '#17B08C', bg: '#DFF6ED' };
 
 function relTime(iso: string): string {
-  const t = new Date(iso).getTime();
+  // 서버는 KST naive 문자열 — parseServerDate로 절대시각 고정(브라우저 시간대 무관)
+  const t = parseServerDate(iso).getTime();
   if (!Number.isFinite(t)) return ''; // 깨진 날짜면 'NaN분 전' 대신 빈 문자열
   const diff = Date.now() - t;
   const min = Math.floor(diff / 60000);
@@ -141,9 +143,10 @@ export default function StudentNotifications() {
         }
         const t: NtItem[] = [];
         const e: NtItem[] = [];
-        const todayStr = new Date().toDateString();
+        // '오늘' 경계는 KST 자정 기준 — 브라우저 로컬 자정이 아니라
+        const todayStr = kstDateString();
         list.forEach((n) => {
-          (new Date(n.created_at).toDateString() === todayStr ? t : e).push(toItem(n));
+          (kstDateString(parseServerDate(n.created_at)) === todayStr ? t : e).push(toItem(n));
         });
         setToday(t);
         setEarlier(e);

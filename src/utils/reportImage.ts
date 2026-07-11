@@ -140,7 +140,7 @@ export function drawWeeklyReport(d: WeeklyReportData): HTMLCanvasElement {
   ctx.font = `700 24px ${F}`;
   ctx.fillText('CatChap 캣챱 — 놀면서 배우는 어린이 캡챠 학습', 40, H - 60);
   ctx.textAlign = 'right';
-  ctx.fillText(new Date().toLocaleDateString('ko-KR'), W - 40, H - 60);
+  ctx.fillText(new Date().toLocaleDateString('ko-KR', { timeZone: 'Asia/Seoul' }), W - 40, H - 60);
   ctx.textAlign = 'left';
 
   return canvas;

@@ -45,6 +45,11 @@ export const orgApi = {
   /** 기관 코드 재발급 (교장 전용) — 새 코드 + 만료 1년 연장 */
   rotateCode: (orgId: string) =>
     client.post<any>(`/orgs/${orgId}/rotate-code`).then((r) => r.data),
+  /** 기관 활동 기록 — 자기 기관 스코프 (운영자 행위 제외, 학생은 익명코드) */
+  auditLogs: (
+    orgId: string,
+    params: { action?: string; date_from?: string; date_to?: string; page?: number; page_size?: number },
+  ) => client.get<any>(`/orgs/${orgId}/audit-logs`, { params }).then((r) => r.data),
   roster: (orgId: string, params?: any) =>
     client.get<any>(`/orgs/${orgId}/roster`, { params }).then((r) => r.data),
 

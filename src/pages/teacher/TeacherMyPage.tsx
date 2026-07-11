@@ -5,6 +5,7 @@ import { PATHS } from '../../routes/paths';
 import { useAuth } from '../../hooks/useAuth';
 import { teacherApi } from '../../api/teacher';
 import { settingsApi } from '../../api/settings';
+import { parseServerDate } from '../../utils/format';
 import { useToast } from '../../hooks/useToast';
 import TeacherLayout from '../../layouts/TeacherLayout';
 import './TeacherMyPage.css';
@@ -259,7 +260,7 @@ export default function TeacherMyPage() {
   const homeroomLabel = `${prof.klass || ''} 담임`;
   const codeRemain =
     org.codeRemainDays ??
-    Math.max(0, Math.ceil((new Date(org.codeExpiresAt).getTime() - Date.now()) / 86400000));
+    Math.max(0, Math.ceil((parseServerDate(org.codeExpiresAt).getTime() - Date.now()) / 86400000));
   const canChange =
     !!curPw &&
     newPw.length >= 8 &&

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { kstDateString } from '../../utils/format';
 
 import { opsApi, type BehaviorExportPreview } from '../../api/ops';
 import OpsNav from '../../components/ops/OpsNav';
@@ -57,7 +58,7 @@ export default function OpsBehaviorExport() {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+        const stamp = kstDateString().replace(/-/g, ''); // KST 날짜 — toISOString(UTC)은 한국 새벽에 전날로 찍힘
         a.download = `catchap_behavior_${mode}_${stamp}.csv`;
         document.body.appendChild(a);
         a.click();

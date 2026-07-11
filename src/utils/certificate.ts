@@ -95,14 +95,14 @@ export function drawCertificate(d: CertificateData): HTMLCanvasElement {
   ctx.fillText('훌륭한 성과를 이루었기에 이 상장을 드립니다.', W / 2, 744);
 
   // 날짜 + 발급
-  const today = new Date();
+  // 발급일은 KST 고정 (브라우저 시간대 무관)
+  const [ty, tm, td] = new Date()
+    .toLocaleDateString('sv-SE', { timeZone: 'Asia/Seoul' })
+    .split('-')
+    .map(Number);
   ctx.fillStyle = '#8A8070';
   ctx.font = `700 30px ${F}`;
-  ctx.fillText(
-    `${today.getFullYear()}년 ${today.getMonth() + 1}월 ${today.getDate()}일`,
-    W / 2,
-    830,
-  );
+  ctx.fillText(`${ty}년 ${tm}월 ${td}일`, W / 2, 830);
   ctx.fillStyle = '#FF5A4D';
   ctx.font = `900 42px ${F}`;
   ctx.fillText('CatChap 캣챱', W / 2, 896);

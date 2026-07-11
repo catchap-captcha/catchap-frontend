@@ -1,74 +1,8 @@
 import { useEffect, useState } from 'react';
 import { opsApi, type OpsAuditLog as Row } from '../../api/ops';
 import OpsNav from '../../components/ops/OpsNav';
+import { AUDIT_ACTION_META as ACTION_META, AUDIT_TARGET_LABEL as TARGET_LABEL } from '../../constants/auditActions';
 import './OpsApproval.css';
-
-// 감사 action 코드 → 사람이 읽는 라벨/아이콘
-// 백엔드가 실제로 기록하는 코드 전부를 여기서 매핑한다 (app/utils/helpers.py:audit 호출 지점 기준).
-// 매핑에 없는 코드는 아래 fallback으로 원문(영문)이 그대로 노출되므로 누락 없이 유지할 것.
-const ACTION_META: Record<string, { label: string; icon: string; cls: string }> = {
-  // 운영자 — 기관 가입 승인 콘솔
-  org_registration_approved: { label: '기관 가입 승인', icon: 'ph-check-circle', cls: 'ok' },
-  org_registration_rejected: { label: '기관 가입 거절', icon: 'ph-x-circle', cls: 'no' },
-  // 기관 관리자
-  'org.update': { label: '기관 정보 수정', icon: 'ph-pencil-simple', cls: 'neutral' },
-  'org.teacher_add': { label: '선생님 추가', icon: 'ph-user-plus', cls: 'ok' },
-  'org.teacher_update': { label: '선생님 정보 수정', icon: 'ph-pencil-simple', cls: 'neutral' },
-  'org.teacher_delete': { label: '선생님 삭제', icon: 'ph-user-minus', cls: 'no' },
-  'org.captcha_settings_update': { label: '캡차 설정 변경', icon: 'ph-shield-check', cls: 'neutral' },
-  'student.password_reset': { label: '학생 비밀번호 초기화', icon: 'ph-key', cls: 'warn' },
-  'parent_link.revoke': { label: '학부모 연결 해제(기관)', icon: 'ph-link-break', cls: 'warn' },
-  'student.assign_class': { label: '학생 학급 배정', icon: 'ph-users-three', cls: 'neutral' },
-  // 학부모
-  'parent.profile_update': { label: '학부모 프로필 수정', icon: 'ph-pencil-simple', cls: 'neutral' },
-  'parent.child_link': { label: '자녀 연결', icon: 'ph-link', cls: 'ok' },
-  'parent.child_unlink': { label: '자녀 연결 해제', icon: 'ph-link-break', cls: 'warn' },
-  'parent.child_settings_update': { label: '자녀 설정 변경', icon: 'ph-sliders-horizontal', cls: 'neutral' },
-  // 선생님
-  'teacher.profile_update': { label: '선생님 프로필 수정', icon: 'ph-pencil-simple', cls: 'neutral' },
-  'teacher.class_student_add': { label: '학급 학생 추가', icon: 'ph-user-plus', cls: 'ok' },
-  'teacher.class_student_update': { label: '학급 학생 수정', icon: 'ph-pencil-simple', cls: 'neutral' },
-  'teacher.class_student_remove': { label: '학급 학생 제외', icon: 'ph-user-minus', cls: 'no' },
-  // 공용 설정/계정
-  'settings.update': { label: '설정 변경', icon: 'ph-gear', cls: 'neutral' },
-  'settings.change_password': { label: '비밀번호 변경', icon: 'ph-key', cls: 'warn' },
-  'settings.account_delete': { label: '계정 삭제(탈퇴)', icon: 'ph-user-minus', cls: 'no' },
-  // 운영자 — 문의 처리
-  'inquiry.answer': { label: '문의 답변 발송', icon: 'ph-paper-plane-tilt', cls: 'ok' },
-  'inquiry.resolve': { label: '문의 처리 완료', icon: 'ph-check-circle', cls: 'ok' },
-  // 운영자 — 행동 데이터 학습셋 관리
-  'behavior.dataset_mark': { label: '행동 데이터 학습셋 상태 변경', icon: 'ph-fingerprint', cls: 'neutral' },
-  'behavior.export': { label: '행동 데이터 내보내기', icon: 'ph-download-simple', cls: 'neutral' },
-  // 운영자 — 기관 관리
-  'org.create': { label: '기관 추가', icon: 'ph-buildings', cls: 'ok' },
-  'org.delete': { label: '기관 삭제', icon: 'ph-trash', cls: 'no' },
-  'org.code_rotate': { label: '기관 코드 재발급', icon: 'ph-arrows-clockwise', cls: 'warn' },
-  // 운영자 — API 키
-  'captcha.api_key_issue': { label: 'API 키 발급', icon: 'ph-key', cls: 'ok' },
-  'captcha.api_key_revoke': { label: 'API 키 폐기', icon: 'ph-key', cls: 'no' },
-  // 기관 관리자 — 학년부장/학급
-  'org.grade_head_appoint': { label: '학년부장 임명', icon: 'ph-user-circle-gear', cls: 'ok' },
-  'org.grade_head_dismiss': { label: '학년부장 해임', icon: 'ph-user-circle-minus', cls: 'warn' },
-  'org.class_create': { label: '학급 생성', icon: 'ph-plus-circle', cls: 'ok' },
-  'org.class_dissolve': { label: '학급 해산', icon: 'ph-minus-circle', cls: 'no' },
-};
-
-// 대상(target_type) 내부 코드 → 사람이 읽는 라벨. 백엔드 audit() 호출의 target_type 전부 매핑.
-const TARGET_LABEL: Record<string, string> = {
-  organization: '기관',
-  org_registration_request: '기관 가입신청',
-  membership: '구성원',
-  user: '사용자',
-  user_setting: '계정 설정',
-  student: '학생',
-  student_profile: '학생',
-  parent_student_link: '학부모 연결',
-  class: '학급',
-  api_key: 'API 키',
-  captcha_setting: '캡차 설정',
-  behavior_summary: '행동 데이터',
-  inquiry: '문의',
-};
 
 function fmt(ts: string | null): string {
   if (!ts) return '-';

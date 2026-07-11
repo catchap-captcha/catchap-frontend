@@ -16,6 +16,7 @@ const EXPORT_CAP = 2000; // CSV 내보내기 상한 (서버 페이지 200 × 10�
 const SOURCE_LABEL: Record<string, string> = {
   game: '인앱 게임',
   'edu-api': '교육형 API',
+  forest: '메인 캡차(숲)', // 로그인 게이트 forest 캡차 — 원시 문자열 노출 방지
   captcha: '캡차 API',
 };
 const RISK_LABEL: Record<string, string> = { low: '낮음', review: '검토', elevated: '높음' };
@@ -288,6 +289,7 @@ export default function OpsBehavior() {
             <option value="">출처 전체</option>
             <option value="game">인앱 게임</option>
             <option value="edu-api">교육형 API</option>
+            <option value="forest">메인 캡차(숲)</option>
           </select>
           <select className="op-bh-select" value={group} onChange={(e) => setGroup(e.target.value)}>
             <option value="">그룹 전체</option>

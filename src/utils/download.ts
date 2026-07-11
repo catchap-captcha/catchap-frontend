@@ -1,5 +1,7 @@
 /** 공용 다운로드 유틸 — 모든 내보내기/다운로드 버튼이 실제 파일을 저장하도록. */
 
+import { kstDateString } from './format';
+
 export function downloadBlob(filename: string, blob: Blob) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -32,9 +34,7 @@ export function downloadCanvasPng(filename: string, canvas: HTMLCanvasElement) {
   }, 'image/png');
 }
 
-/** 오늘 날짜 파일명 suffix: 2026-07-07 */
+/** 오늘 날짜 파일명 suffix: 2026-07-07 (KST 고정 — 브라우저 시간대 무관) */
 export function dateSuffix(): string {
-  const d = new Date();
-  const p = (n: number) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+  return kstDateString();
 }
