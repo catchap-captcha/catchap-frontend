@@ -23,6 +23,14 @@ export const teacherApi = {
       )
       .then((r) => r.data),
 
+  /** 자기 반 학생의 학부모 초대 코드 발급 (담임만) → 초대 코드 1회 반환 */
+  issueParentInvite: (studentId: string) =>
+    client
+      .post<{ ok: boolean; invite_code: string }>(
+        `/teacher/class/students/${studentId}/invite-code`,
+      )
+      .then((r) => r.data),
+
   /** 전체 학생 조회(전교) */
   allStudents: (params?: any) =>
     client.get<any>('/teacher/students', { params }).then((r) => r.data),

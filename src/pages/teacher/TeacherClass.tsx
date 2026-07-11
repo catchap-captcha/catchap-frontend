@@ -259,6 +259,22 @@ export default function TeacherClass() {
       });
   };
 
+  // 우리 반 학생의 학부모 초대 코드 발급 — 결과 모달로 1회 노출·복사
+  const [inviteResult, setInviteResult] = useState<
+    { name: string; code: string; error?: string } | null
+  >(null);
+  const issueParent = (id: string | null) => {
+    const s = students.find((x) => x.id === (id || selId));
+    if (!s || !id) return;
+    teacherApi
+      .issueParentInvite(id)
+      .then((r) => setInviteResult({ name: s.name, code: r.invite_code }))
+      .catch((e: unknown) => {
+        const detail = (e as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
+        setInviteResult({ name: s.name, code: '', error: detail ?? '초대코드 발급에 실패했어요.' });
+      });
+  };
+
   const saveModal = () => {
     if (!modal) return;
     if (modal.mode === 'add') {
@@ -295,8 +311,10 @@ export default function TeacherClass() {
     } else {
       const name = (modal.name || '').trim();
       if (!name) return;
-      const { id, age, status } = modal;
-      setStudents((prev) => prev.map((x) => (x.id === id ? { ...x, name, age, status } : x)));
+      const { id, status } = modal;
+      // 나이는 백엔드 허용 범위(3~13)로 클램프 — 미입력(0)이면 갱신하지 않음
+      const age = modal.age && modal.age >= 3 ? Math.min(13, modal.age) : undefined;
+      setStudents((prev) => prev.map((x) => (x.id === id ? { ...x, name, age: age ?? x.age, status } : x)));
       setModal(null);
       teacherApi
         // 교사가 고치는 이름은 학교용 실명(real_name) — 학생 닉네임은 학생 소유라 건드리지 않음
@@ -513,11 +531,16 @@ export default function TeacherClass() {
                 </div>
                 <p className="tc-aiText">{selComment}</p>
               </div>
-              {/* 원본대로 동작 없음 (onClick 미지정) */}
-              <button className="tc-assignBtn">맞춤 문제 배정</button>
+              {/* 맞춤 문제 배정: 아직 백엔드 미연동 — 정직하게 준비 중으로 비활성화 */}
+              <button className="tc-assignBtn" disabled title="곧 제공될 기능이에요">
+                맞춤 문제 배정 (준비 중)
+              </button>
               <div className="tc-detailActions">
                 <button onClick={() => openEdit()} className="tc-editBtn">
                   <i className="ph-fill ph-pencil-simple" />정보 수정
+                </button>
+                <button onClick={() => issueParent(selId)} className="tc-editBtn">
+                  <i className="ph-fill ph-user-circle-plus" />학부모 초대
                 </button>
                 <button onClick={() => resetPw(selId)} className="tc-editBtn">
                   <i className="ph-fill ph-key" />비번 초기화
@@ -610,20 +633,22 @@ export default function TeacherClass() {
                       className="tc-nameInput"
                     />
 
-                    <label className="tc-label">나이</label>
-                    <div className="tc-ageRow">
-                      {[5, 6, 7, 8, 9].map((n) => (
-                        <button
-                          key={n}
-                          onClick={() =>
-                            setModal((m) => (m && m.mode === 'edit' ? { ...m, age: n } : m))
-                          }
-                          className={`tc-ageChip ${modal.age === n ? 'tc-chip2-on' : 'tc-chip2-off'}`}
-                        >
-                          {n}세
-                        </button>
-                      ))}
-                    </div>
+                    <label className="tc-label">나이 (만, 3~13세)</label>
+                    <input
+                      type="number"
+                      min={3}
+                      max={13}
+                      value={modal.age || ''}
+                      onChange={(e) =>
+                        setModal((m) =>
+                          m && m.mode === 'edit'
+                            ? { ...m, age: e.target.value === '' ? 0 : Number(e.target.value) }
+                            : m,
+                        )
+                      }
+                      placeholder="예) 10"
+                      className="tc-nameInput"
+                    />
 
                     <label className="tc-label">상태</label>
                     <div className="tc-statusRow">
@@ -692,6 +717,58 @@ export default function TeacherClass() {
                 )}
                 <div className="tc-modalActions">
                   <button onClick={() => setResetResult(null)} className="tc-saveBtn">
+                    <i className="ph-fill ph-check" />확인
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 학부모 초대 코드 결과 모달 */}
+        {inviteResult && (
+          <div onClick={() => setInviteResult(null)} className="tc-overlay">
+            <div className="tc-modal" onClick={(e) => e.stopPropagation()}>
+              <div className="tc-modalHead">
+                <div className="tc-modalIconBox"><i className="ph-fill ph-user-circle-plus" /></div>
+                <div className="tc-modalTitleWrap">
+                  <div className="tc-modalTitle">
+                    {inviteResult.error ? '초대코드 발급 실패' : '학부모 초대 코드'}
+                  </div>
+                  <div className="tc-modalSub">{inviteResult.name}</div>
+                </div>
+                <button onClick={() => setInviteResult(null)} className="tc-modalClose">
+                  <i className="ph-bold ph-x" />
+                </button>
+              </div>
+              <div className="tc-modalBody">
+                {inviteResult.error ? (
+                  <div className="tc-noMatch">
+                    <i className="ph-fill ph-warning-circle" />
+                    <span>{inviteResult.error}</span>
+                  </div>
+                ) : (
+                  <>
+                    <div className="tc-infoBox">
+                      <i className="ph-fill ph-info" />
+                      <span>
+                        이 코드를 학부모님께 전달하세요. 학부모 가입 화면에서 코드를 넣으면 이 학생과 연결돼요.
+                        <b> 최대 2회</b> 쓸 수 있고 <b>14일</b> 뒤 만료돼요.
+                      </span>
+                    </div>
+                    <label className="tc-label">초대 코드</label>
+                    <div
+                      className="tc-codeInput"
+                      style={{ userSelect: 'all', fontWeight: 800, cursor: 'pointer' }}
+                      onClick={() => navigator.clipboard?.writeText(inviteResult.code)}
+                      title="클릭하면 복사돼요"
+                    >
+                      {inviteResult.code}
+                    </div>
+                  </>
+                )}
+                <div className="tc-modalActions">
+                  <button onClick={() => setInviteResult(null)} className="tc-saveBtn">
                     <i className="ph-fill ph-check" />확인
                   </button>
                 </div>
