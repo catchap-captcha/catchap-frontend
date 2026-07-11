@@ -64,15 +64,9 @@ interface StatCard {
 
 type ViewKey = 'haeun' | 'doyun';
 
-/* ===== 원본 하드코딩 데이터 (API 실패/로딩 시 fallback) ===== */
+/* ===== 시각 템플릿용 데이터 (요약이 없을 때 배너/통계 스캐폴딩) ===== */
 
-// TODO(api): parentApi.children() 실패 시 원본 스위처 데이터 유지
-const FALLBACK_CHILDREN = [
-  { id: null as string | null, name: '하은', grade: '2학년' },
-  { id: null as string | null, name: '도윤', grade: '1학년' },
-];
-
-/** 스위처 자녀 색 순환 — 첫째=산호, 둘째=보라 (두 원본 값 그대로) */
+/** 스위처 자녀 색 순환 — 첫째=산호, 둘째=보라, 이후 반복 */
 const CHILD_THEMES = [
   { active: '#FF5A4D', shadow: 'rgba(255,90,77,0.7)', avatarBg: '#FFE7D8', avatarColor: '#FF8A5B' },
   { active: '#8B6BFF', shadow: 'rgba(139,107,255,0.7)', avatarBg: '#EDE6FF', avatarColor: '#8B6BFF' },
