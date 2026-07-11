@@ -45,6 +45,7 @@ export default function OrgApiKeys() {
   const [issued, setIssued] = useState<OrgIssuedKey | null>(null);
   const [rotated, setRotated] = useState<{ site_key: string; secret_key: string } | null>(null);
   const [openSnippet, setOpenSnippet] = useState<string | null>(null);
+  const [openGuide, setOpenGuide] = useState<string | null>(null); // 키별 '사용 방법' 패널
   const reveal = issued ?? rotated; // secret 1회 노출 모달 공용(발급·재발급)
 
   const load = () => {
@@ -133,6 +134,25 @@ export default function OrgApiKeys() {
     `<div class="catchap"\n     data-site-key="${k.site_key}"\n     data-api="${API_BASE}"${
       k.product === 'edu' ? '\n     data-size="full"' : ''
     }></div>\n<script src="${API_BASE}/widget/catchap-widget.js" defer></script>`;
+
+  // 고객 서버가 secret_key로 최종 통과 검증(브라우저가 넘긴 verdict_token이 진짜 통과인지). 1회용.
+  const validateSnippet = (k: OrgApiKey) =>
+    `curl -X POST ${API_BASE}/captcha/v1/validate \\\n  -H "X-Secret-Key: 발급받은_SECRET_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d '{"verdict_token":"<위젯이 폼에 넣어준 값>"}'\n# 응답 {"ok": true} 면 통과, false 면 거부. site_key(${k.site_key})는 공개, secret_key는 서버에서만.`;
+
+  // 위젯 없이 REST로 직접: 문제발급 → 채점(verdict) → 서버 최종검증
+  const restSnippet = (k: OrgApiKey) => {
+    const subjQ = k.product === 'edu' && k.subject ? `?subject=${encodeURIComponent(k.subject)}` : '';
+    return (
+      `# 1) 문제 발급 (브라우저/앱)\n` +
+      `curl -X POST "${API_BASE}/captcha/v1/challenge${subjQ}" -H "X-Site-Key: ${k.site_key}"\n\n` +
+      `# 2) 사용자의 답 채점 → verdict_token 수령\n` +
+      `curl -X POST ${API_BASE}/captcha/v1/verify -H "X-Site-Key: ${k.site_key}" \\\n` +
+      `  -H "Content-Type: application/json" \\\n  -d '{"challenge_token":"1단계 응답의 토큰","answer":"사용자 입력"}'\n\n` +
+      `# 3) 고객 서버에서 최종 검증 (secret_key)\n` +
+      `curl -X POST ${API_BASE}/captcha/v1/validate -H "X-Secret-Key: 발급받은_SECRET_KEY" \\\n` +
+      `  -H "Content-Type: application/json" \\\n  -d '{"verdict_token":"2단계 응답의 토큰"}'`
+    );
+  };
 
   const activeCount = keys.filter((k) => k.status === 'active').length;
   const productOptions = useMemo(() => ent?.products ?? ['captcha'], [ent]);
@@ -358,7 +378,62 @@ export default function OrgApiKeys() {
                   </div>
                 )}
 
+                {openGuide === k.id && (
+                  <div className="ak-guide">
+                    <div className="ak-guide-intro">
+                      <i className="ph-fill ph-book-open" />
+                      {k.product === 'edu'
+                        ? '교육형 API는 아이가 문제를 푸는 동안 행동데이터를 모으는 API예요. 가장 쉬운 방법은 아래 임베드 코드를 붙이는 거예요.'
+                        : '가장 쉬운 방법은 아래 임베드 코드를 홈페이지에 붙이는 거예요. 위젯이 사람 확인을 처리하고, 통과 토큰을 폼에 넣어줘요.'}
+                    </div>
+
+                    <div className="ak-guide-step">
+                      <span className="ak-guide-badge">1</span>
+                      <span className="ak-guide-t">임베드 (HTML에 붙여넣기 — 가장 쉬움)</span>
+                    </div>
+                    <pre className="ak-snippet-pre">{snippetFor(k)}</pre>
+                    <button className="ak-copy ak-copy--wide" onClick={() => copy(snippetFor(k), '임베드 코드를 복사했어요.')}>
+                      <i className="ph-bold ph-copy" /> 임베드 코드 복사
+                    </button>
+
+                    <div className="ak-guide-step">
+                      <span className="ak-guide-badge">2</span>
+                      <span className="ak-guide-t">서버에서 최종 검증 (secret_key · 위조 방지)</span>
+                    </div>
+                    <pre className="ak-snippet-pre">{validateSnippet(k)}</pre>
+                    <button className="ak-copy ak-copy--wide" onClick={() => copy(validateSnippet(k), '검증 예시를 복사했어요.')}>
+                      <i className="ph-bold ph-copy" /> 검증 예시 복사
+                    </button>
+
+                    <div className="ak-guide-step">
+                      <span className="ak-guide-badge">3</span>
+                      <span className="ak-guide-t">위젯 없이 직접 호출 (REST · 앱/서버용)</span>
+                    </div>
+                    <pre className="ak-snippet-pre">{restSnippet(k)}</pre>
+                    <button className="ak-copy ak-copy--wide" onClick={() => copy(restSnippet(k), 'REST 예시를 복사했어요.')}>
+                      <i className="ph-bold ph-copy" /> REST 예시 복사
+                    </button>
+
+                    <div className="ak-guide-note">
+                      <i className="ph-fill ph-info" />
+                      <span>
+                        <b>site_key</b>는 공개(브라우저·위젯)용, <b>secret_key</b>는 절대 노출 금지(서버에서만).
+                        허용 도메인을 지정했다면 그 도메인에서만 동작해요.
+                        {k.product === 'edu' && ' 이 키는 과목 ' + (k.subject || '') + ' 문제를 냅니다.'}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
                 <div className="op-card-actions">
+                  <button
+                    type="button"
+                    className="op-btn op-btn--reject"
+                    onClick={() => setOpenGuide(openGuide === k.id ? null : k.id)}
+                  >
+                    <i className="ph-bold ph-book-open" />
+                    {openGuide === k.id ? '사용 방법 닫기' : '사용 방법'}
+                  </button>
                   <button
                     type="button"
                     className="op-btn op-btn--reject"
