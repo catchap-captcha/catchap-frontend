@@ -111,7 +111,8 @@
 
 /* 아이디 입력 + 중복 확인 (학생이 직접 아이디를 정함) */
 .ac-idrow { display: flex; gap: 8px; align-items: stretch; }
-.ac-input--grow { flex: 1; width: auto; }
+/* min-width:0 이 없으면 좁은 폰에서 입력칸이 안 줄어 '중복 확인' 버튼이 화면 밖으로 밀린다 */
+.ac-input--grow { flex: 1; width: auto; min-width: 0; }
 .ac-idbtn {
   flex-shrink: 0; border: 2px solid #ffd0c4; background: #fff2ee; color: #ff5a4d;
   border-radius: 14px; padding: 0 16px; font-weight: 800; font-size: 13.5px;
