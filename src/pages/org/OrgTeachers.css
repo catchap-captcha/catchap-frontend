@@ -200,6 +200,26 @@
   padding: 13px 10px;
 }
 
+/* 담당 학급 정렬 토글 헤더 버튼 */
+.ot-sortBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  font-weight: inherit;
+}
+.ot-sortBtn:hover {
+  color: #ff5a4d;
+}
+.ot-sortBtn i {
+  font-size: 13px;
+}
+
 .ot-table th:first-child {
   padding: 13px 22px;
 }

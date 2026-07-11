@@ -80,6 +80,8 @@ export default function OrgTeachers() {
   const [classCounts, setClassCounts] = useState<Record<string, number>>({});
   const [filter, setFilter] = useState('all');
   const [search, setSearch] = useState('');
+  // 담당 학급 정렬: off(기본) → asc(1반→6반) → desc → off. 미배정은 항상 끝으로.
+  const [clsSort, setClsSort] = useState<'off' | 'asc' | 'desc'>('off');
   const [modal, setModal] = useState<OtModal | null>(null);
   const [inviteModal, setInviteModal] = useState<{ email: string; name: string; role: string; cls: string } | null>(null);
   const [inviteBusy, setInviteBusy] = useState(false);
@@ -346,6 +348,11 @@ export default function OrgTeachers() {
   const chips = [{ key: 'all', label: '전체' }]
     .concat(gradesPresent.map((g) => ({ key: String(g), label: `${g}학년` })))
     .concat(teacherCount('none') > 0 ? [{ key: 'none', label: '미배정' }] : []);
+  // 담당 학급 정렬 키 — 학년·반 순. 미배정(파싱 불가)은 큰 값으로 밀어 항상 끝에 둔다.
+  const clsKey = (cls: string) => {
+    const { grade, ban } = parseCls(cls);
+    return grade >= 1 && grade <= 6 ? grade * 100 + ban : 9999;
+  };
   const filtered = teachers
     .filter((t) => {
       if (filter === 'all') return true;
@@ -354,6 +361,16 @@ export default function OrgTeachers() {
       return String(g) === filter;
     })
     .filter((t) => !search.trim() || t.name.includes(search.trim()));
+  if (clsSort !== 'off') {
+    filtered.sort((a, b) => {
+      const ka = clsKey(a.cls);
+      const kb = clsKey(b.cls);
+      // 미배정은 정렬 방향과 무관하게 항상 맨 끝
+      if (ka === 9999 && kb !== 9999) return 1;
+      if (kb === 9999 && ka !== 9999) return -1;
+      return clsSort === 'asc' ? ka - kb : kb - ka;
+    });
+  }
 
   return (
     <OrgLayout active="teachers" widget="semester">
@@ -422,7 +439,25 @@ export default function OrgTeachers() {
           <thead>
             <tr>
               <th>선생님</th>
-              <th>담당 학급</th>
+              <th>
+                <button
+                  type="button"
+                  className="ot-sortBtn"
+                  onClick={() => setClsSort((s) => (s === 'off' ? 'asc' : s === 'asc' ? 'desc' : 'off'))}
+                  title="담당 학급 순으로 정렬"
+                >
+                  담당 학급
+                  <i
+                    className={
+                      clsSort === 'asc'
+                        ? 'ph-bold ph-sort-ascending'
+                        : clsSort === 'desc'
+                          ? 'ph-bold ph-sort-descending'
+                          : 'ph-bold ph-arrows-down-up'
+                    }
+                  />
+                </button>
+              </th>
               <th>역할</th>
               <th>개별 코드</th>
               <th>상태</th>
