@@ -386,7 +386,7 @@ export const opsApi = {
   /** 지도학습 라벨(bot/human/organic) 일괄 변경 — 다중 선택 큐레이션 */
   markBehaviorLabel: (ids: string[], sample_label: string) =>
     client
-      .patch<{ ok: boolean; requested: number; changed: number }>(
+      .patch<{ ok: boolean; requested: number; changed: number; locked: number }>(
         '/ops/behavior/records/label',
         { ids, sample_label },
       )

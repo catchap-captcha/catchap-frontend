@@ -997,3 +997,4 @@
 .op-bh-label--org { background: #f1ede6; color: #9b9086; }
 .ox-daterange { display: inline-flex; align-items: center; gap: 6px; color: #cabfae; font-weight: 800; }
 .ox-daterange input { border: 1.5px solid #f0e6dd; background: #fff; border-radius: 10px; padding: 7px 9px; font-size: 12.5px; font-weight: 700; color: #5f564c; }
+.op-bh-label i { font-size: 9px; margin-right: 2px; }

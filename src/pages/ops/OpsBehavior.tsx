@@ -221,11 +221,18 @@ export default function OpsBehavior() {
   };
   const markLabel = (sl: string) => {
     if (selected.size === 0 || labeling) return;
+    // bot 라벨은 확정 — 지도학습 정답표 오염 방지를 위해 서버가 재라벨을 거부한다
+    if (
+      sl === 'bot' &&
+      !window.confirm(`${selected.size}건을 '봇'으로 확정할까요? 봇 라벨은 되돌릴 수 없어요.`)
+    )
+      return;
     setLabeling(true);
     opsApi
       .markBehaviorLabel([...selected], sl)
       .then((d) => {
-        say(`${d.changed}건을 '${LABEL_META[sl]?.label ?? sl}'로 라벨링했어요.`);
+        const lockedNote = d.locked > 0 ? ` (봇 확정 ${d.locked}건은 변경 불가)` : '';
+        say(`${d.changed}건을 '${LABEL_META[sl]?.label ?? sl}'로 라벨링했어요.${lockedNote}`);
         load(offset);
       })
       .catch(() => say('라벨 변경에 실패했어요. 다시 시도해 주세요.'))
@@ -543,7 +550,11 @@ export default function OpsBehavior() {
                       {RISK_LABEL[r.risk_level] ?? r.risk_level}
                     </span>
                     {r.sample_label && r.sample_label !== 'organic' && (
-                      <span className={`op-bh-label op-bh-label--${LABEL_META[r.sample_label]?.cls ?? 'org'}`}>
+                      <span
+                        className={`op-bh-label op-bh-label--${LABEL_META[r.sample_label]?.cls ?? 'org'}`}
+                        title={r.sample_label === 'bot' ? '봇 확정 — 변경 불가' : undefined}
+                      >
+                        {r.sample_label === 'bot' && <i className="ph-fill ph-lock-simple" />}
                         {LABEL_META[r.sample_label]?.label ?? r.sample_label}
                       </span>
                     )}
