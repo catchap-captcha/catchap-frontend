@@ -739,6 +739,40 @@
   outline: none;
 }
 
+.tc-codeRow {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.tc-codeRow .tc-codeInput {
+  margin-bottom: 0;
+}
+.tc-copyBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 14px;
+  background: #ff5a4d;
+  color: #fff;
+  font-weight: 800;
+  font-size: 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+.tc-copyBtn:hover {
+  background: #f0453a;
+}
+.tc-copyBtn--done {
+  background: #17b08c;
+}
+.tc-copyBtn--done:hover {
+  background: #17b08c;
+}
+
 .tc-match {
   display: flex;
   align-items: center;

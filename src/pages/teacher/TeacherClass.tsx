@@ -273,16 +273,44 @@ export default function TeacherClass() {
   const [inviteResult, setInviteResult] = useState<
     { name: string; code: string; error?: string } | null
   >(null);
+  const [copied, setCopied] = useState(false);
   const issueParent = (id: string | null) => {
     const s = students.find((x) => x.id === (id || selId));
     if (!s || !id) return;
     teacherApi
       .issueParentInvite(id)
-      .then((r) => setInviteResult({ name: s.name, code: r.invite_code }))
+      .then((r) => {
+        setCopied(false);
+        setInviteResult({ name: s.name, code: r.invite_code });
+      })
       .catch((e: unknown) => {
         const detail = (e as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
         setInviteResult({ name: s.name, code: '', error: detail ?? '초대코드 발급에 실패했어요.' });
       });
+  };
+  // 초대 코드 클립보드 복사 (실패 시 execCommand 폴백)
+  const copyInviteCode = (code: string) => {
+    const done = () => {
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1800);
+    };
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(code).then(done).catch(() => {
+        try {
+          const ta = document.createElement('textarea');
+          ta.value = code;
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+          done();
+        } catch {
+          /* 복사 실패해도 코드는 화면에 보이므로 수동 복사 가능 */
+        }
+      });
+    } else {
+      done();
+    }
   };
 
   const saveModal = () => {
@@ -767,13 +795,23 @@ export default function TeacherClass() {
                       </span>
                     </div>
                     <label className="tc-label">초대 코드</label>
-                    <div
-                      className="tc-codeInput"
-                      style={{ userSelect: 'all', fontWeight: 800, cursor: 'pointer' }}
-                      onClick={() => navigator.clipboard?.writeText(inviteResult.code)}
-                      title="클릭하면 복사돼요"
-                    >
-                      {inviteResult.code}
+                    <div className="tc-codeRow">
+                      <div
+                        className="tc-codeInput"
+                        style={{ userSelect: 'all', fontWeight: 800, cursor: 'pointer', flex: 1 }}
+                        onClick={() => copyInviteCode(inviteResult.code)}
+                        title="클릭하면 복사돼요"
+                      >
+                        {inviteResult.code}
+                      </div>
+                      <button
+                        type="button"
+                        className={'tc-copyBtn' + (copied ? ' tc-copyBtn--done' : '')}
+                        onClick={() => copyInviteCode(inviteResult.code)}
+                      >
+                        <i className={copied ? 'ph-fill ph-check' : 'ph-fill ph-copy'} />
+                        {copied ? '복사됨' : '복사'}
+                      </button>
                     </div>
                   </>
                 )}
