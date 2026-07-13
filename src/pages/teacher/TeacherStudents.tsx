@@ -15,7 +15,11 @@ interface TsStudent {
   c: number;
   acc: number;
   sessions: string;
-  weekMin?: number; // 이번 주 학습 시간(분) — 실데이터(API)만 보유
+  // 기간별 학습 시간(분) — 실데이터(API)만 보유 (FALLBACK 데모엔 없음)
+  todayMin?: number;
+  weekMin?: number;
+  halfMin?: number; // 최근 6개월
+  yearMin?: number; // 최근 1년
   weak: string;
   status: string;
 }
@@ -88,6 +92,14 @@ function accColor(a: number) {
   return a >= 85 ? '#17B08C' : a >= 70 ? '#F0A400' : '#E0475E';
 }
 
+/** 분 → 'N분' 또는 'N시간 M분' (반기/1년처럼 커질 수 있는 값용) */
+function fmtMin(min: number) {
+  if (min < 60) return `${min}분`;
+  const h = Math.floor(min / 60);
+  const m = min % 60;
+  return m ? `${h}시간 ${m}분` : `${h}시간`;
+}
+
 const GRADES = [1, 2, 3, 4, 5, 6];
 const CLASSES = [1, 2, 3, 4, 5, 6];
 
@@ -117,7 +129,10 @@ function mapRoster(res: any): { rows: TsStudent[]; teachers: Record<string, stri
         c,
         acc: Number(s.acc ?? s.accuracy) || 0,
         sessions: String(s.sessions ?? `${s.session_count ?? 0}회`),
+        todayMin: typeof s.today_min === 'number' ? s.today_min : undefined,
         weekMin: typeof s.week_min === 'number' ? s.week_min : undefined,
+        halfMin: typeof s.half_min === 'number' ? s.half_min : undefined,
+        yearMin: typeof s.year_min === 'number' ? s.year_min : undefined,
         weak: String(s.weak ?? s.weak_game ?? ''),
         status: String(s.status ?? '좋음'),
       });
@@ -202,8 +217,11 @@ export default function TeacherStudents() {
             acc: s.acc + '%',
             accColor: accColor(s.acc),
             sessions: s.sessions,
-            // 이번 주 학습 시간 — API 실데이터에만 존재(FALLBACK 데모는 '—')
+            // 기간별 학습 시간 — API 실데이터에만 존재(FALLBACK 데모는 '—')
+            todayTime: typeof s.todayMin === 'number' ? `${s.todayMin}분` : '—',
             weekTime: typeof s.weekMin === 'number' ? `${s.weekMin}분` : '—',
+            halfTime: typeof s.halfMin === 'number' ? fmtMin(s.halfMin) : '—',
+            yearTime: typeof s.yearMin === 'number' ? fmtMin(s.yearMin) : '—',
             weak: s.weak,
             ...statusTag(s.status),
           };
@@ -349,7 +367,10 @@ export default function TeacherStudents() {
                       <th>학생</th>
                       <th>정답률</th>
                       <th>최근 학습</th>
-                      <th>주간 학습</th>
+                      <th>오늘</th>
+                      <th>주간</th>
+                      <th>6개월</th>
+                      <th>1년</th>
                       <th>최다 오답</th>
                       <th>상태</th>
                     </tr>
@@ -374,7 +395,10 @@ export default function TeacherStudents() {
                           </span>
                         </td>
                         <td>{s.sessions}</td>
+                        <td>{s.todayTime}</td>
                         <td>{s.weekTime}</td>
+                        <td>{s.halfTime}</td>
+                        <td>{s.yearTime}</td>
                         <td>
                           <span className="ts-weak">{s.weak}</span>
                         </td>

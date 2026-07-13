@@ -781,3 +781,83 @@ a.al-ls:hover {
   .al-header-section, .al-cats { padding: 0 13px; }
   .al-lessons { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* ---- 문제은행 모드(0713): 챕터 캐러셀 → 은행 진도 카드 ---- */
+.al-bank-col {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px 20px;
+}
+
+.al-bank-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.al-bank-bar {
+  height: 12px;
+  border-radius: 999px;
+  background: #f4efe8;
+  overflow: hidden;
+}
+
+.al-bank-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
+.al-bank-barlabel {
+  font-size: 13px;
+  font-weight: 700;
+  color: #7a7061;
+}
+
+.al-bank-acc {
+  color: #17b08c;
+}
+
+.al-bank-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.al-bank-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  font-weight: 800;
+  padding: 6px 12px;
+  border-radius: 999px;
+}
+
+.al-bank-pill-new {
+  background: #fff3d6;
+  color: #b07c00;
+}
+
+.al-bank-pill-wrong {
+  background: #ffedef;
+  color: #d14559;
+}
+
+.al-bank-pill-ok {
+  background: #e1f5ec;
+  color: #158a6e;
+}
+
+.al-bank-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #8a8070;
+  font-weight: 600;
+}

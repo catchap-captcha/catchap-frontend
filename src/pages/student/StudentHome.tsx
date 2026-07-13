@@ -571,14 +571,16 @@ export default function StudentHome() {
 
             <div className="sh-chart">
               <div className="sh-chart-head">
-                <h3 className="sh-chart-title" title={`이번 주 총 학습 시간 · ${data.weekTotal}`}>
-                  이번 주 학습 시간
+                <h3 className="sh-chart-title">
+                  이번 주 학습 시간 <span className="sh-chart-total">{data.weekTotal}</span>
                 </h3>
                 <span className="sh-chart-delta">{data.weekDelta}</span>
               </div>
-              <div className="sh-bars" title={`이번 주 총 학습 시간 · ${data.weekTotal}`}>
+              <div className="sh-bars">
                 {data.weekBars.map((b) => (
                   <div key={b.day} className="sh-bar-col" title={`${b.day} · ${b.time}`}>
+                    {/* 막대 위 시간 라벨 — 호버 없이도 요일별 학습 시간이 보인다 */}
+                    <span className="sh-bar-time">{b.time}</span>
                     <div className={`sh-bar sh-bar-${b.tone}`} style={{ height: b.height }} />
                     <span className={`sh-bar-label${b.tone === 'hi' ? ' sh-hi-label' : ''}`}>
                       {b.day}

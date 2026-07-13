@@ -40,6 +40,9 @@ export const studentApi = {
 
   dailyQuiz: () => client.get<any>('/students/me/daily-quiz').then((r) => r.data),
 
+  /** 전체학습(문제은행) 진도 — 과목별 안 푼/틀린/맞춘 문항 수 (출제 우선순위와 동일 분류) */
+  bankProgress: () => client.get<any>('/students/me/bank-progress').then((r) => r.data),
+
   /** 프로필 꾸미기: 지갑(코인/보유)/상점/아바타 */
   wallet: () => client.get<any>('/students/me/wallet').then((r) => r.data),
   shopCatalog: () => client.get<any>('/shop/catalog').then((r) => r.data),

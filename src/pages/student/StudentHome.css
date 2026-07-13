@@ -1366,3 +1366,19 @@
     padding: 18px 14px;
   }
 }
+
+/* 주간 그래프 막대 위 시간 라벨 — 요일별 학습 시간을 호버 없이 표시 */
+.sh-bar-time {
+  font-size: 10px;
+  font-weight: 800;
+  color: #a89c8c;
+  margin-bottom: 3px;
+  white-space: nowrap;
+}
+
+.sh-chart-total {
+  font-size: 13px;
+  font-weight: 800;
+  color: #17b08c;
+  margin-left: 6px;
+}

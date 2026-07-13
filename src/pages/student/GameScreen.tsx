@@ -112,7 +112,7 @@ export default function GameScreen() {
   /* 파라미터 소스: 내부 상태(navigate state) 우선, 없으면 쿼리스트링(딥링크·구버전 호환).
      이렇게 하면 앱 내 이동 시 주소창은 '/student/game' 만 깔끔히 보이고 파라미터는 노출 안 된다. */
   const navState = (location.state ?? null) as {
-    subject?: string; chapter?: number; stage?: number; day?: number; replay?: boolean;
+    subject?: string; chapter?: number; stage?: number; day?: number; replay?: boolean; bank?: boolean;
   } | null;
   const numQ = (k: string) => (searchParams.get(k) ? Number(searchParams.get(k)) : NaN);
   const pSubject = navState?.subject ?? searchParams.get('subject') ?? undefined;
@@ -120,6 +120,8 @@ export default function GameScreen() {
   const pDay = navState?.day ?? numQ('day');
   const pChapter = navState?.chapter ?? numQ('chapter');
   const pStage = navState?.stage ?? numQ('stage');
+  // 전체학습 문제은행 모드 — 안 푼>틀린>맞춘 우선 출제, 코인·오늘의퀴즈 미반영
+  const pBank = navState?.bank ?? (searchParams.get('bank') === '1');
 
   /* 원본 componentDidMount: subject → 없으면 hash → 기본 국어 */
   const [subjectIdx, setSubjectIdx] = useState(() => {
@@ -175,8 +177,9 @@ export default function GameScreen() {
   const [resumeOffset, setResumeOffset] = useState<number | null>(null);
   useEffect(() => {
     let on = true;
-    // 챕터는 단계 커서(stagesDone)로 이미 이어하기가 되고, 복습은 처음부터가 맞다
-    if (!EDU_SITE_KEY || chapter || isReplay) {
+    // 챕터는 단계 커서(stagesDone)로 이미 이어하기가 되고, 복습·문제은행은 처음부터가 맞다
+    // (은행은 세션 개념이 없는 무한 연습 — 오늘의퀴즈 진행과도 분리)
+    if (!EDU_SITE_KEY || chapter || isReplay || pBank) {
       setResumeOffset(0);
       return;
     }
@@ -196,7 +199,7 @@ export default function GameScreen() {
     return () => {
       on = false;
     };
-  }, [key, chapter, isReplay]);
+  }, [key, chapter, isReplay, pBank]);
   const skipToday = resumeOffset ?? 0;
 
   // 주소창 정리 — 쿼리스트링(?subject=%EC..&chapter=..)으로 들어오면 최초 1회 clean path
@@ -208,7 +211,7 @@ export default function GameScreen() {
     if (hasQuery) {
       navigate(location.pathname, {
         replace: true,
-        state: { subject: key, chapter, stage, day, replay: isReplay },
+        state: { subject: key, chapter, stage, day, replay: isReplay, bank: pBank },
       });
     }
     // 최초 1회만 — strip 후 쿼리가 비므로 재실행되지 않는다.
@@ -693,6 +696,7 @@ export default function GameScreen() {
                 chapter={chapter}
                 stage={curStage}
                 replay={isReplay}
+                bank={pBank}
                 total={EDU_TOTAL - skipToday}
               />
             ) : (

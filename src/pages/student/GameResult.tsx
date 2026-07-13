@@ -235,9 +235,10 @@ export default function GameResult() {
   const gameHref = `${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(subjectKey)}${
     dayParam ? `&day=${encodeURIComponent(String(dayParam))}` : ''
   }&replay=1`;
+  // 챕터맵 폐지(문제은행 전환 0713) — 다음 미완료 과목의 오늘의퀴즈로 바로 진입
   const primaryHref = allDoneToday
     ? PATHS.STUDENT_HOME
-    : `${PATHS.STUDENT_CHAPTERS}?subject=${encodeURIComponent(nextUndone || subjectKey)}`;
+    : `${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(nextUndone || subjectKey)}`;
 
   const themeVars = { '--gr-solid': s.solid, '--gr-soft': s.soft } as CSSProperties;
 
