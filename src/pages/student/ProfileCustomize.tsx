@@ -364,7 +364,11 @@ export default function ProfileCustomize() {
       });
   };
 
-  /* 원본 buyOrEquip — 보유/무료 아이템은 착용만("구매 완료" 미표시), 미보유 유료만 구매 */
+  /* 미보유 유료 아이템: 클릭 = 구매 후보 선택 → 아래 '구매하기' 버튼으로 확정.
+     성공 처리는 서버 응답 후에만 한다 — 낙관 차감·선(先) "구매 완료" 표시(가짜 성공) 금지. */
+  const [buying, setBuying] = useState<{ cat: Cat; item: ShopItem } | null>(null);
+  const [purchasing, setPurchasing] = useState(false);
+
   const buyOrEquip = (cat: Cat, item: ShopItem) => {
     const isFree = item.price <= 0;
     const has =
@@ -379,28 +383,42 @@ export default function ProfileCustomize() {
         studentApi.purchase(item.apiId ?? item.id).catch(() => {});
       }
       setSel((s) => ({ ...s, [cat]: item.id }));
+      setBuying(null);
       return;
     }
+    setBuying({ cat, item }); // 구매는 명시적 버튼으로만
+  };
 
-    if (coins < item.price) {
-      flash('냥코인이 부족해요 😿');
-      return;
-    }
+  const confirmPurchase = () => {
+    if (!buying || purchasing) return;
+    const { cat, item } = buying;
+    setPurchasing(true);
     studentApi
       .purchase(item.apiId ?? item.id)
       .then((res: any) => {
         if (res && typeof res.coins === 'number') setCoins(res.coins);
+        setOwned((o) => ({ ...o, [cat]: [...o[cat], item.id] }));
+        setSel((s) => ({ ...s, [cat]: item.id }));
+        setBuying(null);
+        playSfx('reward'); // 설정 '효과음' on일 때만
+        flash(item.name + ' 구매 완료! 🎉');
         syncWallet();
       })
-      .catch(() => {
-        // 서버 거절(이미 보유/코인 부족 등) — 낙관적 반영을 서버 상태로 원복
+      .catch((e: any) => {
+        const status = e?.response?.status;
+        if (status === 409) {
+          // 이미 보유(기기 간 동기화 어긋남) — 보유로 반영하고 착용
+          setOwned((o) => ({ ...o, [cat]: [...o[cat], item.id] }));
+          setSel((s) => ({ ...s, [cat]: item.id }));
+          setBuying(null);
+          flash('이미 보유한 아이템이에요 — 바로 착용했어요!');
+        } else {
+          const detail = e?.response?.data?.detail;
+          flash(typeof detail === 'string' && detail ? detail : '구매에 실패했어요. 잠시 후 다시 시도해 주세요.');
+        }
         syncWallet();
-      });
-    setCoins((c) => c - item.price);
-    setOwned((o) => ({ ...o, [cat]: [...o[cat], item.id] }));
-    setSel((s) => ({ ...s, [cat]: item.id }));
-    playSfx('reward'); // 설정 '효과음' on일 때만
-    flash(item.name + ' 구매 완료! 🎉');
+      })
+      .finally(() => setPurchasing(false));
   };
 
   /* 원본 persistAvatar 그대로 + API 동기화 */
@@ -737,7 +755,9 @@ export default function ProfileCustomize() {
                   <button
                     key={it.id}
                     onClick={() => buyOrEquip(tab, it)}
-                    className={`pf-item${selected ? ' pf-item-sel' : ''}${isOwned ? '' : ' pf-item-locked'}`}
+                    className={`pf-item${selected ? ' pf-item-sel' : ''}${isOwned ? '' : ' pf-item-locked'}${
+                      buying && buying.cat === tab && buying.item.id === it.id ? ' pf-item-buying' : ''
+                    }`}
                   >
                     <span className="pf-itempreview" style={{ background: it.css || '#fff' }}>
                       <i className={it.icon} style={{ color: it.color }} />
@@ -761,6 +781,35 @@ export default function ProfileCustomize() {
                 );
               })}
             </div>
+            {buying && buying.cat === tab && (
+              <div className="pf-buybar">
+                <span className="pf-buybar-preview" style={{ background: buying.item.css || '#fff' }}>
+                  <i className={buying.item.icon} style={{ color: buying.item.color }} />
+                </span>
+                <div className="pf-buybar-info">
+                  <b>{buying.item.name}</b>
+                  <span className="pf-buybar-price">
+                    <i className="ph-fill ph-coins" /> {buying.item.price}냥
+                    {coins < buying.item.price && <em> · 냥코인이 부족해요 😿</em>}
+                  </span>
+                </div>
+                <button
+                  className="pf-buybar-cancel"
+                  onClick={() => setBuying(null)}
+                  disabled={purchasing}
+                >
+                  취소
+                </button>
+                <button
+                  className="pf-buybar-buy"
+                  onClick={confirmPurchase}
+                  disabled={purchasing || coins < buying.item.price}
+                >
+                  <i className="ph-fill ph-shopping-cart-simple" />
+                  {purchasing ? '구매 중…' : '아이템 구매하기'}
+                </button>
+              </div>
+            )}
           </div>
 
           {/* MY ACTIVITY SUMMARY */}

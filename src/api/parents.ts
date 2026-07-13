@@ -14,7 +14,7 @@ export const parentApi = {
       .get<any>(`/parents/me/children/${childId}/report`, { params: { period, subject } })
       .then((r) => r.data),
 
-  /** 자녀 연결: 학교 발급 초대코드(LINK-xxxx) 입력 — 1회용·만료·최대 2명 (학생코드 자동승인 폐지, B1) */
+  /** 자녀 연결: 학교 발급 초대코드(LINK-xxxx) 입력 — 1회용·만료, 자녀 수 제한 없음 (학생코드 자동승인 폐지, B1) */
   linkInvite: (inviteCode: string) =>
     client.post<any>('/parents/me/children/link-invite', { invite_code: inviteCode })
       .then((r) => r.data),

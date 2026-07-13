@@ -94,6 +94,9 @@ export default function CatchapWidget({
     if (stage) box.setAttribute('data-stage', String(stage));
     if (replay) box.setAttribute('data-replay', '1');
     if (total) box.setAttribute('data-total', String(total));
+    // 인앱은 게임 화면이 학생 설정(효과음 토글)에 따라 직접 재생 — 위젯 자체 효과음은 꺼서
+    // 이중 재생을 막는다. (외부 임베드는 이 속성이 없어 기본 켜짐)
+    box.setAttribute('data-sfx', '0');
     host.appendChild(box);
 
     ensureScript(api)

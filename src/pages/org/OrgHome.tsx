@@ -385,9 +385,17 @@ export default function OrgHome() {
 
   // 실집계가 확인된 경우에만 FALLBACK 라벨 위에 실데이터를 덮어씀. 그 전(로딩)·demo면 0/빈 상태.
   const hasReal = !demo && !!remote[period];
+  const remoteD = remote[period] as Partial<OhPeriodData> | null;
   const d: OhPeriodData = hasReal
-    ? { ...FALLBACK[period], ...(remote[period] as Partial<OhPeriodData>) }
+    ? { ...FALLBACK[period], ...remoteD }
     : zeroPeriod(period);
+  // 통과/차단 요일 그래프는 행동데이터 축 — 학습 실집계(hasReal)와 소스가 달라,
+  // 행동 실측이 빠졌으면 데모 곡선이 실측인 척 남는다. 그 경우 0 시리즈로 비운다.
+  if (hasReal && !remoteD?.block) {
+    const z = zeroPeriod(period);
+    d.block = z.block;
+    d.pass = z.pass;
+  }
   const subtitle = me?.organization_name
     ? `${me.organization_name}${hasReal ? ' · 실시간 집계' : ''}`
     : '';

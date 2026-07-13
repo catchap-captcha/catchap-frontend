@@ -1449,3 +1449,100 @@
   .pf-stats { grid-template-columns: repeat(2, 1fr); }
   .pf-badges { grid-template-columns: repeat(3, 1fr); }
 }
+
+/* ---- 구매 확정 바 (즉시 낙관 구매 → 명시적 '아이템 구매하기' 버튼) ---- */
+.pf-item-buying {
+  border-color: #f0a400;
+  background: #fff8e8;
+}
+
+.pf-buybar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+  padding: 12px 14px;
+  background: #fff8e8;
+  border: 2px solid #ffe1a1;
+  border-radius: 16px;
+}
+
+.pf-buybar-preview {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  flex: none;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(90, 70, 40, 0.12);
+}
+
+.pf-buybar-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+  font-size: 14px;
+  color: #3f382e;
+}
+
+.pf-buybar-price {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 800;
+  color: #b07c00;
+}
+
+.pf-buybar-price em {
+  font-style: normal;
+  color: #d14559;
+  font-weight: 700;
+}
+
+.pf-buybar-cancel {
+  border: none;
+  background: #f4f1ec;
+  color: #7a7061;
+  font-weight: 800;
+  font-size: 13px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.pf-buybar-buy {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  background: #f0a400;
+  color: #fff;
+  font-weight: 900;
+  font-size: 14px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.pf-buybar-buy:disabled,
+.pf-buybar-cancel:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+@media (max-width: 520px) {
+  .pf-buybar {
+    flex-wrap: wrap;
+  }
+  .pf-buybar-buy {
+    flex: 1;
+    justify-content: center;
+  }
+}

@@ -15,6 +15,7 @@ interface TsStudent {
   c: number;
   acc: number;
   sessions: string;
+  weekMin?: number; // 이번 주 학습 시간(분) — 실데이터(API)만 보유
   weak: string;
   status: string;
 }
@@ -116,6 +117,7 @@ function mapRoster(res: any): { rows: TsStudent[]; teachers: Record<string, stri
         c,
         acc: Number(s.acc ?? s.accuracy) || 0,
         sessions: String(s.sessions ?? `${s.session_count ?? 0}회`),
+        weekMin: typeof s.week_min === 'number' ? s.week_min : undefined,
         weak: String(s.weak ?? s.weak_game ?? ''),
         status: String(s.status ?? '좋음'),
       });
@@ -200,6 +202,8 @@ export default function TeacherStudents() {
             acc: s.acc + '%',
             accColor: accColor(s.acc),
             sessions: s.sessions,
+            // 이번 주 학습 시간 — API 실데이터에만 존재(FALLBACK 데모는 '—')
+            weekTime: typeof s.weekMin === 'number' ? `${s.weekMin}분` : '—',
             weak: s.weak,
             ...statusTag(s.status),
           };
@@ -345,6 +349,7 @@ export default function TeacherStudents() {
                       <th>학생</th>
                       <th>정답률</th>
                       <th>최근 학습</th>
+                      <th>주간 학습</th>
                       <th>최다 오답</th>
                       <th>상태</th>
                     </tr>
@@ -369,6 +374,7 @@ export default function TeacherStudents() {
                           </span>
                         </td>
                         <td>{s.sessions}</td>
+                        <td>{s.weekTime}</td>
                         <td>
                           <span className="ts-weak">{s.weak}</span>
                         </td>

@@ -7,6 +7,9 @@ let audioCtx: AudioContext | null = null;
 function ctx(): AudioContext | null {
   try {
     audioCtx = audioCtx ?? new AudioContext();
+    // 제스처 밖(위젯 채점 응답 등)에서 처음 생성되면 suspended로 영영 무음이 된다 —
+    // 브라우저는 상호작용 이후의 resume은 허용하므로 재생 시도마다 깨운다.
+    if (audioCtx.state === 'suspended') void audioCtx.resume();
     return audioCtx;
   } catch {
     return null;

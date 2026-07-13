@@ -299,6 +299,7 @@ export default function GameScreen() {
       }));
     };
     const onFinished = () => {
+      playSfx('reward'); // 세션/단계 완주 팡파르 — 설정 '효과음' on일 때만
       // 챕터 모드: 단계 완료를 저장하고, 5단계 전이면 끊지 않고 다음 단계로 이어 간다.
       if (chapter && curStage) {
         const done = curStage;
