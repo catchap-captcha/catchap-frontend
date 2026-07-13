@@ -18,7 +18,7 @@ interface TsStudent {
   // 기간별 학습 시간(분) — 실데이터(API)만 보유 (FALLBACK 데모엔 없음)
   todayMin?: number;
   weekMin?: number;
-  halfMin?: number; // 최근 6개월
+  halfMin?: number; // 이번 달(월간)
   yearMin?: number; // 최근 1년
   weak: string;
   status: string;
@@ -369,7 +369,7 @@ export default function TeacherStudents() {
                       <th>최근 학습</th>
                       <th>오늘</th>
                       <th>주간</th>
-                      <th>6개월</th>
+                      <th>월간</th>
                       <th title="올해 반 배정 기간(3월~) 학습 시간">학년도</th>
                       <th>최다 오답</th>
                       <th>상태</th>
