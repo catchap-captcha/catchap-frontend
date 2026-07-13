@@ -4,6 +4,7 @@ import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-do
 import { PATHS } from '../../routes/paths';
 import { useAuth } from '../../hooks/useAuth';
 import { studentApi } from '../../api/students';
+import DemoBadge from '../../components/common/DemoBadge';
 import mascot from '../../assets/characters/catchap-logo.png';
 import './GameResult.css';
 
@@ -147,6 +148,8 @@ export default function GameResult() {
   const [data, setData] = useState<Record<string, ResultEntry>>(FALLBACK);
   const [todayDone, setTodayDone] = useState<string[]>(TODAY_DONE);
   const [order, setOrder] = useState<string[]>(ORDER);
+  // 서버 실집계 없음(예시값) 여부 — 세션(sess)도 없이 이 값이면 화면 전체가 데모라 명시한다.
+  const [demo, setDemo] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -180,9 +183,11 @@ export default function GameResult() {
           if (so.length) setOrder(so);
         }
         if (typeof d.nickname === 'string' && d.nickname) setApiNick(d.nickname);
+        setDemo(!!d.demo); // 실집계 없음(예시값) — 세션도 없으면 화면에 데모 명시
       })
       .catch(() => {
-        // TODO(api): 백엔드 미구현/실패 시 FALLBACK 유지
+        // 서버 실패 + 세션 없음 = 화면 전체가 FALLBACK(예시값) → 데모로 명시(가짜 성공 방지)
+        if (!sess) setDemo(true);
       });
     return () => {
       mounted = false;
@@ -256,6 +261,9 @@ export default function GameResult() {
       </div>
 
       <div className="gr-content">
+        {/* 세션(방금 푼 실기록)도 없고 서버 실집계도 없으면 화면 전체가 예시값 — 데모로 명시.
+            (방금 푼 세션 sess가 있으면 표시 수치는 실데이터라 배지를 띄우지 않는다.) */}
+        {!sess && <DemoBadge show={demo} variant="banner" />}
         {/* HERO */}
         <div className="gr-hero">
           <div className="gr-herochip">
