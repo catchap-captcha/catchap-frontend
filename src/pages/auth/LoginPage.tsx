@@ -667,8 +667,12 @@ export default function LoginPage() {
         return;
       }
 
-      // 서버가 5회 이상 실패를 알리면 다음 시도부터 캡차 요구
-      if (detailObj?.captcha_required) setCaptchaNeeded(true);
+      // 서버가 5회 이상 실패를 알리면 캡차 요구 — 모달을 즉시 열어 준다
+      // (재클릭을 기다리면 "보안 확인 필요" 안내만 뜨고 캡차가 안 보여 갇힌 느낌)
+      if (detailObj?.captcha_required) {
+        setCaptchaNeeded(true);
+        openCaptcha();
+      }
 
       setLoginBad(true);
       // 403류(계정 종류 불일치·승인 대기·비활성화)는 서버 문구를 그대로 —

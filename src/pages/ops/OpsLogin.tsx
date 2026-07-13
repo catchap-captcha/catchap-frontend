@@ -47,7 +47,12 @@ export default function OpsLogin() {
         response?: { data?: { detail?: string | { message?: string; captcha_required?: boolean } } };
       })?.response?.data?.detail;
       const detailObj = typeof detail === 'object' && detail !== null ? detail : undefined;
-      if (detailObj?.captcha_required) setCaptchaNeeded(true);
+      if (detailObj?.captcha_required) {
+        // 캡차 요구 시 모달을 즉시 연다 — 버튼 재클릭을 기다리면 "완료해 주세요" 안내만
+        // 뜨고 정작 풀 캡차가 안 보여 갇힌 것처럼 느껴진다(benja123 신고).
+        setCaptchaNeeded(true);
+        setCaptchaOpen(true);
+      }
       const msg =
         (typeof detail === 'string' ? detail : detailObj?.message) ??
         '운영자 계정 정보가 올바르지 않습니다.';
