@@ -171,7 +171,7 @@ interface Pop {
 
 const QUICK_MENU = [
   { label: '개념 설명', to: PATHS.STUDENT_CONCEPTS, bg: '#FFE7D8', color: '#FF7A4D', icon: 'ph-fill ph-book-bookmark', badge: null as string | null, badgeNew: false },
-  { label: '오늘의 퀴즈', to: PATHS.STUDENT_DAILY_QUIZ, bg: '#FFEDE0', color: '#FF922E', icon: 'ph-fill ph-lightning', badge: '3', badgeNew: false },
+  { label: '오늘의 퀴즈', to: PATHS.STUDENT_DAILY_QUIZ, bg: '#FFEDE0', color: '#FF922E', icon: 'ph-fill ph-lightning', badge: null as string | null, badgeNew: false },
   { label: '오답 노트', to: PATHS.STUDENT_WRONG_NOTES, bg: '#FFE3E9', color: '#FF5A6E', icon: 'ph-fill ph-notebook', badge: null, badgeNew: false },
   { label: '획득 배지', to: PATHS.STUDENT_BADGES, bg: '#FFF3D6', color: '#F0A400', icon: 'ph-fill ph-medal', badge: null, badgeNew: false },
   { label: 'AI 선생님', to: PATHS.STUDENT_AI_TEACHER, bg: '#E6F0FF', color: '#2E7BFF', icon: 'ph-fill ph-robot', badge: 'NEW', badgeNew: true },
@@ -344,6 +344,8 @@ export default function StudentHome() {
   const barWidth = Math.round((done / total) * 100) + '%';
   // 오늘의 퀴즈에서 다음에 풀 과목(첫 미완료) — 다 끝냈으면 null
   const nextQuizSubject = data.subjects.find((sub) => sub.done < sub.total)?.subject ?? null;
+  // 오늘의 퀴즈 아직 안 한 과목 수 (nextQuizSubject와 같은 소스) — 퀵메뉴 배지용
+  const quizUndone = data.subjects.filter((sub) => sub.done < sub.total).length;
 
   return (
     <StudentLayout
@@ -524,17 +526,27 @@ export default function StudentHome() {
       <section id="quick" className="sh-quick-sec">
         <div className="sh-quick">
           <div className="sh-quick-grid">
-            {QUICK_MENU.map((q) => (
-              <Link key={q.label} to={q.to} className="sh-quick-item">
-                <span className="sh-quick-icon" style={{ background: q.bg, color: q.color }}>
-                  <i className={q.icon} />
-                  {q.badge && (
-                    <span className={`sh-quick-badge${q.badgeNew ? ' sh-new' : ''}`}>{q.badge}</span>
-                  )}
-                </span>
-                <span className="sh-quick-label">{q.label}</span>
-              </Link>
-            ))}
+            {QUICK_MENU.map((q) => {
+              // 오늘의 퀴즈 배지 = 아직 안 한 과목 수(실데이터). 다 했으면 '완료' 배지.
+              const isQuiz = q.to === PATHS.STUDENT_DAILY_QUIZ;
+              const badge = isQuiz ? (quizUndone > 0 ? String(quizUndone) : '완료') : q.badge;
+              const badgeDone = isQuiz && quizUndone === 0;
+              return (
+                <Link key={q.label} to={q.to} className="sh-quick-item">
+                  <span className="sh-quick-icon" style={{ background: q.bg, color: q.color }}>
+                    <i className={q.icon} />
+                    {badge && (
+                      <span
+                        className={`sh-quick-badge${q.badgeNew ? ' sh-new' : ''}${badgeDone ? ' sh-done' : ''}`}
+                      >
+                        {badge}
+                      </span>
+                    )}
+                  </span>
+                  <span className="sh-quick-label">{q.label}</span>
+                </Link>
+              );
+            })}
           </div>
         </div>
       </section>
