@@ -5,12 +5,17 @@ import { PATHS } from '../../routes/paths';
 import mascot from '../../assets/characters/catchap-logo.png';
 import './OpsLogin.css';
 import PasswordInput from '../../components/common/PasswordInput';
+import ForestCaptcha from '../../components/captcha/ForestCaptcha';
 
 /**
  * 운영자(ops) 전용 로그인.
  * 일반 로그인 폼(/login)과 완전히 분리된 숨겨진 진입구 — 어디에도 링크하지 않는다.
  * 백엔드는 /auth/ops-login 에서만 ops 계정에 토큰을 발급하고,
  * 일반 /auth/login 은 ops 계정을 거부한다.
+ *
+ * 서버 에러(계정 중지·5회 실패 캡차 요구 등)는 원문을 그대로 보여준다 —
+ * 전부 "정보가 올바르지 않습니다"로 뭉개면 임시비밀번호가 맞는데도
+ * 원인을 모른 채 재설정만 반복하게 된다.
  */
 export default function OpsLogin() {
   const navigate = useNavigate();
@@ -19,6 +24,9 @@ export default function OpsLogin() {
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  // 5회+ 실패 시 서버가 captcha_required를 알림 — 이후 시도는 캡차 통과 후 재시도
+  const [captchaNeeded, setCaptchaNeeded] = useState(false);
+  const [captchaOpen, setCaptchaOpen] = useState(false);
 
   // 이미 운영자로 로그인돼 있으면 콘솔로 보냄. (다른 역할이면 여기 머무름)
   useEffect(() => {
@@ -27,23 +35,43 @@ export default function OpsLogin() {
     }
   }, [loading, me, navigate]);
 
-  const submit = async (e: FormEvent) => {
+  const doLogin = async (captchaToken?: string) => {
+    setBusy(true);
+    setError('');
+    try {
+      const loaded = await opsLogin(email.trim(), password, captchaToken);
+      setCaptchaNeeded(false);
+      navigate(loaded.role === 'ops' ? PATHS.OPS_APPROVAL : PATHS.HOME, { replace: true });
+    } catch (err) {
+      const detail = (err as {
+        response?: { data?: { detail?: string | { message?: string; captcha_required?: boolean } } };
+      })?.response?.data?.detail;
+      const detailObj = typeof detail === 'object' && detail !== null ? detail : undefined;
+      if (detailObj?.captcha_required) setCaptchaNeeded(true);
+      const msg =
+        (typeof detail === 'string' ? detail : detailObj?.message) ??
+        '운영자 계정 정보가 올바르지 않습니다.';
+      setError(msg);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const submit = (e: FormEvent) => {
     e.preventDefault();
     if (busy) return;
-    setError('');
     if (!email.trim() || !password) {
       setError('아이디와 비밀번호를 입력해 주세요.');
       return;
     }
-    setBusy(true);
-    try {
-      const loaded = await opsLogin(email.trim(), password);
-      navigate(loaded.role === 'ops' ? PATHS.OPS_APPROVAL : PATHS.HOME, { replace: true });
-    } catch {
-      setError('운영자 계정 정보가 올바르지 않습니다.');
-    } finally {
-      setBusy(false);
-    }
+    if (captchaNeeded) setCaptchaOpen(true);
+    else void doLogin();
+  };
+
+  // 메인 캡차 통과 → 단일사용 토큰을 실어 재시도
+  const onCaptchaToken = (token: string) => {
+    setCaptchaOpen(false);
+    void doLogin(token);
   };
 
   return (
@@ -97,9 +125,23 @@ export default function OpsLogin() {
 
         <button type="submit" className="opl-btn" disabled={busy}>
           <i className="ph-fill ph-sign-in" />
-          {busy ? '확인 중…' : '로그인'}
+          {busy ? '확인 중…' : captchaNeeded ? '보안 확인 후 로그인' : '로그인'}
         </button>
       </form>
+
+      {captchaOpen && (
+        <div className="opl-cap-overlay" onClick={() => setCaptchaOpen(false)}>
+          <div className="opl-cap-box" onClick={(e) => e.stopPropagation()}>
+            <div className="opl-cap-head">
+              <span>보안 확인</span>
+              <button type="button" className="opl-cap-close" onClick={() => setCaptchaOpen(false)}>
+                <i className="ph-bold ph-x" />
+              </button>
+            </div>
+            <ForestCaptcha onToken={onCaptchaToken} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

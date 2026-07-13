@@ -217,8 +217,11 @@ function mapDashboard(d: any, prev: HomeData): Partial<HomeData> {
   if (typeof g.streak_days === 'number') out.streakDays = g.streak_days;
   if (typeof g.week_solved === 'number') out.weekSolved = g.week_solved;
   if (typeof g.accuracy === 'number') out.accuracy = g.accuracy;
-  // time_delta: '+18%' → 화면 문구 '지난주보다 +18%'
-  if (typeof g.time_delta === 'string' && g.time_delta) out.weekDelta = `지난주보다 ${g.time_delta}`;
+  // time_delta: '+18%' → 화면 문구 '지난주보다 +18%'. 빈 문자열 = 지난주 실측 없음(비교 불능) —
+  // FALLBACK 데모 델타(+18%)로 떨어뜨리지 않고 정직한 문구로 대체한다.
+  if (typeof g.time_delta === 'string') {
+    out.weekDelta = g.time_delta ? `지난주보다 ${g.time_delta}` : '이번 주 기록이 쌓이는 중이에요';
+  }
   // week_total: 'Nh Nm' — 주간 총 학습시간 (solve_time_ms 실집계)
   if (typeof g.week_total === 'string' && g.week_total) out.weekTotal = g.week_total;
 

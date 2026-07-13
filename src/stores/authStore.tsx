@@ -14,7 +14,7 @@ interface AuthContextValue {
   me: MeResponse | null;
   loading: boolean;
   login: (req: LoginRequest) => Promise<MeResponse>;
-  opsLogin: (email: string, password: string) => Promise<MeResponse>;
+  opsLogin: (email: string, password: string, captchaToken?: string) => Promise<MeResponse>;
   studentLogin: (req: StudentLoginRequest) => Promise<MeResponse>;
   logout: () => Promise<void>;
   reloadMe: () => Promise<MeResponse | null>;
@@ -64,8 +64,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const opsLogin = useCallback(
-    async (email: string, password: string) => {
-      const res = await client.post<TokenPair>('/auth/ops-login', { email, password });
+    async (email: string, password: string, captchaToken?: string) => {
+      const res = await client.post<TokenPair>('/auth/ops-login', {
+        email,
+        password,
+        ...(captchaToken ? { captcha_token: captchaToken } : {}),
+      });
       setTokens(res.data.access_token, res.data.refresh_token);
       localStorage.setItem('catchap_login_ts', String(Date.now()));
       const loaded = await reloadMe();

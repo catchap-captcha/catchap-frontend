@@ -187,7 +187,9 @@ function mapDashboard(res: any): Partial<ThDashboard> | null {
     }));
   }
 
-  if (Array.isArray(src.attention) && src.attention.length) {
+  // 빈 배열도 그대로 반영 — 관심 필요 0명(건강한 반)인데 FALLBACK 데모 아동 이름이
+  // 실데이터인 척 남으면 안 된다. 빈 목록은 렌더 쪽에서 축하 빈 상태로 표시.
+  if (Array.isArray(src.attention)) {
     out.attention = src.attention.map((a: any, i: number): ThAttention => {
       const name = String(a.name ?? '');
       // API에는 색상 정보가 없어 FALLBACK 팔레트 재사용(태그 일치 우선, 아니면 순환)
@@ -460,6 +462,12 @@ export default function TeacherHome() {
               </Link>
             </div>
             <div className="th-att-list">
+              {data.attention.length === 0 && (
+                <div className="th-att-empty">
+                  <i className="ph-fill ph-confetti" /> 지금은 도움이 필요한 학생이 없어요 — 모두 잘 따라오고
+                  있어요!
+                </div>
+              )}
               {data.attention.map((a) => (
                 <div key={a.name} className="th-att-row">
                   <span className="th-att-avatar" style={{ background: a.avatarBg }}>

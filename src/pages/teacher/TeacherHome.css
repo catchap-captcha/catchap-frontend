@@ -571,3 +571,14 @@
   .th-card,.th-kpi-card { transition: none; }
   .th-card:hover,.th-kpi-card:hover { transform: none; }
 }
+
+/* 도움 필요 학생 0명(건강한 반) 빈 상태 — 데모 이름 대신 정직한 축하 문구 */
+.th-att-empty {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 18px 12px;
+  color: #17b08c;
+  font-weight: 700;
+  font-size: 14px;
+}

@@ -224,7 +224,8 @@ function mapAnalytics(res: any): TaRemote | null {
     }));
   }
 
-  if (Array.isArray(src.attention) && src.attention.length) {
+  // 빈 배열도 그대로 — 관심 필요 0명에 데모 아동 이름이 되살아나면 안 된다
+  if (Array.isArray(src.attention)) {
     out.attention = src.attention.map((a: any, i: number) => {
       const name = String(a.name ?? '');
       const chars = [...name];
@@ -548,6 +549,12 @@ export default function TeacherAnalytics() {
             <h3 className="ta-cardTitle">관심이 필요한 학생</h3>
             <p className="ta-cardSub ta-attnSub">정답률이 낮거나 최근 학습이 뜸한 학생</p>
             <div className="ta-attnList">
+              {attention.length === 0 && (
+                <div className="ta-attnEmpty">
+                  <i className="ph-fill ph-confetti" /> 지금은 관심이 필요한 학생이 없어요 — 모두 잘
+                  따라오고 있어요!
+                </div>
+              )}
               {attention.map((a) => (
                 <div className="ta-attnItem" key={a.name}>
                   <span className="ta-attnAvatar" style={{ background: a.avatarBg }}>{a.initial}</span>
