@@ -5,6 +5,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { useUnreadNotifications } from '../../hooks/useUnreadNotifications';
 import { studentApi } from '../../api/students';
 import ScreenTimeReminder from '../../components/motion/ScreenTimeReminder';
+import ChapterAccuracyChart, { type SubjectStat } from '../../components/student/ChapterAccuracyChart';
 import mascot from '../../assets/characters/catchap-logo.png';
 import './AllLearning.css';
 
@@ -139,6 +140,7 @@ export default function AllLearning() {
   const { me } = useAuth();
   const [filter, setFilter] = useState('all');
   const [data, setData] = useState<AllLearningData>(FALLBACK);
+  const [chapStats, setChapStats] = useState<SubjectStat[]>([]);
 
   useEffect(() => {
     let mounted = true;
@@ -152,6 +154,13 @@ export default function AllLearning() {
       .catch(() => {
         /* 실패 시 FALLBACK(빈 챕터) 유지 — 가짜 진행 표시 안 함 */
       });
+    // 숙련 축 — 과목×챕터별 정답률(대시보드 그래프). 실패 시 빈 배열 → 섹션 미노출
+    studentApi
+      .chapterStats()
+      .then((d: any) => {
+        if (mounted && Array.isArray(d?.subjects)) setChapStats(d.subjects);
+      })
+      .catch(() => {});
     return () => {
       mounted = false;
     };
@@ -290,6 +299,17 @@ export default function AllLearning() {
           );
         })}
       </section>
+
+      {/* 숙련 축 — 과목×주차(챕터)별 정답률 그래프. 기록 있을 때만 노출(가짜 진행 없음) */}
+      {chapStats.some((s) => s.chapters?.some((c) => c.total > 0)) && (
+        <section className="al-accsection">
+          <div className="al-acchead">
+            <h2 className="al-acctitle">주차별 정답률</h2>
+            <p className="al-accsub">과목을 골라 챕터(주차)마다 얼마나 맞혔는지 확인해요. 오늘의 퀴즈와는 별개예요.</p>
+          </div>
+          <ChapterAccuracyChart subjects={chapStats} />
+        </section>
+      )}
 
       <ScreenTimeReminder />
     </div>

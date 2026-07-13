@@ -29,6 +29,12 @@ export const studentApi = {
       .get<any>('/students/me/chapter-history', { params: { subject, chapter, before } })
       .then((r) => r.data),
 
+  /** 전체학습(숙련 축) 과목×챕터별 정답률 — 대시보드 그래프. 오늘의퀴즈 정답률은 분리 필드 */
+  chapterStats: () => client.get<any>('/students/me/chapter-stats').then((r) => r.data),
+  /** 오늘의 퀴즈(습관 축) 일별 완료·정답률 + 연속일 */
+  habitStats: (weeks = 4) =>
+    client.get<any>('/students/me/habit-stats', { params: { weeks } }).then((r) => r.data),
+
   /** 나의기록 blob (주간/달력/실력/추이/최근활동) */
   records: () => client.get<any>('/students/me/records').then((r) => r.data),
 

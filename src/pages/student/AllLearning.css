@@ -861,3 +861,17 @@ a.al-ls:hover {
   color: #8a8070;
   font-weight: 600;
 }
+
+/* 숙련 축 — 주차별 정답률 섹션 */
+.al-accsection {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 8px 20px 40px;
+}
+.al-acchead { margin-bottom: 16px; }
+.al-acctitle { font-size: 20px; font-weight: 800; color: #2A2521; margin: 0 0 6px; letter-spacing: -0.01em; }
+.al-accsub { font-size: 13.5px; color: #8B8178; margin: 0; }
+@media (prefers-color-scheme: dark) {
+  .al-acctitle { color: #F1EBE2; }
+  .al-accsub { color: #A99C8C; }
+}
