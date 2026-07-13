@@ -795,7 +795,9 @@ export default function GameScreen() {
         </div>
       )}
 
-      {/* 그만하기 확인 팝업 — 푼 문제가 있으면 '여기까지 결과 보기'로, 없으면 그냥 나가기 */}
+      {/* 그만하기 확인 팝업 — 결과 화면은 생략하고 홈으로. 푼 문제는 문항마다 서버가
+          이미 저장했으므로(코인·진도·오늘의퀴즈) 그냥 나가도 유실 없다. 결과 화면은
+          '오늘치(5문항) 완료' 때만 뜬다(catchap:finished → goResult(true)). */}
       {quitAsk && (
         <div className="gs-quitpop-back" onClick={() => setQuitAsk(false)}>
           <div className="gs-quitpop" onClick={(e) => e.stopPropagation()}>
@@ -803,26 +805,20 @@ export default function GameScreen() {
             <div className="gs-quitpop-title">여기서 그만할까요?</div>
             <div className="gs-quitpop-msg">
               {widgetStats.answered > 0
-                ? `지금까지 ${widgetStats.answered}문제를 풀었어요. 결과를 보여드릴게요!`
+                ? `지금까지 푼 ${widgetStats.answered}문제는 저장했어요. 다음에 또 만나요!`
                 : '아직 푼 문제가 없어요. 다음에 또 만나요!'}
             </div>
             <div className="gs-quitpop-btns">
               <button type="button" className="gs-quitpop-stay" onClick={() => setQuitAsk(false)}>
                 계속 풀기
               </button>
-              {widgetStats.answered > 0 ? (
-                <button type="button" className="gs-quitpop-go" onClick={() => goResult(false)}>
-                  결과 보기
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  className="gs-quitpop-go"
-                  onClick={() => navigate(PATHS.STUDENT_HOME)}
-                >
-                  나가기
-                </button>
-              )}
+              <button
+                type="button"
+                className="gs-quitpop-go"
+                onClick={() => navigate(PATHS.STUDENT_HOME)}
+              >
+                나가기
+              </button>
             </div>
           </div>
         </div>
