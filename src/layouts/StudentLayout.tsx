@@ -1,4 +1,4 @@
-import { useState, type CSSProperties, type ReactNode } from 'react';
+import { useMemo, useState, type CSSProperties, type ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { PATHS } from '../routes/paths';
 import { useAuth } from '../hooks/useAuth';
@@ -20,13 +20,19 @@ interface AvatarState {
   hatColor: string;
 }
 
-/** 원본 renderVals()의 localStorage('catchap_avatar') 읽기 로직 그대로 */
-function readAvatar(): AvatarState {
+/** 아바타 캐시 키 — 계정별로 분리. 전역 키('catchap_avatar')는 같은 브라우저에서
+ * 다른 학생이 로그인하면 이전 학생이 꾸민 아바타가 보이는 교차 노출이 있었다. */
+export function avatarCacheKey(userId: string | undefined | null): string {
+  return userId ? `catchap_avatar:${userId}` : 'catchap_avatar';
+}
+
+function readAvatar(userId: string | undefined | null): AvatarState {
   let a: Record<string, unknown> = {};
   try {
-    a = JSON.parse(localStorage.getItem('catchap_avatar') || '{}');
+    // 내 계정 키만 읽는다 — 구 전역 키는 누구 것인지 알 수 없어 폴백하지 않는다(기본값 사용).
+    a = JSON.parse(localStorage.getItem(avatarCacheKey(userId)) || '{}');
   } catch {
-    /* 원본과 동일: 파싱 실패 시 기본값 */
+    /* 파싱 실패 시 기본값 */
   }
   return {
     bgCss: typeof a.bgCss === 'string' && a.bgCss ? a.bgCss : 'linear-gradient(135deg,#FFC24B,#FF8A5B)',
@@ -55,7 +61,8 @@ export function StudentNav({
 }) {
   const { me } = useAuth();
   const location = useLocation();
-  const [avatar] = useState<AvatarState>(readAvatar);
+  // me 로딩 후 내 계정 키로 다시 읽는다 — 첫 렌더(me 없음)는 기본 아바타.
+  const avatar = useMemo<AvatarState>(() => readAvatar(me?.id), [me?.id]);
   const [menuOpen, setMenuOpen] = useState(false); // 모바일 햄버거 메뉴 열림 상태
   const unread = useUnreadNotifications(); // 서버 read_at 기준 — 재로그인해도 유지
 

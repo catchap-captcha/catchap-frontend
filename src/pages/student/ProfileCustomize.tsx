@@ -7,6 +7,7 @@ import { studentApi } from '../../api/students';
 import { RANKING_ENABLED } from '../../config/features';
 import { playSfx } from '../../utils/feedback';
 import ScreenTimeReminder from '../../components/motion/ScreenTimeReminder';
+import { avatarCacheKey } from '../../layouts/StudentLayout';
 import mascot from '../../assets/characters/catchap-logo.png';
 import './ProfileCustomize.css';
 
@@ -364,6 +365,35 @@ export default function ProfileCustomize() {
       });
   };
 
+  /* 서버 착용 상태(sel)·카탈로그가 준비될 때마다 홈/네비 아바타 캐시를 내 계정 키로 동기화 —
+     저장 버튼을 안 눌러도 계정 전환·기기 이동 후 홈 아바타가 서버 진실과 일치한다. */
+  useEffect(() => {
+    if (!me?.id) return;
+    const selHat = catalog.hat.find((h) => h.id === sel.hat);
+    const selBg = catalog.bg.find((b) => b.id === sel.bg);
+    const selSt = catalog.sticker.find((s) => s.id === sel.sticker);
+    try {
+      const prev = JSON.parse(localStorage.getItem(avatarCacheKey(me.id)) || '{}');
+      localStorage.setItem(
+        avatarCacheKey(me.id),
+        JSON.stringify({
+          ...prev,
+          bgCss: selBg?.css ?? 'linear-gradient(135deg,#FFC24B,#FF8A5B)',
+          hasHat: !!(selHat && selHat.id !== 'none'),
+          hatIcon: selHat ? selHat.icon : '',
+          hatColor: selHat ? selHat.color : '#FF5A4D',
+          hasSticker: !!(selSt && selSt.id !== 'none'),
+          stickerIcon: selSt ? selSt.icon : '',
+          stickerColor: selSt ? selSt.color : '#F0A400',
+        }),
+      );
+      // 구 전역 키 제거 — 계정 간 교차 노출의 잔재를 남기지 않는다
+      localStorage.removeItem('catchap_avatar');
+    } catch {
+      /* 캐시 실패는 무해 */
+    }
+  }, [me?.id, sel, catalog]);
+
   /* 미보유 유료 아이템: 클릭 = 구매 후보 선택 → 아래 '구매하기' 버튼으로 확정.
      성공 처리는 서버 응답 후에만 한다 — 낙관 차감·선(先) "구매 완료" 표시(가짜 성공) 금지. */
   const [buying, setBuying] = useState<{ cat: Cat; item: ShopItem } | null>(null);
@@ -439,7 +469,8 @@ export default function ProfileCustomize() {
       initial: [...savedNick][0] || '냥',
     };
     try {
-      localStorage.setItem('catchap_avatar', JSON.stringify(data));
+      // 계정별 키 — 전역 키는 같은 브라우저의 다른 학생 홈에 내 아바타가 보이는 교차 노출
+      localStorage.setItem(avatarCacheKey(me?.id), JSON.stringify(data));
     } catch {
       /* 원본과 동일: 저장 실패 무시 */
     }
