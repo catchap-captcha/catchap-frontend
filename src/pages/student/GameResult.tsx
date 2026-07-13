@@ -245,6 +245,49 @@ export default function GameResult() {
     ? PATHS.STUDENT_HOME
     : `${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(nextUndone || subjectKey)}`;
 
+  // 성적 티어 — 이번에 푼 문항 정답률(pct) 기준으로 멘트·아이콘·색을 바꾼다.
+  // (다 맞힌 아이와 다 틀린 아이에게 같은 "참 잘했어요"를 주지 않는다. 단, 저성적도
+  //  기죽지 않게 격려 + 복습 유도 톤으로.) 답한 문항이 없으면(직접 진입 등) 중립.
+  const perf: 'perfect' | 'great' | 'good' | 'try' | 'zero' | 'none' =
+    answeredCount === 0 ? 'none'
+      : pct === 100 ? 'perfect'
+        : pct >= 80 ? 'great'
+          : pct >= 50 ? 'good'
+            : pct > 0 ? 'try'
+              : 'zero';
+  const PERF: Record<string, { title: string; icon: string; color: string; soft: string; ai: string; sub: string; ribbon: string }> = {
+    perfect: {
+      title: `완벽해요, ${name}! 다 맞혔어요 🏆`, icon: 'ph-fill ph-trophy', color: '#F0A400', soft: '#FFF3D6',
+      ribbon: '올백 완벽!', sub: '한 문제도 안 틀렸어요! 최고예요.',
+      ai: '우아, 한 문제도 안 틀렸어요! 정말 대단해요. 이 기세로 다음 문제도 도전해봐요! 🏆',
+    },
+    great: {
+      title: `정말 잘했어요, ${name}! 🎉`, icon: 'ph-fill ph-confetti', color: '#17B08C', soft: '#DFF6ED',
+      ribbon: '아주 잘함!', sub: '거의 다 맞혔어요! 조금만 더 하면 완벽이에요.',
+      ai: '대부분 맞혔어요! 틀린 문제만 다시 보면 금방 완벽해질 거예요. 잘하고 있어요! ✨',
+    },
+    good: {
+      title: `잘하고 있어요, ${name}! 👍`, icon: 'ph-fill ph-thumbs-up', color: '#2E7BFF', soft: '#E1EDFF',
+      ribbon: '좋은 출발!', sub: '절반 넘게 맞혔어요! 좋은 출발이에요.',
+      ai: '절반 넘게 맞혔어요! 오답노트로 복습하면 다음엔 더 잘할 수 있어요. 힘내요! 💪',
+    },
+    try: {
+      title: `좋아요, ${name}! 조금만 더 힘내요 💪`, icon: 'ph-fill ph-fire', color: '#FF922E', soft: '#FFEDD6',
+      ribbon: '다시 도전!', sub: '어려운 문제가 많았죠? 틀린 문제를 다시 보면 쑥 자라요.',
+      ai: '어려운 문제가 많았나 봐요. 괜찮아요! 틀린 문제를 천천히 다시 풀면 실력이 쑥 늘어요. 🐾',
+    },
+    zero: {
+      title: `괜찮아요, ${name}! 다시 도전해봐요 🐾`, icon: 'ph-fill ph-seal', color: '#FF6DA6', soft: '#FFE3EF',
+      ribbon: '다시 해볼까?', sub: '이번엔 어려웠나 봐요. 실수는 배우는 과정이에요!',
+      ai: '이번엔 어려웠나 봐요. 실수는 배우는 과정이에요! 해설을 보고 다시 풀면 꼭 늘어요. 화이팅! 🌱',
+    },
+    none: {
+      title: `수고했어요, ${name}! 🎉`, icon: 'ph-fill ph-trophy', color: s.solid, soft: s.soft,
+      ribbon: '', sub: '', ai: s.ai,
+    },
+  };
+  const perfInfo = PERF[perf];
+
   const themeVars = { '--gr-solid': s.solid, '--gr-soft': s.soft } as CSSProperties;
 
   return (
@@ -282,11 +325,16 @@ export default function GameResult() {
           </div>
           <div className="gr-mascotwrap">
             <img src={mascot} alt="마스코트" className="gr-mascotimg" />
-            <span className="gr-trophy">
-              <i className="ph-fill ph-trophy" />
+            <span className="gr-trophy" style={{ background: perfInfo.color }}>
+              <i className={perfInfo.icon} />
             </span>
           </div>
-          <h1 className="gr-title">참 잘했어요, {name}! 🎉</h1>
+          {perfInfo.ribbon && (
+            <span className="gr-perfribbon" style={{ background: perfInfo.soft, color: perfInfo.color }}>
+              <i className={perfInfo.icon} /> {perfInfo.ribbon}
+            </span>
+          )}
+          <h1 className="gr-title">{perfInfo.title}</h1>
           <p className="gr-herosub">
             {sess?.chapter
               ? sess.finished
@@ -296,7 +344,9 @@ export default function GameResult() {
                   : '풀던 단계는 다음에 이어서 할 수 있어요!'
               : allDoneToday
                 ? `오늘 하루 학습을 다 마쳤어요! 여섯 과목을 모두 끝낸 ${name}, 정말 대단해요 🏆`
-                : `${subjectKey} 챕터를 멋지게 끝냈어요. 오늘도 한 뼘 더 자랐네요!`}
+                : perf !== 'none'
+                  ? perfInfo.sub
+                  : `${subjectKey} 학습을 끝냈어요. 오늘도 한 뼘 더 자랐네요!`}
           </p>
           {sess?.chapter != null && (
             /* 챕터 5단계 진행 뱃지 — 완료 단계 채움 */
@@ -537,7 +587,9 @@ export default function GameResult() {
               <div className="gr-airole">오늘의 한마디</div>
             </div>
           </div>
-          <p className="gr-aitext">{s.ai}</p>
+          {/* AI 한마디도 성적에 맞춰 — 서버 코멘트는 과목별 고정(성적 무반영)이라, 실제로
+              푼 세션이면 정답률 기반 멘트를 우선한다(다 틀린 아이에게 칭찬만 하지 않게). */}
+          <p className="gr-aitext">{perf !== 'none' ? perfInfo.ai : s.ai}</p>
           <Link to={PATHS.STUDENT_AI_TEACHER} className="gr-ailink">
             AI 선생님과 더 이야기하기 <i className="ph-bold ph-arrow-right" />
           </Link>
