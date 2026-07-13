@@ -13,6 +13,7 @@ type FilterKey = 'all' | Cat;
 
 interface WrongItem {
   cat: Cat;
+  subject?: string; // 실제 과목명(국어/수학/…) — 카드 표시는 이걸 쓴다(없으면 카테고리→과목 폴백)
   question: string;
   wrong: string;
   answer: string;
@@ -20,21 +21,22 @@ interface WrongItem {
   date: string;
 }
 
+// 필터 칩 — 카테고리는 과목과 1:1이라 라벨을 실제 과목명으로(오답노트 과목 정합)
 const CHIPS: { key: FilterKey; label: string; icon: string }[] = [
   { key: 'all', label: '전체', icon: 'ph-fill ph-squares-four' },
-  { key: 'word', label: '낱말·한글', icon: 'ph-fill ph-text-aa' },
-  { key: 'num', label: '수·연산', icon: 'ph-fill ph-plus-minus' },
-  { key: 'img', label: '이미지 선택', icon: 'ph-fill ph-image' },
-  { key: 'safe', label: '생활 안전', icon: 'ph-fill ph-shield-check' },
-  { key: 'soc', label: '사회·문화', icon: 'ph-fill ph-scroll' },
-  { key: 'eng', label: '영어·어휘', icon: 'ph-fill ph-translate' },
+  { key: 'word', label: '국어', icon: 'ph-fill ph-text-aa' },
+  { key: 'num', label: '수학', icon: 'ph-fill ph-plus-minus' },
+  { key: 'img', label: '과학', icon: 'ph-fill ph-flask' },
+  { key: 'safe', label: '생활', icon: 'ph-fill ph-shield-check' },
+  { key: 'soc', label: '사회', icon: 'ph-fill ph-scroll' },
+  { key: 'eng', label: '영어', icon: 'ph-fill ph-translate' },
 ];
 
 /** subject: "다시 풀기" → 게임화면 `?subject=` 매핑 (HANDOFF_ROUTE_MAP의 깨진 링크 통일 규칙) */
 const TAG: Record<Cat, { label: string; icon: string; c: string; bg: string; subject: string }> = {
   word: { label: '낱말·한글', icon: 'ph-fill ph-text-aa', c: '#FF5A6E', bg: '#FFE3E9', subject: '국어' },
   num: { label: '수·연산', icon: 'ph-fill ph-plus-minus', c: '#FF922E', bg: '#FFEDE0', subject: '수학' },
-  img: { label: '이미지 선택', icon: 'ph-fill ph-image', c: '#2E7BFF', bg: '#E6F0FF', subject: '과학' },
+  img: { label: '과학', icon: 'ph-fill ph-flask', c: '#2E7BFF', bg: '#E6F0FF', subject: '과학' },
   safe: { label: '생활 안전', icon: 'ph-fill ph-shield-check', c: '#8B6BFF', bg: '#EDE6FF', subject: '생활' },
   soc: { label: '사회·문화', icon: 'ph-fill ph-scroll', c: '#17B08C', bg: '#DFF6EE', subject: '사회' },
   eng: { label: '영어·어휘', icon: 'ph-fill ph-translate', c: '#E0489E', bg: '#FCE4F1', subject: '영어' },
@@ -70,6 +72,8 @@ function mapWrongNotes(d: any): {
     if (valid.length) {
       items = valid.map((it: any): WrongItem => ({
         cat: it.cat as Cat,
+        // 실제 과목명 — 없으면 카테고리→과목 매핑으로 폴백
+        subject: typeof it.subject === 'string' && it.subject ? it.subject : TAG[it.cat as Cat].subject,
         question: it.question,
         wrong: it.wrong ?? '',
         answer: it.answer ?? '',
@@ -244,9 +248,11 @@ export default function WrongNotes() {
           return (
             <div key={q.question} className="wn-card">
               <div className="wn-cardhead">
+                {/* 태그 = 실제 과목명(q.subject) — 카테고리 라벨('이미지 선택' 등)이 아니라
+                    정확한 과목이 보이게. 색·아이콘은 카테고리 테마 유지. */}
                 <span className="wn-tag" style={{ background: t.bg, color: t.c }}>
                   <i className={t.icon} />
-                  {t.label}
+                  {q.subject || t.subject}
                 </span>
                 <span className="wn-date">{q.date}</span>
               </div>

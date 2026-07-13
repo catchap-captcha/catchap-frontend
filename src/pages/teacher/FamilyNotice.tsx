@@ -359,7 +359,7 @@ export default function FamilyNotice() {
               <span className="fn-count">{message.length} / 200자</span>
               <span className="fn-channel">
                 <i className="ph-fill ph-lock-simple" />
-                앱 알림 + 문자로 전송
+                학생·학부모 앱 알림으로 전송
               </span>
             </div>
 
