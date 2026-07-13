@@ -59,23 +59,46 @@ function metricsText(r: BehaviorRecord): string {
   );
 }
 
+/** 궤적을 그 궤적의 실제 범위에 맞춰(bounding-box fit) 종횡비를 지키며 그리는 헬퍼.
+ *
+ * 궤적 좌표는 '위젯 전체 박스' 기준 0~1이라, 그리기 캔버스가 박스의 일부면 궤적이
+ * 좁은 구역에만 담긴다(예: x 0.4~0.9). 이를 그대로 그리면 미리보기 구석에 작게 나와
+ * 형태(그린 글자·모양)가 안 보였다. min/max로 정규화해 미리보기 전체를 채우되,
+ * 가로세로 비율은 유지(letterbox 중앙 정렬)해 눌리지 않게 한다.
+ */
+function fitTrace(xy: [number, number][], W: number, H: number, pad: number) {
+  const xs = xy.map((p) => p[0]);
+  const ys = xy.map((p) => p[1]);
+  const minX = Math.min(...xs);
+  const maxX = Math.max(...xs);
+  const minY = Math.min(...ys);
+  const maxY = Math.max(...ys);
+  const spanX = Math.max(1e-6, maxX - minX);
+  const spanY = Math.max(1e-6, maxY - minY);
+  const availW = W - 2 * pad;
+  const availH = H - 2 * pad;
+  const scale = Math.min(availW / spanX, availH / spanY); // 비율 유지 — 큰 쪽에 맞춤
+  const offX = pad + (availW - spanX * scale) / 2;
+  const offY = pad + (availH - spanY * scale) / 2;
+  const mx = (v: number) => offX + (v - minX) * scale;
+  const my = (v: number) => offY + (v - minY) * scale;
+  const d = xy.map((p, i) => `${i === 0 ? 'M' : 'L'}${mx(p[0]).toFixed(1)},${my(p[1]).toFixed(1)}`).join(' ');
+  return { d, mx, my, first: xy[0], last: xy[xy.length - 1] };
+}
+
 // 목록 인라인 궤적 미리보기 — 운영자가 클릭 없이 드래그 모양을 한눈에 보고
 // 학습셋(후보/포함/제외)을 판단하도록 돕는다. 서버가 내려준 다운샘플 [x,y]를 그린다.
 function TraceSparkline({ points }: { points: [number, number][] }) {
   const W = 76;
-  const H = 32;
+  const H = 40; // 종횡비를 덜 눌리게(기존 32→40) + fitTrace가 비율 유지
   const pad = 3;
-  const map = (v: number, size: number) => pad + v * (size - 2 * pad);
-  const d = points
-    .map((pt, i) => `${i === 0 ? 'M' : 'L'}${map(pt[0], W).toFixed(1)},${map(pt[1], H).toFixed(1)}`)
-    .join(' ');
-  const first = points[0];
-  const last = points[points.length - 1];
+  if (!points.length) return null;
+  const { d, mx, my, first, last } = fitTrace(points, W, H, pad);
   return (
     <svg className="op-bh-spark" viewBox={`0 0 ${W} ${H}`} width={W} height={H} aria-hidden="true">
       <path d={d} fill="none" stroke="#7a5bd6" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-      <circle cx={map(first[0], W)} cy={map(first[1], H)} r="2" fill="#17b08c" />
-      <circle cx={map(last[0], W)} cy={map(last[1], H)} r="2" fill="#ff5a4d" />
+      <circle cx={mx(first[0])} cy={my(first[1])} r="2" fill="#17b08c" />
+      <circle cx={mx(last[0])} cy={my(last[1])} r="2" fill="#ff5a4d" />
     </svg>
   );
 }
@@ -608,11 +631,12 @@ export default function OpsBehavior() {
           const H = Math.max(160, Math.min(460, Math.round(W * aspect)));
           // point_count 0인 레코드도 버튼이 보여 빈 배열이 올 수 있다 — first/last 인덱싱 크래시 방지
           const pts = Array.isArray(trace.points) ? trace.points : [];
-          const d = pts
-            .map((p, i) => `${i === 0 ? 'M' : 'L'}${(p[1] * W).toFixed(1)},${(p[2] * H).toFixed(1)}`)
-            .join(' ');
-          const first = pts[0];
-          const last = pts[pts.length - 1];
+          // 궤적을 실제 범위에 맞춰(bounding-box fit) 크게 — 좁은 구역에 그려 형태가 안 보이던 것 해소.
+          const xy: [number, number][] = pts.map((p) => [p[1], p[2]]);
+          const fit = xy.length ? fitTrace(xy, W, H, 16) : null;
+          const d = fit ? fit.d : '';
+          const first = fit ? ([fit.mx(fit.first[0]), fit.my(fit.first[1])] as const) : null;
+          const last = fit ? ([fit.mx(fit.last[0]), fit.my(fit.last[1])] as const) : null;
           return (
             <div className="op-bh-overlay" onClick={() => setTraceView(null)}>
               <div className="op-bh-modal" onClick={(e) => e.stopPropagation()}>
@@ -639,8 +663,8 @@ export default function OpsBehavior() {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
-                  {first && <circle cx={first[1] * W} cy={first[2] * H} r="5" fill="#17b08c" />}
-                  {last && <circle cx={last[1] * W} cy={last[2] * H} r="5" fill="#ff5a4d" />}
+                  {first && <circle cx={first[0]} cy={first[1]} r="5" fill="#17b08c" />}
+                  {last && <circle cx={last[0]} cy={last[1]} r="5" fill="#ff5a4d" />}
                 </svg>
                 <div className="op-bh-modal-legend">
                   <span>
