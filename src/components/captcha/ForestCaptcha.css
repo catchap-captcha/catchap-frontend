@@ -1,14 +1,13 @@
 /* ForestCaptcha — 로그인 캡차 iframe 래퍼 */
-/* 내부 회전 카드(패드 154px + 버튼 74px×2 + 여백)가 ~460px 폭을 쓰므로 칸을 그에 맞춘다 */
 .fc-wrap {
   position: relative;
   width: 100%;
-  max-width: 520px;
+  max-width: 720px;
   margin: 0 auto;
 }
 .fc-iframe {
   width: 100%;
-  height: 540px;
+  height: clamp(320px, calc(100dvh - 260px), 540px);
   border: none;
   border-radius: 18px;
   background: #eaf5e6;
@@ -30,9 +29,4 @@
 }
 .fc-close:hover {
   background: rgba(0, 0, 0, 0.55);
-}
-@media (max-width: 420px) {
-  .fc-iframe {
-    height: 460px;
-  }
 }

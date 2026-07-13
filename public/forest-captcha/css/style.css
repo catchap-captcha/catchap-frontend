@@ -115,15 +115,33 @@ a:hover { color: #3f7fb8; }
   background: radial-gradient(circle at 50% 32%, #fffef8, #f2e8cd);
   box-shadow: inset 0 5px 12px rgba(150,120,60,.22), inset 0 -2px 0 rgba(255,255,255,.6);
   display: flex; align-items: flex-end; justify-content: center; padding: 12px;
+  touch-action: none;               /* iPad/모바일: 드래그 중 페이지 스크롤 방지 */
 }
 .rotate-pad-inner { width: 130px; height: 126px; display: flex; align-items: flex-end; justify-content: center; }
 
 /* control animal — works for individual PNG frames OR a spritesheet (see js) */
+/* 드래그 회전 버전: 이미지를 좌우로 드래그해서 회전한다. */
 .control-sprite {
   width: 100%; height: 100%;
-  background-repeat: no-repeat; background-position: center bottom; background-size: contain;
+  background-repeat: no-repeat;      /* 반복 금지 → 옆 프레임 노출 방지 */
+  background-position: center bottom; background-size: contain;
+  background-color: transparent;     /* 흰 배경 없음 (투명 PNG) */
+  overflow: hidden;                  /* 프레임 경계 밖 클리핑 */
   filter: drop-shadow(0 10px 8px rgba(47,90,34,.28));
   animation: spinPop .28s ease;
+  cursor: grab;                     /* 잡을 수 있음을 표시 */
+  touch-action: none;               /* 터치 드래그가 스크롤/줌으로 새지 않게 */
+  user-select: none;                /* 텍스트/이미지 선택 방지 */
+  -webkit-user-select: none;
+  -webkit-user-drag: none;          /* Safari 네이티브 이미지 드래그 방지 */
+  -webkit-touch-callout: none;
+  transition: transform .12s ease;
+  /* 동물별 시각 보정(scale). 기본 1 (ANIMAL_VISUAL_CONFIG 로 조정) */
+  transform: scale(var(--animal-scale, 1));
+}
+.control-sprite.dragging {
+  cursor: grabbing;                 /* 드래그 중 시각 피드백 (보정 배율과 합성) */
+  transform: scale(calc(var(--animal-scale, 1) * 1.03));
 }
 
 /* ===== gold action button (confirm / reset) ===== */
@@ -161,31 +179,57 @@ a:hover { color: #3f7fb8; }
 .success-title { font-size: 33px; color: #4f9a34; margin-bottom: 5px; }
 .success-sub { font-size: 19px; color: #a08a66; margin-bottom: 24px; }
 
-/* ===== narrow embeds (iframe < 460px) — 회전 카드가 칸을 넘지 않게 축소 ===== */
+/* Narrow iframe/mobile layout. Keep the prompt clear of both corner buttons. */
 @media (max-width: 460px) {
-  .bubble { top: 16px; }
-  .bubble-inner { padding: 10px 18px; gap: 9px; }
-  .bubble-icon { font-size: 21px; }
-  .bubble-text { font-size: 17px; }
-  .corner-btn { width: 46px; height: 46px; top: 16px; border-radius: 17px; }
-  .corner-btn--right { right: 16px; }
-  .corner-btn--left { left: 16px; }
-  .wrong-toast-inner { padding: 12px 22px; font-size: 18px; }
+  .bubble {
+    top: 16px;
+    left: 70px;
+    right: 70px;
+    transform: none;
+    animation: none;
+  }
+  .bubble-inner {
+    justify-content: center;
+    padding: 10px 9px;
+    border-width: 2px;
+    border-radius: 20px;
+    white-space: normal;
+    text-align: center;
+  }
+  .bubble-icon { display: none; }
+  .bubble-text { font-size: 15px; line-height: 1.25; }
+  .corner-btn { top: 16px; width: 46px; height: 46px; border-radius: 17px; }
+  .corner-btn--right { right: 12px; }
+  .corner-btn--left { left: 12px; }
+  .wrong-toast { width: calc(100vw - 24px); }
+  .wrong-toast-inner {
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 14px;
+    font-size: 16px;
+    white-space: normal;
+    text-align: center;
+  }
+  .wrong-toast-icon { font-size: 22px; }
   .rotate-wrap { padding: 0 10px 14px; }
-  .rotate-card { padding: 11px 14px 15px; gap: 9px; border-radius: 26px; }
-  .rotate-hint { font-size: 14px; }
+  .rotate-card {
+    width: 100%;
+    max-width: 340px;
+    padding: 11px 14px 15px;
+    gap: 9px;
+    border-radius: 26px;
+  }
+  .rotate-hint { font-size: 14px; text-align: center; }
   .rotate-hint-icon { font-size: 17px; }
   .rotate-row { gap: 10px; }
-  .rotate-btn { font-size: 12px; gap: 4px; }
-  .rotate-btn-icon { width: 50px; height: 50px; border-radius: 17px; }
-  .rotate-btn-icon svg { width: 24px; height: 24px; }
-  .rotate-pad { width: 104px; height: 104px; border-radius: 21px; padding: 8px; }
-  .rotate-pad-inner { width: 86px; height: 84px; }
+  .rotate-pad { width: 120px; height: 120px; border-radius: 22px; padding: 8px; }
+  .rotate-pad-inner { width: 104px; height: 102px; }
   .btn-gold { font-size: 18px; padding: 10px 44px; border-radius: 18px; }
-  .success-card { padding: 28px 32px 24px; border-radius: 30px; }
+  .success-card { width: calc(100vw - 40px); padding: 28px 28px 24px; border-radius: 30px; }
   .success-check { width: 84px; height: 84px; }
   .success-title { font-size: 27px; }
   .success-sub { font-size: 16px; }
+  .status-line { max-width: calc(100vw - 24px); }
 }
 
 /* ===== tiny dev status line ===== */
@@ -195,3 +239,14 @@ a:hover { color: #3f7fb8; }
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   pointer-events: none; max-width: 60vw; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
+
+/* ===== 드래그 회전 디버그 패널 (DEBUG_DRAG_ROTATE === true 일 때만) ===== */
+.drag-debug {
+  position: absolute; right: 12px; top: 12px; z-index: 45;
+  background: rgba(20,28,16,.82); color: #e8ffd8;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; line-height: 1.5;
+  padding: 10px 14px; border-radius: 12px; pointer-events: none;
+  box-shadow: 0 6px 18px rgba(0,0,0,.28); min-width: 190px;
+}
+.drag-debug .drag-debug-title { font-weight: bold; margin-bottom: 6px; color: #b8f08a; }
+.drag-debug b { color: #fff; }

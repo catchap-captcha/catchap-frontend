@@ -1550,7 +1550,7 @@
 
 /* ===== SECURITY CAPTCHA POPUP ===== */
 .lg-cap-overlay {
-  position: absolute;
+  position: fixed;
   inset: 0;
   z-index: 80;
   background: rgba(58, 51, 64, 0.5);
@@ -1558,13 +1558,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px;
+  padding: clamp(10px, 2vw, 24px);
   overflow: auto;
 }
 
 .lg-cap {
   width: 100%;
-  max-width: 560px;
+  max-width: 760px;
+  margin: auto 0;
   position: relative;
   animation: lgIn 0.35s ease;
 }
@@ -1753,13 +1754,29 @@
   display: block;
 }
 
-/* 모바일: 팝업 여백을 줄여 캡차 칸이 최대한 넓게 나오도록 */
-@media (max-width: 480px) {
-  .lg-cap-overlay {
-    padding: 10px;
+/* 낮거나 좁은 화면에서는 게임은 유지하고 팝업 장식과 여백만 압축한다. */
+@media (max-height: 780px), (max-width: 480px) {
+  .lg-cap-mascot-wrap {
+    display: none;
+  }
+  .lg-cap-head {
+    padding: 22px 18px 12px;
+  }
+  .lg-cap-title {
+    margin-top: 0;
   }
   .lg-cap-body {
-    padding: 14px 12px;
+    padding: 12px;
+  }
+  .lg-cap-why {
+    padding: 8px 10px;
+    margin-bottom: 8px;
+  }
+  .lg-cap-prompt-row {
+    margin-bottom: 8px;
+  }
+  .lg-cap-foot {
+    padding: 8px 12px;
   }
 }
 

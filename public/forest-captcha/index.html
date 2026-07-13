@@ -48,10 +48,12 @@
     <div id="rotateCard" class="rotate-wrap" hidden>
       <div class="rotate-card">
         <div class="rotate-hint">
-          <span class="rotate-hint-icon">🧭</span> 같은 방향으로 동물을 돌려주세요!
+          <span class="rotate-hint-icon">🧭</span> 동물을 좌우로 드래그해서 같은 방향으로 돌려주세요!
         </div>
         <div class="rotate-row">
-          <button id="btnLeft" class="rotate-btn" title="왼쪽으로 돌리기">
+          <!-- 드래그 회전 버전: 기존 좌/우 회전 버튼은 비활성화(숨김) 처리했습니다.
+               동물 이미지를 직접 드래그해서 회전합니다. (drag-rotate.js) -->
+          <button id="btnLeft" class="rotate-btn" title="왼쪽으로 돌리기" hidden>
             <span class="rotate-btn-icon">
               <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 7 L4 12 L9 17"></path><path d="M4 12 H16 a4 4 0 0 1 4 4"></path></svg>
             </span>왼쪽
@@ -59,12 +61,12 @@
 
           <div class="rotate-pad">
             <div class="rotate-pad-inner">
-              <!-- control animal (rotatable). Frame set from JS. -->
-              <div id="controlSprite" class="control-sprite"></div>
+              <!-- control animal (draggable). Frame set from JS. -->
+              <div id="controlSprite" class="control-sprite" draggable="false"></div>
             </div>
           </div>
 
-          <button id="btnRight" class="rotate-btn" title="오른쪽으로 돌리기">
+          <button id="btnRight" class="rotate-btn" title="오른쪽으로 돌리기" hidden>
             오른쪽
             <span class="rotate-btn-icon">
               <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7 L20 12 L15 17"></path><path d="M20 12 H8 a4 4 0 0 0 -4 4"></path></svg>
@@ -92,10 +94,24 @@
 
     <!-- tiny status line (challenge id / errors) — helps the team during dev -->
     <div id="statusLine" class="status-line"></div>
+
+    <!-- 드래그 회전 디버그 패널 (DEBUG_DRAG_ROTATE === true 일 때만 표시) -->
+    <div id="dragDebug" class="drag-debug" hidden>
+      <div class="drag-debug-title">🐛 drag-rotate debug</div>
+      <div>phase: <b id="dbgPhase">-</b></div>
+      <div>현재 프레임: <b id="dbgFrame">-</b></div>
+      <div>방향 이름: <b id="dbgName">-</b></div>
+      <div>드래그 시작 프레임: <b id="dbgStart">-</b></div>
+      <div>이동 거리(deltaX): <b id="dbgDelta">-</b>px</div>
+      <div>frameOffset: <b id="dbgOffset">-</b></div>
+      <div>최종 스냅 프레임: <b id="dbgSnap">-</b></div>
+    </div>
   </div>
 
   <script src="js/api.js"></script>
+  <script src="js/animal-config.js"></script>   <!-- 28마리 동물 단일 설정 -->
   <script src="js/captcha.js"></script>
+  <script src="js/drag-rotate.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

@@ -5,7 +5,7 @@
    Canvas. It is deliberately ANSWER-FREE:
      * It does NOT generate or know target_object / target_direction.
      * The "found" animal is shown from an image URL handed in by app.js
-       (which comes from the backend's opaque /target endpoint).
+       (which comes from the backend's opaque /reveal/{object} endpoint).
    The engine only knows how to render the scene, zoom to an object, and peek
    an animal out from behind it.
    ========================================================================= */
@@ -17,25 +17,36 @@
      0 정면 / 1 왼쪽앞 / 2 왼쪽 / 3 왼쪽뒤 / 4 뒤 / 5 오른쪽뒤 / 6 오른쪽 / 7 오른쪽앞
    `frameMap` lets an animal whose sheet is ordered differently remap indices.
    ------------------------------------------------------------------------- */
-const ANIMALS = {
-  dog:      { id: 'dog',      name: '강아지',   type: 'frames', base: 'assets/animals/dog/dir',      ext: '.png', frameMap: [0, 1, 2, 3, 4, 5, 6, 7] },
-  rabbit:   { id: 'rabbit',   name: '토끼',     type: 'frames', base: 'assets/animals/rabbit/dir',   ext: '.png', frameMap: [0, 1, 2, 3, 4, 5, 6, 7] },
-  chicken:  { id: 'chicken',  name: '닭',       type: 'frames', base: 'assets/animals/chicken/dir',  ext: '.png', frameMap: [0, 1, 2, 3, 4, 5, 6, 7] },
-  panda:    { id: 'panda',    name: '판다',     type: 'frames', base: 'assets/animals/panda/dir',    ext: '.png', frameMap: [0, 1, 2, 3, 4, 5, 6, 7] },
-  capybara: { id: 'capybara', name: '카피바라', type: 'frames', base: 'assets/animals/capybara/dir', ext: '.png', frameMap: [0, 1, 2, 3, 4, 5, 6, 7] },
+// 동물 목록은 animal-config.js(ANIMAL_CONFIG)에서 단일 관리한다. 여기서는 그
+// 설정을 스프라이트시트(2행 4열) 렌더 형식으로 변환한다. 컨트롤(드래그) 스프라이트는
+// 시트(image)를 CSS background-position 으로 슬라이싱하고, 서버 opaque reveal 은
+// 분할 프레임(base + dirN.png)을 사용한다.
+const ANIMALS = (() => {
+  const cfg = (typeof window !== 'undefined' && window.ANIMAL_CONFIG) || {};
+  const out = {};
+  for (const id in cfg) {
+    const a = cfg[id];
+    // 처음 5마리(dog/rabbit…)와 동일한 '방향별 낱장 프레임' 방식.
+    // 각 프레임은 land/{id}/dir{n}.png (투명·512², 발선 정렬됨). 시트 슬라이싱을
+    // 쓰지 않으므로 옆칸 노출/정사각 눌림/발 흔들림이 없다.
+    out[id] = {
+      id: a.id, name: a.nameKo, type: 'frames',
+      base: a.base, ext: '.png',
+      frameMap: [0, 1, 2, 3, 4, 5, 6, 7],
+    };
+  }
+  return out;
+})();
 
-  // ---- SPRITESHEET example (supported by spriteFrameStyle below) ----
-  // rabbit: { id:'rabbit', name:'토끼', type:'spritesheet',
-  //           path:'assets/animals/rabbit/sheet.png', columns:4, rows:2,
-  //           frameMap:[0,1,2,3,4,5,6,7] },
-};
+// 안전한 폴백 동물 id (첫 등록 동물)
+const FALLBACK_ANIMAL = Object.keys(ANIMALS)[0];
 
 /**
  * Returns a CSS style object for showing `animal` facing `dir` (0..7) in a
  * .control-sprite div — works for both frame-PNGs and spritesheets.
  */
 function spriteFrameStyle(animalId, dir) {
-  const a = ANIMALS[animalId] || ANIMALS.dog;
+  const a = ANIMALS[animalId] || ANIMALS[FALLBACK_ANIMAL];
   const frame = a.frameMap[dir % 8];
   if (a.type === 'spritesheet') {
     const col = frame % a.columns;
