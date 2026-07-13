@@ -932,3 +932,29 @@
 .prt-empty-title { font-family:'Jua',sans-serif; font-size:22px; color:#3a3340; margin:0; }
 .prt-empty-text { color:#8a8072; font-weight:600; font-size:14px; line-height:1.6; max-width:400px; margin:0; }
 .prt-empty-text b { color:#ff5a4d; }
+
+/* 전체학습 주차별 정답률 + 약한 챕터 진단 (숙련 축) */
+.prt-chapchart { margin: 6px 0 18px; }
+.prt-weak {
+  background: #FFF6F1; border: 1px solid #FBE0D3; border-radius: 14px;
+  padding: 16px 18px; margin-bottom: 8px;
+}
+.prt-weak-title { font-size: 15px; font-weight: 800; color: #C4451E; margin: 0 0 12px;
+  display: flex; align-items: center; gap: 7px; }
+.prt-weak-list { display: flex; flex-direction: column; gap: 9px; }
+.prt-weak-item { display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  font-size: 13.5px; color: #2A2521; }
+.prt-weak-sub { font-weight: 800; padding: 3px 9px; border-radius: 999px;
+  background: #fff; border: 1px solid #FBE0D3; color: #C4451E; font-size: 12px; }
+.prt-weak-ch { color: #5A5248; flex: 1; min-width: 120px; }
+.prt-weak-acc { font-weight: 800; font-variant-numeric: tabular-nums; color: #E0574B; }
+.prt-weak-note { font-size: 11.5px; color: #8B8178; background: #F4EFE7;
+  padding: 3px 8px; border-radius: 999px; }
+@media (prefers-color-scheme: dark) {
+  .prt-weak { background: #2a1a12; border-color: #4a2c1e; }
+  .prt-weak-title { color: #FFB393; }
+  .prt-weak-item { color: #F1EBE2; }
+  .prt-weak-sub { background: #211B16; border-color: #4a2c1e; color: #FFB393; }
+  .prt-weak-ch { color: #A99C8C; }
+  .prt-weak-note { background: #2A231C; color: #A99C8C; }
+}

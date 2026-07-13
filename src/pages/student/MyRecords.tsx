@@ -5,6 +5,8 @@ import DemoBadge from '../../components/common/DemoBadge';
 import { PATHS } from '../../routes/paths';
 import { useAuth } from '../../hooks/useAuth';
 import { studentApi } from '../../api/students';
+import ChapterAccuracyChart, { type SubjectStat } from '../../components/student/ChapterAccuracyChart';
+import HabitTrendLine, { type HabitDay } from '../../components/student/HabitTrendLine';
 import './MyRecords.css';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -232,6 +234,8 @@ export default function MyRecords() {
   const [data, setData] = useState<RecordsData>(FALLBACK);
   const [demo, setDemo] = useState(false); // 시도 기록이 없어 전부 데모값이면 true
   const [subject, setSubject] = useState('전체');
+  const [chapStats, setChapStats] = useState<SubjectStat[]>([]);
+  const [habit, setHabit] = useState<{ days: HabitDay[]; streak: number } | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -245,6 +249,13 @@ export default function MyRecords() {
       .catch(() => {
         // TODO(api): 백엔드 미구현/실패 시 FALLBACK 유지
       });
+    // 두 축 실집계 — 실패 시 빈 값(섹션 미노출, 가짜 진행 없음)
+    studentApi.chapterStats()
+      .then((d: any) => { if (mounted && Array.isArray(d?.subjects)) setChapStats(d.subjects); })
+      .catch(() => {});
+    studentApi.habitStats(4)
+      .then((d: any) => { if (mounted && Array.isArray(d?.days)) setHabit({ days: d.days, streak: d.streak ?? 0 }); })
+      .catch(() => {});
     return () => {
       mounted = false;
     };
@@ -587,6 +598,25 @@ export default function MyRecords() {
           </div>
         </div>
       </section>
+
+      {/* 두 축 — 습관 추세 + 숙련(주차별 정답률) */}
+      {(habit?.days.some((d) => d.accuracy != null) ||
+        chapStats.some((s) => s.chapters?.some((c) => c.total > 0))) && (
+        <section className="mr-section mr-twoaxis">
+          {habit?.days.some((d) => d.accuracy != null) && (
+            <div className="mr-card">
+              <h3 className="mr-h3">오늘의 퀴즈 · 습관 추세</h3>
+              <HabitTrendLine days={habit.days} streak={habit.streak} />
+            </div>
+          )}
+          {chapStats.some((s) => s.chapters?.some((c) => c.total > 0)) && (
+            <div className="mr-card">
+              <h3 className="mr-h3">전체학습 · 주차별 정답률</h3>
+              <ChapterAccuracyChart subjects={chapStats} />
+            </div>
+          )}
+        </section>
+      )}
 
       {/* RECENT ACTIVITY */}
       <section className="mr-section mr-recent">

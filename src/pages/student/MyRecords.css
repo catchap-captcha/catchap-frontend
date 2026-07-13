@@ -734,3 +734,7 @@
   .mr-statgrid { grid-template-columns: 1fr; }
   .mr-card { padding: 20px; }
 }
+
+/* 두 축 — 습관 추세 + 숙련(주차별 정답률) */
+.mr-twoaxis { display: grid; grid-template-columns: 1fr; gap: 16px; }
+@media (min-width: 900px) { .mr-twoaxis { grid-template-columns: 1fr 1fr; align-items: start; } }

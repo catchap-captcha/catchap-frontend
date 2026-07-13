@@ -11,6 +11,7 @@ export interface ChapterStat {
   stages_done: number;
   low_sample: boolean;
   unlocked: boolean;
+  unreviewed_wrong?: number;
 }
 export interface SubjectStat {
   subject: string;
@@ -18,6 +19,7 @@ export interface SubjectStat {
   max_chapters: number;
   overall_accuracy: number | null;
   daily_quiz_accuracy: number | null;
+  unreviewed_wrong?: number;
   chapters: ChapterStat[];
 }
 

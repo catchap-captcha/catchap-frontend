@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import ParentLayout, { ParentBellLink } from '../../layouts/ParentLayout';
 import DemoBadge from '../../components/common/DemoBadge';
 import { parentApi } from '../../api/parents';
+import ChapterAccuracyChart, { type SubjectStat } from '../../components/student/ChapterAccuracyChart';
 import { useToast } from '../../hooks/useToast';
 import { dateSuffix, downloadCanvasPng } from '../../utils/download';
 import { canvasToPdf } from '../../utils/pdf';
@@ -179,6 +180,7 @@ export default function ParentReports() {
   const [trendSubject, setTrendSubject] = useState('all');
   const [apiReport, setApiReport] = useState<any>(null);
   const [demo, setDemo] = useState(false); // 자녀 기간 실집계 없어 등급·차트가 데모값이면 true
+  const [chapStats, setChapStats] = useState<SubjectStat[]>([]);
   const { toast, flash } = useToast();
 
   // TODO(api): 자녀 목록 — 실패 시 원본 하드코딩 자녀 칩 유지
@@ -229,6 +231,7 @@ export default function ParentReports() {
     // 실 자녀(UUID)가 로드되기 전 FALLBACK id로 호출하면 403 → 실 id일 때만 호출
     if (!/^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(cur.id)) return;
     setApiReport(null);
+    setChapStats([]);
     parentApi
       .childReport(cur.id, period, trendSubject === 'all' ? undefined : trendSubject)
       .then((r: any) => {
@@ -240,6 +243,11 @@ export default function ParentReports() {
       .catch(() => {
         // TODO(api): 백엔드 미구현/실패 시 FALLBACK 유지
       });
+    // 자녀 전체학습(숙련 축) 챕터 정답률 — 학생과 동일 집계. 실패 시 빈(섹션 미노출)
+    parentApi
+      .childChapterStats(cur.id)
+      .then((d: any) => { if (mounted && Array.isArray(d?.subjects)) setChapStats(d.subjects); })
+      .catch(() => {});
     return () => {
       mounted = false;
     };
@@ -687,6 +695,53 @@ export default function ParentReports() {
               <span>{trendNote}</span>
             </div>
           </div>
+
+          {/* 전체학습 · 주차별 정답률 + 약한 챕터 진단 (숙련 축) */}
+          {chapStats.some((s) => s.chapters?.some((c) => c.total > 0)) && (
+            <>
+              <h2 className="prt-h2">전체학습 · 주차별 정답률</h2>
+              <p className="prt-h2-sub">주차(챕터)마다 얼마나 맞혔는지 볼 수 있어요. 오늘의 퀴즈와는 별개예요.</p>
+              <div className="prt-chapchart">
+                <ChapterAccuracyChart subjects={chapStats} />
+              </div>
+              {(() => {
+                const weak = chapStats
+                  .flatMap((s) =>
+                    s.chapters
+                      .filter((c) => c.accuracy != null && c.total >= 5)
+                      .map((c) => ({ subject: s.subject, ...c })),
+                  )
+                  .sort(
+                    (a, b) =>
+                      (a.accuracy as number) - (b.accuracy as number) ||
+                      (b.unreviewed_wrong ?? 0) - (a.unreviewed_wrong ?? 0),
+                  )
+                  .slice(0, 3);
+                if (!weak.length) return null;
+                return (
+                  <div className="prt-weak">
+                    <h3 className="prt-weak-title">
+                      <i className="ph-fill ph-target" /> 더 챙겨주면 좋은 챕터
+                    </h3>
+                    <div className="prt-weak-list">
+                      {weak.map((w) => (
+                        <div key={`${w.subject}-${w.no}`} className="prt-weak-item">
+                          <span className="prt-weak-sub">{w.subject}</span>
+                          <span className="prt-weak-ch">
+                            {w.no}챕터 · {w.title}
+                          </span>
+                          <span className="prt-weak-acc">{w.accuracy}%</span>
+                          {(w.unreviewed_wrong ?? 0) > 0 && (
+                            <span className="prt-weak-note">복습할 오답 {w.unreviewed_wrong}개</span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
+            </>
+          )}
 
           {/* reason cards */}
           <h2 className="prt-h2">틀린 이유 살펴보기</h2>
