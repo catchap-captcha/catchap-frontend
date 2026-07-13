@@ -632,8 +632,14 @@ export default function LoginPage() {
           throw err;
         }
       }
-      // 역할(선생님/기관 관리자/학부모)은 백엔드가 이메일로 조회한 계정에서 판별한다.
-      const me = await login({ email: id, password: pw, captcha_token: captchaToken });
+      // 탭에서 고른 구분(학부모/기관)을 함께 보낸다 — 서버가 계정 역할과 대조해
+      // 불일치면 403으로 거부한다(학부모 탭에서 교사 계정이 교사로 로그인되던 혼선 차단).
+      const me = await login({
+        email: id,
+        password: pw,
+        role: role === 'parent' ? 'parent' : 'org',
+        captcha_token: captchaToken,
+      });
       setCaptchaNeeded(false);
       navigate(ROLE_HOME[me.role]);
     } catch (err) {
@@ -665,10 +671,15 @@ export default function LoginPage() {
       if (detailObj?.captcha_required) setCaptchaNeeded(true);
 
       setLoginBad(true);
+      // 403류(계정 종류 불일치·승인 대기·비활성화)는 서버 문구를 그대로 —
+      // "비밀번호가 올바르지 않아요"로 뭉개면 사용자가 원인을 알 수 없다.
+      const serverMsg =
+        resp?.status === 403 && typeof detail === 'string' && detail ? detail : null;
       setLoginError(
-        detailObj?.captcha_required
-          ? '로그인에 여러 번 실패해서 보안 확인이 필요해요. 다시 시도해 주세요.'
-          : '아이디 또는 비밀번호가 올바르지 않아요. 다시 확인해 주세요.',
+        serverMsg ??
+          (detailObj?.captcha_required
+            ? '로그인에 여러 번 실패해서 보안 확인이 필요해요. 다시 시도해 주세요.'
+            : '아이디 또는 비밀번호가 올바르지 않아요. 다시 확인해 주세요.'),
       );
     }
   };

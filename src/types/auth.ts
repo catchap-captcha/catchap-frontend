@@ -34,8 +34,8 @@ export interface MeResponse {
 }
 
 export interface LoginRequest {
-  /** 하위호환용(백엔드가 무시) — 역할은 이메일로 조회된 계정에서 판별한다. */
-  role?: 'parent' | 'teacher' | 'org_admin' | 'ops';
+  /** 로그인 탭 구분 — 서버가 계정 역할과 대조해 불일치면 403. 'org'는 기관 그룹(관리자/학년부장/교사). */
+  role?: 'parent' | 'org' | 'teacher' | 'org_admin' | 'ops';
   email: string;
   password: string;
   /** 5회 이상 실패해 캡차가 요구된 뒤, 메인 캡차(forest) 통과 단일사용 토큰 */
