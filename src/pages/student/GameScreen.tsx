@@ -169,6 +169,36 @@ export default function GameScreen() {
   const startStage = chapter ? (stage ?? 1) : stage;
   const [curStage, setCurStage] = useState<number | undefined>(startStage);
 
+  /* 오늘의퀴즈 이어하기 — 서버는 오늘 푼 수를 이미 세지만(5번째에 done 승격) 화면 카운터가
+     로컬이라 새로고침하면 늘 1/5부터 다시 보였다. 오늘 이 과목에서 이미 푼 수(stage_done)를
+     받아와 그만큼 건너뛰고 남은 문항만 위젯 세션으로 연다. null = 조회 중(위젯 마운트 보류). */
+  const [resumeOffset, setResumeOffset] = useState<number | null>(null);
+  useEffect(() => {
+    let on = true;
+    // 챕터는 단계 커서(stagesDone)로 이미 이어하기가 되고, 복습은 처음부터가 맞다
+    if (!EDU_SITE_KEY || chapter || isReplay) {
+      setResumeOffset(0);
+      return;
+    }
+    setResumeOffset(null);
+    studentApi
+      .dailyQuiz()
+      .then((d: any) => {
+        if (!on) return;
+        const row = Array.isArray(d?.quizzes) ? d.quizzes.find((q: any) => q.subject === key) : null;
+        const done = typeof row?.stage_done === 'number' ? row.stage_done : 0;
+        // 이미 완료(5/5)면 재도전 = 새 5문항 세션 (기존 동작 유지)
+        setResumeOffset(done >= 1 && done <= 4 && row?.status !== 'done' ? done : 0);
+      })
+      .catch(() => {
+        if (on) setResumeOffset(0); // 조회 실패 시 처음부터 (기존 동작)
+      });
+    return () => {
+      on = false;
+    };
+  }, [key, chapter, isReplay]);
+  const skipToday = resumeOffset ?? 0;
+
   // 주소창 정리 — 쿼리스트링(?subject=%EC..&chapter=..)으로 들어오면 최초 1회 clean path
   // '/student/game' 로 즉시 치환하고 파라미터는 navigate state로 보존한다(실서비스처럼 주소가 깔끔).
   useEffect(() => {
@@ -464,9 +494,14 @@ export default function GameScreen() {
      챕터 모드는 시작 단계~5단계까지 연속 진행이라 총 문항 = 남은 단계 수 × 2 */
   const sessionTotal =
     chapter && startStage ? (CHAPTER_STAGES - startStage + 1) * 2 : EDU_TOTAL;
-  const curNo = EDU_SITE_KEY ? Math.min(widgetStats.answered + 1, sessionTotal) : s.current;
+  // 이어하기: 카운터는 '오늘 전체'(skipToday 포함) 기준 — 3/5까지 풀고 새로고침하면 4/5부터
+  const curNo = EDU_SITE_KEY
+    ? Math.min(skipToday + widgetStats.answered + 1, sessionTotal)
+    : s.current;
   const curTotal = EDU_SITE_KEY ? sessionTotal : s.total;
-  const pct = Math.round(((EDU_SITE_KEY ? widgetStats.answered : s.current) / curTotal) * 100);
+  const pct = Math.round(
+    ((EDU_SITE_KEY ? skipToday + widgetStats.answered : s.current) / curTotal) * 100,
+  );
   const isLast = s.current >= s.total;
 
   const rewardGoal = rewards[s.key]?.goal ?? 5;
@@ -635,7 +670,15 @@ export default function GameScreen() {
               /* 비방해 전환/축하 토스트 — 위젯 조작을 막지 않는다(pointer-events 없음) */
               <div className="gs-stagebanner">{stageBanner}</div>
             )}
-            {EDU_SITE_KEY ? (
+            {EDU_SITE_KEY && resumeOffset === null ? (
+              /* 이어하기 위치(오늘 푼 수) 조회 중 — 잘못된 총문항으로 마운트했다 갈아끼우지 않게 잠깐 대기 */
+              <div className="gs-mount-body">
+                <span className="gs-mount-icon">
+                  <i className="ph-fill ph-hourglass-medium" />
+                </span>
+                <span className="gs-mount-title">오늘 진행을 확인하고 있어요…</span>
+              </div>
+            ) : EDU_SITE_KEY ? (
               /* 1st-party 임베드 — 우리 앱이 교육형 API(위젯)를 직접 소비.
                  학생 토큰(auth)을 실어 서버가 채점 시점에 코인·진도·오늘의퀴즈를 적립하고,
                  행동데이터(behavior_summaries)도 학생 귀속으로 수집한다. */
@@ -650,7 +693,7 @@ export default function GameScreen() {
                 chapter={chapter}
                 stage={curStage}
                 replay={isReplay}
-                total={EDU_TOTAL}
+                total={EDU_TOTAL - skipToday}
               />
             ) : (
               <div className="gs-mount-body">
