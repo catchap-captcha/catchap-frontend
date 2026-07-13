@@ -370,7 +370,7 @@ export default function TeacherStudents() {
                       <th>오늘</th>
                       <th>주간</th>
                       <th>6개월</th>
-                      <th>1년</th>
+                      <th title="올해 반 배정 기간(3월~) 학습 시간">학년도</th>
                       <th>최다 오답</th>
                       <th>상태</th>
                     </tr>
