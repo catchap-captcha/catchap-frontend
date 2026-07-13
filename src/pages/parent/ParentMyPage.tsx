@@ -130,6 +130,7 @@ export default function ParentMyPage() {
   const [connectOpen, setConnectOpen] = useState(false);
   const [connectCode, setConnectCode] = useState('');
   const [connectError, setConnectError] = useState('');
+  const [connectConsent, setConnectConsent] = useState(false); // 보호자 개인정보 동의(#58)
   const [captchaOpen, setCaptchaOpen] = useState(false);
   const [tileVariant, setTileVariant] = useState(0);
   const [captchaPicked, setCaptchaPicked] = useState<number[]>([]);
@@ -312,6 +313,7 @@ export default function ParentMyPage() {
     setConnectOpen(true);
     setConnectCode('');
     setConnectError('');
+    setConnectConsent(false);
   };
   const onConnectCodeChange = (e: ChangeEvent<HTMLInputElement>) => {
     setConnectCode(e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, '').slice(0, 14));
@@ -320,9 +322,13 @@ export default function ParentMyPage() {
   const confirmConnect = () => {
     const c = connectCode.trim();
     if (!c) return;
+    if (!connectConsent) {
+      setConnectError('자녀 개인정보 처리에 대한 보호자 동의가 필요해요.');
+      return;
+    }
     setConnectError('');
     parentApi
-      .linkInvite(c)
+      .linkInvite(c, connectConsent)
       .then(() => {
         setConnectOpen(false);
         flash('자녀를 연결했어요');
@@ -335,15 +341,17 @@ export default function ParentMyPage() {
       .catch((err: any) => {
         const st = err?.response?.status;
         setConnectError(
-          st === 404
-            ? '초대코드가 올바르지 않아요. 다시 확인해 주세요.'
-            : st === 410
-              ? '만료되었거나 이미 다 사용된 초대코드예요.'
-              : st === 409
-                ? '이미 연결된 자녀예요.'
-                : st === 429
-                  ? '시도가 너무 많아요. 잠시 후 다시 시도해 주세요.'
-                  : '연결에 실패했어요. 초대코드를 다시 확인해 주세요.',
+          st === 400
+            ? '자녀 개인정보 처리에 대한 보호자 동의가 필요해요.'
+            : st === 404
+              ? '초대코드가 올바르지 않아요. 다시 확인해 주세요.'
+              : st === 410
+                ? '만료되었거나 이미 다 사용된 초대코드예요.'
+                : st === 409
+                  ? '이미 연결된 자녀예요.'
+                  : st === 429
+                    ? '시도가 너무 많아요. 잠시 후 다시 시도해 주세요.'
+                    : '연결에 실패했어요. 초대코드를 다시 확인해 주세요.',
         );
       });
   };
@@ -1018,6 +1026,21 @@ export default function ParentMyPage() {
               className="pm-input pm-input--strong"
               style={{ textAlign: 'center', letterSpacing: 1, margin: '4px 0 10px' }}
             />
+            <label
+              style={{ display: 'flex', alignItems: 'flex-start', gap: 8, textAlign: 'left',
+                margin: '2px 0 10px', fontSize: 13, lineHeight: 1.5, color: '#5A5248', cursor: 'pointer' }}
+            >
+              <input
+                type="checkbox"
+                checked={connectConsent}
+                onChange={(e) => { setConnectConsent(e.target.checked); setConnectError(''); }}
+                style={{ marginTop: 3 }}
+              />
+              <span>
+                <b>[필수]</b> 자녀의 개인정보(실명·나이 등)를 학습 서비스 제공 목적으로 처리하는 것에
+                법정대리인으로서 동의합니다.
+              </span>
+            </label>
             {connectError && (
               <div className="pm-mismatch" style={{ justifyContent: 'center', marginBottom: 8 }}>
                 <i className="ph-fill ph-warning-circle" />
@@ -1028,7 +1051,8 @@ export default function ParentMyPage() {
               <button className="pm-cancel-btn" onClick={() => setConnectOpen(false)}>
                 취소
               </button>
-              <button className="pm-ok-btn" onClick={confirmConnect}>
+              <button className="pm-ok-btn" onClick={confirmConnect} disabled={!connectConsent}
+                style={!connectConsent ? { opacity: 0.5, cursor: 'not-allowed' } : undefined}>
                 연결하기
               </button>
             </div>

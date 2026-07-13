@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { authApi } from '../../api/auth';
-import { parentApi } from '../../api/parents';
 import mascot from '../../assets/characters/catchap-logo.png';
 import InstitutionPicker, { type PickedInstitution } from '../../components/auth/InstitutionPicker';
 import ForestCaptcha from '../../components/captcha/ForestCaptcha';
@@ -349,15 +348,15 @@ export default function LoginPage() {
     }
     req
       .then(async () => {
-        // 학부모 가입 + 초대코드 입력 시: 로그인 후 초대코드로 자녀 즉시 연결 (선택)
+        // 학부모 가입 + 초대코드 입력 시: 로그인만 해두고, 자녀 연결은 앱 내 '자녀 연결'에서
+        // 보호자 개인정보 동의(체크박스)를 받아 진행한다(#58 — 동의 없이 자동 연동 금지).
+        // 초대코드는 서버가 동의 전 단계에서 거부해 소비되지 않으므로 앱에서 그대로 쓸 수 있다.
         const invite = inviteCode.trim();
         if (role === 'parent' && invite) {
           try {
             await login({ email, password: pw });
-            await parentApi.linkInvite(invite);
           } catch {
-            // 계정은 만들어졌으니 가입 완료로 처리 — 연결만 실패(로그인 후 앱에서 재시도 가능)
-            setFormError('가입은 됐지만 초대코드 연결에 실패했어요. 로그인 후 자녀 연결에서 다시 시도해 주세요.');
+            /* 로그인은 성공 화면 뒤에서 다시 시도 가능 — 가입 자체는 완료 처리 */
           }
         }
         setSignupDone(true);

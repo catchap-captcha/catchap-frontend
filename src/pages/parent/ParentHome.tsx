@@ -567,12 +567,14 @@ export default function ParentHome() {
   const [linked, setLinked] = useState(false);
   const [code, setCode] = useState('');
   const [linkError, setLinkError] = useState('');
+  const [linkConsent, setLinkConsent] = useState(false); // 보호자 개인정보 동의(#58)
 
   const openLink = () => {
     setLinkOpen(true);
     setLinked(false);
     setCode('');
     setLinkError('');
+    setLinkConsent(false);
   };
   const closeLink = () => setLinkOpen(false);
   const onCodeChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -583,10 +585,14 @@ export default function ParentHome() {
   const confirmLink = () => {
     const c = code.trim();
     if (!c) return;
+    if (!linkConsent) {
+      setLinkError('자녀 개인정보 처리에 대한 보호자 동의가 필요해요.');
+      return;
+    }
     setLinkError('');
     // 성공을 미리 위장하지 않는다 — 서버가 실제로 연결한 뒤에만 성공 화면 전환
     parentApi
-      .linkInvite(c)
+      .linkInvite(c, linkConsent)
       .then(() => {
         setLinked(true);
         parentApi
@@ -600,15 +606,17 @@ export default function ParentHome() {
       .catch((err: any) => {
         const st = err?.response?.status;
         setLinkError(
-          st === 404
-            ? '초대코드가 올바르지 않아요. 다시 확인해 주세요.'
-            : st === 410
-              ? '만료되었거나 이미 다 사용된 초대코드예요.'
-              : st === 409
-                ? '이미 연결된 자녀예요.'
-                : st === 429
-                  ? '시도가 너무 많아요. 잠시 후 다시 시도해 주세요.'
-                  : '연결에 실패했어요. 초대코드를 다시 확인해 주세요.',
+          st === 400
+            ? '자녀 개인정보 처리에 대한 보호자 동의가 필요해요.'
+            : st === 404
+              ? '초대코드가 올바르지 않아요. 다시 확인해 주세요.'
+              : st === 410
+                ? '만료되었거나 이미 다 사용된 초대코드예요.'
+                : st === 409
+                  ? '이미 연결된 자녀예요.'
+                  : st === 429
+                    ? '시도가 너무 많아요. 잠시 후 다시 시도해 주세요.'
+                    : '연결에 실패했어요. 초대코드를 다시 확인해 주세요.',
         );
       });
   };
@@ -905,6 +913,21 @@ export default function ParentHome() {
                     className="ph-modalInput"
                   />
                 </div>
+                <label
+                  style={{ display: 'flex', alignItems: 'flex-start', gap: 8, textAlign: 'left',
+                    margin: '10px 0', fontSize: 13, lineHeight: 1.5, color: '#5A5248', cursor: 'pointer' }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={linkConsent}
+                    onChange={(e) => { setLinkConsent(e.target.checked); setLinkError(''); }}
+                    style={{ marginTop: 3 }}
+                  />
+                  <span>
+                    <b>[필수]</b> 자녀의 개인정보(실명·나이 등)를 학습 서비스 제공 목적으로 처리하는 것에
+                    법정대리인으로서 동의합니다.
+                  </span>
+                </label>
                 {linkError ? (
                   <div className="ph-modalHint" style={{ color: '#E0475E' }}>
                     <i className="ph-fill ph-warning-circle" />
@@ -917,7 +940,8 @@ export default function ParentHome() {
                   </div>
                 )}
 
-                <button onClick={confirmLink} className="ph-modalConfirm">
+                <button onClick={confirmLink} className="ph-modalConfirm" disabled={!linkConsent}
+                  style={!linkConsent ? { opacity: 0.5, cursor: 'not-allowed' } : undefined}>
                   <i className="ph-fill ph-link" />연결하기
                 </button>
                 <button onClick={closeLink} className="ph-modalCancel">취소</button>
