@@ -134,7 +134,6 @@ export default function LoginPage() {
   const [orgDup, setOrgDup] = useState(false);
   const [orgCode, setOrgCode] = useState('');
   const [orgCodeStatus, setOrgCodeStatus] = useState<'idle' | 'empty' | 'valid' | 'invalid'>('idle');
-  const [inviteCode, setInviteCode] = useState(''); // 학부모 가입 시 자녀 초대코드(선택)
   const [loginError, setLoginError] = useState('');
   const [loginBad, setLoginBad] = useState(false);
   // 아이디+비밀번호가 여러 기관에서 일치할 때(409)만 후보 기관 버튼 노출
@@ -347,18 +346,9 @@ export default function LoginPage() {
       });
     }
     req
-      .then(async () => {
-        // 학부모 가입 + 초대코드 입력 시: 로그인만 해두고, 자녀 연결은 앱 내 '자녀 연결'에서
-        // 보호자 개인정보 동의(체크박스)를 받아 진행한다(#58 — 동의 없이 자동 연동 금지).
-        // 초대코드는 서버가 동의 전 단계에서 거부해 소비되지 않으므로 앱에서 그대로 쓸 수 있다.
-        const invite = inviteCode.trim();
-        if (role === 'parent' && invite) {
-          try {
-            await login({ email, password: pw });
-          } catch {
-            /* 로그인은 성공 화면 뒤에서 다시 시도 가능 — 가입 자체는 완료 처리 */
-          }
-        }
+      .then(() => {
+        // 학부모 자녀 연결은 가입과 분리 — 로그인 후 '자녀 연결'에서 보호자 동의와 함께 진행한다
+        // (#58 동의 없이 자동 연동 금지). 가입 자체는 여기서 완료 처리.
         setSignupDone(true);
       })
       .catch(() => setFormError('가입에 실패했어요. 입력 정보를 확인한 뒤 다시 시도해 주세요.'));
@@ -1189,23 +1179,9 @@ export default function LoginPage() {
                       />
                     </div>
 
-                    <label className="lg-label">
-                      자녀 초대코드 <span style={{ color: '#A0A4B2', fontWeight: 600 }}>(선택)</span>
-                    </label>
-                    <div className="lg-field lg-mb7">
-                      <i className="ph-fill ph-identification-badge lg-field-icon" />
-                      <input
-                        type="text"
-                        placeholder="예) LINK-7QX3-9K2M"
-                        value={inviteCode}
-                        onChange={(e) =>
-                          setInviteCode(e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, '').slice(0, 14))
-                        }
-                        className="lg-input"
-                      />
-                    </div>
-                    <p style={{ margin: '0 0 15px', fontSize: '12.5px', color: '#8A8F9E', lineHeight: 1.5 }}>
-                      학교에서 받은 초대코드가 있으면 입력하세요. 가입과 동시에 자녀와 연결돼요. 없으면 비워두고 가입 후 연결해도 됩니다.
+                    <p style={{ margin: '4px 0 15px', fontSize: '12.5px', color: '#8A8F9E', lineHeight: 1.5 }}>
+                      자녀 연결은 가입 후 <b>자녀 연결</b> 메뉴에서 학교 초대코드 입력과
+                      보호자 동의를 거쳐 진행됩니다.
                     </p>
                   </>
                 )}
