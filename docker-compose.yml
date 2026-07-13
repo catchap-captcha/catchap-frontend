@@ -8,6 +8,8 @@ services:
         # 빌드 타임 주입 — Vite가 번들에 인라인. 값 바꾸면 --build 로 재빌드 필요.
         VITE_API_BASE_URL: ${VITE_API_BASE_URL:-https://api.catchap5.com}
         VITE_CATCHAP_EDU_SITE_KEY: ${VITE_CATCHAP_EDU_SITE_KEY}
+        # 에러 트래킹(Sentry) — .env에 값 있으면 활성, 없으면 no-op
+        VITE_SENTRY_DSN: ${VITE_SENTRY_DSN:-}
     image: catchap-frontend:latest
     restart: unless-stopped
     expose:
