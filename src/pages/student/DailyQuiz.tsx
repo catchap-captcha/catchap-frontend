@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
 import { useAuth } from '../../hooks/useAuth';
 import { studentApi } from '../../api/students';
+import DemoBadge from '../../components/common/DemoBadge';
 import ScreenTimeReminder from '../../components/motion/ScreenTimeReminder';
 import mascot from '../../assets/characters/catchap-logo.png';
 import './DailyQuiz.css';
@@ -133,6 +134,7 @@ export default function DailyQuiz() {
   const name = (me?.name ?? '하은').trim() || '하은';
 
   const [data, setData] = useState<QuizData>(FALLBACK);
+  const [demo, setDemo] = useState(false); // API 실패/미데이터 시 FALLBACK을 데모로 명시(#6)
   // 생활 교육과정 (일일 주제 순환 — 지난날 복습·오늘 과제·다음날 잠금)
   const [curr, setCurr] = useState<{ today_day: number; days: any[] } | null>(null);
 
@@ -168,7 +170,8 @@ export default function DailyQuiz() {
         });
       })
       .catch(() => {
-        // TODO(api): 백엔드 미구현/실패 시 FALLBACK 유지
+        // 실패 시 FALLBACK(예시 코인·연속·과목상태)을 실데이터처럼 두지 않는다 — 데모 명시(#6).
+        if (mounted) setDemo(true);
       });
     return () => {
       mounted = false;
@@ -224,6 +227,10 @@ export default function DailyQuiz() {
             </Link>
           </div>
         </div>
+      </div>
+
+      <div style={{ maxWidth: 1120, margin: '0 auto', padding: '12px 20px 0' }}>
+        <DemoBadge show={demo} variant="banner" />
       </div>
 
       {/* HERO */}

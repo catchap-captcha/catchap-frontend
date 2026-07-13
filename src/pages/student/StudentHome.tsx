@@ -284,7 +284,8 @@ export default function StudentHome() {
         setData((prev) => ({ ...prev, ...mapDashboard(d, prev) }));
       })
       .catch(() => {
-        // TODO(api): 백엔드 미구현/실패 시 FALLBACK 유지
+        // 실패 시 FALLBACK(예시값)을 실데이터처럼 보여주지 않는다 — 데모로 명시(적대적검토 #6).
+        if (mounted) setDemo(true);
       });
     // (메인 CTA가 '오늘의 퀴즈'로 통일되면서 생활 일일 과제 조회는 오늘의퀴즈 페이지 몫)
     // 보호자 연동 알림: 안 읽은 parent_link 알림이 있으면 팝업으로 안내

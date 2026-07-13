@@ -8,6 +8,7 @@ import { canvasToPdf } from '../../utils/pdf';
 import { drawCertificate } from '../../utils/certificate';
 import { RANKING_ENABLED } from '../../config/features';
 import ScreenTimeReminder from '../../components/motion/ScreenTimeReminder';
+import DemoBadge from '../../components/common/DemoBadge';
 import mascot from '../../assets/characters/catchap-logo.png';
 import './Badges.css';
 
@@ -126,6 +127,7 @@ export default function Badges() {
   const [hero, setHero] = useState<HeroBadge>(FALLBACK_HERO);
   const [next, setNext] = useState<NextBadge>(FALLBACK_NEXT);
   const [level, setLevel] = useState<number>(7);
+  const [demo, setDemo] = useState(false); // 배지 API 실패 시 FALLBACK(가짜 획득)을 데모로 명시(#6)
   // 상장 (학년 랭킹 상위 3위 · 개근상) — 다운로드 가능
   const [awards, setAwards] = useState<any[]>([]);
   // 랭킹 비활성('준비중') 동안엔 랭킹(rank) 상장은 숨기고 개근상(attendance)만 노출한다.
@@ -183,7 +185,8 @@ export default function Badges() {
         }
       })
       .catch(() => {
-        // TODO(api): 백엔드 미구현/실패 시 FALLBACK 유지
+        // 실패 시 FALLBACK(전부 획득한 것처럼 보이는 배지)을 실데이터처럼 두지 않는다 — 데모 명시(#6).
+        if (mounted) setDemo(true);
       });
     return () => {
       mounted = false;
@@ -241,6 +244,10 @@ export default function Badges() {
             </Link>
           </div>
         </div>
+      </div>
+
+      <div style={{ maxWidth: 1120, margin: '0 auto', padding: '12px 20px 0' }}>
+        <DemoBadge show={demo} variant="banner" />
       </div>
 
       {/* HERO SHOWCASE */}
