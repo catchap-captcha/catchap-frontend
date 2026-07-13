@@ -272,7 +272,15 @@ export default function GameScreen() {
     if (!el) return;
     const onAnswer = (e: Event) => {
       const d = (e as CustomEvent).detail as
-        | { correct?: boolean; session?: { coins_earned?: number; sticker_awarded?: boolean; sticker_coins?: number } }
+        | {
+            correct?: boolean;
+            session?: {
+              coins_earned?: number;
+              sticker_awarded?: boolean;
+              sticker_coins?: number;
+              quiz_bonus?: number; // 오늘의퀴즈 완료 보상 — 완료 승격 문항에서만 >0
+            };
+          }
         | undefined;
       playSfx(d?.correct ? 'correct' : 'wrong');
       // session이 빠졌다 = 서버가 학생 인증을 못 받아 적립이 안 됨 (로그인 만료 등)
@@ -283,6 +291,11 @@ export default function GameScreen() {
       else bag.wrong += 1;
       if (d?.session) {
         bag.coins += d.session.coins_earned ?? 0;
+        if ((d.session.quiz_bonus ?? 0) > 0) {
+          bag.coins += d.session.quiz_bonus ?? 0;
+          setStageBanner(`🎁 오늘의 퀴즈 완료 보상 +${d.session.quiz_bonus}코인!`);
+          window.setTimeout(() => setStageBanner(null), 3000);
+        }
         if (d.session.sticker_awarded) {
           bag.sticker = true;
           bag.stickerCoins += d.session.sticker_coins ?? 0;
