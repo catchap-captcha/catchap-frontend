@@ -602,9 +602,11 @@ export default function GameResult() {
               <i className="ph-fill ph-arrow-counter-clockwise" />
               다시 하기
             </Link>
-            <Link to={PATHS.STUDENT_ALL_LEARNING} className="gr-btn-secondary">
-              <i className="ph-fill ph-squares-four" />
-              다른 학습 하기
+            {/* 이 분기는 비챕터(오늘의 퀴즈 축) — 다른 과목은 오늘의 퀴즈 화면에서 고른다.
+                전체 학습(챕터) 세션의 '전체 학습으로'는 위 sess.chapter 분기가 담당. */}
+            <Link to={PATHS.STUDENT_DAILY_QUIZ} className="gr-btn-secondary">
+              <i className="ph-fill ph-lightning" />
+              다른 과목 풀기
             </Link>
             <Link to={primaryHref} className="gr-btn-primary">
               <i className={allDoneToday ? 'ph-fill ph-house' : 'ph-fill ph-arrow-right'} />

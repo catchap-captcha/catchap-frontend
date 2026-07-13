@@ -2,12 +2,12 @@
 .fc-wrap {
   position: relative;
   width: 100%;
-  max-width: 720px;
+  max-width: 900px;
   margin: 0 auto;
 }
 .fc-iframe {
   width: 100%;
-  height: clamp(320px, calc(100dvh - 260px), 540px);
+  height: clamp(360px, calc(100dvh - 180px), 720px);
   border: none;
   border-radius: 18px;
   background: #eaf5e6;

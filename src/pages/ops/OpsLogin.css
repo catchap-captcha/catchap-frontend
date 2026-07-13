@@ -155,8 +155,8 @@
   background: #fff;
   border-radius: 18px;
   padding: 16px;
-  width: min(520px, 100%);
-  max-height: 90vh;
+  width: min(940px, 100%);
+  max-height: 92vh;
   overflow: auto;
 }
 
