@@ -151,6 +151,9 @@ export default function LoginPage() {
   const formRef = useRef<HTMLDivElement | null>(null);
   const loginIdRef = useRef<HTMLInputElement | null>(null);
   const loginPwRef = useRef<HTMLInputElement | null>(null);
+  // 마지막 시도의 기관 선택 — 캡차 통과 후 재시도(onCaptchaToken)가 기관을 잃지 않게 기억.
+  // (잃으면 다기관 학생은 후보 선택→캡차→후보 선택… 무한 루프가 된다)
+  const lastOrgRef = useRef<string | undefined>(undefined);
   const orgTypeRef = useRef<HTMLSelectElement | null>(null);
   const purposeRef = useRef<HTMLSelectElement | null>(null);
   const capT = useRef<number | null>(null);
@@ -593,6 +596,7 @@ export default function LoginPage() {
       if (role === 'student') {
         // 후보 버튼으로 고른 기관 > 기억해 둔 기관 > 미지정(백엔드가 비밀번호로 판별)
         const orgId = orgOverride ?? rememberedOrg(id);
+        lastOrgRef.current = orgId; // 캡차 재시도가 같은 기관으로 가게 기억
         try {
           const me = await studentLogin({
             organization_id: orgId,
@@ -656,11 +660,15 @@ export default function LoginPage() {
         return;
       }
 
-      // 서버가 5회 이상 실패를 알리면 캡차 요구 — 모달을 즉시 열어 준다
-      // (재클릭을 기다리면 "보안 확인 필요" 안내만 뜨고 캡차가 안 보여 갇힌 느낌)
+      // 서버가 5회 이상 실패를 알리면 캡차 요구. 단, 방금 캡차를 통과한 시도(captchaToken
+      // 있음)가 '비밀번호 오류'로 실패한 경우엔 팝업을 즉시 다시 열지 않는다 — 재오픈하면
+      // "캡차 정답을 맞혀도 계속 뜨는" 루프로 보인다(사용자 제보 0714). 오류 문구를 보여주고,
+      // 다음 로그인 클릭 때 캡차가 열린다(submitLogin). 게이트 자체 거부(토큰 없음·만료 —
+      // 서버 문구 '보안 확인')일 때만 즉시 연다(안내만 뜨고 캡차가 안 보이는 갇힘 방지).
+      const gateRefused = (detailObj?.message ?? '').includes('보안 확인');
       if (detailObj?.captcha_required) {
         setCaptchaNeeded(true);
-        openCaptcha();
+        if (!captchaToken || gateRefused) openCaptcha();
       }
 
       setLoginBad(true);
@@ -670,7 +678,7 @@ export default function LoginPage() {
         resp?.status === 403 && typeof detail === 'string' && detail ? detail : null;
       setLoginError(
         serverMsg ??
-          (detailObj?.captcha_required
+          (detailObj?.captcha_required && (!captchaToken || gateRefused)
             ? '로그인에 여러 번 실패해서 보안 확인이 필요해요. 다시 시도해 주세요.'
             : '아이디 또는 비밀번호가 올바르지 않아요. 다시 확인해 주세요.'),
       );
@@ -683,10 +691,11 @@ export default function LoginPage() {
     void doLogin(orgId);
   };
 
-  // 메인 캡차(forest) 통과 → 단일사용 토큰을 로그인에 실어 재시도
+  // 메인 캡차(forest) 통과 → 단일사용 토큰을 로그인에 실어 재시도.
+  // 기관 선택(lastOrgRef)을 유지해야 다기관 학생이 후보선택↔캡차 사이에서 맴돌지 않는다.
   const onCaptchaToken = (token: string) => {
     setCaptcha(false);
-    void doLogin(undefined, token);
+    void doLogin(lastOrgRef.current, token);
   };
 
   // ===== 탭/뷰 전환 (원본 그대로) =====
