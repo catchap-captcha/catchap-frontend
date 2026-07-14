@@ -17,6 +17,15 @@ export const parentApi = {
   /** 자녀 전체학습(숙련 축) 과목×챕터별 정답률 — 학생 화면과 동일 집계 */
   childChapterStats: (childId: string) =>
     client.get<any>(`/parents/me/children/${childId}/chapter-stats`).then((r) => r.data),
+
+  /** 자녀 필기 원본 보존 동의 상태 — {retain, terms_version} */
+  scratchConsent: (childId: string) =>
+    client.get<any>(`/parents/me/children/${childId}/scratch-consent`).then((r) => r.data),
+  /** 자녀 필기 원본 보존 동의 설정/철회 */
+  setScratchConsent: (childId: string, retain: boolean) =>
+    client
+      .put<any>(`/parents/me/children/${childId}/scratch-consent`, { retain })
+      .then((r) => r.data),
   /** 자녀 오늘의 퀴즈(습관 축) 일별 완료·정답률 + 연속일 */
   childHabitStats: (childId: string, weeks = 4) =>
     client

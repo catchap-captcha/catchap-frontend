@@ -127,6 +127,9 @@ export default function ParentMyPage() {
 
   const [logoutOpen, setLogoutOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  // 자녀별 '필기 원본 보존 동의' 상태(childId → 동의 여부) + 약관 모달 대상 자녀
+  const [retainMap, setRetainMap] = useState<Record<string, boolean>>({});
+  const [termsChild, setTermsChild] = useState<ChildItem | null>(null);
   const [connectOpen, setConnectOpen] = useState(false);
   const [connectCode, setConnectCode] = useState('');
   const [connectError, setConnectError] = useState('');
@@ -293,6 +296,39 @@ export default function ParentMyPage() {
           /* TODO(api): 실패해도 원본처럼 로컬 상태 유지 */
         });
     }
+  };
+
+  // 자녀별 필기 보존 동의 상태 로드(연결된 자녀만)
+  useEffect(() => {
+    (children ?? []).forEach((c) => {
+      if (!c.id) return;
+      parentApi
+        .scratchConsent(c.id)
+        .then((d: any) => setRetainMap((m) => ({ ...m, [c.id as string]: !!d?.retain })))
+        .catch(() => {
+          /* 조회 실패는 무시 — 토글은 기본 off로 보인다 */
+        });
+    });
+  }, [children]);
+
+  const applyRetain = (child: ChildItem, retain: boolean) => {
+    if (!child.id) return;
+    const id = child.id;
+    setRetainMap((m) => ({ ...m, [id]: retain })); // 낙관적 반영
+    parentApi
+      .setScratchConsent(id, retain)
+      .then(() => flash(retain ? `${child.name} 필기 보존 동의를 켰어요` : `${child.name} 필기 보존 동의를 껐어요`))
+      .catch(() => {
+        setRetainMap((m) => ({ ...m, [id]: !retain })); // 실패 롤백
+        flash('동의 설정에 실패했어요. 잠시 후 다시 시도해 주세요.');
+      });
+  };
+
+  // 켜기는 약관 동의 모달을 먼저 거치고, 끄기(철회)는 바로 반영
+  const toggleRetain = (child: ChildItem) => {
+    if (!child.id) return;
+    if (retainMap[child.id]) applyRetain(child, false);
+    else setTermsChild(child);
   };
 
   const unlinkChild = (child: ChildItem) => {
@@ -822,6 +858,36 @@ export default function ParentMyPage() {
                         <span className="pm-knob" />
                       </button>
                     </div>
+                    {/* 필기 원본 보존 동의 — 보호자(법정대리인) 동의. 켜면 탈퇴 후에도 원본 유지 */}
+                    <div className="pm-ch-limit">
+                      <span className="pm-row-ico" style={{ background: '#EEF4FF', color: '#2E7BFF' }}>
+                        <i className="ph-fill ph-pencil-line" />
+                      </span>
+                      <div className="pm-row-info">
+                        <div className="pm-row-title">
+                          필기 원본 보존 동의{' '}
+                          <button
+                            type="button"
+                            onClick={() => setTermsChild(c)}
+                            style={{ background: 'none', border: 'none', color: '#2E7BFF', fontWeight: 700, fontSize: 12, cursor: 'pointer', padding: 0 }}
+                          >
+                            약관 보기
+                          </button>
+                        </div>
+                        <div className="pm-row-sub">
+                          {c.id && retainMap[c.id]
+                            ? '동의함 — 탈퇴 후에도 연습장 필기 원본을 보존해요'
+                            : '미동의 — 탈퇴 시 필기 원본을 파기해요(기본)'}
+                        </div>
+                      </div>
+                      <button
+                        className={`pm-switch${c.id && retainMap[c.id] ? ' pm-switch--on' : ''}`}
+                        onClick={() => toggleRetain(c)}
+                        disabled={!c.id}
+                      >
+                        <span className="pm-knob" />
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -965,6 +1031,55 @@ export default function ParentMyPage() {
       )}
 
       {/* LOGOUT CONFIRM */}
+      {/* 필기 원본 보존 동의 약관 */}
+      {termsChild && (
+        <div className="pm-overlay pm-overlay--confirm" onClick={() => setTermsChild(null)}>
+          <div
+            className="pm-confirm"
+            onClick={(e) => e.stopPropagation()}
+            style={{ maxWidth: 460, textAlign: 'left' }}
+          >
+            <div className="pm-confirm-ico" style={{ background: '#EEF4FF', color: '#2E7BFF' }}>
+              <i className="ph-fill ph-pencil-line" />
+            </div>
+            <h2 className="pm-confirm-title" style={{ textAlign: 'center' }}>필기 원본 보존 동의</h2>
+            <div
+              style={{
+                fontSize: 13.5, color: '#5A5248', lineHeight: 1.7, background: '#FAF7F2',
+                border: '1px solid #EFE7DA', borderRadius: 12, padding: '14px 16px', margin: '4px 0 14px',
+                maxHeight: 240, overflowY: 'auto',
+              }}
+            >
+              <b>{termsChild.name}</b> 자녀가 연습장에 쓴 <b>필기(필적) 원본</b>의 보존에 대한 동의입니다.
+              <ul style={{ margin: '10px 0 0', paddingLeft: 18 }}>
+                <li>필기 원본은 아이의 학습 풀이 과정으로, 학생 본인·담당 교사(열람 감사 기록)만 재생해 볼 수 있어요. 운영자는 원본을 볼 수 없고 익명 통계만 봅니다.</li>
+                <li style={{ marginTop: 6 }}><b>동의하면</b>: 자녀가 <b>탈퇴한 뒤에도</b> 필기 원본을 삭제하지 않고 보존합니다(학습 이력 보관 목적).</li>
+                <li style={{ marginTop: 6 }}><b>동의하지 않으면(기본)</b>: 탈퇴·보존기간 만료 시 필기 <b>원본을 파기</b>하고, 개인을 식별할 수 없는 통계 지표(획수·시간)만 남습니다.</li>
+                <li style={{ marginTop: 6 }}>이 동의는 <b>법정대리인(보호자)</b>이 언제든지 이 화면에서 철회할 수 있습니다. 철회 시 이후 파기 대상이 됩니다.</li>
+              </ul>
+              <div style={{ marginTop: 10, fontSize: 12, color: '#B0A79B' }}>
+                필적은 재식별이 가능한 민감정보로, 아동 개인정보 보호를 위해 접근·보존을 엄격히 관리합니다.
+              </div>
+            </div>
+            <div className="pm-confirm-btns">
+              <button className="pm-cancel-btn" onClick={() => setTermsChild(null)}>
+                닫기
+              </button>
+              <button
+                className="pm-ok-btn"
+                onClick={() => {
+                  const c = termsChild;
+                  setTermsChild(null);
+                  if (c) applyRetain(c, true);
+                }}
+              >
+                동의하고 보존 켜기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {logoutOpen && (
         <div className="pm-overlay pm-overlay--confirm" onClick={() => setLogoutOpen(false)}>
           <div className="pm-confirm" onClick={(e) => e.stopPropagation()}>
