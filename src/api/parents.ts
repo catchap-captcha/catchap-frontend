@@ -17,6 +17,17 @@ export const parentApi = {
   /** 자녀 전체학습(숙련 축) 과목×챕터별 정답률 — 학생 화면과 동일 집계 */
   childChapterStats: (childId: string) =>
     client.get<any>(`/parents/me/children/${childId}/chapter-stats`).then((r) => r.data),
+
+  /** 자녀 연습장 필기 목록(과목별) — 재생은 detail */
+  childScratch: (childId: string, subject?: string) =>
+    client
+      .get<any>(`/parents/me/children/${childId}/scratch`, { params: { subject } })
+      .then((r) => r.data),
+  /** 자녀 연습장 필기 재생(strokes 포함) */
+  childScratchDetail: (childId: string, recordId: string) =>
+    client
+      .get<any>(`/parents/me/children/${childId}/scratch/${recordId}`)
+      .then((r) => r.data),
   /** 자녀 오늘의 퀴즈(습관 축) 일별 완료·정답률 + 연속일 */
   childHabitStats: (childId: string, weeks = 4) =>
     client

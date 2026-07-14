@@ -9,6 +9,7 @@ import './TeacherStudents.css';
 /** handoff `CatChap 전체학생조회.dc.html` 포팅 — 전체 학생 조회(전교 명단) */
 
 interface TsStudent {
+  id?: string; // 실데이터(API)만 보유 — 필기 재생 링크용. FALLBACK 데모엔 없음
   name: string;
   code?: string; // 실데이터(API)만 보유 — FALLBACK 데모엔 없음
   g: number;
@@ -123,6 +124,7 @@ function mapRoster(res: any): { rows: TsStudent[]; teachers: Record<string, stri
     if (m && grp.teacher) teachers[`${g}-${c}`] = String(grp.teacher);
     (Array.isArray(grp.students) ? grp.students : []).forEach((s: any) => {
       rows.push({
+        id: String(s.id ?? ''),
         name: String(s.name ?? ''),
         code: String(s.code ?? s.student_code ?? ''),
         g,
@@ -166,6 +168,7 @@ export default function TeacherStudents() {
         if (!Array.isArray(rows) || rows.length === 0) return;
         setRoster(
           rows.map((s: any) => ({
+            id: String(s.id ?? ''),
             name: String(s.name ?? ''),
             g: Number(s.g ?? s.grade) || 0,
             c: Number(s.c ?? s.cls ?? s.class_no ?? s.classroom) || 0,
@@ -210,6 +213,7 @@ export default function TeacherStudents() {
         .map((s) => {
           const av = AVATARS[ai++ % AVATARS.length];
           return {
+            id: s.id,
             name: s.name,
             code: s.code,
             initial: [...s.name][0],
@@ -386,6 +390,17 @@ export default function TeacherStudents() {
                             <span className="ts-student-info">
                               <b>{s.name}</b>
                               {s.code ? <span className="ts-student-code">{s.code}</span> : null}
+                              {s.id ? (
+                                <Link
+                                  to={PATHS.teacherStudentScratch(s.id, s.name)}
+                                  style={{
+                                    display: 'inline-flex', alignItems: 'center', gap: 3, marginTop: 2,
+                                    color: '#2E7BFF', fontWeight: 700, fontSize: 12, textDecoration: 'none',
+                                  }}
+                                >
+                                  <i className="ph-fill ph-pencil-line" /> 필기 보기
+                                </Link>
+                              ) : null}
                             </span>
                           </span>
                         </td>

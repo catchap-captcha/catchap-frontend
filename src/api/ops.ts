@@ -442,6 +442,10 @@ export const opsApi = {
   /** 행동 데이터 (아동용 캡차 학습셋) */
   behaviorOverview: () =>
     client.get<BehaviorOverview>('/ops/behavior/overview').then((r) => r.data),
+
+  /** 연습장 필기 익명 집계 — 원본(필적)은 열람 불가, 과목별 획수·거리·시간 통계만 */
+  scratchAggregate: () =>
+    client.get<any>('/ops/scratch/aggregate').then((r) => r.data),
   behaviorRecords: (filter?: BehaviorRecordsFilter) =>
     client
       .get<BehaviorRecordsResponse>('/ops/behavior/records', { params: filter })

@@ -10,6 +10,7 @@ const LINKS = [
   { to: PATHS.OPS_API_KEYS, icon: 'ph-key', label: 'API 발급' },
   { to: PATHS.OPS_INQUIRIES, icon: 'ph-chat-circle-dots', label: '문의 관리' },
   { to: PATHS.OPS_BEHAVIOR, icon: 'ph-fingerprint', label: '행동 데이터' },
+  { to: PATHS.OPS_SCRATCH, icon: 'ph-pencil-line', label: '필기 집계' },
   { to: PATHS.OPS_BEHAVIOR_EXPORT, icon: 'ph-export', label: '외부 내보내기' },
   { to: PATHS.OPS_LOGS, icon: 'ph-scroll', label: '감사 로그' },
   { to: PATHS.OPS_AI_MODELS, icon: 'ph-cpu', label: 'AI 모델' },

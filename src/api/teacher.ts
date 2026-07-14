@@ -39,6 +39,17 @@ export const teacherApi = {
   analytics: (period: string, subject?: string) =>
     client.get<any>('/teacher/analytics', { params: { period, subject } }).then((r) => r.data),
 
+  /** 학생 연습장 필기 목록(과목별) — 재생은 detail. 열람은 서버가 감사 기록 */
+  studentScratch: (studentId: string, subject?: string) =>
+    client
+      .get<any>(`/teacher/students/${studentId}/scratch`, { params: { subject } })
+      .then((r) => r.data),
+  /** 학생 연습장 필기 재생(strokes 포함) — 열람 감사 기록됨 */
+  studentScratchDetail: (studentId: string, recordId: string) =>
+    client
+      .get<any>(`/teacher/students/${studentId}/scratch/${recordId}`)
+      .then((r) => r.data),
+
   /** 가정안내: 보호자 메시지 */
   familyMessages: () => client.get<any>('/teacher/family-messages').then((r) => r.data),
   sendFamilyMessage: (studentIds: string[], message: string) =>

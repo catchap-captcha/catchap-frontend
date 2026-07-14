@@ -41,6 +41,9 @@ export const PATHS = {
   // 학부모 — handoff: CatChap 학부모 외
   PARENT_HOME: '/parent/home', // ?child=
   PARENT_REPORTS: '/parent/reports',
+  PARENT_CHILD_SCRATCH: '/parent/children/:childId/scratch', // 자녀 필기 재생
+  parentChildScratch: (childId: string, name?: string) =>
+    `/parent/children/${childId}/scratch${name ? `?name=${encodeURIComponent(name)}` : ''}`,
   PARENT_COUNSEL_AI: '/parent/counsel-ai',
   PARENT_NOTIFICATIONS: '/parent/notifications',
   PARENT_MYPAGE: '/parent/mypage',
@@ -49,6 +52,9 @@ export const PATHS = {
   TEACHER_HOME: '/teacher/home',
   TEACHER_CLASS: '/teacher/class',
   TEACHER_STUDENTS: '/teacher/students',
+  TEACHER_STUDENT_SCRATCH: '/teacher/students/:studentId/scratch', // 학생 필기 재생
+  teacherStudentScratch: (studentId: string, name?: string) =>
+    `/teacher/students/${studentId}/scratch${name ? `?name=${encodeURIComponent(name)}` : ''}`,
   TEACHER_ANALYTICS: '/teacher/analytics',
   TEACHER_FAMILY_NOTICE: '/teacher/family-notice',
   TEACHER_MYPAGE: '/teacher/mypage',
@@ -74,6 +80,7 @@ export const PATHS = {
   OPS_INQUIRIES: '/ops/inquiries',
   OPS_BEHAVIOR: '/ops/behavior',
   OPS_BEHAVIOR_EXPORT: '/ops/behavior/export', // 외부 업체 제공용 익명 내보내기
+  OPS_SCRATCH: '/ops/scratch', // 연습장 필기 익명 집계(원본 미열람)
   OPS_LOGS: '/ops/logs',
   OPS_OPERATORS: '/ops/operators', // 운영자 계정 관리
   OPS_SYSTEM: '/ops/system', // 시스템 상태 (실측 헬스체크)

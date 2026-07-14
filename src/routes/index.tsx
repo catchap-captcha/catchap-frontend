@@ -39,6 +39,7 @@ const StudentSettings = lazy(() => import('../pages/student/StudentSettings'));
 // 학부모
 const ParentHome = lazy(() => import('../pages/parent/ParentHome'));
 const ParentReports = lazy(() => import('../pages/parent/ParentReports'));
+const ParentScratch = lazy(() => import('../pages/parent/ParentScratch'));
 const ParentCounselAi = lazy(() => import('../pages/parent/ParentCounselAi'));
 const ParentNotifications = lazy(() => import('../pages/parent/ParentNotifications'));
 const ParentMyPage = lazy(() => import('../pages/parent/ParentMyPage'));
@@ -47,6 +48,7 @@ const ParentMyPage = lazy(() => import('../pages/parent/ParentMyPage'));
 const TeacherHome = lazy(() => import('../pages/teacher/TeacherHome'));
 const TeacherClass = lazy(() => import('../pages/teacher/TeacherClass'));
 const TeacherStudents = lazy(() => import('../pages/teacher/TeacherStudents'));
+const TeacherScratch = lazy(() => import('../pages/teacher/TeacherScratch'));
 const TeacherAnalytics = lazy(() => import('../pages/teacher/TeacherAnalytics'));
 const FamilyNotice = lazy(() => import('../pages/teacher/FamilyNotice'));
 const TeacherMyPage = lazy(() => import('../pages/teacher/TeacherMyPage'));
@@ -73,6 +75,7 @@ const OpsApiKeys = lazy(() => import('../pages/ops/OpsApiKeys'));
 const OpsInquiries = lazy(() => import('../pages/ops/OpsInquiries'));
 const OpsBehavior = lazy(() => import('../pages/ops/OpsBehavior'));
 const OpsBehaviorExport = lazy(() => import('../pages/ops/OpsBehaviorExport'));
+const OpsScratch = lazy(() => import('../pages/ops/OpsScratch'));
 const OpsAuditLog = lazy(() => import('../pages/ops/OpsAuditLog'));
 const OpsSystem = lazy(() => import('../pages/ops/OpsSystem'));
 const OpsAiModels = lazy(() => import('../pages/ops/OpsAiModels'));
@@ -122,6 +125,7 @@ export default function AppRoutes() {
         <Route element={<ProtectedRoute roles={['parent']} />}>
           <Route path={PATHS.PARENT_HOME} element={<ParentHome />} />
           <Route path={PATHS.PARENT_REPORTS} element={<ParentReports />} />
+          <Route path={PATHS.PARENT_CHILD_SCRATCH} element={<ParentScratch />} />
           <Route path={PATHS.PARENT_COUNSEL_AI} element={<ParentCounselAi />} />
           <Route path={PATHS.PARENT_NOTIFICATIONS} element={<ParentNotifications />} />
           <Route path={PATHS.PARENT_MYPAGE} element={<ParentMyPage />} />
@@ -132,6 +136,7 @@ export default function AppRoutes() {
           <Route path={PATHS.TEACHER_HOME} element={<TeacherHome />} />
           <Route path={PATHS.TEACHER_CLASS} element={<TeacherClass />} />
           <Route path={PATHS.TEACHER_STUDENTS} element={<TeacherStudents />} />
+          <Route path={PATHS.TEACHER_STUDENT_SCRATCH} element={<TeacherScratch />} />
           <Route path={PATHS.TEACHER_ANALYTICS} element={<TeacherAnalytics />} />
           <Route path={PATHS.TEACHER_FAMILY_NOTICE} element={<FamilyNotice />} />
           <Route path={PATHS.TEACHER_MYPAGE} element={<TeacherMyPage />} />
@@ -170,6 +175,7 @@ export default function AppRoutes() {
           <Route path={PATHS.OPS_INQUIRIES} element={<OpsInquiries />} />
           <Route path={PATHS.OPS_BEHAVIOR} element={<OpsBehavior />} />
           <Route path={PATHS.OPS_BEHAVIOR_EXPORT} element={<OpsBehaviorExport />} />
+          <Route path={PATHS.OPS_SCRATCH} element={<OpsScratch />} />
           <Route path={PATHS.OPS_LOGS} element={<OpsAuditLog />} />
           <Route path={PATHS.OPS_SYSTEM} element={<OpsSystem />} />
           <Route path={PATHS.OPS_AI_MODELS} element={<OpsAiModels />} />
