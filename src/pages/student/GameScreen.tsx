@@ -165,10 +165,15 @@ export default function GameScreen() {
   // 1~5만 인정 — 범위 밖(stage=99 등)은 무시해 진행바(총문항 계산)가 음수로 새지 않게
   const stage =
     Number.isInteger(stageParam) && stageParam >= 1 && stageParam <= 5 ? stageParam : undefined;
-  const EDU_TOTAL = chapter ? 2 : 5; // 위젯 마운트 1회 세션: 챕터 한 단계=2문항, 오늘의퀴즈=5문항
-  const CHAPTER_STAGES = 5; // 챕터 = 5단계 — 단계 완료 시 끊지 않고 다음 단계로 이어 간다
+  // 전체학습 = 문제은행(bank) 무한 모드(사용자 결정 0714): 주차(chapter)는 목차로 유지하되
+  // 그 안에서 안 푼>틀린>푼 우선으로 '단계 없이' 무한 출제 — 위젯이 세션 총량 없이 계속
+  // '다음 문제'를 낸다(2문항마다 '결과 보기'로 끊기던 문제 해소). 종료는 '그만하기'뿐.
+  const bankMode = pBank;
+  const infinite = bankMode; // 세션 총량 없음(무한)
+  const EDU_TOTAL = chapter && !bankMode ? 2 : 5; // 챕터 단계=2문항, 오늘의퀴즈=5문항(bank는 미사용)
+  const CHAPTER_STAGES = 5; // (구)챕터 5단계 — bank 모드에선 안 씀
   // 챕터 연속 진행: URL의 stage는 시작 단계(없으면 1단계부터), 이후 단계는 상태로 전진(위젯 재마운트)
-  const startStage = chapter ? (stage ?? 1) : stage;
+  const startStage = chapter && !bankMode ? (stage ?? 1) : stage;
   const [curStage, setCurStage] = useState<number | undefined>(startStage);
 
   /* 오늘의퀴즈 이어하기 — 서버는 오늘 푼 수를 이미 세지만(5번째에 done 승격) 화면 카운터가
@@ -279,6 +284,7 @@ export default function GameScreen() {
           sess: {
             subject: key,
             chapter: chapter ?? null,
+            bank: bankMode, // 전체학습 무한 문제은행 — 결과 화면이 단계/완주 대신 '연습 요약'을 보임
             startStage: startStage ?? null,
             lastDoneStage: bag.stagesDone, // 완료한 마지막 단계(0=하나도 못 끝냄)
             finished, // true=끝까지(5단계 or 오늘의퀴즈 세션) 완료, false=그만하기 중도 종료
@@ -496,15 +502,16 @@ export default function GameScreen() {
   /* 위젯 모드: 이 세션에서 푼 문항 수 기준 진행 표시 (풀이 중 문항 = answered+1)
      챕터 모드는 시작 단계~5단계까지 연속 진행이라 총 문항 = 남은 단계 수 × 2 */
   const sessionTotal =
-    chapter && startStage ? (CHAPTER_STAGES - startStage + 1) * 2 : EDU_TOTAL;
-  // 이어하기: 카운터는 '오늘 전체'(skipToday 포함) 기준 — 3/5까지 풀고 새로고침하면 4/5부터
+    chapter && startStage && !bankMode ? (CHAPTER_STAGES - startStage + 1) * 2 : EDU_TOTAL;
+  // 이어하기: 카운터는 '오늘 전체'(skipToday 포함) 기준 — 3/5까지 풀고 새로고침하면 4/5부터.
+  // bank(무한)는 총량이 없으므로 '푼 문제 수'만 센다.
   const curNo = EDU_SITE_KEY
-    ? Math.min(skipToday + widgetStats.answered + 1, sessionTotal)
+    ? (infinite ? widgetStats.answered + 1 : Math.min(skipToday + widgetStats.answered + 1, sessionTotal))
     : s.current;
   const curTotal = EDU_SITE_KEY ? sessionTotal : s.total;
-  const pct = Math.round(
-    ((EDU_SITE_KEY ? skipToday + widgetStats.answered : s.current) / curTotal) * 100,
-  );
+  const pct = infinite
+    ? 0
+    : Math.round(((EDU_SITE_KEY ? skipToday + widgetStats.answered : s.current) / curTotal) * 100);
   const isLast = s.current >= s.total;
 
   const rewardGoal = rewards[s.key]?.goal ?? 5;
@@ -552,15 +559,25 @@ export default function GameScreen() {
             </div>
           </div>
           <div className="gs-progress">
-            <div className="gs-progress-labels">
-              <span>
-                문제 {curNo} / {curTotal}
-              </span>
-              <span className="gs-progress-pct">{pct}%</span>
-            </div>
-            <div className="gs-progress-track">
-              <div className="gs-progress-fill" style={{ width: `${pct}%` }} />
-            </div>
+            {infinite ? (
+              /* 무한 문제은행 — 총량 없이 '푼 문제 수'와 무한 안내만 */
+              <div className="gs-progress-labels">
+                <span>{curNo}번째 문제</span>
+                <span className="gs-progress-pct">∞ 무한 연습</span>
+              </div>
+            ) : (
+              <>
+                <div className="gs-progress-labels">
+                  <span>
+                    문제 {curNo} / {curTotal}
+                  </span>
+                  <span className="gs-progress-pct">{pct}%</span>
+                </div>
+                <div className="gs-progress-track">
+                  <div className="gs-progress-fill" style={{ width: `${pct}%` }} />
+                </div>
+              </>
+            )}
           </div>
           <div className="gs-scorechip">
             <i className="ph-fill ph-star" />
@@ -628,8 +645,15 @@ export default function GameScreen() {
               {day}일차 커리큘럼{isReplay ? ' · 복습(코인 없음)' : ' · 오늘 과제'}
             </div>
           )}
-          {EDU_SITE_KEY && chapter != null && (
-            /* 챕터 연속 진행 표시 — 완료 단계는 채움, 현재 단계는 테두리 강조 */
+          {EDU_SITE_KEY && chapter != null && bankMode && (
+            /* 전체학습(무한 문제은행) — 주차 목차는 유지, 안 푼>틀린>푼 우선 무한 출제 */
+            <div className={`gs-live-daybar${isReplay ? ' gs-live-daybar--replay' : ''}`}>
+              <i className="ph-fill ph-infinity" />
+              {chapter}주차 · 안 푼 문제 먼저 · 무한 연습{isReplay ? ' · 복습' : ''}
+            </div>
+          )}
+          {EDU_SITE_KEY && chapter != null && !bankMode && (
+            /* (구)챕터 5단계 진행 표시 — bank 전환 전 경로 호환 */
             <div className="gs-stagebar">
               <span className="gs-stagebar-label">{chapter}챕터</span>
               {Array.from({ length: CHAPTER_STAGES }, (_, i) => {
@@ -667,7 +691,7 @@ export default function GameScreen() {
             className="gs-mount"
           >
             <span className="gs-mount-tagright">
-              문제 {curNo}/{curTotal}
+              {infinite ? `${curNo}번째 문제` : `문제 ${curNo}/${curTotal}`}
             </span>
             {stageBanner && (
               /* 비방해 전환/축하 토스트 — 위젯 조작을 막지 않는다(pointer-events 없음) */
@@ -694,10 +718,10 @@ export default function GameScreen() {
                 auth={getFreshAccessToken}
                 day={day}
                 chapter={chapter}
-                stage={curStage}
+                stage={bankMode ? undefined : curStage}
                 replay={isReplay}
                 bank={pBank}
-                total={EDU_TOTAL - skipToday}
+                total={infinite ? undefined : EDU_TOTAL - skipToday}
               />
             ) : (
               <div className="gs-mount-body">

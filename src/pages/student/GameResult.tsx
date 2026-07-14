@@ -67,6 +67,7 @@ const CONFETTI = [
 interface SessState {
   subject: string;
   chapter: number | null;
+  bank?: boolean; // 전체학습 무한 문제은행 — 단계/완주 대신 '연습 요약'
   startStage: number | null;
   lastDoneStage: number;
   finished: boolean;
@@ -232,7 +233,8 @@ export default function GameResult() {
       ]
     : Array.from({ length: total }, (_, i) => i + 1 > s.correct);
   const answeredCount = sess ? sess.correct + sess.wrong : total;
-  const isChapter = !!sess?.chapter;
+  const isBank = !!sess?.bank; // 전체학습 무한 문제은행 세션
+  const isChapter = !!sess?.chapter && !isBank; // bank는 5단계 챕터 UI를 쓰지 않는다
 
   // 다시 하기 = 복습 모드(replay=1): 기록은 남되 오늘의퀴즈 상태·코인 중복 반영 없음.
   // 일차 플레이였으면 같은 일차(day)로 다시 들어간다.
@@ -317,18 +319,20 @@ export default function GameResult() {
         {/* HERO */}
         <div className="gr-hero">
           <div className="gr-herochip">
-            <i className="ph-fill ph-confetti" />
-            {sess?.chapter
-              ? `${subjectKey} ${sess.chapter}챕터 ${
-                  sess.finished
-                    ? '완주!'
-                    : sess.lastDoneStage > 0
-                      ? `${sess.lastDoneStage}단계까지`
-                      : '도전'
-                }${sess.replay ? ' · 복습' : ''}`
-              : allDoneToday
-                ? '오늘의 학습 끝!'
-                : `${subjectKey} 완료!`}
+            <i className={isBank ? 'ph-fill ph-infinity' : 'ph-fill ph-confetti'} />
+            {isBank
+              ? `${subjectKey} ${sess?.chapter ?? ''}주차 연습`
+              : isChapter
+                ? `${subjectKey} ${sess?.chapter}챕터 ${
+                    sess?.finished
+                      ? '완주!'
+                      : (sess?.lastDoneStage ?? 0) > 0
+                        ? `${sess?.lastDoneStage}단계까지`
+                        : '도전'
+                  }${sess?.replay ? ' · 복습' : ''}`
+                : allDoneToday
+                  ? '오늘의 학습 끝!'
+                  : `${subjectKey} 완료!`}
           </div>
           <div className="gr-mascotwrap">
             <img src={mascot} alt="마스코트" className="gr-mascotimg" />
@@ -343,20 +347,22 @@ export default function GameResult() {
           )}
           <h1 className="gr-title">{perfInfo.title}</h1>
           <p className="gr-herosub">
-            {sess?.chapter
-              ? sess.finished
-                ? `${sess.chapter}챕터 다섯 단계를 끝까지 해냈어요! 정말 대단해요 🏆`
-                : sess.lastDoneStage > 0
-                  ? `${sess.lastDoneStage}단계까지 완료했어요. 다음에 이어서 하면 돼요!`
-                  : '풀던 단계는 다음에 이어서 할 수 있어요!'
-              : allDoneToday
-                ? `오늘 하루 학습을 다 마쳤어요! 여섯 과목을 모두 끝낸 ${name}, 정말 대단해요 🏆`
-                : perf !== 'none'
-                  ? perfInfo.sub
-                  : `${subjectKey} 학습을 끝냈어요. 오늘도 한 뼘 더 자랐네요!`}
+            {isBank
+              ? `${sess?.chapter ?? ''}주차 문제를 ${answeredCount}개 풀었어요. 안 푼 문제부터 차근차근, 언제든 이어서 연습할 수 있어요!`
+              : isChapter
+                ? sess?.finished
+                  ? `${sess?.chapter}챕터 다섯 단계를 끝까지 해냈어요! 정말 대단해요 🏆`
+                  : (sess?.lastDoneStage ?? 0) > 0
+                    ? `${sess?.lastDoneStage}단계까지 완료했어요. 다음에 이어서 하면 돼요!`
+                    : '풀던 단계는 다음에 이어서 할 수 있어요!'
+                : allDoneToday
+                  ? `오늘 하루 학습을 다 마쳤어요! 여섯 과목을 모두 끝낸 ${name}, 정말 대단해요 🏆`
+                  : perf !== 'none'
+                    ? perfInfo.sub
+                    : `${subjectKey} 학습을 끝냈어요. 오늘도 한 뼘 더 자랐네요!`}
           </p>
-          {sess?.chapter != null && (
-            /* 챕터 5단계 진행 뱃지 — 완료 단계 채움 */
+          {isChapter && (
+            /* 챕터 5단계 진행 뱃지 — 완료 단계 채움 (bank 무한모드는 미표시) */
             <div className="gr-stagebadges">
               {Array.from({ length: 5 }, (_, i) => (
                 <span
@@ -513,8 +519,8 @@ export default function GameResult() {
           </div>
         )}
 
-        {/* 오늘의 퀴즈 결과: 6과목 학습 지도. (챕터 결과에는 표시하지 않는다) */}
-        {!isChapter && (
+        {/* 오늘의 퀴즈 결과: 6과목 학습 지도. (챕터·전체학습 bank 결과에는 표시하지 않는다) */}
+        {!isChapter && !isBank && (
         <div className="gr-mapcard">
           <div className="gr-maphead">
             <div className="gr-maphead-left">
@@ -631,7 +637,22 @@ export default function GameResult() {
         )}
 
         {/* ACTIONS */}
-        {sess?.chapter ? (
+        {isBank ? (
+          /* 전체학습 무한 문제은행 — 같은 주차 계속 풀거나 전체 학습으로 */
+          <div className="gr-actions">
+            <Link
+              to={`${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(subjectKey)}${sess?.chapter ? `&chapter=${sess.chapter}` : ''}&bank=1`}
+              className="gr-btn-secondary"
+            >
+              <i className="ph-fill ph-infinity" />
+              이어서 더 풀기
+            </Link>
+            <Link to={PATHS.STUDENT_ALL_LEARNING} className="gr-btn-primary">
+              <i className="ph-fill ph-arrow-right" />
+              전체 학습으로
+            </Link>
+          </div>
+        ) : isChapter && sess?.chapter ? (
           sess.finished ? (
             /* 5단계 완주: 한 번 더(복습) 또는 다음 학습 */
             <div className="gr-actions">
