@@ -805,21 +805,48 @@ export default function GameScreen() {
             <div className="gs-quitpop-title">여기서 그만할까요?</div>
             <div className="gs-quitpop-msg">
               {widgetStats.answered > 0
-                ? `지금까지 푼 ${widgetStats.answered}문제는 저장했어요. 다음에 또 만나요!`
+                ? `지금까지 푼 ${widgetStats.answered}문제는 저장했어요. 결과를 보고 마칠까요?`
                 : '아직 푼 문제가 없어요. 다음에 또 만나요!'}
             </div>
             <div className="gs-quitpop-btns">
               <button type="button" className="gs-quitpop-stay" onClick={() => setQuitAsk(false)}>
                 계속 풀기
               </button>
+              {widgetStats.answered > 0 ? (
+                /* 그만하기 → 결과 선택: 여기까지 푼 만큼(중도 종료)의 결과 화면으로 이동 */
+                <button
+                  type="button"
+                  className="gs-quitpop-go"
+                  onClick={() => {
+                    setQuitAsk(false);
+                    goResult(false);
+                  }}
+                >
+                  여기까지 결과 보기
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="gs-quitpop-go"
+                  onClick={() => navigate(PATHS.STUDENT_HOME)}
+                >
+                  나가기
+                </button>
+              )}
+            </div>
+            {widgetStats.answered > 0 && (
+              /* 결과 화면 없이 곧장 나가기 — 푼 문제는 이미 문항마다 서버 저장됨 */
               <button
                 type="button"
-                className="gs-quitpop-go"
                 onClick={() => navigate(PATHS.STUDENT_HOME)}
+                style={{
+                  marginTop: 12, background: 'none', border: 'none', color: '#B0A79B',
+                  fontWeight: 700, fontSize: 13, cursor: 'pointer', textDecoration: 'underline',
+                }}
               >
-                나가기
+                결과 없이 그냥 나가기
               </button>
-            </div>
+            )}
           </div>
         </div>
       )}

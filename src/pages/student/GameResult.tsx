@@ -248,8 +248,10 @@ export default function GameResult() {
   // 성적 티어 — 이번에 푼 문항 정답률(pct) 기준으로 멘트·아이콘·색을 바꾼다.
   // (다 맞힌 아이와 다 틀린 아이에게 같은 "참 잘했어요"를 주지 않는다. 단, 저성적도
   //  기죽지 않게 격려 + 복습 유도 톤으로.) 답한 문항이 없으면(직접 진입 등) 중립.
-  const perf: 'perfect' | 'great' | 'good' | 'try' | 'zero' | 'none' =
-    answeredCount === 0 ? 'none'
+  // 세션(방금 실제로 플레이)은 있는데 한 문제도 안 풀고 끝냈으면(그만하기 즉시 종료 등)
+  // 칭찬('none' 폴백=서버 고정 멘트)이 아니라 중립 멘트('empty')를 준다 — 0문항에 "참 잘했어요" 금지.
+  const perf: 'perfect' | 'great' | 'good' | 'try' | 'zero' | 'empty' | 'none' =
+    answeredCount === 0 ? (sess ? 'empty' : 'none')
       : pct === 100 ? 'perfect'
         : pct >= 80 ? 'great'
           : pct >= 50 ? 'good'
@@ -280,6 +282,11 @@ export default function GameResult() {
       title: `괜찮아요, ${name}! 다시 도전해봐요 🐾`, icon: 'ph-fill ph-seal', color: '#FF6DA6', soft: '#FFE3EF',
       ribbon: '다시 해볼까?', sub: '이번엔 어려웠나 봐요. 실수는 배우는 과정이에요!',
       ai: '이번엔 어려웠나 봐요. 실수는 배우는 과정이에요! 해설을 보고 다시 풀면 꼭 늘어요. 화이팅! 🌱',
+    },
+    empty: {
+      title: `다음에 또 만나요, ${name}! 🐾`, icon: 'ph-fill ph-hand-waving', color: s.solid, soft: s.soft,
+      ribbon: '', sub: '아직 푼 문제가 없어요. 다음엔 한 문제라도 함께 풀어봐요!',
+      ai: '이번엔 문제를 풀기 전에 마쳤네요. 괜찮아요! 다음에 한 문제씩 천천히 풀어봐요. 🐾',
     },
     none: {
       title: `수고했어요, ${name}! 🎉`, icon: 'ph-fill ph-trophy', color: s.solid, soft: s.soft,
