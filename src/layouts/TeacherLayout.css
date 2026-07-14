@@ -181,3 +181,54 @@ a.tl-prof:hover {
   background: #8b6bff;
   border-radius: 20px;
 }
+
+/* ── 프로필 hover 드롭다운(로그아웃) — 사이드바 카드 아래로 펼침 ── */
+.tl-profwrap {
+  position: relative;
+}
+.tl-dropdown {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 6px);
+  background: #ffffff;
+  border: 1.5px solid #e6e0f5;
+  border-radius: 12px;
+  box-shadow: 0 14px 30px -12px rgba(60, 40, 110, 0.25);
+  padding: 6px;
+  display: none;
+  z-index: 70;
+}
+.tl-dropdown::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: 0;
+  right: 0;
+  height: 8px;
+}
+.tl-profwrap-open .tl-dropdown {
+  display: flex;
+}
+.tl-dropitem {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  background: none;
+  border-radius: 9px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  color: #e0475e;
+  cursor: pointer;
+  text-align: left;
+}
+.tl-dropitem i {
+  font-size: 17px;
+}
+.tl-dropitem:hover {
+  background: #fdf0f2;
+}

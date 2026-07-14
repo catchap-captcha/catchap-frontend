@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { PATHS } from '../routes/paths';
 import { useAuth } from '../hooks/useAuth';
 import { orgApi } from '../api/org';
@@ -93,7 +93,17 @@ export default function OrgLayout({
   orgNameOverride,
   children,
 }: OrgLayoutProps) {
-  const { me } = useAuth();
+  const { me, logout } = useAuth();
+  const navigate = useNavigate();
+  // 프로필 hover 드롭다운 — 로그아웃(사용자 결정 0714)
+  const [profileOpen, setProfileOpen] = useState(false);
+  const doLogout = async () => {
+    try {
+      await logout();
+    } finally {
+      navigate(PATHS.LOGIN);
+    }
+  };
   const orgId = me?.organization_id ?? null;
   // 프로필은 me fallback 원본 이름(햇살초등학교)
   const orgName = orgNameOverride ?? (me?.organization_name || '햇살초등학교');
@@ -148,31 +158,43 @@ export default function OrgLayout({
             <div className="ol-logoSub">기관 콘솔</div>
           </div>
         </Link>
-        {isGradeHead ? (
-          // 학년부장: 기관 마이페이지(교장 전용) 링크 대신 비링크 카드
-          <div className="ol-profile">
-            <span className="ol-profileIcon">
-              <i className="ph-fill ph-user-gear" />
-            </span>
-            <div className="ol-profileText">
-              <div className="ol-profileName">{me?.name || orgName}</div>
-              <div className="ol-profileRole">{roleLabel}</div>
+        {/* 프로필 — 클릭은 마이페이지(교장), hover 시 아래로 로그아웃 드롭다운(사용자 결정 0714) */}
+        <div
+          className={'ol-profilewrap' + (profileOpen ? ' ol-profilewrap-open' : '')}
+          onMouseEnter={() => setProfileOpen(true)}
+          onMouseLeave={() => setProfileOpen(false)}
+        >
+          {isGradeHead ? (
+            // 학년부장: 기관 마이페이지(교장 전용) 링크 대신 비링크 카드
+            <div className="ol-profile">
+              <span className="ol-profileIcon">
+                <i className="ph-fill ph-user-gear" />
+              </span>
+              <div className="ol-profileText">
+                <div className="ol-profileName">{me?.name || orgName}</div>
+                <div className="ol-profileRole">{roleLabel}</div>
+              </div>
             </div>
+          ) : (
+            <Link
+              to={PATHS.ORG_MYPAGE}
+              className={profileHighlight ? 'ol-profile ol-profileOn' : 'ol-profile'}
+            >
+              <span className="ol-profileIcon">
+                <i className="ph-fill ph-buildings" />
+              </span>
+              <div className="ol-profileText">
+                <div className="ol-profileName">{orgName}</div>
+                <div className="ol-profileRole">{roleLabel}</div>
+              </div>
+            </Link>
+          )}
+          <div className="ol-dropdown" role="menu">
+            <button type="button" className="ol-dropitem" role="menuitem" onClick={doLogout}>
+              <i className="ph-fill ph-sign-out" /> 로그아웃
+            </button>
           </div>
-        ) : (
-          <Link
-            to={PATHS.ORG_MYPAGE}
-            className={profileHighlight ? 'ol-profile ol-profileOn' : 'ol-profile'}
-          >
-            <span className="ol-profileIcon">
-              <i className="ph-fill ph-buildings" />
-            </span>
-            <div className="ol-profileText">
-              <div className="ol-profileName">{orgName}</div>
-              <div className="ol-profileRole">{roleLabel}</div>
-            </div>
-          </Link>
-        )}
+        </div>
         {menuItems.map((m) => (
           <Link
             key={m.key}

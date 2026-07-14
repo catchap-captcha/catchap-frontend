@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { PATHS } from '../routes/paths';
 import { useAuth } from '../hooks/useAuth';
 import { teacherApi } from '../api/teacher';
@@ -44,7 +44,8 @@ export default function TeacherLayout({
   profileSub,
   bottomCard,
 }: TeacherLayoutProps) {
-  const { me } = useAuth();
+  const { me, logout } = useAuth();
+  const navigate = useNavigate();
   const { pathname } = useLocation();
   const [homeroom, setHomeroom] = useState<string | null>(cachedHomeroom);
 
@@ -71,6 +72,16 @@ export default function TeacherLayout({
   const sub = profileSub || homeroom || '1-2반 담임';
   const onMyPage = pathname === PATHS.TEACHER_MYPAGE;
 
+  // 프로필 hover 드롭다운 — 로그아웃(클릭은 원래대로 마이페이지 이동, 사용자 결정 0714)
+  const [profileOpen, setProfileOpen] = useState(false);
+  const doLogout = async () => {
+    try {
+      await logout();
+    } finally {
+      navigate(PATHS.LOGIN);
+    }
+  };
+
   return (
     <div className="tl-root">
       <aside className="tl-side">
@@ -81,23 +92,35 @@ export default function TeacherLayout({
             <div className="tl-logo-sub">선생님 콘솔</div>
           </div>
         </Link>
-        {onMyPage ? (
-          <div className="tl-prof tl-prof-active">
-            <span className="tl-prof-avatar">{name.charAt(0)}</span>
-            <div className="tl-prof-info">
-              <div className="tl-prof-name">{name} 선생님</div>
-              <div className="tl-prof-sub">{sub}</div>
+        {/* 프로필 — 클릭은 마이페이지, hover 시 아래로 로그아웃 드롭다운(사용자 결정 0714) */}
+        <div
+          className={'tl-profwrap' + (profileOpen ? ' tl-profwrap-open' : '')}
+          onMouseEnter={() => setProfileOpen(true)}
+          onMouseLeave={() => setProfileOpen(false)}
+        >
+          {onMyPage ? (
+            <div className="tl-prof tl-prof-active">
+              <span className="tl-prof-avatar">{name.charAt(0)}</span>
+              <div className="tl-prof-info">
+                <div className="tl-prof-name">{name} 선생님</div>
+                <div className="tl-prof-sub">{sub}</div>
+              </div>
             </div>
+          ) : (
+            <Link to={PATHS.TEACHER_MYPAGE} className="tl-prof">
+              <span className="tl-prof-avatar">{name.charAt(0)}</span>
+              <div className="tl-prof-info">
+                <div className="tl-prof-name">{name} 선생님</div>
+                <div className="tl-prof-sub">{sub}</div>
+              </div>
+            </Link>
+          )}
+          <div className="tl-dropdown" role="menu">
+            <button type="button" className="tl-dropitem" role="menuitem" onClick={doLogout}>
+              <i className="ph-fill ph-sign-out" /> 로그아웃
+            </button>
           </div>
-        ) : (
-          <Link to={PATHS.TEACHER_MYPAGE} className="tl-prof">
-            <span className="tl-prof-avatar">{name.charAt(0)}</span>
-            <div className="tl-prof-info">
-              <div className="tl-prof-name">{name} 선생님</div>
-              <div className="tl-prof-sub">{sub}</div>
-            </div>
-          </Link>
-        )}
+        </div>
         {MENU.map((m) => (
           <Link
             key={m.label}
