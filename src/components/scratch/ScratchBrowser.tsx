@@ -17,12 +17,23 @@ export interface ScratchMeta {
   id: string;
   subject: string;
   content_id: string | null;
+  prompt?: string | null; // 문제 원문 미리보기(문제은행에서 되살림)
   stroke_count: number;
   distance_px: number;
   first_write_ms: number;
   draw_ms: number;
   purged: boolean;
   created_at: string | null;
+}
+export interface ScratchQuestion {
+  prompt?: string | null;
+  topic?: string | null;
+  type?: string | null;
+  explain?: string | null;
+  options?: { id: string; text: string }[];
+  answer?: string | string[];
+  answers?: string[];
+  figure?: string | null;
 }
 export interface ScratchListResp {
   subjects: { subject: string; count: number; strokes: number }[];
@@ -31,6 +42,7 @@ export interface ScratchListResp {
 export interface ScratchDetailResp {
   strokes?: ScratchStroke[];
   purged?: boolean;
+  question?: ScratchQuestion | null;
 }
 
 interface Props {
@@ -69,6 +81,7 @@ export default function ScratchBrowser({ title, subtitle, emptyHint, notice, loa
 
   const [selected, setSelected] = useState<ScratchMeta | null>(null);
   const [strokes, setStrokes] = useState<ScratchStroke[] | null>(null);
+  const [question, setQuestion] = useState<ScratchQuestion | null>(null);
   const [detailPurged, setDetailPurged] = useState(false);
   const [detailLoading, setDetailLoading] = useState(false);
 
@@ -93,6 +106,7 @@ export default function ScratchBrowser({ title, subtitle, emptyHint, notice, loa
   const openRecord = (m: ScratchMeta) => {
     setSelected(m);
     setStrokes(null);
+    setQuestion(null);
     setDetailPurged(false);
     if (m.purged) {
       setDetailPurged(true);
@@ -104,6 +118,7 @@ export default function ScratchBrowser({ title, subtitle, emptyHint, notice, loa
       .then((d: any) => {
         setDetailPurged(!!d?.purged);
         setStrokes(Array.isArray(d?.strokes) ? d.strokes : []);
+        setQuestion(d?.question ?? null);
       })
       .catch(() => setStrokes([]))
       .finally(() => setDetailLoading(false));
@@ -157,11 +172,11 @@ export default function ScratchBrowser({ title, subtitle, emptyHint, notice, loa
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
               <span style={badgeStyle(colorOf(selected.subject))}>{selected.subject}</span>
-              <div>
+              <div style={{ minWidth: 0 }}>
                 <div style={{ fontWeight: 800, color: '#3A342C', fontSize: 15 }}>
-                  {selected.content_id ? `문항 ${selected.content_id}` : '연습장 필기'}
+                  {selected.prompt || '연습장 필기'}
                 </div>
                 <div style={{ color: '#B0A79B', fontSize: 12 }}>{fmtDate(selected.created_at)}</div>
               </div>
@@ -175,6 +190,63 @@ export default function ScratchBrowser({ title, subtitle, emptyHint, notice, loa
               <i className="ph-bold ph-x" />
             </button>
           </div>
+
+          {/* 문제 — 필기를 문제와 나란히 보기 위함(문제은행에서 되살림) */}
+          {question && (question.prompt || (question.options && question.options.length > 0)) && (
+            <div
+              style={{
+                background: '#F7FAFF', border: '1px solid #E1ECFF', borderRadius: 12, padding: 14, marginBottom: 12,
+              }}
+            >
+              <div style={{ fontSize: 12, color: '#2E7BFF', fontWeight: 800, marginBottom: 6 }}>
+                <i className="ph-fill ph-question" style={{ marginRight: 4 }} />
+                이 문제를 풀며 쓴 필기예요
+                {question.topic ? <span style={{ color: '#8A8175', fontWeight: 700 }}> · {question.topic}</span> : null}
+              </div>
+              {question.prompt && (
+                <div style={{ fontWeight: 800, color: '#2A2A2A', fontSize: 15, lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>
+                  {question.prompt}
+                </div>
+              )}
+              {Array.isArray(question.options) && question.options.length > 0 && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 10 }}>
+                  {question.options.map((o) => {
+                    const correct = o.id === question.answer;
+                    return (
+                      <span
+                        key={o.id}
+                        style={{
+                          display: 'inline-flex', alignItems: 'center', padding: '6px 12px', borderRadius: 999,
+                          border: `2px solid ${correct ? '#17B08C' : '#E4DCD0'}`,
+                          background: correct ? '#E7F8F1' : '#fff',
+                          color: correct ? '#12876C' : '#5A5248', fontWeight: 700, fontSize: 13,
+                        }}
+                      >
+                        {correct && <i className="ph-fill ph-check-circle" style={{ marginRight: 4 }} />}
+                        {o.text}
+                      </span>
+                    );
+                  })}
+                </div>
+              )}
+              {Array.isArray(question.answers) && question.answers.length > 0 && (
+                <div style={{ marginTop: 8, color: '#12876C', fontWeight: 800, fontSize: 13 }}>
+                  <i className="ph-fill ph-check-circle" style={{ marginRight: 4 }} />
+                  정답: {question.answers.join(', ')}
+                </div>
+              )}
+              {question.explain && (
+                <div
+                  style={{
+                    marginTop: 10, fontSize: 13, color: '#6B5E48', background: '#FFF8EE',
+                    border: '1px solid #F3E4CC', borderRadius: 8, padding: '8px 10px', lineHeight: 1.5,
+                  }}
+                >
+                  🐾 {question.explain}
+                </div>
+              )}
+            </div>
+          )}
 
           {detailLoading ? (
             <div style={{ height: 260, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#B0A79B' }}>
@@ -225,8 +297,13 @@ export default function ScratchBrowser({ title, subtitle, emptyHint, notice, loa
             >
               <span style={badgeStyle(colorOf(m.subject))}>{m.subject}</span>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontWeight: 800, color: '#3A342C', fontSize: 14 }}>
-                  {m.content_id ? `문항 ${m.content_id}` : '연습장 필기'}
+                <div
+                  style={{
+                    fontWeight: 800, color: '#3A342C', fontSize: 14,
+                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                  }}
+                >
+                  {m.prompt || '연습장 필기'}
                   {m.purged && (
                     <span style={{ marginLeft: 8, fontSize: 11, color: '#B0A79B', fontWeight: 700 }}>
                       <i className="ph-fill ph-eraser" /> 원본 파기됨

@@ -574,6 +574,13 @@ export default function TeacherClass() {
                 맞춤 문제 배정 (준비 중)
               </button>
               <div className="tc-detailActions">
+                <Link
+                  to={PATHS.teacherStudentScratch(sel.id, sel.name)}
+                  className="tc-editBtn"
+                  style={{ textDecoration: 'none' }}
+                >
+                  <i className="ph-fill ph-pencil-line" />필기 보기
+                </Link>
                 <button onClick={() => openEdit()} className="tc-editBtn">
                   <i className="ph-fill ph-pencil-simple" />정보 수정
                 </button>
