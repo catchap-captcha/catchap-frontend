@@ -209,6 +209,9 @@ export default function OpsInquiries() {
                         <div className="op-inq-answer-h">
                           <i className="ph-fill ph-paper-plane-tilt" />
                           {q.replies.length > 1 ? `답변 #${idx + 1}` : '보낸 답변'} · {fmt(rep.created_at)}
+                          {rep.answered_by_name && (
+                            <span className="op-inq-by"> · {rep.answered_by_name}</span>
+                          )}
                           {rep.email_status === 'dry_run' && (
                             <span className="op-inq-tag">메일 미발송(SMTP 미설정)</span>
                           )}

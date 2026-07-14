@@ -150,6 +150,8 @@ export interface OpsInquiryReply {
   id: string;
   body: string;
   answered_by: string | null;
+  answered_by_name?: string | null; // 답변 운영자 표시명(백엔드 해석) — 문의 화면 노출용
+
   email_status: string; // sent | dry_run | failed
   created_at: string | null;
 }
