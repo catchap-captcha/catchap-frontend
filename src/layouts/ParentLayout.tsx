@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { PATHS } from '../routes/paths';
 import { useAuth } from '../hooks/useAuth';
 import mascot from '../assets/characters/catchap-logo.png';
@@ -31,10 +31,20 @@ interface ParentLayoutProps {
 }
 
 export default function ParentLayout({ bell, className, children }: ParentLayoutProps) {
-  const { me } = useAuth();
+  const { me, logout } = useAuth();
   const { pathname } = useLocation();
+  const navigate = useNavigate();
   const name = me?.name || '김서연';
   const [menuOpen, setMenuOpen] = useState(false); // 모바일 햄버거 메뉴 열림 상태
+  // 프로필 hover 드롭다운 — 로그아웃만(클릭은 원래대로 마이페이지 이동, 사용자 결정 0714)
+  const [profileOpen, setProfileOpen] = useState(false);
+  const doLogout = async () => {
+    try {
+      await logout();
+    } finally {
+      navigate(PATHS.LOGIN);
+    }
+  };
 
   const menu = [
     { label: '주간 요약', to: PATHS.PARENT_HOME },
@@ -78,18 +88,30 @@ export default function ParentLayout({ bell, className, children }: ParentLayout
           </button>
           <div className="pl-right">
             {bell}
-            <Link
-              to={PATHS.PARENT_MYPAGE}
-              title="마이페이지"
-              className={
-                'pl-profile' + (pathname === PATHS.PARENT_MYPAGE ? ' pl-profile-active' : '')
-              }
+            {/* 프로필 — 클릭은 마이페이지, hover 시 아래로 로그아웃 드롭다운 */}
+            <div
+              className={'pl-profilewrap' + (profileOpen ? ' pl-profilewrap-open' : '')}
+              onMouseEnter={() => setProfileOpen(true)}
+              onMouseLeave={() => setProfileOpen(false)}
             >
-              <div className="pl-profile-avatar">
-                <i className="ph-fill ph-user" />
+              <Link
+                to={PATHS.PARENT_MYPAGE}
+                title="마이페이지"
+                className={
+                  'pl-profile' + (pathname === PATHS.PARENT_MYPAGE ? ' pl-profile-active' : '')
+                }
+              >
+                <div className="pl-profile-avatar">
+                  <i className="ph-fill ph-user" />
+                </div>
+                <span className="pl-profile-name">{name} 학부모</span>
+              </Link>
+              <div className="pl-dropdown" role="menu">
+                <button type="button" className="pl-dropitem" role="menuitem" onClick={doLogout}>
+                  <i className="ph-fill ph-sign-out" /> 로그아웃
+                </button>
               </div>
-              <span className="pl-profile-name">{name} 학부모</span>
-            </Link>
+            </div>
           </div>
         </div>
       </div>

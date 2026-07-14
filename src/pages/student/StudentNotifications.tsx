@@ -1,13 +1,13 @@
 import { useEffect, useState, type CSSProperties } from 'react';
 import { Link } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
-import { useAuth } from '../../hooks/useAuth';
 import { useStudentSettings } from '../../stores/studentSettingsStore';
 import { notifyNotificationsUpdated } from '../../hooks/useUnreadNotifications';
 import { notificationApi, type Notification } from '../../api/notifications';
 import { kstDateString, parseServerDate } from '../../utils/format';
 import mascot from '../../assets/characters/catchap-logo.png';
 import './StudentNotifications.css';
+import { StudentNav } from '../../layouts/StudentLayout';
 
 /**
  * handoff `CatChap 알림.dc.html` 포팅.
@@ -114,7 +114,6 @@ function toItem(n: Notification): NtItem {
 }
 
 export default function StudentNotifications() {
-  const { me } = useAuth();
   const { settings } = useStudentSettings();
   const [today, setToday] = useState<NtItem[]>(FALLBACK_TODAY);
   const [earlier, setEarlier] = useState<NtItem[]>(FALLBACK_EARLIER);
@@ -131,7 +130,6 @@ export default function StudentNotifications() {
     return true;
   };
 
-  const name = (me?.name ?? '하은').trim() || '하은';
 
   useEffect(() => {
     notificationApi
@@ -216,47 +214,8 @@ export default function StudentNotifications() {
   return (
     <div className="nt-root">
       {/* NAV — 원본 알림 화면 NAV 그대로(벨 활성 상태, 이니셜 아바타) */}
-      <div className="nt-navbar">
-        <div className="nt-navinner">
-          <Link to={PATHS.STUDENT_HOME} className="nt-logo">
-            <img src={mascot} alt="CatChap" className="nt-logoimg" />
-            <div className="nt-logotext">
-              <span className="nt-logotitle">CatChap</span>
-              <span className="nt-logosub">놀면서 배우는 캡챠 학습</span>
-            </div>
-          </Link>
-          <nav className="nt-menu">
-            <Link to={PATHS.STUDENT_HOME} className="nt-navlink">
-              홈
-            </Link>
-            <Link to={PATHS.STUDENT_ALL_LEARNING} className="nt-navlink">
-              전체 학습
-            </Link>
-            <Link to={PATHS.STUDENT_CONCEPTS} className="nt-navlink">
-              개념 설명
-            </Link>
-            <Link to={PATHS.STUDENT_AI_TEACHER} className="nt-navlink">
-              AI 선생님
-            </Link>
-            <Link to={PATHS.STUDENT_RECORDS} className="nt-navlink">
-              나의 기록
-            </Link>
-          </nav>
-          <div className="nt-navright">
-            <Link to={PATHS.STUDENT_SEARCH} className="nt-searchbtn">
-              <i className="ph-bold ph-magnifying-glass" />
-            </Link>
-            <button className="nt-bellbtn">
-              <i className="ph-fill ph-bell" />
-              {unreadCount > 0 && <span className="nt-belldot" />}
-            </button>
-            <Link to={PATHS.STUDENT_PROFILE} title="마이페이지" className="nt-profile">
-              <div className="nt-avatar">{name.charAt(0)}</div>
-              <span className="nt-profilename">{name}</span>
-            </Link>
-          </div>
-        </div>
-      </div>
+      {/* NAV — 공용 StudentNav로 통일(사용자 결정 0714) */}
+      <StudentNav />
 
       <section className="nt-section">
         {/* header row */}

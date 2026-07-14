@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
-import { useAuth } from '../../hooks/useAuth';
 import { studentApi } from '../../api/students';
 import ScreenTimeReminder from '../../components/motion/ScreenTimeReminder';
 import mascot from '../../assets/characters/catchap-logo.png';
 import './Recommended.css';
+import { StudentNav } from '../../layouts/StudentLayout';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -58,14 +58,6 @@ const CHIPS = [
 const priClass = (p: Priority) =>
   p === '우선' ? 'rc-pri rc-pri-hot' : p === '보통' ? 'rc-pri rc-pri-mid' : 'rc-pri rc-pri-low';
 
-const NAV_LINKS = [
-  { label: '홈', to: PATHS.STUDENT_HOME },
-  { label: '전체 학습', to: PATHS.STUDENT_ALL_LEARNING },
-  { label: '개념 설명', to: PATHS.STUDENT_CONCEPTS },
-  { label: 'AI 선생님', to: PATHS.STUDENT_AI_TEACHER },
-  { label: '나의 기록', to: PATHS.STUDENT_RECORDS },
-];
-
 /** API 실패 시 원본 분석 요약 문구 유지 (**…**는 <b> 렌더 구간) */
 const FALLBACK_SUMMARY =
   '**수학 · 더하기**에서 오답이 가장 많았고, **과학 · 그림 관찰**에서 선택을 자주 바꿨어요. 아래 5문제를 풀면 약한 부분이 쑥 올라가요!';
@@ -76,12 +68,9 @@ function renderBold(text: string) {
 }
 
 export default function Recommended() {
-  const { me } = useAuth();
-  const name = (me?.name ?? '하은').trim() || '하은';
 
   const [filter, setFilter] = useState('all');
   const [recs, setRecs] = useState<RecItem[]>(FALLBACK);
-  const [coins, setCoins] = useState<number>(me?.student?.coins ?? 340);
   const [summary, setSummary] = useState<string>(FALLBACK_SUMMARY);
 
   useEffect(() => {
@@ -90,7 +79,6 @@ export default function Recommended() {
       .recommendations()
       .then((d: any) => {
         if (!mounted) return;
-        if (typeof d?.coins === 'number') setCoins(d.coins); // NAV 냥코인 칩
         if (typeof d?.summary === 'string' && d.summary) setSummary(d.summary);
         const list = Array.isArray(d) ? d : Array.isArray(d?.recommendations) ? d.recommendations : null;
         if (!list) return;
@@ -134,37 +122,8 @@ export default function Recommended() {
   return (
     <div className="rc-root">
       {/* NAV (원본 그대로 — 코인 표시/이니셜 아바타 등 학습 홈 NAV와 구조가 달라 자체 구현) */}
-      <div className="rc-nav">
-        <div className="rc-navinner">
-          <Link to={PATHS.STUDENT_HOME} className="rc-navlogo">
-            <img src={mascot} alt="CatChap" className="rc-navlogoimg" />
-            <div className="rc-navlogotext">
-              <span className="rc-navtitle">CatChap</span>
-              <span className="rc-navsub">놀면서 배우는 캡챠 학습</span>
-            </div>
-          </Link>
-          <nav className="rc-menu">
-            {NAV_LINKS.map((l) => (
-              <Link key={l.label} to={l.to} className="rc-navlink">
-                {l.label}
-              </Link>
-            ))}
-          </nav>
-          <div className="rc-navright">
-            <Link to={PATHS.STUDENT_SEARCH} title="검색" className="rc-navsearch">
-              <i className="ph-bold ph-magnifying-glass" />
-            </Link>
-            <div className="rc-coins">
-              <i className="ph-fill ph-coins" />
-              <span className="rc-coinsnum">{coins}</span>
-            </div>
-            <Link to={PATHS.STUDENT_PROFILE} title="마이페이지" className="rc-profile">
-              <div className="rc-avatar">{name.charAt(0)}</div>
-              <span className="rc-profilename">{name}</span>
-            </Link>
-          </div>
-        </div>
-      </div>
+      {/* NAV — 공용 StudentNav로 통일(사용자 결정 0714) */}
+      <StudentNav />
 
       {/* HERO */}
       <section className="rc-herosec">

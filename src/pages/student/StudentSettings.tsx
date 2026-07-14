@@ -5,6 +5,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { useStudentSettings } from '../../stores/studentSettingsStore';
 import { playSfx } from '../../utils/feedback';
 import './StudentSettings.css';
+import { StudentNav } from '../../layouts/StudentLayout';
 
 /**
  * handoff `CatChap 설정.dc.html` 포팅.
@@ -111,20 +112,8 @@ export default function StudentSettings() {
   return (
     <div className="st-root">
       {/* NAV */}
-      <div className="st-navbar">
-        <div className="st-navinner">
-          <Link to={PATHS.STUDENT_HOME} className="st-back">
-            <i className="ph-bold ph-arrow-left" />
-            홈으로
-          </Link>
-          <div className="st-navtitle">
-            <span className="st-navicon">
-              <i className="ph-fill ph-gear-six" />
-            </span>
-            <span className="st-navname">설정</span>
-          </div>
-        </div>
-      </div>
+      {/* NAV — 공용 StudentNav로 통일(사용자 결정 0714) */}
+      <StudentNav />
 
       <div className="st-main">
         {/* PROFILE */}

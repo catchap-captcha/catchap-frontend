@@ -307,3 +307,55 @@
     padding: 4px;
   }
 }
+
+/* ── 프로필 hover 드롭다운(로그아웃) — 아래로 펼침 ── */
+.pl-profilewrap {
+  position: relative;
+  display: inline-flex;
+}
+.pl-dropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  min-width: 150px;
+  background: #ffffff;
+  border: 1.5px solid #ffe1d6;
+  border-radius: 13px;
+  box-shadow: 0 14px 30px -12px rgba(80, 40, 20, 0.25);
+  padding: 6px;
+  display: none;
+  z-index: 70;
+}
+.pl-dropdown::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: 0;
+  right: 0;
+  height: 10px;
+}
+.pl-profilewrap-open .pl-dropdown {
+  display: flex;
+}
+.pl-dropitem {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  background: none;
+  border-radius: 9px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  color: #e0475e;
+  cursor: pointer;
+  text-align: left;
+}
+.pl-dropitem i {
+  font-size: 17px;
+}
+.pl-dropitem:hover {
+  background: #fff1ee;
+}

@@ -321,3 +321,76 @@
     padding: 4px;
   }
 }
+
+/* ── 프로필 드롭다운(로그아웃) — hover/클릭 공용, 전 페이지 공통 ── */
+.sl-profilewrap {
+  position: relative;
+  display: inline-flex;
+}
+.sl-profile { /* 버튼화 — 기존 링크 스타일 유지 */
+  font-family: inherit;
+  font-size: inherit;
+}
+.sl-profilecaret {
+  font-size: 12px;
+  color: #b0a79b;
+  transition: transform 0.15s;
+}
+.sl-profilewrap-open .sl-profilecaret {
+  transform: rotate(180deg);
+}
+.sl-dropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  min-width: 168px;
+  background: #ffffff;
+  border: 2px solid #ffe7dc;
+  border-radius: 14px;
+  box-shadow: 0 14px 30px -12px rgba(80, 40, 20, 0.25);
+  padding: 6px;
+  display: none;
+  flex-direction: column;
+  z-index: 70;
+}
+/* hover 브리지 — 버튼과 메뉴 사이 8px 틈에서 마우스가 떨어져도 닫히지 않게 */
+.sl-dropdown::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: 0;
+  right: 0;
+  height: 10px;
+}
+.sl-profilewrap-open .sl-dropdown {
+  display: flex;
+}
+.sl-dropitem {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 12px;
+  border: none;
+  background: none;
+  border-radius: 9px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  color: #5a5248;
+  text-decoration: none;
+  cursor: pointer;
+  text-align: left;
+}
+.sl-dropitem i {
+  font-size: 17px;
+  color: #ff8a5b;
+}
+.sl-dropitem:hover {
+  background: #fff3ec;
+}
+.sl-dropitem-danger {
+  color: #e0475e;
+}
+.sl-dropitem-danger i {
+  color: #e0475e;
+}

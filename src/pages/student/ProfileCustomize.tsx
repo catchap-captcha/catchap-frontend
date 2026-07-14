@@ -7,7 +7,7 @@ import { studentApi } from '../../api/students';
 import { RANKING_ENABLED } from '../../config/features';
 import { playSfx } from '../../utils/feedback';
 import ScreenTimeReminder from '../../components/motion/ScreenTimeReminder';
-import { avatarCacheKey } from '../../layouts/StudentLayout';
+import { StudentNav, avatarCacheKey } from '../../layouts/StudentLayout';
 import mascot from '../../assets/characters/catchap-logo.png';
 import './ProfileCustomize.css';
 
@@ -528,43 +528,8 @@ export default function ProfileCustomize() {
   return (
     <div className="pf-root">
       {/* NAV — 원본 NAV(코인 칩 + 라이브 아바타 칩, 알림 없음)라 페이지 자체 구현 */}
-      <div className="pf-nav">
-        <div className="pf-navin">
-          <Link to={PATHS.STUDENT_HOME} className="pf-logo">
-            <img src={mascot} alt="CatChap" className="pf-logoimg" />
-            <div className="pf-logotext">
-              <span className="pf-logotitle">CatChap</span>
-              <span className="pf-logosub">놀면서 배우는 캡챠 학습</span>
-            </div>
-          </Link>
-          <nav className="pf-menu">
-            <Link to={PATHS.STUDENT_HOME} className="pf-navlink">홈</Link>
-            <Link to={PATHS.STUDENT_ALL_LEARNING} className="pf-navlink">전체 학습</Link>
-            <Link to={PATHS.STUDENT_CONCEPTS} className="pf-navlink">개념 설명</Link>
-            <Link to={PATHS.STUDENT_AI_TEACHER} className="pf-navlink">AI 선생님</Link>
-            <Link to={PATHS.STUDENT_RECORDS} className="pf-navlink">나의 기록</Link>
-          </nav>
-          <div className="pf-navright">
-            <Link to={PATHS.STUDENT_SEARCH} title="검색" className="pf-searchbtn">
-              <i className="ph-bold ph-magnifying-glass" />
-            </Link>
-            <div className="pf-coins">
-              <i className="ph-fill ph-coins" />
-              <span className="pf-coinsnum">{coins}</span>
-              <span className="pf-coinslabel">냥코인</span>
-            </div>
-            <div className="pf-navprofile">
-              <div className="pf-navavatar" style={{ background: bgValue }}>
-                <img src={mascot} alt="" />
-                {hasHat && hat && (
-                  <i className={`${hat.icon} pf-navhat`} style={{ color: hat.color }} />
-                )}
-              </div>
-              <span className="pf-navnick">{nick}</span>
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* NAV — 공용 StudentNav로 통일(사용자 결정 0714) */}
+      <StudentNav />
 
       {/* HEADER */}
       <section className="pf-head">

@@ -1,6 +1,4 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { PATHS } from '../../routes/paths';
 import { useAuth } from '../../hooks/useAuth';
 import { studentApi } from '../../api/students';
 import { dateSuffix, downloadCanvasPng } from '../../utils/download';
@@ -9,8 +7,8 @@ import { drawCertificate } from '../../utils/certificate';
 import { RANKING_ENABLED } from '../../config/features';
 import ScreenTimeReminder from '../../components/motion/ScreenTimeReminder';
 import DemoBadge from '../../components/common/DemoBadge';
-import mascot from '../../assets/characters/catchap-logo.png';
 import './Badges.css';
+import { StudentNav } from '../../layouts/StudentLayout';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -208,43 +206,8 @@ export default function Badges() {
   return (
     <div className="bd-root">
       {/* NAV — 원본 배지 NAV(1160px, 알림 버튼 없음)라 학습 홈 공용 NAV와 구조가 달라 자체 구현 */}
-      <div className="bd-navbar">
-        <div className="bd-navinner">
-          <Link to={PATHS.STUDENT_HOME} className="bd-logo">
-            <img src={mascot} alt="CatChap" className="bd-logoimg" />
-            <div className="bd-logotext">
-              <span className="bd-logotitle">CatChap</span>
-              <span className="bd-logosub">놀면서 배우는 캡챠 학습</span>
-            </div>
-          </Link>
-          <nav className="bd-menu">
-            <Link to={PATHS.STUDENT_HOME} className="bd-navlink">
-              홈
-            </Link>
-            <Link to={PATHS.STUDENT_ALL_LEARNING} className="bd-navlink">
-              전체 학습
-            </Link>
-            <Link to={PATHS.STUDENT_CONCEPTS} className="bd-navlink">
-              개념 설명
-            </Link>
-            <Link to={PATHS.STUDENT_AI_TEACHER} className="bd-navlink">
-              AI 선생님
-            </Link>
-            <Link to={PATHS.STUDENT_RECORDS} className="bd-navlink">
-              나의 기록
-            </Link>
-          </nav>
-          <div className="bd-navright">
-            <Link to={PATHS.STUDENT_SEARCH} title="검색" className="bd-iconbtn">
-              <i className="ph-bold ph-magnifying-glass" />
-            </Link>
-            <Link to={PATHS.STUDENT_PROFILE} title="마이페이지" className="bd-profile">
-              <div className="bd-avatar">{name.charAt(0)}</div>
-              <span className="bd-profilename">{name}</span>
-            </Link>
-          </div>
-        </div>
-      </div>
+      {/* NAV — 공용 StudentNav로 통일(사용자 결정 0714) */}
+      <StudentNav />
 
       <div style={{ maxWidth: 1120, margin: '0 auto', padding: '12px 20px 0' }}>
         <DemoBadge show={demo} variant="banner" />

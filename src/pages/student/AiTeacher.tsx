@@ -1,11 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { PATHS } from '../../routes/paths';
 import { useAuth } from '../../hooks/useAuth';
 import { aiChatApi } from '../../api/misc';
 import { speak, stopSpeaking } from '../../utils/feedback';
-import mascot from '../../assets/characters/catchap-logo.png';
 import './AiTeacher.css';
+import { StudentNav } from '../../layouts/StudentLayout';
 
 interface ChatMessage {
   from: 'ai' | 'me';
@@ -129,43 +127,8 @@ export default function AiTeacher() {
   return (
     <div className="at-root">
       {/* NAV — 원본(알림 버튼 없음, 이니셜 아바타)이 학습 홈 NAV와 달라 페이지 자체 구현 */}
-      <div className="at-nav">
-        <div className="at-navinner">
-          <Link to={PATHS.STUDENT_HOME} className="at-logo">
-            <img src={mascot} alt="CatChap" className="at-logoimg" />
-            <div className="at-logotext">
-              <span className="at-logotitle">CatChap</span>
-              <span className="at-logosub">놀면서 배우는 캡챠 학습</span>
-            </div>
-          </Link>
-          <nav className="at-menu">
-            <Link to={PATHS.STUDENT_HOME} className="at-navlink">
-              홈
-            </Link>
-            <Link to={PATHS.STUDENT_ALL_LEARNING} className="at-navlink">
-              전체 학습
-            </Link>
-            <Link to={PATHS.STUDENT_CONCEPTS} className="at-navlink">
-              개념 설명
-            </Link>
-            <a href="#" className="at-navlink at-navlink-active">
-              AI 선생님
-            </a>
-            <Link to={PATHS.STUDENT_RECORDS} className="at-navlink">
-              나의 기록
-            </Link>
-          </nav>
-          <div className="at-navright">
-            <Link to={PATHS.STUDENT_SEARCH} title="검색" className="at-iconbtn">
-              <i className="ph-bold ph-magnifying-glass" />
-            </Link>
-            <Link to={PATHS.STUDENT_PROFILE} title="마이페이지" className="at-profile">
-              <div className="at-avatar">{name.charAt(0)}</div>
-              <span className="at-profilename">{name}</span>
-            </Link>
-          </div>
-        </div>
-      </div>
+      {/* NAV — 공용 StudentNav로 통일(사용자 결정 0714) */}
+      <StudentNav />
 
       {/* BODY */}
       <section className="at-body">

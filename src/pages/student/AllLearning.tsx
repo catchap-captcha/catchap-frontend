@@ -1,12 +1,10 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { Link } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
-import { useAuth } from '../../hooks/useAuth';
-import { useUnreadNotifications } from '../../hooks/useUnreadNotifications';
 import { studentApi } from '../../api/students';
 import ScreenTimeReminder from '../../components/motion/ScreenTimeReminder';
 import ChapterAccuracyChart, { type SubjectStat } from '../../components/student/ChapterAccuracyChart';
-import mascot from '../../assets/characters/catchap-logo.png';
+import { StudentNav } from '../../layouts/StudentLayout';
 import './AllLearning.css';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -137,7 +135,6 @@ function mapChapters(d: any): Partial<AllLearningData> {
 }
 
 export default function AllLearning() {
-  const { me } = useAuth();
   const [filter, setFilter] = useState('all');
   const [data, setData] = useState<AllLearningData>(FALLBACK);
   const [chapStats, setChapStats] = useState<SubjectStat[]>([]);
@@ -166,54 +163,12 @@ export default function AllLearning() {
     };
   }, []);
 
-  const name = (me?.name ?? '하은').trim() || '하은';
-  const unread = useUnreadNotifications();
   const cats = data.cats.filter((c) => filter === 'all' || c.key === filter);
 
   return (
     <div className="al-root">
-      {/* NAV — 원본 전체학습 NAV (우측 요소가 학습 홈 NAV와 달라 페이지 내 구현) */}
-      <div className="al-nav">
-        <div className="al-navinner">
-          <Link to={PATHS.STUDENT_HOME} className="al-logo">
-            <img src={mascot} alt="CatChap" className="al-logoimg" />
-            <div className="al-logotext">
-              <span className="al-logotitle">CatChap</span>
-              <span className="al-logosub">놀면서 배우는 캡챠 학습</span>
-            </div>
-          </Link>
-          <nav className="al-menu">
-            <Link to={PATHS.STUDENT_HOME} className="al-navlink">
-              홈
-            </Link>
-            <a href="#" className="al-navlink-active">
-              전체 학습
-            </a>
-            <Link to={PATHS.STUDENT_CONCEPTS} className="al-navlink">
-              개념 설명
-            </Link>
-            <Link to={PATHS.STUDENT_AI_TEACHER} className="al-navlink">
-              AI 선생님
-            </Link>
-            <Link to={PATHS.STUDENT_RECORDS} className="al-navlink">
-              나의 기록
-            </Link>
-          </nav>
-          <div className="al-navright">
-            <Link to={PATHS.STUDENT_SEARCH} title="검색" className="al-iconbtn">
-              <i className="ph-bold ph-magnifying-glass" />
-            </Link>
-            <Link to={PATHS.STUDENT_NOTIFICATIONS} title="알림" className="al-bellbtn">
-              <i className="ph-fill ph-bell" />
-              {unread > 0 && <span className="al-belldot" />}
-            </Link>
-            <Link to={PATHS.STUDENT_PROFILE} title="마이페이지" className="al-profile">
-              <div className="al-avatar">{name.charAt(0)}</div>
-              <span className="al-profilename">{name}</span>
-            </Link>
-          </div>
-        </div>
-      </div>
+      {/* NAV — 공용 StudentNav로 통일(사용자 결정 0714: 전 페이지 동일 상단바 + 프로필 로그아웃) */}
+      <StudentNav />
 
       {/* HEADER */}
       <section className="al-header-section">

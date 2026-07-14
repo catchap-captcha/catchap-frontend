@@ -5,6 +5,7 @@ import { studentApi } from '../../api/students';
 import ScreenTimeReminder from '../../components/motion/ScreenTimeReminder';
 import mascot from '../../assets/characters/catchap-logo.png';
 import './Concepts.css';
+import { StudentNav } from '../../layouts/StudentLayout';
 
 interface SubjectTheme {
   color: string;
@@ -222,22 +223,8 @@ export default function Concepts() {
   return (
     <div className="cp-root">
       {/* NAV (축소형 — 원본 그대로) */}
-      <div className="cp-nav">
-        <div className="cp-navinner">
-          <Link to={PATHS.STUDENT_HOME} className="cp-back">
-            <i className="ph-bold ph-arrow-left" />
-            뒤로
-          </Link>
-          <Link to={PATHS.STUDENT_HOME} className="cp-navlogo">
-            <img src={mascot} alt="CatChap" className="cp-navlogoimg" />
-            <span className="cp-navlogotitle">CatChap</span>
-          </Link>
-          <div className="cp-navspacer" />
-          <Link to={PATHS.STUDENT_SEARCH} title="검색" className="cp-navsearch">
-            <i className="ph-bold ph-magnifying-glass" />
-          </Link>
-        </div>
-      </div>
+      {/* NAV — 공용 StudentNav로 통일(사용자 결정 0714) */}
+      <StudentNav />
 
       <div className="cp-container">
         {/* HEADER */}

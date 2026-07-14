@@ -1,5 +1,5 @@
 import { useMemo, useState, type CSSProperties, type ReactNode } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { PATHS } from '../routes/paths';
 import { useAuth } from '../hooks/useAuth';
 import { useUnreadNotifications } from '../hooks/useUnreadNotifications';
@@ -60,12 +60,23 @@ export function StudentNav({
   /** 학습 홈 전용: 원본 NAV의 `홈`(href="#" + goHome) 동작 재현 */
   onHomeClick?: () => void;
 }) {
-  const { me } = useAuth();
+  const { me, logout } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   // me 로딩 후 내 계정 키로 다시 읽는다 — 첫 렌더(me 없음)는 기본 아바타.
   const avatar = useMemo<AvatarState>(() => readAvatar(me?.id), [me?.id]);
   const [menuOpen, setMenuOpen] = useState(false); // 모바일 햄버거 메뉴 열림 상태
   const unread = useUnreadNotifications(); // 서버 read_at 기준 — 재로그인해도 유지
+
+  // 프로필 드롭다운 — hover(데스크톱)와 클릭(터치) 모두 지원. 로그아웃을 어디서든 접근 가능하게.
+  const [profileOpen, setProfileOpen] = useState(false);
+  const doLogout = async () => {
+    try {
+      await logout();
+    } finally {
+      navigate(PATHS.LOGIN);
+    }
+  };
 
   const current = active === undefined ? (ROUTE_ACTIVE[location.pathname] ?? null) : active;
   const name = (me?.name ?? '하은').trim() || '하은';
@@ -128,15 +139,28 @@ export function StudentNav({
             <i className="ph-fill ph-bell" />
             {unread > 0 && <span className="sl-belldot" />}
           </Link>
-          <Link to={PATHS.STUDENT_PROFILE} title="마이 페이지" className="sl-profile">
-            <div className="sl-avatar" style={{ background: avatar.bgCss }}>
-              <img src={mascot} alt="" className="sl-avatarimg" />
-              {avatar.hasHat && (
-                <i className={`${avatar.hatIcon} sl-hat`} style={{ color: avatar.hatColor }} />
-              )}
+          {/* 프로필 — 클릭은 원래대로 마이페이지 이동, hover 시 드롭다운으로 로그아웃만 노출
+              (사용자 결정 0714: 드롭다운엔 로그아웃만) */}
+          <div
+            className={`sl-profilewrap${profileOpen ? ' sl-profilewrap-open' : ''}`}
+            onMouseEnter={() => setProfileOpen(true)}
+            onMouseLeave={() => setProfileOpen(false)}
+          >
+            <Link to={PATHS.STUDENT_PROFILE} title="마이 페이지" className="sl-profile">
+              <div className="sl-avatar" style={{ background: avatar.bgCss }}>
+                <img src={mascot} alt="" className="sl-avatarimg" />
+                {avatar.hasHat && (
+                  <i className={`${avatar.hatIcon} sl-hat`} style={{ color: avatar.hatColor }} />
+                )}
+              </div>
+              <span className="sl-profilename">{name}</span>
+            </Link>
+            <div className="sl-dropdown" role="menu">
+              <button type="button" className="sl-dropitem sl-dropitem-danger" role="menuitem" onClick={doLogout}>
+                <i className="ph-fill ph-sign-out" /> 로그아웃
+              </button>
             </div>
-            <span className="sl-profilename">{name}</span>
-          </Link>
+          </div>
         </div>
       </div>
     </div>

@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
-import { useAuth } from '../../hooks/useAuth';
 import { studentApi } from '../../api/students';
 import mascot from '../../assets/characters/catchap-logo.png';
 import './WrongNotes.css';
+import { StudentNav } from '../../layouts/StudentLayout';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -97,7 +97,6 @@ function mapWrongNotes(d: any): {
 }
 
 export default function WrongNotes() {
-  const { me } = useAuth();
   const [items, setItems] = useState<WrongItem[]>(FALLBACK);
   const [pendingCount, setPendingCount] = useState(6);
   const [reviewedCount, setReviewedCount] = useState(14);
@@ -122,7 +121,6 @@ export default function WrongNotes() {
     };
   }, []);
 
-  const name = (me?.name ?? '하은').trim() || '하은';
   const visible = items.filter((i) => filter === 'all' || i.cat === filter);
   // 오답 모아 풀기: 현재 필터 과목(전체면 첫 오답 과목, 없으면 생활)으로 복습 세션 진입
   const solveAllSubject =
@@ -134,43 +132,8 @@ export default function WrongNotes() {
   return (
     <div className="wn-root">
       {/* NAV — 원본 오답노트 NAV(1160px, 알림 버튼 없음)라 학습 홈 공용 NAV와 구조가 달라 자체 구현 */}
-      <div className="wn-navbar">
-        <div className="wn-navinner">
-          <Link to={PATHS.STUDENT_HOME} className="wn-logo">
-            <img src={mascot} alt="CatChap" className="wn-logoimg" />
-            <div className="wn-logotext">
-              <span className="wn-logotitle">CatChap</span>
-              <span className="wn-logosub">놀면서 배우는 캡챠 학습</span>
-            </div>
-          </Link>
-          <nav className="wn-menu">
-            <Link to={PATHS.STUDENT_HOME} className="wn-navlink">
-              홈
-            </Link>
-            <Link to={PATHS.STUDENT_ALL_LEARNING} className="wn-navlink">
-              전체 학습
-            </Link>
-            <Link to={PATHS.STUDENT_CONCEPTS} className="wn-navlink">
-              개념 설명
-            </Link>
-            <Link to={PATHS.STUDENT_AI_TEACHER} className="wn-navlink">
-              AI 선생님
-            </Link>
-            <Link to={PATHS.STUDENT_RECORDS} className="wn-navlink">
-              나의 기록
-            </Link>
-          </nav>
-          <div className="wn-navright">
-            <Link to={PATHS.STUDENT_SEARCH} title="검색" className="wn-iconbtn">
-              <i className="ph-bold ph-magnifying-glass" />
-            </Link>
-            <Link to={PATHS.STUDENT_PROFILE} title="마이페이지" className="wn-profile">
-              <div className="wn-avatar">{name.charAt(0)}</div>
-              <span className="wn-profilename">{name}</span>
-            </Link>
-          </div>
-        </div>
-      </div>
+      {/* NAV — 공용 StudentNav로 통일(사용자 결정 0714) */}
+      <StudentNav />
 
       {/* HEADER */}
       <section className="wn-head">

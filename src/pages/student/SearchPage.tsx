@@ -4,6 +4,7 @@ import { HANDOFF_ROUTE_MAP, PATHS } from '../../routes/paths';
 import { studentApi } from '../../api/students';
 import mascot from '../../assets/characters/catchap-logo.png';
 import './SearchPage.css';
+import { StudentNav } from '../../layouts/StudentLayout';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -223,19 +224,8 @@ export default function SearchPage() {
   return (
     <div className="sp-root">
       {/* NAV — 검색 전용 축약 NAV(닫기)라 학습 홈 NAV와 달라 페이지 자체 구현 */}
-      <div className="sp-nav">
-        <div className="sp-navinner">
-          <Link to={PATHS.STUDENT_HOME} className="sp-logo">
-            <img src={mascot} alt="CatChap" className="sp-logoimg" />
-            <span className="sp-logotitle">CatChap</span>
-          </Link>
-          <div className="sp-spacer" />
-          <Link to={PATHS.STUDENT_HOME} className="sp-close">
-            <i className="ph-bold ph-x" />
-            닫기
-          </Link>
-        </div>
-      </div>
+      {/* NAV — 공용 StudentNav로 통일(사용자 결정 0714) */}
+      <StudentNav />
 
       <div className="sp-container">
         {/* BIG SEARCH FIELD */}

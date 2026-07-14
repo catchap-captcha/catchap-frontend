@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
-import { useAuth } from '../../hooks/useAuth';
 import { studentApi } from '../../api/students';
 import DemoBadge from '../../components/common/DemoBadge';
 import ScreenTimeReminder from '../../components/motion/ScreenTimeReminder';
 import mascot from '../../assets/characters/catchap-logo.png';
 import './DailyQuiz.css';
+import { StudentNav } from '../../layouts/StudentLayout';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -130,8 +130,6 @@ function badge(st: QuizStatus) {
 }
 
 export default function DailyQuiz() {
-  const { me } = useAuth();
-  const name = (me?.name ?? '하은').trim() || '하은';
 
   const [data, setData] = useState<QuizData>(FALLBACK);
   const [demo, setDemo] = useState(false); // API 실패/미데이터 시 FALLBACK을 데모로 명시(#6)
@@ -187,47 +185,8 @@ export default function DailyQuiz() {
   return (
     <div className="dq-root">
       {/* NAV — 원본 오늘의퀴즈 NAV 그대로(학습 홈 NAV와 다른 구조라 자체 구현) */}
-      <div className="dq-nav">
-        <div className="dq-navinner">
-          <Link to={PATHS.STUDENT_HOME} className="dq-logo">
-            <img src={mascot} alt="CatChap" className="dq-logoimg" />
-            <div className="dq-logotext">
-              <span className="dq-logotitle">CatChap</span>
-              <span className="dq-logosub">놀면서 배우는 캡챠 학습</span>
-            </div>
-          </Link>
-          <nav className="dq-menu">
-            <Link to={PATHS.STUDENT_HOME} className="dq-navlink">
-              홈
-            </Link>
-            <Link to={PATHS.STUDENT_ALL_LEARNING} className="dq-navlink">
-              전체 학습
-            </Link>
-            <Link to={PATHS.STUDENT_CONCEPTS} className="dq-navlink">
-              개념 설명
-            </Link>
-            <Link to={PATHS.STUDENT_AI_TEACHER} className="dq-navlink">
-              AI 선생님
-            </Link>
-            <Link to={PATHS.STUDENT_RECORDS} className="dq-navlink">
-              나의 기록
-            </Link>
-          </nav>
-          <div className="dq-navright">
-            <Link to={PATHS.STUDENT_SEARCH} title="검색" className="dq-searchbtn">
-              <i className="ph-bold ph-magnifying-glass" />
-            </Link>
-            <div className="dq-coins">
-              <i className="ph-fill ph-coins" />
-              <span>{data.coins}</span>
-            </div>
-            <Link to={PATHS.STUDENT_PROFILE} title="마이페이지" className="dq-profile">
-              <div className="dq-avatar">{name.charAt(0)}</div>
-              <span className="dq-profilename">{name}</span>
-            </Link>
-          </div>
-        </div>
-      </div>
+      {/* NAV — 공용 StudentNav로 통일(사용자 결정 0714) */}
+      <StudentNav />
 
       <div style={{ maxWidth: 1120, margin: '0 auto', padding: '12px 20px 0' }}>
         <DemoBadge show={demo} variant="banner" />

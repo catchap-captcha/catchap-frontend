@@ -6,6 +6,7 @@ import { useToast } from '../../hooks/useToast';
 import ScreenTimeReminder from '../../components/motion/ScreenTimeReminder';
 import mascot from '../../assets/characters/catchap-logo.png';
 import './ChapterMap.css';
+import { StudentNav } from '../../layouts/StudentLayout';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -218,21 +219,8 @@ export default function ChapterMap() {
   return (
     <div className="cm-root" style={themeVars} data-screen-label="챕터 지도">
       {/* NAV (축소 NAV — 원본 그대로) */}
-      <div className="cm-nav">
-        <div className="cm-navinner">
-          <Link to={PATHS.STUDENT_HOME} className="cm-back">
-            <i className="ph-bold ph-arrow-left" />뒤로
-          </Link>
-          <Link to={PATHS.STUDENT_HOME} className="cm-navlogo">
-            <img src={mascot} alt="CatChap" className="cm-navlogoimg" />
-            <span className="cm-navlogotitle">CatChap</span>
-          </Link>
-          <div className="cm-navspacer" />
-          <Link to={PATHS.STUDENT_SEARCH} title="검색" className="cm-navsearch">
-            <i className="ph-bold ph-magnifying-glass" />
-          </Link>
-        </div>
-      </div>
+      {/* NAV — 공용 StudentNav로 통일(사용자 결정 0714) */}
+      <StudentNav />
 
       <div className="cm-container">
         {/* SUBJECT HEADER */}
