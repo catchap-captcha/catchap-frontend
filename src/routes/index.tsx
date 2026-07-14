@@ -27,6 +27,7 @@ const AllLearning = lazy(() => import('../pages/student/AllLearning'));
 const Concepts = lazy(() => import('../pages/student/Concepts'));
 const MyRecords = lazy(() => import('../pages/student/MyRecords'));
 const WrongNotes = lazy(() => import('../pages/student/WrongNotes'));
+const StudentScratch = lazy(() => import('../pages/student/StudentScratch'));
 const Badges = lazy(() => import('../pages/student/Badges'));
 const ProfileCustomize = lazy(() => import('../pages/student/ProfileCustomize'));
 const Recommended = lazy(() => import('../pages/student/Recommended'));
@@ -107,6 +108,7 @@ export default function AppRoutes() {
           <Route path={PATHS.STUDENT_CONCEPTS} element={<Concepts />} />
           <Route path={PATHS.STUDENT_RECORDS} element={<MyRecords />} />
           <Route path={PATHS.STUDENT_WRONG_NOTES} element={<WrongNotes />} />
+          <Route path={PATHS.STUDENT_SCRATCH} element={<StudentScratch />} />
           <Route path={PATHS.STUDENT_BADGES} element={<Badges />} />
           <Route path={PATHS.STUDENT_PROFILE} element={<ProfileCustomize />} />
           <Route path={PATHS.STUDENT_RECOMMENDED} element={<Recommended />} />

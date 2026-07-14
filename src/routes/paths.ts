@@ -29,6 +29,7 @@ export const PATHS = {
   STUDENT_CONCEPTS: '/student/concepts', // ?tab=
   STUDENT_RECORDS: '/student/records',
   STUDENT_WRONG_NOTES: '/student/wrong-notes',
+  STUDENT_SCRATCH: '/student/scratch', // 연습장 필기 다시보기
   STUDENT_BADGES: '/student/badges',
   STUDENT_PROFILE: '/student/profile',
   STUDENT_RECOMMENDED: '/student/recommended',

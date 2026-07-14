@@ -11,7 +11,7 @@ import './StudentLayout.css';
  * 학생 화면 공통 풀 NAV 레이아웃 — handoff `CatChap 학습 홈.dc.html`의 NAV 원본 그대로.
  * 활성 메뉴는 현재 route 기준(필요 시 `active` prop으로 재정의 — 학습 홈의 스크롤 연동용).
  */
-export type StudentNavKey = 'home' | 'all' | 'concepts' | 'ai' | 'records';
+export type StudentNavKey = 'home' | 'all' | 'concepts' | 'ai' | 'records' | 'scratch';
 
 interface AvatarState {
   bgCss: string;
@@ -48,6 +48,7 @@ const ROUTE_ACTIVE: Record<string, StudentNavKey> = {
   [PATHS.STUDENT_CONCEPTS]: 'concepts',
   [PATHS.STUDENT_AI_TEACHER]: 'ai',
   [PATHS.STUDENT_RECORDS]: 'records',
+  [PATHS.STUDENT_SCRATCH]: 'scratch',
 };
 
 export function StudentNav({
@@ -103,6 +104,9 @@ export function StudentNav({
           </Link>
           <Link to={PATHS.STUDENT_RECORDS} className={cls('records')} onClick={closeMenu}>
             나의 기록
+          </Link>
+          <Link to={PATHS.STUDENT_SCRATCH} className={cls('scratch')} onClick={closeMenu}>
+            필기 다시보기
           </Link>
         </nav>
         <button
