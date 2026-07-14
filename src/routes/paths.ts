@@ -41,9 +41,6 @@ export const PATHS = {
   // 학부모 — handoff: CatChap 학부모 외
   PARENT_HOME: '/parent/home', // ?child=
   PARENT_REPORTS: '/parent/reports',
-  PARENT_CHILD_SCRATCH: '/parent/children/:childId/scratch', // 자녀 필기 재생
-  parentChildScratch: (childId: string, name?: string) =>
-    `/parent/children/${childId}/scratch${name ? `?name=${encodeURIComponent(name)}` : ''}`,
   PARENT_COUNSEL_AI: '/parent/counsel-ai',
   PARENT_NOTIFICATIONS: '/parent/notifications',
   PARENT_MYPAGE: '/parent/mypage',

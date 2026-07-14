@@ -39,7 +39,6 @@ const StudentSettings = lazy(() => import('../pages/student/StudentSettings'));
 // 학부모
 const ParentHome = lazy(() => import('../pages/parent/ParentHome'));
 const ParentReports = lazy(() => import('../pages/parent/ParentReports'));
-const ParentScratch = lazy(() => import('../pages/parent/ParentScratch'));
 const ParentCounselAi = lazy(() => import('../pages/parent/ParentCounselAi'));
 const ParentNotifications = lazy(() => import('../pages/parent/ParentNotifications'));
 const ParentMyPage = lazy(() => import('../pages/parent/ParentMyPage'));
@@ -125,7 +124,6 @@ export default function AppRoutes() {
         <Route element={<ProtectedRoute roles={['parent']} />}>
           <Route path={PATHS.PARENT_HOME} element={<ParentHome />} />
           <Route path={PATHS.PARENT_REPORTS} element={<ParentReports />} />
-          <Route path={PATHS.PARENT_CHILD_SCRATCH} element={<ParentScratch />} />
           <Route path={PATHS.PARENT_COUNSEL_AI} element={<ParentCounselAi />} />
           <Route path={PATHS.PARENT_NOTIFICATIONS} element={<ParentNotifications />} />
           <Route path={PATHS.PARENT_MYPAGE} element={<ParentMyPage />} />

@@ -1,6 +1,4 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { PATHS } from '../../routes/paths';
 import ParentLayout, { ParentBellLink } from '../../layouts/ParentLayout';
 import DemoBadge from '../../components/common/DemoBadge';
 import { parentApi } from '../../api/parents';
@@ -478,16 +476,6 @@ export default function ParentReports() {
                 </button>
               ))}
             </div>
-            {chips && chips.length > 0 && (
-              <Link
-                to={PATHS.parentChildScratch(cur.id, cur.name)}
-                className="prt-dl-btn"
-                style={{ background: '#EDF3FF', color: '#2E7BFF', border: '1.5px solid #C7DCFF', textDecoration: 'none' }}
-              >
-                <i className="ph-fill ph-pencil-line" />
-                필기 보기
-              </Link>
-            )}
             <button onClick={() => download('pdf')} className="prt-dl-btn">
               <i className={toast ? 'ph-fill ph-check' : 'ph-fill ph-file-pdf'} />
               {toast ? '저장됨' : 'PDF로 저장'}

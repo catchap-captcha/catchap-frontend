@@ -5,7 +5,7 @@ import StrokePlayback, { type ScratchStroke } from './StrokePlayback';
 
 /**
  * ScratchBrowser — 연습장 필기 목록 + 과목 필터 + 선택 재생 공용 화면.
- * 학생 본인·교사·학부모가 각자 API만 바꿔 재사용한다(운영자는 원본 미열람 → 사용 안 함).
+ * 학생 본인·교사가 각자 API만 바꿔 재사용한다(운영자=익명 집계만, 학부모=미제공 — 사용자 결정 0714).
  */
 
 const SUBJECT_COLOR: Record<string, string> = {
