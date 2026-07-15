@@ -101,6 +101,10 @@ export interface OpsLectureQuestion {
   source: string; // manual | llm
   status: string; // draft | active
   order_no: number;
+  /** 문제 이미지 서빙 URL(`/api/v1/...` 상대경로 — <img>에는 API_ORIGIN을 붙인다). 없으면 null */
+  prompt_image_url: string | null;
+  /** 보기와 같은 길이 — 이미지 없는 보기는 null. 이미지가 있는 보기는 텍스트를 비울 수 있다(그림 전용 보기) */
+  option_image_urls: (string | null)[];
 }
 
 export interface OpsLectureMaterial {
@@ -216,6 +220,46 @@ export const lectureApi = {
   opsQuestionDelete: (lectureId: string, questionId: string) =>
     client
       .delete<{ ok: boolean }>(`/ops/lectures/${lectureId}/questions/${questionId}`)
+      .then((r) => r.data),
+
+  /** 문항 이미지 첨부(multipart) — slot=prompt는 문제, slot=option은 optionIndex 보기(0부터).
+   *  같은 슬롯에 다시 올리면 교체. png/jpg/jpeg/gif/webp만, 5MB 상한(초과·svg는 서버 400 detail).
+   *  갱신된 문항 행을 돌려주지만, 성공 표기는 호출자가 재조회로 실재 확인 후에만 한다. */
+  attachQuestionImage: (
+    lectureId: string,
+    questionId: string,
+    args: { slot: 'prompt' | 'option'; optionIndex?: number; file: File },
+    onProgress?: (e: AxiosProgressEvent) => void,
+  ) => {
+    const fd = new FormData();
+    fd.append('slot', args.slot);
+    if (args.slot === 'option' && args.optionIndex != null)
+      fd.append('option_index', String(args.optionIndex));
+    fd.append('file', args.file);
+    return client
+      .post<OpsLectureQuestion>(
+        `/ops/lectures/${lectureId}/questions/${questionId}/images`,
+        fd,
+        { onUploadProgress: onProgress },
+      )
+      .then((r) => r.data);
+  },
+
+  /** 문항 이미지 제거 — 텍스트가 빈 보기의 이미지는 서버가 400으로 거부한다(보기가 통째로 비니까) */
+  deleteQuestionImage: (
+    lectureId: string,
+    questionId: string,
+    args: { slot: 'prompt' | 'option'; optionIndex?: number },
+  ) =>
+    client
+      .delete<OpsLectureQuestion>(`/ops/lectures/${lectureId}/questions/${questionId}/images`, {
+        params: {
+          slot: args.slot,
+          ...(args.slot === 'option' && args.optionIndex != null
+            ? { option_index: args.optionIndex }
+            : {}),
+        },
+      })
       .then((r) => r.data),
 
   /** LLM 문항 자동 생성 — 키 미설정이면 503(정직한 에러, stub 생성 없음) */

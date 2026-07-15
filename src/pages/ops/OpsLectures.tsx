@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import {
+  API_ORIGIN,
   errorDetail,
   lectureApi,
   type OpsLecture,
@@ -552,15 +553,37 @@ function LectureFormModal({
 
 /* ================= 확인 문항 모달 ================= */
 interface QForm {
-  id: string | null; // null = 새 문항
+  id: string | null; // null = 새 문항(저장하면 이미지 첨부가 열린다)
   position_sec: string;
   prompt: string;
-  optionsText: string; // 줄바꿈 구분
-  answer_index: string;
+  /* 보기를 줄바꿈 textarea가 아니라 행 배열로 다룬다 — 이미지가 붙은 보기는 텍스트를
+     비울 수 있는데(그림 전용 보기), textarea는 빈 줄을 표현·보존할 수 없고 빈 줄을
+     걸러내면 보기 인덱스가 밀려 서버의 이미지(인덱스 키)와 어긋난다. */
+  options: string[];
+  answer_index: number;
   explain: string;
   status: string;
+  /** 서버 재조회로 확인된 이미지 URL만 담는다(옵티미스틱 반영 금지 — 가짜 성공 방지) */
+  promptImageUrl: string | null;
+  optionImageUrls: (string | null)[];
+  /** 서버와 인덱스가 일치하는 선두 보기 수 — 이 미만의 행만 이미지 첨부/표시가 안전하다.
+      서버는 이미지를 '몇 번째 보기'로 기억한다: 행 추가(끝에 붙음)는 기존 행을 밀지 않지만,
+      행 삭제는 그 뒤 행을 한 칸씩 당겨 저장 전 첨부가 엉뚱한 보기에 붙는다. 시작값은
+      저장된 보기 수(그 밖은 서버에 없어 첨부 시 400), 삭제 시 삭제 지점까지 줄인다. */
+  alignedUpTo: number;
 }
-const EMPTY_Q: QForm = { id: null, position_sec: '0', prompt: '', optionsText: '', answer_index: '0', explain: '', status: 'active' };
+const emptyQ = (): QForm => ({
+  id: null,
+  position_sec: '0',
+  prompt: '',
+  options: ['', ''],
+  answer_index: 0,
+  explain: '',
+  status: 'active',
+  promptImageUrl: null,
+  optionImageUrls: [null, null],
+  alignedUpTo: 0,
+});
 
 function QuestionsModal({
   lec,
@@ -581,6 +604,12 @@ function QuestionsModal({
   const [genN, setGenN] = useState('3');
   const [generating, setGenerating] = useState(false);
   const changedRef = useRef(false);
+  /* 이미지 업로드/삭제 in-flight 슬롯('prompt' | 'opt-{i}') — 동시에 하나만 */
+  const [imgBusy, setImgBusy] = useState<string | null>(null);
+  const [imgProgress, setImgProgress] = useState<number | null>(null);
+  const [imgDragOver, setImgDragOver] = useState(false);
+  const imgInputRef = useRef<HTMLInputElement>(null);
+  const imgTargetRef = useRef<{ slot: 'prompt' | 'option'; optionIndex?: number; key: string } | null>(null);
 
   const load = () => {
     setLoadErr('');
@@ -595,34 +624,39 @@ function QuestionsModal({
   useEffect(load, [lec.id]);
 
   const close = () => {
-    if (saving || generating) return; // 저장/생성 in-flight 중 닫힘 방지 — 목록 카운트 유실 예방
+    if (saving || generating || imgBusy != null) return; // in-flight 중 닫힘 방지 — 목록 카운트 유실 예방
     if (changedRef.current) onChanged(); // 문항 수 변경을 목록에 반영
     onClose();
   };
 
-  const openEdit = (q: OpsLectureQuestion) =>
+  const openEdit = (q: OpsLectureQuestion) => {
+    setErr('');
     setForm({
       id: q.id,
       position_sec: String(q.position_sec),
       prompt: q.prompt ?? '',
-      optionsText: q.options.join('\n'),
-      answer_index: String(q.answer_index),
+      options: [...q.options],
+      answer_index: q.answer_index,
       explain: q.explain ?? '',
       status: q.status,
+      promptImageUrl: q.prompt_image_url ?? null,
+      optionImageUrls: q.options.map((_, i) => q.option_image_urls?.[i] ?? null),
+      alignedUpTo: q.options.length,
     });
+  };
 
   const save = async () => {
     if (!form) return;
-    const options = form.optionsText
-      .split('\n')
-      .map((s) => s.trim())
-      .filter(Boolean);
+    const options = form.options.map((s) => s.trim());
     const pos = Number(form.position_sec);
-    const ans = Number(form.answer_index);
-    if (!form.prompt.trim()) return setErr('문제(프롬프트)는 필수예요.');
-    if (options.length < 2 || options.length > 6) return setErr('보기는 2~6개(한 줄에 하나씩)여야 해요.');
-    if (!Number.isInteger(ans) || ans < 0 || ans >= options.length)
-      return setErr(`정답 번호는 0~${options.length - 1} 사이여야 해요.`);
+    const ans = form.answer_index;
+    if (!form.prompt.trim()) return setErr('문제는 꼭 적어야 해요.');
+    if (options.length < 2 || options.length > 6) return setErr('보기는 2~6개여야 해요.');
+    // 이미지가 붙은 보기만 텍스트 생략 허용(그림 전용 보기) — 서버 규칙과 동일
+    const missing = options.findIndex((o, i) => !o && !form.optionImageUrls[i]);
+    if (missing >= 0)
+      return setErr(`${missing + 1}번 보기가 비어 있어요 — 텍스트를 쓰거나 이미지를 붙인 뒤 비우세요.`);
+    if (!(ans >= 0 && ans < options.length)) return setErr('정답으로 지정된 보기가 없어요.');
     if (!Number.isInteger(pos) || pos < 0) return setErr('출제 시점(초)은 0 이상의 정수예요.');
     setSaving(true);
     setErr('');
@@ -635,16 +669,184 @@ function QuestionsModal({
         explain: form.explain,
         status: form.status,
       };
-      if (form.id) await lectureApi.opsQuestionUpdate(lec.id, form.id, body);
-      else await lectureApi.opsQuestionCreate(lec.id, body);
-      changedRef.current = true;
-      setForm(null);
-      load();
+      if (form.id) {
+        await lectureApi.opsQuestionUpdate(lec.id, form.id, body);
+        changedRef.current = true;
+        setForm(null);
+        load();
+      } else {
+        /* 신규 문항: 이미지 첨부에는 문항 id가 필요하다 — 저장 후 폼을 닫는 대신,
+           재조회로 실재를 확인한 그 문항의 편집 폼으로 바로 전환해 이미지 첨부 단계를 잇는다
+           (강사가 "저장→목록에서 다시 수정 클릭"을 안 해도 되게). */
+        const created = await lectureApi.opsQuestionCreate(lec.id, body);
+        changedRef.current = true;
+        let fresh: OpsLectureQuestion[];
+        try {
+          fresh = await lectureApi.opsQuestions(lec.id);
+        } catch {
+          throw new Error(
+            '저장은 됐을 수 있지만 목록 확인에 실패했어요 — 다시 저장하지 말고 모달을 닫았다 열어 확인하세요.',
+          );
+        }
+        setItems(fresh);
+        const mine = fresh.find((x) => x.id === created.id);
+        if (!mine) throw new Error('저장 후 목록에서 문항을 확인하지 못했어요 — 새로고침 후 확인하세요.');
+        openEdit(mine);
+        setBannerOk(true);
+        setBanner('문항을 저장했어요 — 이제 문제·보기에 이미지를 붙일 수 있어요.');
+      }
     } catch (e) {
-      setErr(errorDetail(e, '문항 저장에 실패했어요.'));
+      setErr(e instanceof Error && !('response' in e) ? e.message : errorDetail(e, '문항 저장에 실패했어요.'));
     } finally {
       setSaving(false);
     }
+  };
+
+  /* ---- 이미지 첨부/삭제 — 저장된 문항에서만, 성공 표기는 재조회 확인 후에만 ---- */
+  const pickImage = (slot: 'prompt' | 'option', optionIndex?: number) => {
+    imgTargetRef.current = {
+      slot,
+      optionIndex,
+      key: slot === 'prompt' ? 'prompt' : `opt-${optionIndex}`,
+    };
+    imgInputRef.current?.click();
+  };
+
+  const attachImage = async (
+    slot: 'prompt' | 'option',
+    optionIndex: number | undefined,
+    file: File,
+    key: string,
+  ) => {
+    if (!form?.id || imgBusy != null) return;
+    const qid = form.id;
+    setErr('');
+    setImgBusy(key);
+    setImgProgress(0);
+    try {
+      await lectureApi.attachQuestionImage(lec.id, qid, { slot, optionIndex, file }, (e) => {
+        if (e.total) setImgProgress(Math.round((e.loaded / e.total) * 100));
+      });
+      // 성공 표기는 서버 재조회로 이미지가 실재함을 확인한 뒤에만 — 응답만 믿지 않는다.
+      let fresh: OpsLectureQuestion[];
+      try {
+        fresh = await lectureApi.opsQuestions(lec.id);
+      } catch {
+        throw new Error(
+          '업로드는 됐을 수 있지만 확인 재조회에 실패했어요 — 다시 올리지 말고 모달을 닫았다 열어 확인하세요.',
+        );
+      }
+      setItems(fresh);
+      const mine = fresh.find((x) => x.id === qid);
+      const freshUrl =
+        slot === 'prompt' ? mine?.prompt_image_url : mine?.option_image_urls?.[optionIndex ?? -1];
+      if (!mine || !freshUrl)
+        throw new Error('업로드 후 서버에서 이미지를 확인하지 못했어요 — 다시 시도하세요.');
+      setForm((f) =>
+        f && f.id === qid
+          ? {
+              ...f,
+              promptImageUrl: slot === 'prompt' ? freshUrl : f.promptImageUrl,
+              optionImageUrls:
+                slot === 'option'
+                  ? f.optionImageUrls.map((u, i) => (i === optionIndex ? freshUrl : u))
+                  : f.optionImageUrls,
+            }
+          : f,
+      );
+    } catch (e) {
+      setErr(e instanceof Error && !('response' in e) ? e.message : errorDetail(e, '이미지 업로드에 실패했어요.'));
+    } finally {
+      setImgBusy(null);
+      setImgProgress(null);
+    }
+  };
+
+  const removeImage = async (slot: 'prompt' | 'option', optionIndex: number | undefined, key: string) => {
+    if (!form?.id || imgBusy != null) return;
+    /* 텍스트가 빈 보기의 이미지 삭제는 서버가 400으로 거부한다(보기가 통째로 빈다).
+       서버에 보내기 전에 같은 규칙으로 막고 탈출 순서까지 안내한다 — 서버 문구만 보여주면
+       "텍스트를 채워 주세요 → (폼에 입력) → 또 400" 순환에 빠진다(폼 입력은 저장 전이라 서버가 모른다). */
+    if (slot === 'option' && optionIndex != null && !form.options[optionIndex]?.trim()) {
+      setErr(
+        '텍스트가 없는 보기의 이미지는 지울 수 없어요(보기가 통째로 비어요). 먼저 텍스트를 입력하고 "문항 저장"을 누른 뒤 삭제하세요.',
+      );
+      return;
+    }
+    if (!window.confirm(slot === 'prompt' ? '문제 이미지를 삭제할까요?' : '이 보기의 이미지를 삭제할까요?'))
+      return;
+    const qid = form.id;
+    setErr('');
+    setImgBusy(key);
+    try {
+      await lectureApi.deleteQuestionImage(lec.id, qid, { slot, optionIndex });
+      // 삭제도 재조회로 확인 — 서버에 남아 있으면 사라졌다고 표시하지 않는다.
+      let fresh: OpsLectureQuestion[];
+      try {
+        fresh = await lectureApi.opsQuestions(lec.id);
+      } catch {
+        throw new Error('삭제 확인 재조회에 실패했어요 — 모달을 닫았다 열어 확인하세요.');
+      }
+      setItems(fresh);
+      const mine = fresh.find((x) => x.id === qid);
+      const freshUrl =
+        slot === 'prompt' ? mine?.prompt_image_url : mine?.option_image_urls?.[optionIndex ?? -1];
+      if (!mine || freshUrl) throw new Error('삭제 후에도 서버에 이미지가 남아 있어요 — 다시 시도하세요.');
+      setForm((f) =>
+        f && f.id === qid
+          ? {
+              ...f,
+              promptImageUrl: slot === 'prompt' ? null : f.promptImageUrl,
+              optionImageUrls:
+                slot === 'option'
+                  ? f.optionImageUrls.map((u, i) => (i === optionIndex ? null : u))
+                  : f.optionImageUrls,
+            }
+          : f,
+      );
+    } catch (e) {
+      // 서버 거부 문구 그대로 노출. 단 '빈 텍스트 보기' 400인데 폼에는 텍스트가 있다면,
+      // 그 텍스트가 아직 저장 전이라는 뜻 — 서버 문구만으로는 순환에 빠지므로 탈출 경로를 덧붙인다.
+      let msg =
+        e instanceof Error && !('response' in e) ? e.message : errorDetail(e, '이미지 삭제에 실패했어요.');
+      if (slot === 'option' && msg.includes('텍스트가 빈 보기'))
+        msg += ' 입력한 텍스트는 아직 저장 전이에요 — 먼저 "문항 저장"을 누른 뒤 다시 삭제하세요.';
+      setErr(msg);
+    } finally {
+      setImgBusy(null);
+    }
+  };
+
+  /* ---- 보기 행 추가/삭제 ---- */
+  const addOption = () => {
+    if (!form || form.options.length >= 6) return;
+    // 끝에 붙이는 추가는 기존 행을 밀지 않는다 — alignedUpTo 유지(기존 행 첨부 계속 가능)
+    setForm({
+      ...form,
+      options: [...form.options, ''],
+      optionImageUrls: [...form.optionImageUrls, null],
+    });
+  };
+
+  const removeOption = (i: number) => {
+    if (!form) return;
+    setErr('');
+    if (form.options.length <= 2) return setErr('보기는 최소 2개예요.');
+    /* 서버는 보기 이미지를 '몇 번째 보기'로 기억한다. 이 행을 지우면 뒤 보기들이 한 칸씩
+       당겨져 이미지가 다른 보기에 붙거나 저장 시 삭제된다 — 어긋난 상태를 만들지 않게
+       이 행(및 뒤 행)에 이미지가 있으면 먼저 이미지를 지우게 안내한다. */
+    if (form.optionImageUrls.some((u, j) => u != null && j >= i))
+      return setErr(
+        `${i + 1}번 보기를 지우려면 그 보기부터 뒤쪽 보기의 이미지를 먼저 삭제하세요 — 보기가 당겨지면 이미지가 다른 보기에 붙어버려요.`,
+      );
+    setForm({
+      ...form,
+      options: form.options.filter((_, j) => j !== i),
+      optionImageUrls: form.optionImageUrls.filter((_, j) => j !== i),
+      answer_index:
+        form.answer_index === i ? 0 : form.answer_index > i ? form.answer_index - 1 : form.answer_index,
+      alignedUpTo: Math.min(form.alignedUpTo, i), // 삭제 지점 뒤 행은 당겨져 서버 인덱스와 어긋난다
+    });
   };
 
   const approve = async (q: OpsLectureQuestion) => {
@@ -707,7 +909,7 @@ function QuestionsModal({
         </div>
 
         <div className="op-lect-qtools">
-          <button className="op-btn op-btn--approve" onClick={() => { setErr(''); setForm({ ...EMPTY_Q }); }}>
+          <button className="op-btn op-btn--approve" onClick={() => { setErr(''); setForm(emptyQ()); }}>
             <i className="ph-bold ph-plus" />
             문항 추가
           </button>
@@ -746,38 +948,191 @@ function QuestionsModal({
               </label>
               <label className="ox-field op-form-span2">
                 문제
-                <input value={form.prompt} onChange={(e) => setForm({ ...form, prompt: e.target.value })} placeholder="예: 이 강의에서 배운 중심 문장은 무엇인가요?" />
+                <input value={form.prompt} onChange={(e) => setForm({ ...form, prompt: e.target.value })} placeholder="예: 방금 화면에 나온 도형은 무엇이었나요?" />
               </label>
+
+              {/* 문제 이미지 — 강의 화면 캡처를 붙이면 '실제로 본 사람만' 맞힐 수 있는 문제가 된다 */}
+              <div className="ox-field op-form-span2">
+                문제 이미지 (선택)
+                <span className="lu-help">
+                  강의 화면을 캡처해 붙이면 &ldquo;방금 화면에 나온 것&rdquo;을 물을 수 있어요 — 강의를 본
+                  학생만 맞힐 수 있어요.
+                </span>
+                {!form.id ? (
+                  <div className="lu-imgdrop lu-imgdrop--off">
+                    <i className="ph-fill ph-image" />
+                    <span>문항을 먼저 저장하면 이미지를 붙일 수 있어요</span>
+                  </div>
+                ) : form.promptImageUrl ? (
+                  <div className="lu-imgthumb">
+                    <img src={API_ORIGIN + form.promptImageUrl} alt="문제 이미지" />
+                    <div className="lu-imgthumb-actions">
+                      <button
+                        type="button"
+                        className="op-btn op-btn--reject"
+                        disabled={imgBusy != null}
+                        onClick={() => pickImage('prompt')}
+                      >
+                        <i className="ph-bold ph-arrows-clockwise" />
+                        {imgBusy === 'prompt' ? `올리는 중… ${imgProgress ?? 0}%` : '교체'}
+                      </button>
+                      <button
+                        type="button"
+                        className="op-btn op-btn--reject op-lect-danger"
+                        disabled={imgBusy != null}
+                        onClick={() => removeImage('prompt', undefined, 'prompt')}
+                      >
+                        <i className="ph-bold ph-trash" />
+                        삭제
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div
+                    className={`lu-imgdrop${imgDragOver ? ' lu-imgdrop--over' : ''}`}
+                    onDragOver={(e) => { e.preventDefault(); setImgDragOver(true); }}
+                    onDragLeave={() => setImgDragOver(false)}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      setImgDragOver(false);
+                      const f = e.dataTransfer.files?.[0];
+                      if (f) attachImage('prompt', undefined, f, 'prompt');
+                    }}
+                    onClick={() => imgBusy == null && pickImage('prompt')}
+                  >
+                    <i className="ph-fill ph-image" />
+                    <span>
+                      {imgBusy === 'prompt'
+                        ? `올리는 중… ${imgProgress ?? 0}%`
+                        : '이미지를 끌어다 놓거나 클릭해서 첨부 — PNG·JPG·GIF·WebP, 최대 5MB'}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* 보기 — 행마다 정답 라디오·텍스트·이미지 버튼. 이미지가 있으면 텍스트를 비워도
+                  된다(그림 전용 보기 — 텍스트 라벨이 정답을 알려주는 걸 막는다). */}
+              <div className="ox-field op-form-span2">
+                보기 (2~6개)
+                <span className="lu-help">
+                  {form.id
+                    ? '보기마다 이미지를 붙일 수 있어요. 이미지가 있는 보기는 텍스트를 지워도 돼요 — 그림만으로 낼 수 있어요.'
+                    : '보기 이미지는 문항을 먼저 저장한 뒤 붙일 수 있어요.'}
+                </span>
+                <div className="lu-optlist">
+                  {form.options.map((opt, i) => (
+                    <div key={i} className={`lu-optrow${form.answer_index === i ? ' lu-optrow--ans' : ''}`}>
+                      <label className="lu-optans" title="이 보기를 정답으로 지정">
+                        <input
+                          type="radio"
+                          name="lu-q-answer"
+                          checked={form.answer_index === i}
+                          onChange={() => setForm({ ...form, answer_index: i })}
+                        />
+                        정답
+                      </label>
+                      <input
+                        className="lu-optinput"
+                        value={opt}
+                        onChange={(e) =>
+                          setForm({ ...form, options: form.options.map((o, j) => (j === i ? e.target.value : o)) })
+                        }
+                        placeholder={form.optionImageUrls[i] ? '(그림 보기 — 텍스트 없이 낼 수 있어요)' : `${i + 1}번 보기`}
+                      />
+                      {form.id && i < form.alignedUpTo ? (
+                        form.optionImageUrls[i] ? (
+                          <span className="lu-optimg">
+                            <img src={API_ORIGIN + form.optionImageUrls[i]} alt={`${i + 1}번 보기 이미지`} />
+                            <button
+                              type="button"
+                              className="lu-imgbtn"
+                              title="이미지 교체"
+                              disabled={imgBusy != null}
+                              onClick={() => pickImage('option', i)}
+                            >
+                              <i className="ph-bold ph-arrows-clockwise" />
+                            </button>
+                            <button
+                              type="button"
+                              className="lu-imgbtn lu-imgbtn--danger"
+                              title="이미지 삭제"
+                              disabled={imgBusy != null}
+                              onClick={() => removeImage('option', i, `opt-${i}`)}
+                            >
+                              <i className="ph-bold ph-trash" />
+                            </button>
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            className="lu-imgbtn"
+                            title="이 보기에 이미지 첨부"
+                            disabled={imgBusy != null}
+                            onClick={() => pickImage('option', i)}
+                          >
+                            {imgBusy === `opt-${i}` ? (
+                              <span className="lu-imgbtn-busy">{imgProgress ?? 0}%</span>
+                            ) : (
+                              <i className="ph-bold ph-image" />
+                            )}
+                          </button>
+                        )
+                      ) : form.id ? (
+                        <span className="lu-optimg-note">저장 후 이미지 첨부</span>
+                      ) : null}
+                      <button
+                        type="button"
+                        className="lu-imgbtn lu-imgbtn--danger"
+                        title="이 보기 삭제"
+                        /* 업로드 in-flight 중 행 삭제 금지 — 삭제로 행이 당겨진 뒤 업로드가
+                           완료되면 이미지가 엉뚱한 보기에 붙는다(alignedUpTo 가드를 우회하는 레이스) */
+                        disabled={imgBusy != null}
+                        onClick={() => removeOption(i)}
+                      >
+                        <i className="ph-bold ph-x" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <button type="button" className="lu-optadd" onClick={addOption} disabled={form.options.length >= 6}>
+                  <i className="ph-bold ph-plus" /> 보기 추가
+                </button>
+              </div>
+
               <label className="ox-field op-form-span2">
-                보기 (한 줄에 하나, 2~6개)
-                <textarea
-                  className="op-lect-textarea"
-                  rows={4}
-                  value={form.optionsText}
-                  onChange={(e) => setForm({ ...form, optionsText: e.target.value })}
-                />
-              </label>
-              <label className="ox-field">
-                정답 번호 (0부터)
-                <input value={form.answer_index} onChange={(e) => setForm({ ...form, answer_index: e.target.value })} />
-              </label>
-              <label className="ox-field">
                 해설
                 <input value={form.explain} onChange={(e) => setForm({ ...form, explain: e.target.value })} />
               </label>
             </div>
+            {/* 이미지 파일 선택 — 문제/보기 공용(imgTargetRef가 붙을 자리를 기억) */}
+            <input
+              ref={imgInputRef}
+              type="file"
+              accept="image/png,image/jpeg,image/gif,image/webp"
+              hidden
+              onChange={(e) => {
+                const t = imgTargetRef.current;
+                const f = e.target.files?.[0];
+                e.target.value = ''; // 같은 파일 재선택도 change가 뜨게 초기화
+                if (t && f) attachImage(t.slot, t.optionIndex, f, t.key);
+              }}
+            />
             {err && (
               <div className="op-form-err">
                 <i className="ph-fill ph-warning-circle" /> {err}
               </div>
             )}
             <div className="op-form-actions">
-              <button className="op-btn op-btn--reject" disabled={saving} onClick={() => setForm(null)}>
-                취소
+              <button
+                className="op-btn op-btn--reject"
+                disabled={saving || imgBusy != null}
+                onClick={() => setForm(null)}
+              >
+                {form.id ? '닫기' : '취소'}
               </button>
-              <button className="op-btn op-btn--approve" disabled={saving} onClick={save}>
+              <button className="op-btn op-btn--approve" disabled={saving || imgBusy != null} onClick={save}>
                 <i className="ph-bold ph-check" />
-                {saving ? '저장 중…' : form.id ? '문항 저장' : '문항 추가'}
+                {saving ? '저장 중…' : form.id ? '문항 저장' : '문항 저장 후 이미지 첨부'}
               </button>
             </div>
           </div>
@@ -801,10 +1156,21 @@ function QuestionsModal({
               </div>
               <div className="op-lect-qbody">
                 <b>{q.prompt}</b>
+                {q.prompt_image_url && (
+                  <img className="lu-qthumb" src={API_ORIGIN + q.prompt_image_url} alt="문제 이미지" />
+                )}
                 <div className="op-lect-qopts">
                   {q.options.map((o, i) => (
                     <span key={i} className={`op-lect-qopt${i === q.answer_index ? ' op-lect-qopt-ans' : ''}`}>
-                      {i}. {o}
+                      {i}.{' '}
+                      {q.option_image_urls?.[i] && (
+                        <img
+                          className="lu-optchip-img"
+                          src={API_ORIGIN + q.option_image_urls[i]!}
+                          alt={`${i + 1}번 보기 이미지`}
+                        />
+                      )}
+                      {o || (q.option_image_urls?.[i] ? '(그림 보기)' : '')}
                     </span>
                   ))}
                 </div>

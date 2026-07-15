@@ -110,6 +110,154 @@
 .lu-preset em { font-size: 11px; color: #94a3b8; font-style: normal; }
 @media (max-width: 640px) { .lu-presets { grid-template-columns: repeat(2, 1fr); } }
 
+/* ── 문항 이미지 첨부 (강사용) ─────────────────────────────
+   강의 화면 캡처를 문제·보기에 붙인다 — 텍스트 보기는 상식으로 찍히지만
+   그림 보기는 실제로 본 학생만 고를 수 있다(시청 검증의 핵심). */
+.lu-imgdrop {
+  margin-top: 6px;
+  border: 2px dashed #cbd5e1;
+  border-radius: 10px;
+  background: #f8fafc;
+  padding: 14px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
+  cursor: pointer;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #64748b;
+  transition: border-color 0.15s, background 0.15s;
+}
+.lu-imgdrop i { font-size: 20px; color: #94a3b8; }
+.lu-imgdrop:hover { border-color: #94a3b8; background: #f1f5f9; }
+.lu-imgdrop--over { border-color: #2563eb; background: #eff6ff; }
+.lu-imgdrop--off { cursor: default; opacity: 0.75; }
+.lu-imgdrop--off:hover { border-color: #cbd5e1; background: #f8fafc; }
+
+/* 문제 이미지 썸네일 + 교체/삭제 */
+.lu-imgthumb { margin-top: 6px; display: flex; align-items: flex-start; gap: 10px; flex-wrap: wrap; }
+.lu-imgthumb img {
+  max-width: min(280px, 100%);
+  max-height: 160px;
+  border-radius: 10px;
+  border: 1.5px solid #eadfce;
+  background: #fff;
+  object-fit: contain;
+}
+.lu-imgthumb-actions { display: flex; flex-direction: column; gap: 6px; }
+
+/* 보기 행 — 정답 라디오 · 텍스트 · 이미지 버튼/썸네일 · 행 삭제 */
+.lu-optlist { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
+.lu-optrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1.5px solid #eadfce;
+  border-radius: 10px;
+  padding: 6px 8px;
+  background: #fff;
+}
+.lu-optrow--ans { border-color: #17b08c; background: #f4fbf8; }
+.lu-optans {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #6e6558;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.lu-optrow--ans .lu-optans { color: #17b08c; }
+.lu-optinput {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 13.5px;
+  background: transparent;
+}
+.lu-imgbtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 1.5px solid #eadfce;
+  border-radius: 8px;
+  background: #fffdf8;
+  color: #6e6558;
+  cursor: pointer;
+  font-size: 14px;
+  flex: none;
+  transition: border-color 0.15s, background 0.15s;
+}
+.lu-imgbtn:hover:not(:disabled) { border-color: #94a3b8; background: #f1f5f9; }
+.lu-imgbtn:disabled { opacity: 0.55; cursor: default; }
+.lu-imgbtn--danger { color: #c2554a; }
+.lu-imgbtn-busy { font-size: 10px; font-weight: 700; }
+.lu-optimg { display: inline-flex; align-items: center; gap: 4px; flex: none; }
+.lu-optimg img {
+  width: 40px;
+  height: 30px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1.5px solid #eadfce;
+  background: #fff;
+}
+.lu-optimg-note { font-size: 11px; font-weight: 700; color: #a89d8e; white-space: nowrap; flex: none; }
+.lu-optadd {
+  margin-top: 6px;
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 1.5px dashed #cbd5e1;
+  border-radius: 8px;
+  background: #fff;
+  padding: 6px 12px;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #64748b;
+  cursor: pointer;
+}
+.lu-optadd:hover:not(:disabled) { border-color: #94a3b8; background: #f1f5f9; }
+.lu-optadd:disabled { opacity: 0.5; cursor: default; }
+
+/* 문항 목록의 이미지 표시 — 문제 썸네일·보기 칩 미니 이미지 */
+.lu-qthumb {
+  max-width: 180px;
+  max-height: 100px;
+  border-radius: 8px;
+  border: 1.5px solid #eadfce;
+  background: #fff;
+  object-fit: contain;
+  align-self: flex-start;
+}
+.lu-optchip-img {
+  width: 26px;
+  height: 20px;
+  object-fit: cover;
+  border-radius: 4px;
+  vertical-align: -5px;
+  margin-right: 3px;
+  border: 1px solid #eadfce;
+  background: #fff;
+}
+
+/* 375px — 보기 행이 좁아지면 이미지 컨트롤을 아랫줄로 감싼다 */
+@media (max-width: 480px) {
+  .lu-optrow { flex-wrap: wrap; }
+  .lu-optinput { flex: 1 1 100%; order: -1; }
+  .lu-imgthumb img { max-width: 100%; }
+  .lu-imgthumb-actions { flex-direction: row; }
+}
+
 /* 문항 0개 경고 — 시청 검증이 동작하지 않는 강의를 목록에서 즉시 식별 */
 .lu-nowarn {
   display: inline-flex;
