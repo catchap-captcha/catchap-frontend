@@ -101,6 +101,11 @@ export interface OpsLectureQuestion {
   source: string; // manual | llm
   status: string; // draft | active
   order_no: number;
+  /** true = position_sec에 닿는 순간 반드시 이 문항이 출제(고정), false = position_sec 이후 무작위 풀 */
+  pinned: boolean;
+  /** 고정 문항의 출제 구간 길이(초). 0 = 정확히 position_sec, N>0 = [position_sec, position_sec+N]
+   *  안에서 서버가 무작위 초를 골라 출제(매번 달라 학생이 지점을 외우지 못한다) */
+  window_sec: number;
   /** 문제 이미지 서빙 URL(`/api/v1/...` 상대경로 — <img>에는 API_ORIGIN을 붙인다). 없으면 null */
   prompt_image_url: string | null;
   /** 보기와 같은 길이 — 이미지 없는 보기는 null. 이미지가 있는 보기는 텍스트를 비울 수 있다(그림 전용 보기) */
@@ -182,6 +187,14 @@ export const lectureApi = {
   opsDelete: (lectureId: string) =>
     client.delete<{ ok: boolean }>(`/ops/lectures/${lectureId}`).then((r) => r.data),
 
+  /** 운영자 미리보기 스트림 발급 — 문항 시점을 눈으로 찾고 강의 화면을 따오기 위한 재생.
+   *  학생 세션을 만들지 않는다(같은 계정 학생 세션을 걷어차지 않음). stream_url은 서명 토큰이
+   *  쿼리에 붙은 상대경로 — <video src>에는 API_ORIGIN을 붙여 쓴다. */
+  opsPreview: (lectureId: string) =>
+    client
+      .post<{ stream_url: string; duration_sec: number }>(`/ops/lectures/${lectureId}/preview`)
+      .then((r) => r.data),
+
   /* ---- 확인 문항 ---- */
   opsQuestions: (lectureId: string) =>
     client.get<OpsLectureQuestion[]>(`/ops/lectures/${lectureId}/questions`).then((r) => r.data),
@@ -195,6 +208,11 @@ export const lectureApi = {
       answer_index: number;
       explain?: string;
       status?: string;
+      /** 기본 false — true면 position_sec 정각에 반드시 출제(서버가 1초 이상·영상 길이 미만 검증) */
+      pinned?: boolean;
+      /** 기본 0 — 고정 문항에서 N>0이면 [position_sec, position_sec+N] 구간 안의 무작위 초에 출제.
+       *  구간 끝이 영상을 넘는 건 허용(서버가 잘라 씀 — "여기부터 끝까지"는 정상 의도) */
+      window_sec?: number;
     },
   ) =>
     client
@@ -211,6 +229,8 @@ export const lectureApi = {
       answer_index: number;
       explain: string;
       status: string;
+      pinned: boolean; // 미전송 시 변경 없음
+      window_sec: number; // 미전송 시 변경 없음 — 구간→고정 전환 시 0을 명시로 보내야 지워진다
     }>,
   ) =>
     client

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import {
   API_ORIGIN,
   errorDetail,
@@ -79,6 +79,30 @@ function fmtDur(sec: number): string {
   return m > 0 ? `${m}분 ${s ? `${s}초` : ''}`.trim() : `${s}초`;
 }
 
+/** 초 → "3:20" / "1:02:05" — 문항 출제 시점 표시용(강사는 플레이어 타임코드로 생각한다) */
+function fmtMMSS(sec: number): string {
+  if (!Number.isFinite(sec) || sec < 0) return '0:00';
+  const h = Math.floor(sec / 3600);
+  const m = Math.floor((sec % 3600) / 60);
+  const s = Math.floor(sec % 60);
+  const ss = String(s).padStart(2, '0');
+  return h > 0 ? `${h}:${String(m).padStart(2, '0')}:${ss}` : `${m}:${ss}`;
+}
+
+/** 출제 시점 입력 파서 — "200"(초)도, "3:20"·"1:02:05"(분:초)도 받는다. 실패 시 null.
+ *  기존 초 단위 입력과의 하위호환을 위해 순수 숫자를 그대로 초로 해석한다. */
+function parseSecInput(raw: string): number | null {
+  const s = raw.trim();
+  if (!s) return null;
+  if (/^\d+$/.test(s)) return Number(s);
+  const m = /^(?:(\d+):)?(\d{1,2}):([0-5]?\d)$/.exec(s);
+  if (!m) return null;
+  const hh = m[1] ? Number(m[1]) : 0;
+  const mm = Number(m[2]);
+  if (m[1] && mm > 59) return null; // h:mm:ss일 때 분은 0~59
+  return hh * 3600 + mm * 60 + Number(m[3]);
+}
+
 export default function OpsLectures() {
   const [rows, setRows] = useState<OpsLecture[]>([]);
   const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading');
@@ -123,7 +147,8 @@ export default function OpsLectures() {
             <h1 className="op-title">강의 관리</h1>
             <p className="op-sub">
               시청 검증 강의의 <b>영상 업로드·확인 문항·자료실</b>을 관리해요. 확인 문항이 없는
-              강의는 체크포인트에서 학생이 멈춰요 — 업로드 후 꼭 문항을 등록하세요.
+              강의는 <b>시청 검증이 동작하지 않아요</b>(확인 없이 끝까지 재생) — 업로드 후 꼭
+              문항을 등록하세요.
             </p>
           </div>
           <button className="op-refresh" onClick={() => setModal({ mode: 'create' })}>
@@ -555,6 +580,12 @@ function LectureFormModal({
 interface QForm {
   id: string | null; // null = 새 문항(저장하면 이미지 첨부가 열린다)
   position_sec: string;
+  /** true = position_sec 정각에 반드시 출제(고정), false = 그 이후 무작위 풀(기존 동작) */
+  pinned: boolean;
+  /** true = 구간 모드(pinned와 함께) — [시작, 끝] 안의 무작위 초에 출제. 전송 시 window_sec = 끝-시작 */
+  windowed: boolean;
+  /** 구간 끝 입력(초 또는 분:초) — windowed일 때만 사용 */
+  window_end: string;
   prompt: string;
   /* 보기를 줄바꿈 textarea가 아니라 행 배열로 다룬다 — 이미지가 붙은 보기는 텍스트를
      비울 수 있는데(그림 전용 보기), textarea는 빈 줄을 표현·보존할 수 없고 빈 줄을
@@ -575,6 +606,9 @@ interface QForm {
 const emptyQ = (): QForm => ({
   id: null,
   position_sec: '0',
+  pinned: false,
+  windowed: false,
+  window_end: '',
   prompt: '',
   options: ['', ''],
   answer_index: 0,
@@ -610,6 +644,12 @@ function QuestionsModal({
   const [imgDragOver, setImgDragOver] = useState(false);
   const imgInputRef = useRef<HTMLInputElement>(null);
   const imgTargetRef = useRef<{ slot: 'prompt' | 'option'; optionIndex?: number; key: string } | null>(null);
+  /* 강의 화면 따오기 모달 — slot=position이면 시점 선택 전용(문항 저장 전에도 열 수 있다).
+     prompt/option 첨부는 문항 id가 필요해 저장된 문항에서만 연다. */
+  const [capture, setCapture] = useState<{
+    slot: 'prompt' | 'option' | 'position';
+    optionIndex?: number;
+  } | null>(null);
 
   const load = () => {
     setLoadErr('');
@@ -634,6 +674,11 @@ function QuestionsModal({
     setForm({
       id: q.id,
       position_sec: String(q.position_sec),
+      pinned: !!q.pinned, // 구버전 서버가 필드를 안 주면 풀 문항으로 간주
+      windowed: !!q.pinned && (q.window_sec ?? 0) > 0,
+      // 구간 끝은 시작+길이로 환산해 보여준다 — 강사는 타임코드 두 개로 생각한다
+      window_end:
+        !!q.pinned && (q.window_sec ?? 0) > 0 ? fmtMMSS(q.position_sec + q.window_sec) : '',
       prompt: q.prompt ?? '',
       options: [...q.options],
       answer_index: q.answer_index,
@@ -648,7 +693,7 @@ function QuestionsModal({
   const save = async () => {
     if (!form) return;
     const options = form.options.map((s) => s.trim());
-    const pos = Number(form.position_sec);
+    const pos = parseSecInput(form.position_sec);
     const ans = form.answer_index;
     if (!form.prompt.trim()) return setErr('문제는 꼭 적어야 해요.');
     if (options.length < 2 || options.length > 6) return setErr('보기는 2~6개여야 해요.');
@@ -657,12 +702,37 @@ function QuestionsModal({
     if (missing >= 0)
       return setErr(`${missing + 1}번 보기가 비어 있어요 — 텍스트를 쓰거나 이미지를 붙인 뒤 비우세요.`);
     if (!(ans >= 0 && ans < options.length)) return setErr('정답으로 지정된 보기가 없어요.');
-    if (!Number.isInteger(pos) || pos < 0) return setErr('출제 시점(초)은 0 이상의 정수예요.');
+    if (pos == null || pos < 0)
+      return setErr('출제 시점은 초(예: 200) 또는 분:초(예: 3:20) 형태로 입력하세요.');
+    /* 시점·구간 범위는 서버(400)와 같은 규칙으로 제출 전에 막는다 — 문구도 서버와 동일하게.
+       영상 밖 시점은 풀 문항도 거절된다: 그 문항만 안 뜨는 게 아니라, 유일 문항이면
+       체크포인트가 영상 밖에 잡혀 시청 검증이 통째로 조용히 꺼진다. */
+    if (pos >= lec.duration_sec)
+      return setErr(
+        `출제 시점이 영상 길이를 벗어났습니다. 영상 안의 시점을 지정해 주세요. (영상 길이 ${fmtMMSS(lec.duration_sec)})`,
+      );
+    if (form.pinned && pos < 1)
+      return setErr(
+        '고정 문항은 출제 시점이 1초 이상이어야 합니다(0초는 아직 아무것도 보지 않은 지점이라 뜰 수 없어요).',
+      );
+    let windowSec = 0;
+    if (form.pinned && form.windowed) {
+      const end = parseSecInput(form.window_end);
+      if (end == null)
+        return setErr('구간 끝을 초(예: 340) 또는 분:초(예: 5:40) 형태로 입력하세요.');
+      if (end < pos)
+        return setErr('구간 끝이 구간 시작보다 앞이에요 — 시작 이후 시점으로 지정하세요.');
+      // 구간 끝이 영상을 넘는 건 막지 않는다 — "여기부터 끝까지"는 정상 의도(서버가 잘라 씀)
+      windowSec = end - pos;
+    }
     setSaving(true);
     setErr('');
     try {
       const body = {
         position_sec: pos,
+        pinned: form.pinned,
+        // 구간→고정/풀 전환 시 0을 명시로 보내 서버 값이 지워지게 한다(미전송 = 변경 없음)
+        window_sec: windowSec,
         prompt: form.prompt.trim(),
         options,
         answer_index: ans,
@@ -689,6 +759,8 @@ function QuestionsModal({
           );
         }
         setItems(fresh);
+        // 재조회가 성공했으니 이전 로드 실패 배너는 스테일 — 지워야 활성 0개 경고도 정확히 뜬다
+        setLoadErr('');
         const mine = fresh.find((x) => x.id === created.id);
         if (!mine) throw new Error('저장 후 목록에서 문항을 확인하지 못했어요 — 새로고침 후 확인하세요.');
         openEdit(mine);
@@ -712,13 +784,16 @@ function QuestionsModal({
     imgInputRef.current?.click();
   };
 
+  /** 첨부 + 재조회 확인. 반환: null = 검증된 성공, string = 사용자에게 보여준 실패 사유
+   *  (캡처 모달이 결과를 보고 닫을지/에러를 띄울지 정한다 — 성공 위장 금지) */
   const attachImage = async (
     slot: 'prompt' | 'option',
     optionIndex: number | undefined,
     file: File,
     key: string,
-  ) => {
-    if (!form?.id || imgBusy != null) return;
+  ): Promise<string | null> => {
+    if (!form?.id) return '문항을 먼저 저장해야 이미지를 붙일 수 있어요.';
+    if (imgBusy != null) return '다른 이미지를 올리는 중이에요 — 끝난 뒤 다시 시도하세요.';
     const qid = form.id;
     setErr('');
     setImgBusy(key);
@@ -754,8 +829,12 @@ function QuestionsModal({
             }
           : f,
       );
+      return null;
     } catch (e) {
-      setErr(e instanceof Error && !('response' in e) ? e.message : errorDetail(e, '이미지 업로드에 실패했어요.'));
+      const msg =
+        e instanceof Error && !('response' in e) ? e.message : errorDetail(e, '이미지 업로드에 실패했어요.');
+      setErr(msg);
+      return msg;
     } finally {
       setImgBusy(null);
       setImgProgress(null);
@@ -896,6 +975,17 @@ function QuestionsModal({
     }
   };
 
+  /* 입력 중 실시간 환산·범위 안내용 — 저장 검증(save)과 같은 파서를 쓴다 */
+  const posPreview = form ? parseSecInput(form.position_sec) : null;
+  const endPreview = form && form.pinned && form.windowed ? parseSecInput(form.window_end) : null;
+  /* 공개(active) 문항 수 — 0이면 이 강의는 확인이 아예 안 떠서 시청 검증이 조용히 꺼진다 */
+  const activeCount = (items ?? []).filter((q) => q.status === 'active').length;
+  /* 캡처 모달의 첨부 대상 — 시점 선택 전용(position)이면 null(선택·첨부 UI 숨김) */
+  const capTarget =
+    capture && capture.slot !== 'position'
+      ? { slot: capture.slot, optionIndex: capture.optionIndex }
+      : null;
+
   return (
     <div className="op-bh-overlay" onClick={close}>
       <div className="op-formmodal op-lect-widemodal" onClick={(e) => e.stopPropagation()}>
@@ -931,14 +1021,119 @@ function QuestionsModal({
             <i className="ph-fill ph-warning-circle" /> {loadErr}
           </div>
         )}
+        {/* 활성 문항 0개 = 확인(캡차)이 아예 안 떠서 시청 검증이 조용히 꺼진다 — 모달 안에서도 경고 */}
+        {items !== null && !loadErr && activeCount === 0 && (
+          <div className="op-form-err op-lect-banner">
+            <i className="ph-fill ph-warning" /> 공개(active) 문항이 없어 이 강의는 시청 검증이
+            동작하지 않아요 — 학생이 확인 없이 끝까지 볼 수 있어요. 문항을 추가하거나 draft 문항을
+            승인하세요.
+          </div>
+        )}
 
         {form && (
           <div className="op-lect-qform">
             <div className="op-form-grid">
+              {/* 출제 방식 — 무작위 풀(기존)·고정 시점·구간(신규).
+                  구간은 정확한 초를 강사가 재지 않아도 되고, 매번 같은 초에 뜨지 않아
+                  학생이 "몇 분 몇 초에 문제가 뜬다"를 외우지 못한다. */}
+              <div className="ox-field op-form-span2">
+                출제 방식
+                <div className="lu-presets lu-presets--3">
+                  <button
+                    type="button"
+                    className={`lu-preset${!form.pinned ? ' lu-preset--on' : ''}`}
+                    onClick={() => setForm({ ...form, pinned: false, windowed: false })}
+                  >
+                    <b>이 시점 이후 무작위로</b>
+                    <span>출제 시점을 지난 확인이면 아무 때나 뽑힐 수 있어요</span>
+                    <em>기본 — 여러 문항을 골고루 섞어 내요</em>
+                  </button>
+                  <button
+                    type="button"
+                    className={`lu-preset${form.pinned && !form.windowed ? ' lu-preset--on' : ''}`}
+                    onClick={() => setForm({ ...form, pinned: true, windowed: false })}
+                  >
+                    <b>
+                      <i className="ph-fill ph-push-pin" /> 정확히 이 시점에
+                    </b>
+                    <span>학생이 이 시점에 닿는 순간 반드시 이 문항이 떠요</span>
+                    <em>&ldquo;방금 본 내용&rdquo;을 그 대목 직후에 물을 때</em>
+                  </button>
+                  <button
+                    type="button"
+                    className={`lu-preset${form.pinned && form.windowed ? ' lu-preset--on' : ''}`}
+                    onClick={() => setForm({ ...form, pinned: true, windowed: true })}
+                  >
+                    <b>
+                      <i className="ph-fill ph-arrows-left-right" /> 이 구간 안에서
+                    </b>
+                    <span>구간 안의 무작위 초에 반드시 이 문항이 떠요</span>
+                    <em>정확한 초를 안 재도 되고, 매번 달라 학생이 지점을 못 외워요</em>
+                  </button>
+                </div>
+              </div>
               <label className="ox-field">
-                출제 시점(초) — 이 시점까지 본 학생에게만 출제
-                <input value={form.position_sec} onChange={(e) => setForm({ ...form, position_sec: e.target.value })} />
+                {form.pinned && form.windowed ? '구간 시작' : '출제 시점'}
+                <span
+                  className={`lu-help${
+                    posPreview != null &&
+                    (posPreview >= lec.duration_sec || (form.pinned && posPreview < 1))
+                      ? ' lu-help--bad'
+                      : ''
+                  }`}
+                >
+                  {posPreview == null
+                    ? '초(예: 200) 또는 분:초(예: 3:20)로 입력하세요'
+                    : posPreview >= lec.duration_sec
+                      ? `영상 길이(${fmtMMSS(lec.duration_sec)})를 벗어났어요 — 영상 안의 시점으로 지정하세요`
+                      : form.pinned && posPreview < 1
+                        ? '고정 문항은 1초 이상이어야 해요 — 0초는 아직 아무것도 보지 않은 지점이에요'
+                        : form.pinned
+                          ? form.windowed
+                            ? `${fmtMMSS(posPreview)}부터 구간 시작 · 영상 길이 ${fmtMMSS(lec.duration_sec)}`
+                            : `${fmtMMSS(posPreview)}에 반드시 출제 · 영상 길이 ${fmtMMSS(lec.duration_sec)}`
+                          : `${fmtMMSS(posPreview)} 이후 확인에서 무작위 출제 · 영상 길이 ${fmtMMSS(lec.duration_sec)}`}
+                </span>
+                <input
+                  value={form.position_sec}
+                  onChange={(e) => setForm({ ...form, position_sec: e.target.value })}
+                  placeholder="예: 3:20 또는 200"
+                />
+                <button
+                  type="button"
+                  className="lu-capbtn"
+                  onClick={() => setCapture({ slot: 'position' })}
+                >
+                  <i className="ph-bold ph-monitor-play" /> 영상 보면서 시점 고르기
+                </button>
               </label>
+              {form.pinned && form.windowed && (
+                <label className="ox-field">
+                  구간 끝
+                  <span
+                    className={`lu-help${
+                      endPreview != null && posPreview != null && endPreview < posPreview
+                        ? ' lu-help--bad'
+                        : ''
+                    }`}
+                  >
+                    {endPreview == null
+                      ? '초(예: 340) 또는 분:초(예: 5:40)로 입력하세요'
+                      : posPreview != null && endPreview < posPreview
+                        ? '구간 끝이 시작보다 앞이에요 — 시작 이후 시점으로 지정하세요'
+                        : posPreview != null
+                          ? `${fmtMMSS(posPreview)}~${fmtMMSS(endPreview)} 사이 무작위 초에 출제${
+                              endPreview >= lec.duration_sec ? ' · 영상 끝까지로 잘라 써요' : ''
+                            }`
+                          : `${fmtMMSS(endPreview)}까지`}
+                  </span>
+                  <input
+                    value={form.window_end}
+                    onChange={(e) => setForm({ ...form, window_end: e.target.value })}
+                    placeholder="예: 5:40 또는 340"
+                  />
+                </label>
+              )}
               <label className="ox-field">
                 상태
                 <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
@@ -1008,6 +1203,18 @@ function QuestionsModal({
                     </span>
                   </div>
                 )}
+                {/* 파일 대신 강의 영상에서 직접 따오기 — 실제 화면 조각은 그 강의를 본
+                    사람만 고를 수 있다(텍스트 보기는 상식으로 찍힌다). 이미 이미지가 있으면 교체. */}
+                {form.id && (
+                  <button
+                    type="button"
+                    className="lu-capbtn"
+                    disabled={imgBusy != null}
+                    onClick={() => setCapture({ slot: 'prompt' })}
+                  >
+                    <i className="ph-bold ph-crop" /> 강의 화면에서 따오기
+                  </button>
+                )}
               </div>
 
               {/* 보기 — 행마다 정답 라디오·텍스트·이미지 버튼. 이미지가 있으면 텍스트를 비워도
@@ -1054,6 +1261,15 @@ function QuestionsModal({
                             </button>
                             <button
                               type="button"
+                              className="lu-imgbtn"
+                              title="강의 화면에서 따와 교체"
+                              disabled={imgBusy != null}
+                              onClick={() => setCapture({ slot: 'option', optionIndex: i })}
+                            >
+                              <i className="ph-bold ph-crop" />
+                            </button>
+                            <button
+                              type="button"
                               className="lu-imgbtn lu-imgbtn--danger"
                               title="이미지 삭제"
                               disabled={imgBusy != null}
@@ -1063,19 +1279,30 @@ function QuestionsModal({
                             </button>
                           </span>
                         ) : (
-                          <button
-                            type="button"
-                            className="lu-imgbtn"
-                            title="이 보기에 이미지 첨부"
-                            disabled={imgBusy != null}
-                            onClick={() => pickImage('option', i)}
-                          >
-                            {imgBusy === `opt-${i}` ? (
-                              <span className="lu-imgbtn-busy">{imgProgress ?? 0}%</span>
-                            ) : (
-                              <i className="ph-bold ph-image" />
-                            )}
-                          </button>
+                          <>
+                            <button
+                              type="button"
+                              className="lu-imgbtn"
+                              title="이 보기에 이미지 첨부"
+                              disabled={imgBusy != null}
+                              onClick={() => pickImage('option', i)}
+                            >
+                              {imgBusy === `opt-${i}` ? (
+                                <span className="lu-imgbtn-busy">{imgProgress ?? 0}%</span>
+                              ) : (
+                                <i className="ph-bold ph-image" />
+                              )}
+                            </button>
+                            <button
+                              type="button"
+                              className="lu-imgbtn"
+                              title="강의 화면에서 따오기"
+                              disabled={imgBusy != null}
+                              onClick={() => setCapture({ slot: 'option', optionIndex: i })}
+                            >
+                              <i className="ph-bold ph-crop" />
+                            </button>
+                          </>
                         )
                       ) : form.id ? (
                         <span className="lu-optimg-note">저장 후 이미지 첨부</span>
@@ -1141,14 +1368,31 @@ function QuestionsModal({
         <div className="op-lect-qlist">
           {items === null && <div className="op-logrow">불러오는 중…</div>}
           {items !== null && items.length === 0 && !loadErr && (
-            <div className="op-logrow">
-              문항이 없어요 — 문항이 없으면 학생이 체크포인트에서 진행할 수 없어요.
-            </div>
+            <div className="op-logrow">등록된 문항이 없어요.</div>
           )}
           {(items ?? []).map((q) => (
             <div key={q.id} className="op-lect-qrow">
               <div className="op-lect-qmeta">
-                <span className="op-mono">{q.position_sec}초</span>
+                {/* 고정=그 시점 정각, 구간=그 사이 무작위 초 — 풀 문항(이후 무작위)과 한눈에 구분 */}
+                {q.pinned ? (
+                  (q.window_sec ?? 0) > 0 ? (
+                    <span
+                      className="op-mono lu-pinbadge"
+                      title="이 구간 안의 무작위 초에 반드시 출제돼요 — 매번 달라 학생이 지점을 못 외워요"
+                    >
+                      <i className="ph-fill ph-arrows-left-right" /> {fmtMMSS(q.position_sec)}~
+                      {fmtMMSS(q.position_sec + q.window_sec)} 구간
+                    </span>
+                  ) : (
+                    <span className="op-mono lu-pinbadge" title="이 시점에 닿는 순간 반드시 출제돼요">
+                      <i className="ph-fill ph-push-pin" /> {fmtMMSS(q.position_sec)} 고정
+                    </span>
+                  )
+                ) : (
+                  <span className="op-mono" title="이 시점 이후의 확인에서 무작위로 뽑혀요">
+                    {fmtMMSS(q.position_sec)} 이후
+                  </span>
+                )}
                 <span className={`op-sys-status op-sys-status--${q.status === 'active' ? 'ok' : 'warn'}`}>
                   {q.status === 'active' ? '공개' : 'draft'}
                 </span>
@@ -1192,6 +1436,324 @@ function QuestionsModal({
             </div>
           ))}
         </div>
+
+        {capture && (
+          <FrameCaptureModal
+            lec={lec}
+            attachTarget={capTarget}
+            onAttach={
+              capTarget
+                ? (file: File) =>
+                    attachImage(
+                      capTarget.slot,
+                      capTarget.optionIndex,
+                      file,
+                      capTarget.slot === 'prompt' ? 'prompt' : `opt-${capTarget.optionIndex}`,
+                    )
+                : null
+            }
+            onAttached={() => {
+              setCapture(null);
+              setBannerOk(true);
+              setBanner('강의 화면에서 따온 이미지를 첨부했어요 — 서버 저장까지 확인됐어요.');
+            }}
+            onUsePosition={(sec) => setForm((f) => (f ? { ...f, position_sec: fmtMMSS(sec) } : f))}
+            onClose={() => setCapture(null)}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ================= 강의 화면 따오기 모달 ================= */
+/** 운영자 미리보기 스트림을 재생하며 ① 현재 시점을 출제 시점으로 가져오고
+ *  ② 화면 위를 드래그해 그 영역을 잘라 문항 이미지로 첨부한다.
+ *
+ *  왜 화면을 따오나: 텍스트 보기("삼각형/사각형")는 강의를 안 본 사람도 상식으로 찍지만,
+ *  실제 강의 화면 조각은 그 강의를 본 사람만 고를 수 있다 — 시청 검증의 가장 강한 무기.
+ *
+ *  크롭은 브라우저 canvas로 한다(ffmpeg 불필요). 좌표 변환: 드래그 사각형은 표시 크기
+ *  (CSS px) 기준이고 원본 프레임(videoWidth/Height)은 보통 더 크므로 축마다 스케일을
+ *  곱해 원본 좌표로 옮긴다. 영상을 width 고정·height auto로 그려 표시 상자가 원본
+ *  비율과 정확히 일치한다(레터박스 없음 → 선형 변환만으로 충분).
+ *
+ *  canvas 오염(taint): 서버 CORS 헤더가 기대대로 안 붙으면 toBlob이 SecurityError를
+ *  던진다 — 성공 위장 없이 "보안 정책으로 따올 수 없다"고 정직하게 실패 처리한다. */
+function FrameCaptureModal({
+  lec,
+  attachTarget,
+  onAttach,
+  onAttached,
+  onUsePosition,
+  onClose,
+}: {
+  lec: OpsLecture;
+  /** null = 시점 선택 전용(문항 저장 전) — 영역 선택·첨부 UI를 숨긴다 */
+  attachTarget: { slot: 'prompt' | 'option'; optionIndex?: number } | null;
+  /** 첨부 실행 — null 반환 = 서버 재조회까지 확인된 성공, string = 실패 사유 */
+  onAttach: ((file: File) => Promise<string | null>) | null;
+  onAttached: () => void;
+  onUsePosition: (sec: number) => void;
+  onClose: () => void;
+}) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const dragRef = useRef<{ x: number; y: number } | null>(null);
+  const [phase, setPhase] = useState<'loading' | 'ready' | 'error'>('loading');
+  const [loadMsg, setLoadMsg] = useState('');
+  const [streamUrl, setStreamUrl] = useState('');
+  const [selecting, setSelecting] = useState(false);
+  /** 드래그 사각형 — 오버레이(=영상 표시 상자) 기준 CSS px */
+  const [sel, setSel] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [capErr, setCapErr] = useState('');
+  const [note, setNote] = useState('');
+
+  const loadPreview = () => {
+    setPhase('loading');
+    setLoadMsg('');
+    lectureApi
+      .opsPreview(lec.id)
+      .then((d) => {
+        setStreamUrl(d.stream_url);
+        setPhase('ready');
+      })
+      .catch((e) => {
+        setLoadMsg(errorDetail(e, '미리보기 스트림을 발급받지 못했어요.'));
+        setPhase('error');
+      });
+  };
+  useEffect(loadPreview, [lec.id]);
+
+  /* ---- 드래그 영역 선택 (pointer capture — 마우스가 빠르게 움직여도 놓치지 않는다) ---- */
+  const startDrag = (e: ReactPointerEvent<HTMLDivElement>) => {
+    const box = e.currentTarget.getBoundingClientRect();
+    const p = { x: e.clientX - box.left, y: e.clientY - box.top };
+    dragRef.current = p;
+    e.currentTarget.setPointerCapture(e.pointerId);
+    setSel({ x: p.x, y: p.y, w: 0, h: 0 });
+  };
+  const moveDrag = (e: ReactPointerEvent<HTMLDivElement>) => {
+    const s = dragRef.current;
+    if (!s) return;
+    const box = e.currentTarget.getBoundingClientRect();
+    const cx = Math.min(Math.max(e.clientX - box.left, 0), box.width);
+    const cy = Math.min(Math.max(e.clientY - box.top, 0), box.height);
+    setSel({ x: Math.min(s.x, cx), y: Math.min(s.y, cy), w: Math.abs(cx - s.x), h: Math.abs(cy - s.y) });
+  };
+  const endDrag = () => {
+    if (!dragRef.current) return;
+    dragRef.current = null;
+    // 클릭 수준의 미세 사각형은 의도가 아니다 — 버린다
+    setSel((r) => (r && r.w >= 8 && r.h >= 8 ? r : null));
+  };
+
+  const beginSelect = () => {
+    videoRef.current?.pause(); // 프레임이 흐르면 지정한 영역과 따온 화면이 어긋난다
+    setSelecting(true);
+    setSel(null);
+    setCapErr('');
+    setNote('');
+  };
+
+  const usePosition = () => {
+    const v = videoRef.current;
+    if (!v) return;
+    const sec = Math.floor(v.currentTime);
+    onUsePosition(sec);
+    setNote(`출제 시점 입력에 ${fmtMMSS(sec)}을 채웠어요 — 모달을 닫으면 폼에서 확인할 수 있어요.`);
+  };
+
+  /* ---- 선택 영역을 원본 프레임 좌표로 변환 → canvas 크롭 → 첨부 ---- */
+  const attachSelection = async () => {
+    const v = videoRef.current;
+    if (!v || !sel || !onAttach || busy) return;
+    setCapErr('');
+    setNote('');
+    if (!v.videoWidth || !v.videoHeight) {
+      setCapErr('영상 프레임을 아직 읽지 못했어요 — 잠시 재생한 뒤 다시 시도하세요.');
+      return;
+    }
+    /* 표시 크기(CSS px) → 원본 프레임 좌표. 축마다 독립 스케일 — 표시 상자가 원본
+       비율과 일치하면 두 값이 같고, 혹시 달라도 축별 선형 변환이라 결과는 여전히 정확하다. */
+    const scaleX = v.videoWidth / v.clientWidth;
+    const scaleY = v.videoHeight / v.clientHeight;
+    let sx = Math.round(sel.x * scaleX);
+    let sy = Math.round(sel.y * scaleY);
+    let sw = Math.round(sel.w * scaleX);
+    let sh = Math.round(sel.h * scaleY);
+    // 반올림·경계 드래그로 프레임을 벗어나지 않게 클램프
+    sx = Math.min(Math.max(sx, 0), v.videoWidth - 1);
+    sy = Math.min(Math.max(sy, 0), v.videoHeight - 1);
+    sw = Math.min(Math.max(sw, 1), v.videoWidth - sx);
+    sh = Math.min(Math.max(sh, 1), v.videoHeight - sy);
+    // 첨부 API 5MB 상한 대비 — 긴 변 1280px로 제한(문항 이미지 용도로 충분)
+    const outScale = Math.min(1, 1280 / Math.max(sw, sh));
+    const dw = Math.max(1, Math.round(sw * outScale));
+    const dh = Math.max(1, Math.round(sh * outScale));
+    const canvas = document.createElement('canvas');
+    canvas.width = dw;
+    canvas.height = dh;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      setCapErr('이 브라우저에서 캔버스를 사용할 수 없어 화면을 따올 수 없어요.');
+      return;
+    }
+    let blob: Blob | null = null;
+    try {
+      ctx.drawImage(v, sx, sy, sw, sh, 0, 0, dw, dh);
+      blob = await new Promise<Blob | null>((res) => canvas.toBlob(res, 'image/png'));
+    } catch {
+      // canvas 오염(taint) — CORS 헤더가 기대대로 안 붙은 경우. 가짜 성공 금지, 정직한 실패.
+      setCapErr(
+        '브라우저 보안 정책으로 화면을 따올 수 없습니다 — 서버 CORS 설정(자사 오리진 허용)을 확인해 주세요.',
+      );
+      return;
+    }
+    if (!blob) {
+      setCapErr('화면을 이미지로 변환하지 못했어요 — 다시 시도해 주세요.');
+      return;
+    }
+    if (blob.size > 5 * 1024 * 1024) {
+      setCapErr('따온 이미지가 5MB를 넘어요 — 더 작은 영역을 지정해 주세요.');
+      return;
+    }
+    const file = new File([blob], `lecture-frame-${Math.floor(v.currentTime)}s.png`, {
+      type: 'image/png',
+    });
+    setBusy(true);
+    const fail = await onAttach(file); // null = 서버 재조회까지 확인된 성공
+    setBusy(false);
+    if (fail) setCapErr(fail);
+    else onAttached();
+  };
+
+  const title = attachTarget
+    ? attachTarget.slot === 'prompt'
+      ? '문제 이미지 — 강의 화면에서 따오기'
+      : `${(attachTarget.optionIndex ?? 0) + 1}번 보기 — 강의 화면에서 따오기`
+    : '강의 미리보기 — 출제 시점 고르기';
+
+  return (
+    /* 문항 모달 위에 겹쳐 뜬다 — 배경 클릭이 바깥 모달 close로 새지 않게 전파를 끊는다 */
+    <div
+      className="op-bh-overlay"
+      onClick={(e) => {
+        e.stopPropagation();
+        if (!busy) onClose();
+      }}
+    >
+      <div className="op-formmodal lu-cap-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="op-bh-modal-h">
+          <span>
+            <i className="ph-fill ph-crop" /> {title}
+          </span>
+          <button className="op-bh-modal-x" onClick={onClose} disabled={busy}>
+            <i className="ph-bold ph-x" />
+          </button>
+        </div>
+        <span className="lu-help">
+          {lec.title} · 영상 길이 {fmtMMSS(lec.duration_sec)}
+          {attachTarget
+            ? ' — 원하는 장면에서 멈추고 영역을 드래그하면 그 부분이 이미지로 첨부돼요.'
+            : ' — 원하는 장면에서 멈추고 시점을 가져오세요.'}
+        </span>
+
+        {phase === 'loading' && <div className="op-logrow">미리보기 스트림을 여는 중…</div>}
+        {phase === 'error' && (
+          <div className="op-form-err lu-cap-gap">
+            <i className="ph-fill ph-warning-circle" /> {loadMsg}
+            <button className="op-btn op-btn--reject" onClick={loadPreview}>
+              다시 시도
+            </button>
+          </div>
+        )}
+        {phase === 'ready' && (
+          <>
+            <div className="lu-cap-stage">
+              <video
+                ref={videoRef}
+                className="lu-cap-video"
+                src={API_ORIGIN + streamUrl}
+                crossOrigin="anonymous"
+                controls={!selecting}
+                preload="metadata"
+                onError={() => {
+                  setPhase('error');
+                  setLoadMsg(
+                    '영상을 불러오지 못했어요 — 미리보기 토큰이 만료됐거나 서버 CORS 설정 문제일 수 있어요. 다시 시도해 주세요.',
+                  );
+                }}
+              />
+              {selecting && (
+                <div
+                  className="lu-cap-select"
+                  onPointerDown={startDrag}
+                  onPointerMove={moveDrag}
+                  onPointerUp={endDrag}
+                >
+                  {sel ? (
+                    <div
+                      className="lu-cap-rect"
+                      style={{ left: sel.x, top: sel.y, width: sel.w, height: sel.h }}
+                    />
+                  ) : (
+                    <span className="lu-cap-hint">드래그해서 따올 영역을 지정하세요</span>
+                  )}
+                </div>
+              )}
+            </div>
+            <div className="lu-cap-tools">
+              <button type="button" className="op-btn op-btn--reject" onClick={usePosition} disabled={busy}>
+                <i className="ph-bold ph-timer" /> 이 시점을 출제 시점으로
+              </button>
+              {attachTarget ? (
+                !selecting ? (
+                  <button type="button" className="op-btn op-btn--approve" onClick={beginSelect}>
+                    <i className="ph-bold ph-crop" /> 이 장면에서 영역 지정
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      className="op-btn op-btn--reject"
+                      disabled={busy}
+                      onClick={() => {
+                        setSelecting(false);
+                        setSel(null);
+                      }}
+                    >
+                      <i className="ph-bold ph-arrow-counter-clockwise" /> 다시 재생·이동
+                    </button>
+                    <button
+                      type="button"
+                      className="op-btn op-btn--approve"
+                      disabled={busy || !sel}
+                      onClick={attachSelection}
+                    >
+                      <i className="ph-bold ph-check" />
+                      {busy ? '올리는 중…' : '선택 영역 첨부'}
+                    </button>
+                  </>
+                )
+              ) : (
+                <span className="lu-cap-note">
+                  이미지 첨부는 문항을 먼저 저장한 뒤에 할 수 있어요 — 여기서는 시점만 가져올 수 있어요.
+                </span>
+              )}
+            </div>
+            {note && (
+              <div className="op-lect-banner-ok lu-cap-gap">
+                <i className="ph-fill ph-check-circle" /> {note}
+              </div>
+            )}
+            {capErr && (
+              <div className="op-form-err lu-cap-gap">
+                <i className="ph-fill ph-warning-circle" /> {capErr}
+              </div>
+            )}
+          </>
+        )}
       </div>
     </div>
   );

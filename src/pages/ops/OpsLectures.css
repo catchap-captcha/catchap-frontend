@@ -89,8 +89,12 @@
   color: #64748b;
   margin: 2px 0 4px;
 }
+/* 입력 중 실시간 범위 경고(고정 시점이 0초·영상 밖일 때) — 제출 전에 미리 알린다 */
+.lu-help--bad { color: #c2554a; font-weight: 700; }
 
 .lu-presets { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 6px; }
+.lu-presets--2 { grid-template-columns: repeat(2, 1fr); } /* 출제 방식(무작위/고정) 두 갈래 세그먼트 */
+.lu-presets--3 { grid-template-columns: repeat(3, 1fr); } /* 출제 방식(무작위/고정/구간) 세 갈래 세그먼트 */
 .lu-preset {
   border: 1.5px solid #e2e8f0;
   border-radius: 10px;
@@ -257,6 +261,76 @@
   .lu-imgthumb img { max-width: 100%; }
   .lu-imgthumb-actions { flex-direction: row; }
 }
+
+/* 고정 문항 배지 — 그 시점 정각에 반드시 출제되는 문항을 목록에서 즉시 식별 */
+.lu-pinbadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: #eff6ff;
+  color: #2563eb;
+  white-space: nowrap;
+}
+.lu-pinbadge i { font-size: 12px; }
+
+/* ── 강의 화면 따오기 (프레임 캡처) ─────────────────────────
+   미리보기 영상을 재생하며 드래그로 사각형을 지정해 그 영역을 문항 이미지로 첨부한다.
+   실제 강의 화면 조각은 그 강의를 본 사람만 고를 수 있다 — 시청 검증의 핵심. */
+.lu-capbtn {
+  margin-top: 6px;
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 1.5px dashed #cbd5e1;
+  border-radius: 8px;
+  background: #fff;
+  padding: 6px 12px;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #64748b;
+  cursor: pointer;
+}
+.lu-capbtn:hover:not(:disabled) { border-color: #94a3b8; background: #f1f5f9; }
+.lu-capbtn:disabled { opacity: 0.5; cursor: default; }
+
+.lu-cap-modal { max-width: 720px; }
+.lu-cap-gap { margin-top: 10px; }
+/* 영상은 width 100%·height auto — 표시 상자가 원본 비율과 일치해(레터박스 없음)
+   드래그 좌표를 축별 스케일만으로 원본 프레임 좌표로 옮길 수 있다 */
+.lu-cap-stage { position: relative; margin-top: 10px; background: #0f172a; border-radius: 12px; overflow: hidden; }
+.lu-cap-video { display: block; width: 100%; height: auto; }
+.lu-cap-select {
+  position: absolute;
+  inset: 0;
+  cursor: crosshair;
+  touch-action: none; /* 터치 드래그가 스크롤로 새지 않게 */
+  background: rgba(15, 23, 42, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.lu-cap-rect {
+  position: absolute;
+  border: 2px dashed #ffb43c;
+  background: rgba(255, 180, 60, 0.15);
+  box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.4); /* 선택 밖을 어둡게 — 따올 영역이 또렷이 보인다 */
+  pointer-events: none;
+}
+.lu-cap-hint {
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.75);
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 700;
+  pointer-events: none;
+}
+.lu-cap-tools { display: flex; align-items: center; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.lu-cap-note { font-size: 12px; font-weight: 700; color: #a89d8e; }
 
 /* 문항 0개 경고 — 시청 검증이 동작하지 않는 강의를 목록에서 즉시 식별 */
 .lu-nowarn {
