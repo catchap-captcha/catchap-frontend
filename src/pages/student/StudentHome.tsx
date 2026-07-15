@@ -6,6 +6,7 @@ import StudentLayout from '../../layouts/StudentLayout';
 import { PATHS } from '../../routes/paths';
 import { useAuth } from '../../hooks/useAuth';
 import { studentApi } from '../../api/students';
+import { lectureApi, type LectureItem } from '../../api/lectures';
 import { notificationApi } from '../../api/notifications';
 import { RANKING_ENABLED } from '../../config/features';
 import mascot from '../../assets/characters/catchap-logo.png';
@@ -63,7 +64,7 @@ const FALLBACK: HomeData = {
       shadow: 'rgba(255,90,110,0.8)',
       shadowHover: 'rgba(255,90,110,0.85)',
       icon: 'ph-fill ph-book-open',
-      desc: '낱말·문장·글의 속뜻을 익히는 오늘의 국어 한 판',
+      desc: '글자와 낱말을 배우는 오늘의 국어 강의 한 편',
       descColor: 'rgba(255,255,255,0.9)',
       done: 5,
       total: 5,
@@ -74,7 +75,7 @@ const FALLBACK: HomeData = {
       shadow: 'rgba(255,160,40,0.8)',
       shadowHover: 'rgba(255,160,40,0.85)',
       icon: 'ph-fill ph-translate',
-      desc: '단어·문장·문법으로 배우는 영어 한 판',
+      desc: '알파벳과 쉬운 단어를 배우는 영어 강의 한 편',
       descColor: 'rgba(255,255,255,0.92)',
       done: 3,
       total: 5,
@@ -85,7 +86,7 @@ const FALLBACK: HomeData = {
       shadow: 'rgba(30,190,150,0.8)',
       shadowHover: 'rgba(30,190,150,0.85)',
       icon: 'ph-fill ph-plus-minus',
-      desc: '수·연산·도형·측정을 배우는 수학 한 판',
+      desc: '수와 셈을 재미있게 배우는 수학 강의 한 편',
       descColor: 'rgba(255,255,255,0.92)',
       done: 5,
       total: 5,
@@ -96,7 +97,7 @@ const FALLBACK: HomeData = {
       shadow: 'rgba(46,123,255,0.8)',
       shadowHover: 'rgba(46,123,255,0.85)',
       icon: 'ph-fill ph-flask',
-      desc: '그림을 관찰하고 탐구하는 과학 한 판',
+      desc: '그림으로 관찰하고 탐구하는 과학 강의 한 편',
       descColor: 'rgba(255,255,255,0.92)',
       done: 0,
       total: 5,
@@ -107,7 +108,7 @@ const FALLBACK: HomeData = {
       shadow: 'rgba(139,107,255,0.8)',
       shadowHover: 'rgba(139,107,255,0.85)',
       icon: 'ph-fill ph-scroll',
-      desc: '지도·지역·공공기관을 알아가는 사회 한 판',
+      desc: '학교와 마을, 민주주의를 배우는 사회 강의 한 편',
       descColor: 'rgba(255,255,255,0.92)',
       done: 0,
       total: 5,
@@ -118,7 +119,7 @@ const FALLBACK: HomeData = {
       shadow: 'rgba(255,109,166,0.8)',
       shadowHover: 'rgba(255,109,166,0.85)',
       icon: 'ph-fill ph-house-line',
-      desc: '생활 속 안전과 지혜를 배우는 생활 한 판',
+      desc: '생활 속 안전과 지혜를 배우는 생활 강의 한 편',
       descColor: 'rgba(255,255,255,0.92)',
       done: 0,
       total: 5,
@@ -171,7 +172,7 @@ interface Pop {
 
 const QUICK_MENU = [
   { label: '개념 설명', to: PATHS.STUDENT_CONCEPTS, bg: '#FFE7D8', color: '#FF7A4D', icon: 'ph-fill ph-book-bookmark', badge: null as string | null, badgeNew: false },
-  { label: '오늘의 퀴즈', to: PATHS.STUDENT_DAILY_QUIZ, bg: '#FFEDE0', color: '#FF922E', icon: 'ph-fill ph-lightning', badge: null as string | null, badgeNew: false },
+  { label: '오늘의 강의', to: PATHS.STUDENT_LECTURES, bg: '#FFEDE0', color: '#FF922E', icon: 'ph-fill ph-video-camera', badge: null as string | null, badgeNew: false },
   { label: '오답 노트', to: PATHS.STUDENT_WRONG_NOTES, bg: '#FFE3E9', color: '#FF5A6E', icon: 'ph-fill ph-notebook', badge: null, badgeNew: false },
   { label: '획득 배지', to: PATHS.STUDENT_BADGES, bg: '#FFF3D6', color: '#F0A400', icon: 'ph-fill ph-medal', badge: null, badgeNew: false },
   { label: 'AI 선생님', to: PATHS.STUDENT_AI_TEACHER, bg: '#E6F0FF', color: '#2E7BFF', icon: 'ph-fill ph-robot', badge: 'NEW', badgeNew: true },
@@ -242,7 +243,9 @@ function mapDashboard(d: any, prev: HomeData): Partial<HomeData> {
   if (typeof d.badges?.earned === 'number') out.badgeCount = d.badges.earned;
   if (typeof d.ai_comment === 'string' && d.ai_comment) out.aiComment = `“${d.ai_comment}”`;
 
-  // subjects: 과목명 기준 매칭, done/total/desc만 덮어씀 (색·아이콘 테마는 디자인 값 유지)
+  // subjects: 과목명 기준 매칭, done/total만 덮어씀 (색·아이콘 테마는 디자인 값 유지).
+  // desc는 덮지 않는다 — 서버 dashboard desc는 퀴즈 문구라, 카드가 '오늘의 강의'로 전환되며
+  // 정적 강의 소개 문구(FALLBACK)를 유지한다(시청 상태는 lect 소스가 담당).
   if (Array.isArray(d.subjects) && d.subjects.length) {
     out.subjects = prev.subjects.map((s) => {
       const m = d.subjects.find((x: any) => x?.subject === s.subject);
@@ -251,11 +254,40 @@ function mapDashboard(d: any, prev: HomeData): Partial<HomeData> {
         ...s,
         done: typeof m.done === 'number' ? m.done : s.done,
         total: typeof m.total === 'number' ? m.total : s.total,
-        desc: typeof m.desc === 'string' && m.desc ? m.desc : s.desc,
       };
     });
   }
 
+  return out;
+}
+
+/** 과목별 '오늘의 강의' 카드 상태 — GET /lectures(내 진행 포함)에서 파생 */
+interface SubjectLecture {
+  id: string;
+  title: string;
+  state: 'new' | 'watching' | 'done'; // done = 그 과목 강의 전부 시청 완료
+  frac: number; // 현재 강의 시청 비율(0~1) — 카드 세그먼트 표시용
+}
+
+/** 과목별 현재 강의: 목차 순서(order_no)에서 첫 미완료 강의, 전부 완료면 마지막 강의 */
+function mapLectures(rows: LectureItem[]): Record<string, SubjectLecture> {
+  const bySubject: Record<string, LectureItem[]> = {};
+  rows.forEach((l) => {
+    (bySubject[l.subject] = bySubject[l.subject] ?? []).push(l);
+  });
+  const out: Record<string, SubjectLecture> = {};
+  Object.entries(bySubject).forEach(([sub, items]) => {
+    const current = items.find((l) => l.progress?.status !== 'done');
+    const pick = current ?? items[items.length - 1];
+    if (!pick) return;
+    const watched = pick.progress?.watched_max_sec ?? 0;
+    out[sub] = {
+      id: pick.id,
+      title: pick.title,
+      state: current ? (watched > 0 ? 'watching' : 'new') : 'done',
+      frac: pick.duration_sec > 0 ? Math.min(1, watched / pick.duration_sec) : 0,
+    };
+  });
   return out;
 }
 
@@ -265,6 +297,8 @@ export default function StudentHome() {
 
   const [data, setData] = useState<HomeData>(FALLBACK);
   const [demo, setDemo] = useState(false); // 성장 그래프가 데모값(시도 없음)이면 true
+  // 과목별 오늘의 강의(시청 기준) — null = 아직 조회 전 또는 실패(카드가 목록 링크로 폴백)
+  const [lect, setLect] = useState<Record<string, SubjectLecture> | null>(null);
   const [scrollActive, setScrollActive] = useState<'home' | 'today'>('home');
   const [bubbleMessage, setBubbleMessage] = useState<string | null>(null);
   const [bubbleKey, setBubbleKey] = useState(0);
@@ -286,6 +320,18 @@ export default function StudentHome() {
       .catch(() => {
         // 실패 시 FALLBACK(예시값)을 실데이터처럼 보여주지 않는다 — 데모로 명시(적대적검토 #6).
         if (mounted) setDemo(true);
+      });
+    // 오늘의 강의 카드(시청 기준) — dashboard(성장 통계)와 별도 소스.
+    // 백엔드 dashboard가 아직 시청 기준이 아니라 강의 목록 API에서 직접 파생한다(이중 소스 트레이드오프).
+    // 실패 시 카드가 시청 상태 없이 '강의 보기'(목록 링크)로만 동작 — 가짜 진행 표시는 하지 않는다.
+    lectureApi
+      .list()
+      .then((rows) => {
+        if (!mounted || !Array.isArray(rows)) return;
+        setLect(mapLectures(rows));
+      })
+      .catch(() => {
+        if (mounted) setLect(null);
       });
     // (메인 CTA가 '오늘의 퀴즈'로 통일되면서 생활 일일 과제 조회는 오늘의퀴즈 페이지 몫)
     // 보호자 연동 알림: 안 읽은 parent_link 알림이 있으면 팝업으로 안내
@@ -340,13 +386,16 @@ export default function StudentHome() {
     }, 1850);
   };
 
-  const total = Math.max(1, data.todayTotal);
-  const done = Math.min(total, Math.max(0, data.todayDone));
+  // 오늘 학습 진행 = 과목별 강의 시청 완료 수(시청 기준). 강의 데이터가 없으면 0/6로 정직 표시.
+  const subjectLects = data.subjects.map((s) => lect?.[s.subject] ?? null);
+  const lectAvailable = subjectLects.filter(Boolean).length;
+  const total = lect && lectAvailable > 0 ? lectAvailable : Math.max(1, data.subjects.length);
+  const done = subjectLects.filter((li) => li?.state === 'done').length;
   const barWidth = Math.round((done / total) * 100) + '%';
-  // 오늘의 퀴즈에서 다음에 풀 과목(첫 미완료) — 다 끝냈으면 null
-  const nextQuizSubject = data.subjects.find((sub) => sub.done < sub.total)?.subject ?? null;
-  // 오늘의 퀴즈 아직 안 한 과목 수 (nextQuizSubject와 같은 소스) — 퀵메뉴 배지용
-  const quizUndone = data.subjects.filter((sub) => sub.done < sub.total).length;
+  // 다음에 볼 강의(목차 순 첫 미완료 과목) — 전부 다 봤거나 데이터 없으면 null → 강의 목록으로
+  const nextLecture = subjectLects.find((li) => li && li.state !== 'done') ?? null;
+  // 아직 오늘 강의를 다 못 본 과목 수 — 퀵메뉴 '오늘의 강의' 배지용
+  const lectUndone = subjectLects.filter((li) => li && li.state !== 'done').length;
 
   return (
     <StudentLayout
@@ -367,19 +416,19 @@ export default function StudentHome() {
           <div className="sh-hero-left">
             <span className="sh-hero-tag">
               <i className="ph-fill ph-paw-print" />
-              오늘의 퀴즈
+              오늘의 학습
             </span>
             <h1 className="sh-hero-title">
               안녕, {name}! <br />
               오늘도 만나서 반가워 🐾
             </h1>
             <p className="sh-hero-desc">
-              고양이 친구와 함께 그림을 고르고, 끌어놓고, 낱말을 맞추며 재미있게 배워요.
+              고양이 선생님의 강의를 보고, 시청 중 확인 문제를 맞히며 재미있게 배워요.
             </p>
 
             <div className="sh-progress">
               <div className="sh-progress-head">
-                <span className="sh-progress-label">오늘의 퀴즈 진행</span>
+                <span className="sh-progress-label">오늘 학습 진행</span>
                 <span className="sh-progress-count">
                   {done}
                   <span className="sh-progress-total">/{total} 완료</span>
@@ -391,22 +440,21 @@ export default function StudentHome() {
             </div>
 
             <div className="sh-cta-row">
-              {/* 메인은 '오늘의 퀴즈'로 통일 — 첫 미완료 과목의 퀴즈 세션으로 바로 진입.
-                  (생활 일일 과제·주간 챕터는 각각 오늘의퀴즈 페이지·전체 학습에서) */}
+              {/* 메인 CTA는 '오늘의 강의' — 목차 순 첫 미완료 과목의 강의실로 바로 진입.
+                  강의 데이터가 없으면 강의 목록으로(가짜 진행 없이 목록에서 상태 확인). */}
               <Link
-                to={
-                  nextQuizSubject
-                    ? `${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(nextQuizSubject)}`
-                    : PATHS.STUDENT_DAILY_QUIZ
-                }
+                to={nextLecture ? PATHS.STUDENT_LECTURE : PATHS.STUDENT_LECTURES}
+                state={nextLecture ? { id: nextLecture.id } : undefined}
                 className="sh-cta-primary"
               >
                 <i className="ph-fill ph-play-circle" />
-                {nextQuizSubject
-                  ? done > 0
-                    ? '오늘의 퀴즈 이어서 풀기'
-                    : '오늘의 퀴즈 시작하기'
-                  : '오늘의 퀴즈 다시 보기'}
+                {nextLecture
+                  ? nextLecture.state === 'watching'
+                    ? '오늘의 강의 이어서 보기'
+                    : '오늘의 강의 시작하기'
+                  : lect && lectAvailable > 0
+                    ? '오늘 강의 다 봤어요 — 다시 보기'
+                    : '오늘의 강의 시작하기'}
               </Link>
               <Link to={PATHS.STUDENT_ALL_LEARNING} className="sh-cta-secondary">
                 전체 학습 보기
@@ -446,80 +494,88 @@ export default function StudentHome() {
               <i className="ph-fill ph-cards-three" />
             </span>
             <div>
-              <h2 className="sh-sectitle">오늘의 퀴즈</h2>
-              <p className="sh-secsub">여섯 과목을 매일 5문제씩 — 오늘의 퀴즈로 하루 습관을 만들어요</p>
+              <h2 className="sh-sectitle">오늘의 강의</h2>
+              <p className="sh-secsub">매일 강의 하나씩, 오늘 볼 여섯 편이에요</p>
             </div>
           </div>
-          <Link to={PATHS.STUDENT_CONCEPTS} className="sh-seclink">
-            개념 먼저 보기 <i className="ph-bold ph-book-bookmark" />
+          <Link to={PATHS.STUDENT_LECTURES} className="sh-seclink">
+            강의 목차 보기 <i className="ph-bold ph-list-bullets" />
           </Link>
         </div>
 
         <div className="sh-cards">
-          {data.subjects.map((s) => (
-            <div
-              key={s.subject}
-              className="sh-card"
-              style={
-                {
-                  '--sh-grad': s.grad,
-                  '--sh-sh': s.shadow,
-                  '--sh-shh': s.shadowHover,
-                } as CSSProperties
-              }
-            >
-              <Link
-                to={`${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(s.subject)}${
-                  s.done >= s.total ? '&replay=1' : ''
-                }`}
-                aria-label={`${s.subject} 오늘의 퀴즈`}
-                className="sh-card-link"
-              />
-              <div className="sh-card-deco" />
-              <div className="sh-card-head">
-                <span className="sh-card-tag">{s.subject}</span>
-                <span className="sh-card-icon">
-                  <i className={s.icon} />
-                </span>
-              </div>
-              <h3 className="sh-card-title">{s.subject}</h3>
-              <p className="sh-card-desc" style={{ color: s.descColor }}>
-                {s.desc}
-              </p>
-              <div className="sh-card-segs">
-                {Array.from({ length: s.total }, (_, i) => (
-                  <div key={i} className={`sh-seg${i < s.done ? ' sh-on' : ''}`} />
-                ))}
-              </div>
-              <div className="sh-card-foot">
-                {s.done >= s.total ? (
-                  <span className="sh-status-done">
-                    <i className="ph-fill ph-check-circle" />
-                    {s.total}문제 중 {s.done}개 완료
+          {data.subjects.map((s) => {
+            // 시청 기준 카드 상태 — 강의 데이터가 없으면(로딩/실패/미등록) 목록 링크 + 진행 0으로 정직 표시
+            const li = lect?.[s.subject] ?? null;
+            const segTotal = 5; // 진행 세그먼트 해상도(디자인 그대로) — 시청 비율을 5칸에 매핑
+            const segDone =
+              li == null ? 0 : li.state === 'done' ? segTotal : Math.min(segTotal - 1, Math.floor(li.frac * segTotal));
+            return (
+              <div
+                key={s.subject}
+                className="sh-card"
+                style={
+                  {
+                    '--sh-grad': s.grad,
+                    '--sh-sh': s.shadow,
+                    '--sh-shh': s.shadowHover,
+                  } as CSSProperties
+                }
+              >
+                <Link
+                  to={li ? PATHS.STUDENT_LECTURE : PATHS.STUDENT_LECTURES}
+                  state={li ? { id: li.id } : undefined}
+                  aria-label={`${s.subject} 오늘의 강의`}
+                  className="sh-card-link"
+                />
+                <div className="sh-card-deco" />
+                <div className="sh-card-head">
+                  <span className="sh-card-tag">{s.subject}</span>
+                  <span className="sh-card-icon">
+                    <i className={s.icon} />
                   </span>
-                ) : (
-                  <span className="sh-status-plain">
-                    {s.total}문제 중 {s.done}개 완료
-                  </span>
-                )}
-                <span className="sh-card-action">
-                  {s.done >= s.total ? (
-                    <>
-                      다시 하기 <i className="ph-bold ph-arrow-clockwise" />
-                    </>
-                  ) : s.done > 0 ? (
-                    <>
-                      이어서 하기 <i className="ph-bold ph-arrow-right" />
-                    </>
+                </div>
+                <h3 className="sh-card-title">{s.subject}</h3>
+                <p className="sh-card-desc" style={{ color: s.descColor }}>
+                  {s.desc}
+                </p>
+                <div className="sh-card-segs">
+                  {Array.from({ length: segTotal }, (_, i) => (
+                    <div key={i} className={`sh-seg${i < segDone ? ' sh-on' : ''}`} />
+                  ))}
+                </div>
+                <div className="sh-card-foot">
+                  {li?.state === 'done' ? (
+                    <span className="sh-status-done">
+                      <i className="ph-fill ph-check-circle" />
+                      오늘 강의 완료
+                    </span>
+                  ) : li?.state === 'watching' ? (
+                    <span className="sh-status-plain">
+                      <i className="ph-fill ph-play-circle" /> 강의 보는 중
+                    </span>
                   ) : (
-                    <>
-                      시작하기 <i className="ph-bold ph-arrow-right" />
-                    </>
+                    <span className="sh-status-plain">오늘 강의</span>
                   )}
-                </span>
+                  <span className="sh-card-action">
+                    {li?.state === 'done' ? (
+                      <>
+                        다시 보기 <i className="ph-bold ph-arrow-clockwise" />
+                      </>
+                    ) : li?.state === 'watching' ? (
+                      <>
+                        이어서 보기 <i className="ph-bold ph-arrow-right" />
+                      </>
+                    ) : (
+                      <>
+                        강의 보기 <i className="ph-bold ph-arrow-right" />
+                      </>
+                    )}
+                  </span>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
 
@@ -528,10 +584,17 @@ export default function StudentHome() {
         <div className="sh-quick">
           <div className="sh-quick-grid">
             {QUICK_MENU.map((q) => {
-              // 오늘의 퀴즈 배지 = 아직 안 한 과목 수(실데이터). 다 했으면 '완료' 배지.
-              const isQuiz = q.to === PATHS.STUDENT_DAILY_QUIZ;
-              const badge = isQuiz ? (quizUndone > 0 ? String(quizUndone) : '완료') : q.badge;
-              const badgeDone = isQuiz && quizUndone === 0;
+              // 오늘의 강의 배지 = 아직 다 못 본 과목 수(시청 기준). 다 봤으면 '완료' 배지.
+              // 강의 데이터가 없으면(실패/미등록) 배지를 붙이지 않는다 — 가짜 카운트 금지.
+              const isLect = q.to === PATHS.STUDENT_LECTURES;
+              const badge = isLect
+                ? lect && lectAvailable > 0
+                  ? lectUndone > 0
+                    ? String(lectUndone)
+                    : '완료'
+                  : null
+                : q.badge;
+              const badgeDone = isLect && !!lect && lectAvailable > 0 && lectUndone === 0;
               return (
                 <Link key={q.label} to={q.to} className="sh-quick-item">
                   <span className="sh-quick-icon" style={{ background: q.bg, color: q.color }}>
@@ -692,7 +755,7 @@ export default function StudentHome() {
             <img src={mascot} alt="CatChap" className="sh-footer-img" />
             <div>
               <div className="sh-footer-name">CatChap</div>
-              <div className="sh-footer-sub">놀면서 배우는 어린이 캡챠 학습 서비스</div>
+              <div className="sh-footer-sub">영상 시청을 검증하는 강의 학습 서비스</div>
             </div>
           </div>
           <div className="sh-footer-links">
@@ -708,7 +771,7 @@ export default function StudentHome() {
           </div>
         </div>
         <p className="sh-footer-copy">
-          © 2026 CatChap · 카카오클라우드 AIaaS 마스터 클래스 5기. 어린이의 학습 데이터는 안전하게
+          © 2026 CatChap · 카카오클라우드 AIaaS 마스터 클래스 5기. 학습자의 시청 데이터는 안전하게
           보호됩니다.
         </p>
       </footer>

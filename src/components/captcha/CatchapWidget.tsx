@@ -64,11 +64,12 @@ interface Props {
   stage?: number; // 챕터 단계(1~5)
   replay?: boolean; // 복습 — 코인·퀴즈 상태 미반영
   bank?: boolean; // 전체학습 문제은행 — 안 푼>틀린>맞춘 우선 출제, 코인·퀴즈 미반영
+  lecture?: string; // 강의 시청 검증 — 그 강의의 체크포인트 확인 문제 출제(코인·퀴즈 미반영)
   total?: number; // 세션 문항 수 — 채우면 위젯이 catchap:finished 발신
 }
 
 export default function CatchapWidget({
-  siteKey, api, subject, size = 'full', className, auth, day, chapter, stage, replay, bank, total,
+  siteKey, api, subject, size = 'full', className, auth, day, chapter, stage, replay, bank, lecture, total,
 }: Props) {
   const hostRef = useRef<HTMLDivElement | null>(null);
 
@@ -95,6 +96,7 @@ export default function CatchapWidget({
     if (stage) box.setAttribute('data-stage', String(stage));
     if (replay) box.setAttribute('data-replay', '1');
     if (bank) box.setAttribute('data-bank', '1');
+    if (lecture) box.setAttribute('data-lecture', lecture);
     if (total) box.setAttribute('data-total', String(total));
     // 인앱은 게임 화면이 학생 설정(효과음 토글)에 따라 직접 재생 — 위젯 자체 효과음은 꺼서
     // 이중 재생을 막는다. (외부 임베드는 이 속성이 없어 기본 켜짐)
@@ -117,7 +119,7 @@ export default function CatchapWidget({
       if (box.parentNode) box.parentNode.removeChild(box);
     };
     // subject/siteKey 등이 바뀌면 재마운트
-  }, [siteKey, api, subject, size, auth, day, chapter, stage, replay, bank, total]);
+  }, [siteKey, api, subject, size, auth, day, chapter, stage, replay, bank, lecture, total]);
 
   return <div ref={hostRef} className={className} />;
 }

@@ -27,6 +27,10 @@
   align-items: center;
   gap: 14px;
   justify-content: space-between;
+  /* 메뉴(11개)가 max-width를 넘치면 문서 가로 스크롤로 새지 않게 네비 안에서만 스크롤
+     (모바일 규칙과 동일 — '강의 관리' 추가로 데스크톱 1440에서도 넘치는 것 확인) */
+  overflow-x: auto;
+  scrollbar-width: thin;
 }
 .op-brand {
   display: flex;

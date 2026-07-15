@@ -6,6 +6,7 @@ import mascot from '../../assets/characters/catchap-logo.png';
 /** 운영 콘솔 공용 상단 네비게이션 (모든 ops 페이지가 공유) */
 const LINKS = [
   { to: PATHS.OPS_APPROVAL, icon: 'ph-buildings', label: '기관 승인' },
+  { to: PATHS.OPS_LECTURES, icon: 'ph-video-camera', label: '강의 관리' },
   { to: PATHS.OPS_ORGS, icon: 'ph-list-checks', label: '기관 관리' },
   { to: PATHS.OPS_API_KEYS, icon: 'ph-key', label: 'API 발급' },
   { to: PATHS.OPS_INQUIRIES, icon: 'ph-chat-circle-dots', label: '문의 관리' },

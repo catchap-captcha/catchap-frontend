@@ -25,6 +25,8 @@ export const PATHS = {
   STUDENT_CHAPTER_PLAY: '/student/chapter-play', // ?subject=&chapter= — 주간 챕터 한 단계(2문항) 플레이
   STUDENT_RESULT: '/student/result', // ?subject=
   STUDENT_DAILY_QUIZ: '/student/daily-quiz',
+  STUDENT_LECTURES: '/student/lectures', // ?subject= — 과목별 강의 카탈로그(개념 설명 톤)
+  STUDENT_LECTURE: '/student/lecture', // ?id= — 강의실(플레이어 + 시청 검증)
   STUDENT_ALL_LEARNING: '/student/all-learning',
   STUDENT_CONCEPTS: '/student/concepts', // ?tab=
   STUDENT_RECORDS: '/student/records',
@@ -82,6 +84,7 @@ export const PATHS = {
   OPS_OPERATORS: '/ops/operators', // 운영자 계정 관리
   OPS_SYSTEM: '/ops/system', // 시스템 상태 (실측 헬스체크)
   OPS_AI_MODELS: '/ops/ai-models', // 모델 레지스트리 관리(기관 콘솔 노출 콘텐츠)
+  OPS_LECTURES: '/ops/lectures', // 강의 관리 (영상 업로드·확인 문항·자료실)
 
   // 기관 학생 관리 (학생 생성 + 가입코드 배부)
   ORG_STUDENTS: '/org/students',

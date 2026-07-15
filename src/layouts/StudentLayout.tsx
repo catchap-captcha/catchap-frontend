@@ -91,7 +91,7 @@ export function StudentNav({
           <img src={mascot} alt="CatChap" className="sl-logoimg" />
           <div className="sl-logotext">
             <span className="sl-logotitle">CatChap</span>
-            <span className="sl-logosub">놀면서 배우는 캡챠 학습</span>
+            <span className="sl-logosub">시청을 검증하는 강의 학습</span>
           </div>
         </Link>
         <nav className={`sl-menu${menuOpen ? ' sl-menu-open' : ''}`}>

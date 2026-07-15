@@ -1,0 +1,58 @@
+/* 강의 관리 — OpsApproval.css(op-*) 공용 위에 얹는 페이지 전용 스타일 */
+
+.op-lect-grid {
+  display: grid;
+  grid-template-columns: minmax(220px, 2fr) 64px 90px 100px 64px 76px minmax(280px, 1.4fr);
+  gap: 10px;
+  align-items: center;
+}
+.op-lect-dim { color: #a89d8e; }
+.op-lect-actions { display: inline-flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.op-lect-danger { color: #c2554a !important; }
+
+/* 업로드 진행률 */
+.op-lect-progress { margin-top: 12px; display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 12.5px; color: #6e6558; }
+.op-lect-progress-track { flex: 1; height: 8px; border-radius: 999px; background: #f0e7da; overflow: hidden; }
+.op-lect-progress-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, #ffb43c, #ff5a4d); transition: width 0.2s ease; }
+
+/* 문항/자료 모달 */
+.op-lect-widemodal { width: min(760px, calc(100vw - 40px)); max-height: 86vh; overflow-y: auto; }
+.op-lect-qtools { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+.op-lect-gen { display: flex; align-items: center; gap: 6px; }
+.op-lect-gen-n { width: 52px; border: 1.5px solid #eadfce; border-radius: 10px; padding: 8px; font-weight: 700; text-align: center; font-family: inherit; }
+.op-lect-banner { margin-bottom: 10px; }
+.op-lect-banner-ok {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #dff6ee;
+  color: #17b08c;
+  font-weight: 700;
+  font-size: 13px;
+}
+.op-lect-qform { border: 1.5px solid #f0e7da; border-radius: 14px; padding: 14px; margin-bottom: 12px; background: #fffdf8; }
+.op-lect-textarea { border: 1.5px solid #eadfce; border-radius: 10px; padding: 10px; font-family: inherit; font-weight: 600; font-size: 13.5px; resize: vertical; }
+.op-lect-qlist { display: flex; flex-direction: column; gap: 10px; }
+.op-lect-qrow {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  border: 1.5px solid #f0e7da;
+  border-radius: 14px;
+  padding: 12px 14px;
+  background: #fff;
+}
+.op-lect-qmeta { display: flex; flex-direction: column; gap: 6px; min-width: 68px; align-items: flex-start; }
+.op-lect-qbody { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; font-size: 13.5px; color: #3a3340; }
+.op-lect-qopts { display: flex; flex-wrap: wrap; gap: 6px; }
+.op-lect-qopt { padding: 4px 10px; border-radius: 999px; background: #f6f0e7; color: #6e6558; font-weight: 700; font-size: 12px; }
+.op-lect-qopt-ans { background: #dff6ee; color: #17b08c; }
+.op-lect-matform { border: 1.5px solid #f0e7da; border-radius: 14px; padding: 14px; margin-bottom: 12px; background: #fffdf8; }
+.op-lect-matmode { display: flex; gap: 8px; margin-bottom: 10px; }
+
+@media (max-width: 900px) {
+  .op-lect-grid { grid-template-columns: 1fr; gap: 4px; }
+  .op-lect-grid > .op-col-right { justify-content: flex-start; }
+}

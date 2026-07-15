@@ -23,6 +23,8 @@ const ChapterMap = lazy(() => import('../pages/student/ChapterMap'));
 const GameScreen = lazy(() => import('../pages/student/GameScreen'));
 const GameResult = lazy(() => import('../pages/student/GameResult'));
 const DailyQuiz = lazy(() => import('../pages/student/DailyQuiz'));
+const LectureList = lazy(() => import('../pages/student/LectureList'));
+const LecturePlayer = lazy(() => import('../pages/student/LecturePlayer'));
 const AllLearning = lazy(() => import('../pages/student/AllLearning'));
 const Concepts = lazy(() => import('../pages/student/Concepts'));
 const MyRecords = lazy(() => import('../pages/student/MyRecords'));
@@ -78,6 +80,7 @@ const OpsScratch = lazy(() => import('../pages/ops/OpsScratch'));
 const OpsAuditLog = lazy(() => import('../pages/ops/OpsAuditLog'));
 const OpsSystem = lazy(() => import('../pages/ops/OpsSystem'));
 const OpsAiModels = lazy(() => import('../pages/ops/OpsAiModels'));
+const OpsLectures = lazy(() => import('../pages/ops/OpsLectures'));
 const OpsOperators = lazy(() => import('../pages/ops/OpsOperators'));
 
 // 시스템
@@ -106,6 +109,8 @@ export default function AppRoutes() {
           <Route path={PATHS.STUDENT_GAME} element={<GameScreen />} />
           <Route path={PATHS.STUDENT_RESULT} element={<GameResult />} />
           <Route path={PATHS.STUDENT_DAILY_QUIZ} element={<DailyQuiz />} />
+          <Route path={PATHS.STUDENT_LECTURES} element={<LectureList />} />
+          <Route path={PATHS.STUDENT_LECTURE} element={<LecturePlayer />} />
           <Route path={PATHS.STUDENT_ALL_LEARNING} element={<AllLearning />} />
           <Route path={PATHS.STUDENT_CONCEPTS} element={<Concepts />} />
           <Route path={PATHS.STUDENT_RECORDS} element={<MyRecords />} />
@@ -177,6 +182,7 @@ export default function AppRoutes() {
           <Route path={PATHS.OPS_LOGS} element={<OpsAuditLog />} />
           <Route path={PATHS.OPS_SYSTEM} element={<OpsSystem />} />
           <Route path={PATHS.OPS_AI_MODELS} element={<OpsAiModels />} />
+          <Route path={PATHS.OPS_LECTURES} element={<OpsLectures />} />
           <Route path={PATHS.OPS_OPERATORS} element={<OpsOperators />} />
         </Route>
 
