@@ -15,6 +15,29 @@ import './OpsLectures.css';
 
 const SUBJECTS = ['국어', '영어', '수학', '과학', '사회', '생활'];
 
+/* 시청 확인 간격 — 강사가 초를 계산하지 않게 프리셋으로 고른다.
+   서버는 이 범위 안에서 무작위 시점을 잡는다(예고 불가 = 계속 시청 유도). */
+const INTERVAL_PRESETS = [
+  { key: 'tight', label: '촘촘히', desc: '1~2분마다', hint: '짧은 강의·집중 확인', min: 60, max: 120 },
+  { key: 'normal', label: '보통', desc: '2~5분마다', hint: '대부분의 강의에 권장', min: 120, max: 300 },
+  { key: 'loose', label: '느슨히', desc: '5~10분마다', hint: '긴 강의·방해 최소', min: 300, max: 600 },
+  { key: 'custom', label: '직접 설정', desc: '', hint: '', min: 0, max: 0 },
+];
+
+/** 초 → "29분 12초" 사람이 읽는 형태 (강사용 표시) */
+function humanDur(sec: number): string {
+  if (!Number.isFinite(sec) || sec <= 0) return '';
+  const h = Math.floor(sec / 3600);
+  const m = Math.floor((sec % 3600) / 60);
+  const s = sec % 60;
+  return [h ? `${h}시간` : '', m ? `${m}분` : '', s ? `${s}초` : ''].filter(Boolean).join(' ');
+}
+
+/** 바이트 → "247.3MB" */
+function humanSize(bytes: number): string {
+  return bytes >= 1024 * 1024 ? `${(bytes / 1024 / 1024).toFixed(1)}MB` : `${Math.round(bytes / 1024)}KB`;
+}
+
 type Modal =
   | { mode: 'create' }
   | { mode: 'edit'; lec: OpsLecture }
@@ -242,7 +265,53 @@ function LectureFormModal({
   const [err, setErr] = useState('');
   const [saving, setSaving] = useState(false);
   const [progress, setProgress] = useState<number | null>(null);
+  const [autoDur, setAutoDur] = useState<'idle' | 'reading' | 'ok' | 'fail'>('idle');
+  const [dragOver, setDragOver] = useState(false);
+  /* 확인 간격을 초로 직접 받으면 강사가 계산해야 한다. 프리셋으로 고르게 하고
+     초 변환은 화면이 한다. editing이면 기존 값에서 프리셋을 역추적. */
+  const [preset, setPreset] = useState<string>(() => {
+    if (!editing) return 'normal';
+    const hit = INTERVAL_PRESETS.find(
+      (p) => p.min === editing.check_min_sec && p.max === editing.check_max_sec,
+    );
+    return hit ? hit.key : 'custom';
+  });
   const set = (k: keyof LectureForm) => (v: string) => setForm((f) => ({ ...f, [k]: v }));
+
+  const applyPreset = (key: string) => {
+    setPreset(key);
+    const p = INTERVAL_PRESETS.find((x) => x.key === key);
+    if (p && p.min > 0) setForm((f) => ({ ...f, check_min_sec: String(p.min), check_max_sec: String(p.max) }));
+  };
+
+  /* 파일 선택 시 브라우저가 영상 메타데이터에서 길이를 읽어 자동 기입한다.
+     운영자가 초를 손으로 계산하면 틀리기 쉽고, 틀리면 시청 검증이 깨진다
+     (짧게 넣으면 안 봤는데 완주 처리, 길게 넣으면 끝까지 봐도 완주 불가).
+     판독 실패 시 입력란은 그대로 열어둬 수동 입력으로 진행할 수 있게 한다
+     (ffprobe 등 서버 의존성 없이 처리 — 서버는 양수 검증만). */
+  const pickFile = (f: File | null) => {
+    setFile(f);
+    if (!f) return setAutoDur('idle');
+    setAutoDur('reading');
+    const url = URL.createObjectURL(f);
+    const probe = document.createElement('video');
+    probe.preload = 'metadata';
+    probe.onloadedmetadata = () => {
+      const d = Math.round(probe.duration);
+      URL.revokeObjectURL(url);
+      if (Number.isFinite(d) && d > 0) {
+        setForm((prev) => ({ ...prev, duration_sec: String(d) }));
+        setAutoDur('ok');
+      } else {
+        setAutoDur('fail');
+      }
+    };
+    probe.onerror = () => {
+      URL.revokeObjectURL(url);
+      setAutoDur('fail');
+    };
+    probe.src = url;
+  };
 
   const save = async () => {
     const duration = Number(form.duration_sec);
@@ -318,8 +387,67 @@ function LectureFormModal({
           </button>
         </div>
         <div className="op-form-grid">
+          {/* ① 영상 — 먼저 올려야 길이가 자동으로 잡힌다 */}
+          {!editing && (
+            <div className="ox-field op-form-span2">
+              강의 영상
+              <div
+                className={`lu-drop${dragOver ? ' lu-drop--over' : ''}${file ? ' lu-drop--has' : ''}`}
+                onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                onDragLeave={() => setDragOver(false)}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setDragOver(false);
+                  pickFile(e.dataTransfer.files?.[0] ?? null);
+                }}
+                onClick={() => document.getElementById('lu-file')?.click()}
+              >
+                <input
+                  id="lu-file"
+                  type="file"
+                  accept="video/mp4,video/webm"
+                  hidden
+                  onChange={(e) => pickFile(e.target.files?.[0] ?? null)}
+                />
+                {!file ? (
+                  <>
+                    <i className="ph-fill ph-upload-simple lu-drop-ico" />
+                    <b>영상을 여기로 끌어다 놓거나 클릭해서 선택하세요</b>
+                    <span className="lu-drop-sub">MP4 · WebM · 최대 500MB</span>
+                  </>
+                ) : (
+                  <>
+                    <i className="ph-fill ph-file-video lu-drop-ico lu-drop-ico--ok" />
+                    <b>{file.name}</b>
+                    <span className="lu-drop-sub">
+                      {humanSize(file.size)}
+                      {autoDur === 'reading' && ' · 길이 확인 중…'}
+                      {autoDur === 'ok' && ` · ${humanDur(Number(form.duration_sec))} (자동 인식)`}
+                      {autoDur === 'fail' && ' · 길이를 못 읽었어요 — 아래에 직접 입력'}
+                    </span>
+                    <span className="lu-drop-sub">다른 영상을 고르려면 클릭하세요</span>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* 자동 인식 실패 또는 수정 모드일 때만 길이를 직접 다룬다 */}
+          {(editing || autoDur === 'fail') && (
+            <label className="ox-field">
+              영상 길이(초)
+              {editing && <span className="lu-help">{humanDur(Number(form.duration_sec))}</span>}
+              <input
+                value={form.duration_sec}
+                onChange={(e) => set('duration_sec')(e.target.value)}
+                placeholder="예: 1740 (29분)"
+              />
+            </label>
+          )}
+
+          {/* ② 기본 정보 */}
           <label className="ox-field op-form-span2">
-            제목
+            강의 제목
             <input value={form.title} onChange={(e) => set('title')(e.target.value)} placeholder="예: 깊이 있게 읽어요(1)" />
           </label>
           <label className="ox-field">
@@ -331,42 +459,57 @@ function LectureFormModal({
             </select>
           </label>
           <label className="ox-field">
-            영상 길이(초)
-            <input value={form.duration_sec} onChange={(e) => set('duration_sec')(e.target.value)} placeholder="예: 1740" />
+            강의 순서
+            <span className="lu-help">비워두면 맨 뒤에 추가돼요</span>
+            <input value={form.order_no} onChange={(e) => set('order_no')(e.target.value)} placeholder="예: 1" />
           </label>
-          <label className="ox-field">
-            확인 간격 최소(초)
-            <input value={form.check_min_sec} onChange={(e) => set('check_min_sec')(e.target.value)} />
+          <label className="ox-field op-form-span2">
+            강의 소개
+            <span className="lu-help">학생 화면에 보이는 한 줄 소개예요</span>
+            <input value={form.description} onChange={(e) => set('description')(e.target.value)} placeholder="예: 글의 짜임과 중심 문장을 배워요" />
           </label>
-          <label className="ox-field">
-            확인 간격 최대(초)
-            <input value={form.check_max_sec} onChange={(e) => set('check_max_sec')(e.target.value)} />
-          </label>
-          <label className="ox-field">
-            회차(order_no)
-            <input value={form.order_no} onChange={(e) => set('order_no')(e.target.value)} placeholder="비우면 맨 뒤" />
-          </label>
+
+          {/* ③ 시청 확인 설정 — 초가 아니라 프리셋으로 */}
+          <div className="ox-field op-form-span2">
+            시청 확인 문제가 뜨는 간격
+            <span className="lu-help">
+              강의 재생 중 이 간격 안에서 무작위로 확인 문제가 떠요. 언제 뜰지 모르니 계속 봐야 해요.
+            </span>
+            <div className="lu-presets">
+              {INTERVAL_PRESETS.map((p) => (
+                <button
+                  key={p.key}
+                  type="button"
+                  className={`lu-preset${preset === p.key ? ' lu-preset--on' : ''}`}
+                  onClick={() => applyPreset(p.key)}
+                >
+                  <b>{p.label}</b>
+                  {p.desc && <span>{p.desc}</span>}
+                  {p.hint && <em>{p.hint}</em>}
+                </button>
+              ))}
+            </div>
+          </div>
+          {preset === 'custom' && (
+            <>
+              <label className="ox-field">
+                최소 간격(초)
+                <input value={form.check_min_sec} onChange={(e) => set('check_min_sec')(e.target.value)} />
+              </label>
+              <label className="ox-field">
+                최대 간격(초)
+                <input value={form.check_max_sec} onChange={(e) => set('check_max_sec')(e.target.value)} />
+              </label>
+            </>
+          )}
+
           {editing && (
             <label className="ox-field">
-              상태
+              공개 상태
               <select value={form.status} onChange={(e) => set('status')(e.target.value)}>
                 <option value="active">공개</option>
                 <option value="hidden">숨김</option>
               </select>
-            </label>
-          )}
-          <label className="ox-field op-form-span2">
-            설명
-            <input value={form.description} onChange={(e) => set('description')(e.target.value)} placeholder="학생 화면에 보이는 소개 문구" />
-          </label>
-          {!editing && (
-            <label className="ox-field op-form-span2">
-              영상 파일 (mp4/webm, 최대 500MB)
-              <input
-                type="file"
-                accept="video/mp4,video/webm"
-                onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-              />
             </label>
           )}
         </div>
