@@ -171,6 +171,14 @@ export default function OpsLectures() {
                 <span>
                   <b>{lec.active_question_count}</b>
                   <small className="op-lect-dim">/{lec.question_count}</small>
+                  {/* 문항 0개면 체크포인트에서 낼 문제가 없어 시청 검증이 통째로 없는
+                      강의가 된다(챌린지 4xx → 게이트가 뜨지 않음). 숫자만 보고 넘기기
+                      쉬우니 눈에 띄게 경고한다. */}
+                  {lec.active_question_count === 0 && (
+                    <span className="lu-nowarn" title="확인 문항이 없어 시청 검증이 동작하지 않아요">
+                      <i className="ph-fill ph-warning" /> 검증 없음
+                    </span>
+                  )}
                 </span>
                 <span>
                   <span
