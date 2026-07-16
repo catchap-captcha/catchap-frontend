@@ -3,10 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { authApi } from '../../api/auth';
 import mascot from '../../assets/characters/catchap-logo.png';
 import InstitutionPicker, { type PickedInstitution } from '../../components/auth/InstitutionPicker';
-// 시연용 임시 — 5회+ 실패 보안 확인(ForestCaptcha)을 '캡차 API 도입 안내 창'으로 대체.
-// 실제 채점이 없으므로 이 창은 로그인을 열어주지 않고, 방어는 서버 쿨다운이 담당한다.
-// 캡차 API 도입 시 ForestCaptcha(또는 실제 위젯)를 다시 import해 팝업 슬롯에 넣을 것.
-import { DEMO_STUDENT_ONLY } from '../../constants/demoMode';
+import ForestCaptcha from '../../components/captcha/ForestCaptcha';
 import { INVITE_PREFILL_KEY } from './InvitePage';
 import { useAuth } from '../../hooks/useAuth';
 import { PATHS } from '../../routes/paths';
@@ -143,9 +140,8 @@ export default function LoginPage() {
   const [orgCandidates, setOrgCandidates] = useState<
     { organization_id: string; organization_name: string }[] | null
   >(null);
-  // 5회 이상 로그인 실패(서버 집계) 시 서버가 내려주는 쿨다운 남은 초 —
-  // 시연용 임시: 캡차 API 도입 전이라 캡차 대신 쿨다운 안내를 보여준다
-  const [cooldownLeft, setCooldownLeft] = useState<number | null>(null);
+  // 5회 이상 로그인 실패(서버 집계) 시 캡차 요구
+  const [captchaNeeded, setCaptchaNeeded] = useState(false);
   const [signupInst, setSignupInst] = useState<PickedInstitution | null>(null);
   // 기관 등록 폼에서 입력한 값 — 승인 후 요금제 선택 화면 요약에 사용 (미입력/직접 진입 시 원본 문구 fallback)
   const [orgSummary, setOrgSummary] = useState({ orgName: '', contactName: '', expectedStudents: '' });
@@ -153,6 +149,9 @@ export default function LoginPage() {
   const formRef = useRef<HTMLDivElement | null>(null);
   const loginIdRef = useRef<HTMLInputElement | null>(null);
   const loginPwRef = useRef<HTMLInputElement | null>(null);
+  // 마지막 시도의 기관 선택 — 캡차 통과 후 재시도(onCaptchaToken)가 기관을 잃지 않게 기억.
+  // (잃으면 다기관 학생은 후보 선택→캡차→후보 선택… 무한 루프가 된다)
+  const lastOrgRef = useRef<string | undefined>(undefined);
   const orgTypeRef = useRef<HTMLSelectElement | null>(null);
   const purposeRef = useRef<HTMLSelectElement | null>(null);
   const capT = useRef<number | null>(null);
@@ -252,7 +251,7 @@ export default function LoginPage() {
   // ===== 라벨/문구 (원본 loginMap/signupMap/titleMap) =====
   const loginMap: Record<RoleTab, { idLabel: string; idPlaceholder: string; notice: string }> = {
     // 학생 이메일 가입 전환(2026-07-16): 새 학생 계정은 이메일이 아이디 — 기존 아이디도 계속 유효
-    student: { idLabel: '학생 아이디', idPlaceholder: '이메일 또는 아이디를 입력해 주세요', notice: '학생은 이메일로 회원가입한 뒤 바로 이용할 수 있어요.' },
+    student: { idLabel: '학생 아이디', idPlaceholder: '이메일 또는 아이디를 입력해 주세요', notice: '학생·학부모는 회원가입 후, 기관은 관리자 승인 후 이용할 수 있어요.' },
     parent: { idLabel: '학부모 아이디', idPlaceholder: '이메일 또는 아이디', notice: '자녀 연결은 기관 승인 후 이용할 수 있어요.' },
     // 선생님·기관 관리자 공용 — 로그인 구분 없이 계정(이메일)으로 역할 자동 판별
     org: { idLabel: '기관 아이디', idPlaceholder: '이메일 또는 아이디', notice: '기관 계정은 등록 신청·승인·계약 완료 후 발급돼요.' },
@@ -522,12 +521,16 @@ export default function LoginPage() {
       .catch(() => setOrgCodeStatus('invalid'));
   };
 
-  // ===== 보안 확인 팝업 — 시연용 임시: 캡차 API 도입 안내 창 =====
-  // 원래는 5회+ 실패 시 메인 캡차(forest)를 통과해야 재시도할 수 있었다.
-  // 지금은 실제 캡차가 없으므로 이 팝업은 안내만 하고 로그인을 열어주지 않는다(가짜 통과 금지).
-  // 5회+ 실패 방어는 서버 쿨다운(429)이 담당하며, 캡차 API 도입 시 이 게이트를 실제 검증으로 교체할 것.
+  // ===== 캡차 팝업 — 5회+ 실패 시 메인 캡차(forest)를 먼저 통과해야 로그인 재시도 =====
+  const openCaptcha = () => {
+    setCaptcha(true);
+  };
+
+  // 평소엔 캡차 없이 바로 로그인 — 서버가 5회 이상 실패를 알리면(captcha_required)
+  // 이후 시도마다 캡차 팝업을 먼저 통과해야 한다. 성공 시 해제.
   const submitLogin = () => {
-    void doLogin();
+    if (captchaNeeded) openCaptcha();
+    else void doLogin();
   };
 
   // 아이디/비밀번호 칸에서 Enter → 바로 로그인 (form 없이도 동작)
@@ -566,7 +569,7 @@ export default function LoginPage() {
     }
   };
 
-  const doLogin = async (orgOverride?: string) => {
+  const doLogin = async (orgOverride?: string, captchaToken?: string) => {
     const id = loginIdRef.current?.value.trim() ?? '';
     const pw = loginPwRef.current?.value ?? '';
     setLoginError('');
@@ -580,14 +583,16 @@ export default function LoginPage() {
       if (role === 'student') {
         // 후보 버튼으로 고른 기관 > 기억해 둔 기관 > 미지정(백엔드가 비밀번호로 판별)
         const orgId = orgOverride ?? rememberedOrg(id);
+        lastOrgRef.current = orgId; // 캡차 재시도가 같은 기관으로 가게 기억
         try {
           const me = await studentLogin({
             organization_id: orgId,
             student_login_id: id,
             password: pw,
+            captcha_token: captchaToken,
           });
           if (orgId) rememberOrg(id, orgId);
-          setCooldownLeft(null);
+          setCaptchaNeeded(false);
           navigate(ROLE_HOME[me.role]);
           return;
         } catch (err) {
@@ -598,8 +603,9 @@ export default function LoginPage() {
             const me = await studentLogin({
               student_login_id: id,
               password: pw,
+              captcha_token: captchaToken,
             });
-            setCooldownLeft(null);
+            setCaptchaNeeded(false);
             navigate(ROLE_HOME[me.role]);
             return;
           }
@@ -612,8 +618,9 @@ export default function LoginPage() {
         email: id,
         password: pw,
         role: role === 'parent' ? 'parent' : 'org',
+        captcha_token: captchaToken,
       });
-      setCooldownLeft(null);
+      setCaptchaNeeded(false);
       navigate(ROLE_HOME[me.role]);
     } catch (err) {
       const resp = (err as {
@@ -625,7 +632,6 @@ export default function LoginPage() {
               | {
                   message?: string;
                   captcha_required?: boolean;
-                  cooldown_seconds?: number;
                   candidates?: { organization_id: string; organization_name: string }[];
                 };
           };
@@ -641,26 +647,28 @@ export default function LoginPage() {
         return;
       }
 
-      // 서버가 5회+ 실패를 알리면(captcha_required) 안내 팝업을 연다.
-      // 시연용 임시 — 실제 캡차 대신 '캡차 API 도입 예정' 안내 창이며, 로그인을 열어주지 않는다.
-      // 재시도 가능 시점은 서버 쿨다운(cooldown_seconds, 429)이 정한다.
+      // 서버가 5회 이상 실패를 알리면 캡차 요구. 단, 방금 캡차를 통과한 시도(captchaToken
+      // 있음)가 '비밀번호 오류'로 실패한 경우엔 팝업을 즉시 다시 열지 않는다 — 재오픈하면
+      // "캡차 정답을 맞혀도 계속 뜨는" 루프로 보인다(사용자 제보 0714). 오류 문구를 보여주고,
+      // 다음 로그인 클릭 때 캡차가 열린다(submitLogin). 게이트 자체 거부(토큰 없음·만료 —
+      // 서버 문구 '보안 확인')일 때만 즉시 연다(안내만 뜨고 캡차가 안 보이는 갇힘 방지).
+      const gateRefused = (detailObj?.message ?? '').includes('보안 확인');
       if (detailObj?.captcha_required) {
-        setCooldownLeft(
-          typeof detailObj.cooldown_seconds === 'number' ? detailObj.cooldown_seconds : null,
-        );
-        setCaptcha(true);
+        setCaptchaNeeded(true);
+        if (!captchaToken || gateRefused) openCaptcha();
       }
 
       setLoginBad(true);
-      // 403(계정 종류 불일치·승인 대기·비활성화)·429(쿨다운·잠금)는 서버 문구를 그대로 —
-      // "비밀번호가 올바르지 않아요"로 뭉개면 사용자가 원인·대기 시간을 알 수 없다.
+      // 403류(계정 종류 불일치·승인 대기·비활성화)는 서버 문구를 그대로 —
+      // "비밀번호가 올바르지 않아요"로 뭉개면 사용자가 원인을 알 수 없다.
       const serverMsg =
-        resp?.status === 403 && typeof detail === 'string' && detail
-          ? detail
-          : resp?.status === 429 && detailObj?.message
-            ? detailObj.message
-            : null;
-      setLoginError(serverMsg ?? '아이디 또는 비밀번호가 올바르지 않아요. 다시 확인해 주세요.');
+        resp?.status === 403 && typeof detail === 'string' && detail ? detail : null;
+      setLoginError(
+        serverMsg ??
+          (detailObj?.captcha_required && (!captchaToken || gateRefused)
+            ? '로그인에 여러 번 실패해서 보안 확인이 필요해요. 다시 시도해 주세요.'
+            : '아이디 또는 비밀번호가 올바르지 않아요. 다시 확인해 주세요.'),
+      );
     }
   };
 
@@ -668,6 +676,13 @@ export default function LoginPage() {
     setOrgCandidates(null);
     setLoginError('');
     void doLogin(orgId);
+  };
+
+  // 메인 캡차(forest) 통과 → 단일사용 토큰을 로그인에 실어 재시도.
+  // 기관 선택(lastOrgRef)을 유지해야 다기관 학생이 후보선택↔캡차 사이에서 맴돌지 않는다.
+  const onCaptchaToken = (token: string) => {
+    setCaptcha(false);
+    void doLogin(lastOrgRef.current, token);
   };
 
   // ===== 탭/뷰 전환 (원본 그대로) =====
@@ -678,7 +693,7 @@ export default function LoginPage() {
     setLoginBad(false);
     setLoginError('');
     setOrgCandidates(null);
-    setCooldownLeft(null); // 계정별 실패 횟수는 서버가 기억 — 다음 실패 시 다시 신호가 온다
+    setCaptchaNeeded(false); // 계정별 실패 횟수는 서버가 기억 — 다음 실패 시 다시 신호가 온다
   };
   const setStudent = () => {
     // 학생 이메일 가입 전환(2026-07-16): 코드 활성화(PATHS.ACTIVATE)로 보내지 않고
@@ -720,19 +735,14 @@ export default function LoginPage() {
         <i className="ph-fill ph-student" />
         학생
       </button>
-      {/* 시연용 임시(DEMO_STUDENT_ONLY) — 학부모·기관 탭 숨김. 기관에 강사 도입 시 되돌릴 것 */}
-      {!DEMO_STUDENT_ONLY && (
-        <>
-          <button type="button" onClick={setParent} className={tabCls(role === 'parent')}>
-            <i className="ph-fill ph-users-three" />
-            학부모
-          </button>
-          <button type="button" onClick={setOrg} className={tabCls(role === 'org')}>
-            <i className="ph-fill ph-buildings" />
-            기관
-          </button>
-        </>
-      )}
+      <button type="button" onClick={setParent} className={tabCls(role === 'parent')}>
+        <i className="ph-fill ph-users-three" />
+        학부모
+      </button>
+      <button type="button" onClick={setOrg} className={tabCls(role === 'org')}>
+        <i className="ph-fill ph-buildings" />
+        기관
+      </button>
     </div>
   );
 
@@ -1630,10 +1640,7 @@ export default function LoginPage() {
         )}
       </div>
 
-      {/* SECURITY POPUP — 시연용 임시: 캡차 API 도입 안내 창.
-          실제 챌린지·채점이 없으므로 이 창은 어떤 경우에도 로그인을 열어주지 않는다(가짜 통과 금지).
-          5회+ 실패 방어는 서버 쿨다운(429)이 담당하고, 캡차 API 도입 시 이 슬롯을 실제 위젯
-          마운트(종전 ForestCaptcha onToken → doLogin 재시도 배선)로 교체할 것. */}
+      {/* SECURITY CAPTCHA POPUP */}
       {captcha && (
         <div className="lg-cap-overlay">
           <div className="lg-cap">
@@ -1652,8 +1659,8 @@ export default function LoginPage() {
                 <button type="button" onClick={() => setCaptcha(false)} className="lg-cap-close">
                   <i className="ph-bold ph-x" />
                 </button>
-                <div className="lg-cap-title">보안 확인이 필요해요</div>
-                <div className="lg-cap-sub">로그인에 여러 번 실패했어요</div>
+                <div className="lg-cap-title">사람인지 확인해요 🐱</div>
+                <div className="lg-cap-sub">냥이랑 잠깐 확인하고 이어가요</div>
               </div>
 
               <div className="lg-cap-body">
@@ -1662,35 +1669,17 @@ export default function LoginPage() {
                     <i className="ph-fill ph-hand-waving" />
                   </span>
                   <span className="lg-cap-why-text">
-                    평소와 조금 다른 접속이 보여서 확인이 필요해요.
+                    평소와 조금 다른 접속이 보여서 한 번만 확인할게요. 사람이라면 아주 쉬워요! 🐾
                   </span>
                 </div>
 
                 <div className="lg-cap-prompt-row">
-                  <span>보안 문제(캡차)는 캡차 API로 준비 중이에요</span>
+                  <span>숨은 동물을 찾아 같은 방향으로 돌려주세요 🧭</span>
                 </div>
 
-                {/* CAPTCHA API MOUNT SLOT — 실제 챌린지는 CatChap Guard API가 이 자리에 렌더링할 예정 */}
-                <div className="lg-cap-slot">
-                  <div className="lg-api-pending">
-                    <span className="lg-api-pending-icon">
-                      <i className="ph-fill ph-puzzle-piece" />
-                    </span>
-                    <span className="lg-api-pending-title">캡차 API 위젯 자리</span>
-                    <span className="lg-api-pending-desc">
-                      실제 보안 문제(그림 고르기·퍼즐 등)는 CatChap Guard API가
-                      <br />이 자리에 담아줄 예정이에요.
-                    </span>
-                    <span className="lg-api-pending-wait">
-                      <i className="ph-fill ph-timer" />
-                      {cooldownLeft !== null && cooldownLeft > 0
-                        ? `약 ${Math.max(1, Math.ceil(cooldownLeft / 60))}분 후 다시 로그인할 수 있어요`
-                        : '잠시 후 다시 로그인해 주세요'}
-                    </span>
-                    <button type="button" onClick={() => setCaptcha(false)} className="lg-api-pending-btn">
-                      확인
-                    </button>
-                  </div>
+                {/* 메인 캡차(숲속 마을 동물 방향) — 통과 시 토큰이 자동 전달돼 로그인이 이어져요 */}
+                <div className="lg-cap-slot lg-cap-slot--forest">
+                  <ForestCaptcha onToken={onCaptchaToken} />
                 </div>
               </div>
 
@@ -1699,7 +1688,7 @@ export default function LoginPage() {
                   <i className="ph-fill ph-shield-check" />
                   CatChap Guard가 지켜줘요
                 </span>
-                <span className="lg-cap-foot-note">캡차 API는 추후 도입 예정이에요</span>
+                <span className="lg-cap-foot-note">이 확인은 보조 절차예요</span>
               </div>
             </div>
           </div>

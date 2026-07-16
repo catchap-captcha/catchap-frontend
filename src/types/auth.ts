@@ -38,8 +38,7 @@ export interface LoginRequest {
   role?: 'parent' | 'org' | 'teacher' | 'org_admin' | 'ops';
   email: string;
   password: string;
-  /** 시연용 임시 — 캡차 API 도입 전까지 서버가 사용하지 않음(어떤 값도 통과 안 됨).
-   *  도입 시 캡차 통과 토큰을 싣는 자리로 재사용(종전엔 forest 캡차 단일사용 토큰). */
+  /** 5회 이상 실패해 캡차가 요구된 뒤, 메인 캡차(forest) 통과 단일사용 토큰 */
   captcha_token?: string;
 }
 
@@ -48,7 +47,6 @@ export interface StudentLoginRequest {
   organization_id?: string;
   student_login_id: string;
   password: string;
-  /** 시연용 임시 — 캡차 API 도입 전까지 서버가 사용하지 않음(LoginRequest와 동일) */
   captcha_token?: string;
 }
 

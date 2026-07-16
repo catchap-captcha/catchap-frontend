@@ -1754,66 +1754,6 @@
   display: block;
 }
 
-/* 시연용 임시 — 캡차 API 도입 안내(실제 챌린지 없음). API 도입 시 실제 위젯 마운트로 교체 */
-.lg-api-pending {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  padding: 24px 18px;
-  text-align: center;
-}
-
-.lg-api-pending-icon {
-  width: 46px;
-  height: 46px;
-  border-radius: 14px;
-  background: #ffe6d9;
-  color: #ff7a3c;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-}
-
-.lg-api-pending-title {
-  font-weight: 800;
-  color: #4a4a4a;
-  font-size: 15px;
-}
-
-.lg-api-pending-desc {
-  font-size: 12.5px;
-  color: #8a8f9e;
-  line-height: 1.6;
-}
-
-.lg-api-pending-wait {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12.5px;
-  color: #e08a00;
-  font-weight: 700;
-}
-
-.lg-api-pending-btn {
-  margin-top: 6px;
-  padding: 9px 26px;
-  border: none;
-  border-radius: 12px;
-  background: #ff5a4d;
-  color: #fff;
-  font-weight: 800;
-  font-size: 13.5px;
-  font-family: inherit;
-  cursor: pointer;
-}
-
-.lg-api-pending-btn:hover {
-  background: #e94b3f;
-}
-
 /* 낮거나 좁은 화면에서는 게임은 유지하고 팝업 장식과 여백만 압축한다. */
 @media (max-height: 780px), (max-width: 480px) {
   .lg-cap-mascot-wrap {

@@ -2,8 +2,6 @@ import { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
 import { useRevealOnScroll } from '../../hooks/useRevealOnScroll';
-// 시연용 임시(DEMO_STUDENT_ONLY) — 학부모·기관 안내 섹션·문구 숨김. 기관에 강사 도입 시 되돌릴 것
-import { DEMO_STUDENT_ONLY } from '../../constants/demoMode';
 import mascot from '../../assets/characters/catchap-logo.png';
 import './MainPage.css';
 
@@ -31,8 +29,7 @@ export default function MainPage() {
           <nav className="mn-nav-menu">
             <a href="#about" className="mn-nav-link">서비스 소개</a>
             <a href="#games" className="mn-nav-link">강의 과목</a>
-            {/* 시연용 임시 — '이용 대상'(학습자·보호자·기관) 섹션 숨김과 함께 링크도 숨김 */}
-            {!DEMO_STUDENT_ONLY && <a href="#roles" className="mn-nav-link">이용 대상</a>}
+            <a href="#roles" className="mn-nav-link">이용 대상</a>
             <a href="#how" className="mn-nav-link">이용 방법</a>
           </nav>
           <div className="mn-nav-right">
@@ -47,13 +44,7 @@ export default function MainPage() {
         <div className="mn-hero-left cc-reveal-group">
           <span className="mn-hero-badge"><i className="ph-fill ph-paw-print" />영상 시청을 검증하는 강의 플랫폼</span>
           <h1 className="mn-hero-title">틀어만 놓는 인강은<br />이제 그만,<br /><span className="mn-hero-title-accent">시청을 검증하는 강의</span></h1>
-          <p className="mn-hero-desc">
-            CatChap은 영상 시청을 검증하는 강의 플랫폼이에요. 강의 중간중간 그 강의 내용으로 만든
-            확인 문제가 나와 실제로 보고 있는지 확인해요.{' '}
-            {DEMO_STUDENT_ONLY
-              ? '학습자는 놓치는 부분 없이 끝까지 배울 수 있어요.'
-              : '학습자는 놓치는 부분 없이 배우고, 기관은 시청 완료를 믿을 수 있어요.'}
-          </p>
+          <p className="mn-hero-desc">CatChap은 영상 시청을 검증하는 강의 플랫폼이에요. 강의 중간중간 그 강의 내용으로 만든 확인 문제가 나와 실제로 보고 있는지 확인해요. 학습자는 놓치는 부분 없이 배우고, 기관은 시청 완료를 믿을 수 있어요.</p>
           <div className="mn-hero-cta-row">
             <button className="mn-hero-cta"><i className="ph-fill ph-play-circle" />서비스 둘러보기</button>
           </div>
@@ -124,9 +115,7 @@ export default function MainPage() {
         </div>
       </section>
 
-      {/* ROLES — 시연용 임시(DEMO_STUDENT_ONLY): 보호자·기관 카드가 포함된 섹션 전체 숨김.
-          기관에 강사 도입 시 플래그만 끄면 복원된다. */}
-      {!DEMO_STUDENT_ONLY && (
+      {/* ROLES */}
       <section id="roles" className="mn-roles">
         <div className="mn-roles-head cc-reveal">
           <span className="mn-eyebrow">FOR EVERYONE</span>
@@ -169,7 +158,6 @@ export default function MainPage() {
           </div>
         </div>
       </section>
-      )}
 
       {/* HOW IT WORKS */}
       <section id="how" className="mn-how">

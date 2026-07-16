@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
 import { inquiryApi } from '../../api/misc';
 import { useAuth } from '../../hooks/useAuth';
-import { DEMO_STUDENT_ONLY } from '../../constants/demoMode';
 import mascot from '../../assets/characters/catchap-logo.png';
 import './SupportPage.css';
 
@@ -23,11 +22,6 @@ const DATA = [
   { tag: '기술 문제', q: '화면이 하얗게 보이거나 멈춰요.', a: '브라우저를 최신 버전으로 업데이트하고 새로고침해 보세요. 그래도 안 되면 사용 중인 기기·브라우저 정보와 함께 문의해 주시면 빠르게 도와드릴게요.' },
   { tag: '학습', q: '눈 보호 모드는 어떻게 켜나요?', a: '설정 페이지 또는 게임 화면 우측 상단의 눈 아이콘을 누르면 화면 톤이 따뜻하게 바뀌어 눈부심을 줄여줘요. 저녁 학습에 특히 도움이 됩니다.' },
 ];
-
-// 시연용 임시(DEMO_STUDENT_ONLY) — 학부모·기관 전용 FAQ(자녀 연결·기관 구독) 숨김.
-// 기관에 강사 도입 시 되돌릴 것(플래그 끄면 전체 복원).
-const DEMO_HIDDEN_FAQ = ['자녀 계정을 어떻게 연결하나요?', '구독을 해지하고 환불받을 수 있나요?'];
-const FAQS = DEMO_STUDENT_ONLY ? DATA.filter((f) => !DEMO_HIDDEN_FAQ.includes(f.q)) : DATA;
 
 function isEmail(v: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
@@ -164,7 +158,7 @@ export default function SupportPage() {
         <div>
           <h2 className="sp-faq-title">자주 묻는 질문</h2>
           <div className="sp-faq-list">
-            {FAQS.map((f, i) => {
+            {DATA.map((f, i) => {
               const isOpen = open === i;
               return (
                 <div key={i} className="sp-faq-item">

@@ -5,9 +5,7 @@ import { PATHS } from '../../routes/paths';
 import mascot from '../../assets/characters/catchap-logo.png';
 import './OpsLogin.css';
 import PasswordInput from '../../components/common/PasswordInput';
-// 시연용 임시 — 5회+ 실패 캡차(ForestCaptcha)를 서버 쿨다운 안내로 대체.
-// 백엔드가 캡차 토큰을 더 이상 검증하지 않으므로(캡차 API 추후 도입) 캡차 팝업은 제거,
-// 서버가 내려주는 쿨다운 문구를 그대로 보여준다. 도입 시 ForestCaptcha 배선 복원(git 이력).
+import ForestCaptcha from '../../components/captcha/ForestCaptcha';
 
 /**
  * 운영자(ops) 전용 로그인.
@@ -26,6 +24,9 @@ export default function OpsLogin() {
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  // 5회+ 실패 시 서버가 captcha_required를 알림 — 이후 시도는 캡차 통과 후 재시도
+  const [captchaNeeded, setCaptchaNeeded] = useState(false);
+  const [captchaOpen, setCaptchaOpen] = useState(false);
 
   // 이미 운영자로 로그인돼 있으면 콘솔로 보냄. (다른 역할이면 여기 머무름)
   useEffect(() => {
@@ -34,19 +35,24 @@ export default function OpsLogin() {
     }
   }, [loading, me, navigate]);
 
-  const doLogin = async () => {
+  const doLogin = async (captchaToken?: string) => {
     setBusy(true);
     setError('');
     try {
-      const loaded = await opsLogin(email.trim(), password);
+      const loaded = await opsLogin(email.trim(), password, captchaToken);
+      setCaptchaNeeded(false);
       navigate(loaded.role === 'ops' ? PATHS.OPS_APPROVAL : PATHS.HOME, { replace: true });
     } catch (err) {
-      // 5회+ 실패 시 서버가 쿨다운(429, cooldown_seconds)을 알린다 — 문구를 그대로 노출.
-      // 시연용 임시: 캡차 API 도입 전이라 캡차 재시도 경로가 없다(위 헤더 주석 참고).
       const detail = (err as {
         response?: { data?: { detail?: string | { message?: string; captcha_required?: boolean } } };
       })?.response?.data?.detail;
       const detailObj = typeof detail === 'object' && detail !== null ? detail : undefined;
+      if (detailObj?.captcha_required) {
+        // 캡차 요구 시 모달을 즉시 연다 — 버튼 재클릭을 기다리면 "완료해 주세요" 안내만
+        // 뜨고 정작 풀 캡차가 안 보여 갇힌 것처럼 느껴진다(benja123 신고).
+        setCaptchaNeeded(true);
+        setCaptchaOpen(true);
+      }
       const msg =
         (typeof detail === 'string' ? detail : detailObj?.message) ??
         '운영자 계정 정보가 올바르지 않습니다.';
@@ -63,7 +69,14 @@ export default function OpsLogin() {
       setError('아이디와 비밀번호를 입력해 주세요.');
       return;
     }
-    void doLogin();
+    if (captchaNeeded) setCaptchaOpen(true);
+    else void doLogin();
+  };
+
+  // 메인 캡차 통과 → 단일사용 토큰을 실어 재시도
+  const onCaptchaToken = (token: string) => {
+    setCaptchaOpen(false);
+    void doLogin(token);
   };
 
   return (
@@ -117,9 +130,23 @@ export default function OpsLogin() {
 
         <button type="submit" className="opl-btn" disabled={busy}>
           <i className="ph-fill ph-sign-in" />
-          {busy ? '확인 중…' : '로그인'}
+          {busy ? '확인 중…' : captchaNeeded ? '보안 확인 후 로그인' : '로그인'}
         </button>
       </form>
+
+      {captchaOpen && (
+        <div className="opl-cap-overlay" onClick={() => setCaptchaOpen(false)}>
+          <div className="opl-cap-box" onClick={(e) => e.stopPropagation()}>
+            <div className="opl-cap-head">
+              <span>보안 확인</span>
+              <button type="button" className="opl-cap-close" onClick={() => setCaptchaOpen(false)}>
+                <i className="ph-bold ph-x" />
+              </button>
+            </div>
+            <ForestCaptcha onToken={onCaptchaToken} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
