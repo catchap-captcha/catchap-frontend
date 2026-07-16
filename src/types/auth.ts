@@ -38,7 +38,8 @@ export interface LoginRequest {
   role?: 'parent' | 'org' | 'teacher' | 'org_admin' | 'ops';
   email: string;
   password: string;
-  /** 5회 이상 실패해 캡차가 요구된 뒤, 메인 캡차(forest) 통과 단일사용 토큰 */
+  /** 시연용 임시 — 캡차 API 도입 전까지 서버가 사용하지 않음(어떤 값도 통과 안 됨).
+   *  도입 시 캡차 통과 토큰을 싣는 자리로 재사용(종전엔 forest 캡차 단일사용 토큰). */
   captcha_token?: string;
 }
 
@@ -47,6 +48,7 @@ export interface StudentLoginRequest {
   organization_id?: string;
   student_login_id: string;
   password: string;
+  /** 시연용 임시 — 캡차 API 도입 전까지 서버가 사용하지 않음(LoginRequest와 동일) */
   captcha_token?: string;
 }
 
@@ -73,11 +75,13 @@ export interface RegisterTeacherRequest {
 
 export interface RegisterStudentRequest {
   name: string;
-  organization_id: string;
-  org_code: string;
+  /** 학생 이메일 가입 전환(2026-07-16): 기관 경유 가입에서만 사용 — 이메일 가입은 생략 */
+  organization_id?: string;
+  org_code?: string;
   email: string;
   email_code: string;
-  student_login_id: string;
+  /** 생략 시 서버가 이메일(소문자)을 로그인 아이디로 사용 */
+  student_login_id?: string;
   password: string;
 }
 

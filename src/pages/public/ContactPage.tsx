@@ -2,10 +2,13 @@ import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
 import { inquiryApi } from '../../api/misc';
+import { DEMO_STUDENT_ONLY } from '../../constants/demoMode';
 import mascot from '../../assets/characters/catchap-logo.png';
 import './ContactPage.css';
 
-const TYPES = ['기관 도입 상담', '요금·결제 문의', '기술 지원', '기타 문의'];
+const ALL_TYPES = ['기관 도입 상담', '요금·결제 문의', '기술 지원', '기타 문의'];
+// 시연용 임시(DEMO_STUDENT_ONLY) — '기관 도입 상담' 유형 숨김. 기관에 강사 도입 시 되돌릴 것
+const TYPES = DEMO_STUDENT_ONLY ? ALL_TYPES.filter((t) => t !== '기관 도입 상담') : ALL_TYPES;
 
 /** 원본 DCLogic의 필수 필드 오류 표시(borderColor #E23D3D + background #FFF5F5) */
 const BAD_STYLE = { borderColor: '#E23D3D', background: '#FFF5F5' } as const;
@@ -192,11 +195,14 @@ export default function ContactPage() {
                 <span className="ct-faq-head-title">자주 묻는 질문</span>
               </div>
               <div className="ct-faq-list">
-                <Link to={PATHS.SUPPORT} className="ct-faq-item">
-                  <span className="ct-faq-icon ct-faq-icon--key"><i className="ph-fill ph-key" /></span>
-                  <span className="ct-faq-q">기관 코드는 어디서 받나요?</span>
-                  <i className="ph-bold ph-caret-right ct-faq-caret" />
-                </Link>
+                {/* 시연용 임시 — 학생 이메일 가입 전환으로 기관 코드 안내 숨김(교사 가입 부활 시 복원) */}
+                {!DEMO_STUDENT_ONLY && (
+                  <Link to={PATHS.SUPPORT} className="ct-faq-item">
+                    <span className="ct-faq-icon ct-faq-icon--key"><i className="ph-fill ph-key" /></span>
+                    <span className="ct-faq-q">기관 코드는 어디서 받나요?</span>
+                    <i className="ph-bold ph-caret-right ct-faq-caret" />
+                  </Link>
+                )}
                 <Link to={PATHS.SUPPORT} className="ct-faq-item">
                   <span className="ct-faq-icon ct-faq-icon--card"><i className="ph-fill ph-credit-card" /></span>
                   <span className="ct-faq-q">요금제와 결제는 어떻게 하나요?</span>
