@@ -62,12 +62,12 @@ export interface LectureSession {
   duration_sec: number;
 }
 
-/** POST /progress 응답 — 서버가 검증한 정본. checkpoint_due=true면 캡차 게이트를 띄운다. */
+/** POST /progress 응답 — 서버가 검증한 정본. checkpoint_due=true면 캡차 게이트를 띄운다.
+ *  (exempted 필드는 상호작용 면제 제거와 함께 사라졌다 — 체크포인트면 예외 없이 캡차) */
 export interface HeartbeatState {
   watched_max_sec: number;
   next_checkpoint_sec: number | null;
   checkpoint_due: boolean;
-  exempted: boolean; // true면 상호작용 면제 — 캡차 없이 계속 재생
   checkpoints_passed: number;
   status: string;
   duration_sec: number;
@@ -81,17 +81,11 @@ export interface OpsLecture {
   video_ext: string;
   video_bytes: number;
   duration_sec: number;
-  check_min_sec: number;
-  check_max_sec: number;
   order_no?: number;
   status: string; // active | hidden
   question_count: number;
+  /** 공개 문항 수 — 0이면 확인(캡차)이 아예 안 떠서 시청 검증이 없는 강의(콘솔 경고 근거) */
   active_question_count: number;
-  /** 공개(active)·풀(pinned=false) 문항 수 — 무작위 확인의 출제 재료. active가 있어도
-   *  이 값이 0이면(고정·구간만 있으면) 고정 시점을 이미 지난 학생에겐 남은 강의 내내
-   *  확인이 안 뜬다(라이브 사고 사례). 구버전 서버는 필드를 안 주므로 옵셔널 —
-   *  undefined면 경고를 띄우지 않는다(판정 불가를 사고로 오표기하지 않기). */
-  pool_question_count?: number;
   created_at: string | null;
 }
 
@@ -110,10 +104,9 @@ export interface OpsLectureQuestion {
   source: string; // manual | llm
   status: string; // draft | active
   order_no: number;
-  /** true = position_sec에 닿는 순간 반드시 이 문항이 출제(고정), false = position_sec 이후 무작위 풀 */
-  pinned: boolean;
-  /** 고정 문항의 출제 구간 길이(초). 0 = 정확히 position_sec, N>0 = [position_sec, position_sec+N]
-   *  안에서 서버가 무작위 초를 골라 출제(매번 달라 학생이 지점을 외우지 못한다) */
+  /** 출제 구간 길이(초) — 모든 문항이 핀. 0 = 정확히 position_sec(고정),
+   *  N>0 = [position_sec, position_sec+N] 안에서 서버가 무작위 초를 골라 출제(구간 —
+   *  매번 달라 학생이 지점을 외우지 못한다) */
   window_sec: number;
   /** 문제 이미지 서빙 URL(`/api/v1/...` 상대경로 — <img>에는 API_ORIGIN을 붙인다). 없으면 null */
   prompt_image_url: string | null;
@@ -146,11 +139,12 @@ export const lectureApi = {
   startSession: (lectureId: string) =>
     client.post<LectureSession>(`/lectures/${lectureId}/session`).then((r) => r.data),
 
-  /** 시청 하트비트 — 세션 식별은 X-Lecture-Session 서명 토큰으로만 한다 */
+  /** 시청 하트비트 — 세션 식별은 X-Lecture-Session 서명 토큰으로만 한다.
+   *  (interacted/tab_hidden 자기신고는 면제·의심 가중 제거와 함께 계약에서 빠졌다) */
   heartbeat: (
     lectureId: string,
     sessionToken: string,
-    body: { position_sec: number; interacted: boolean; tab_hidden: boolean },
+    body: { position_sec: number },
   ) =>
     client
       .post<HeartbeatState>(`/lectures/${lectureId}/progress`, body, {
@@ -186,8 +180,6 @@ export const lectureApi = {
       description: string;
       subject: string;
       duration_sec: number;
-      check_min_sec: number;
-      check_max_sec: number;
       order_no: number;
       status: string;
     }>,
@@ -220,9 +212,7 @@ export const lectureApi = {
       answer_indexes?: number[];
       explain?: string;
       status?: string;
-      /** 기본 false — true면 position_sec 정각에 반드시 출제(서버가 1초 이상·영상 길이 미만 검증) */
-      pinned?: boolean;
-      /** 기본 0 — 고정 문항에서 N>0이면 [position_sec, position_sec+N] 구간 안의 무작위 초에 출제.
+      /** 기본 0(고정) — N>0이면 [position_sec, position_sec+N] 구간 안의 무작위 초에 출제.
        *  구간 끝이 영상을 넘는 건 허용(서버가 잘라 씀 — "여기부터 끝까지"는 정상 의도) */
       window_sec?: number;
     },
@@ -243,7 +233,6 @@ export const lectureApi = {
       answer_indexes: number[];
       explain: string;
       status: string;
-      pinned: boolean; // 미전송 시 변경 없음
       window_sec: number; // 미전송 시 변경 없음 — 구간→고정 전환 시 0을 명시로 보내야 지워진다
     }>,
   ) =>

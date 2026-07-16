@@ -2,7 +2,7 @@
 
 .op-lect-grid {
   display: grid;
-  grid-template-columns: minmax(220px, 2fr) 64px 90px 100px 64px 76px minmax(280px, 1.4fr);
+  grid-template-columns: minmax(220px, 2fr) 64px 90px 64px 76px minmax(280px, 1.4fr);
   gap: 10px;
   align-items: center;
 }
@@ -109,7 +109,6 @@
 
 .lu-presets { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 6px; }
 .lu-presets--2 { grid-template-columns: repeat(2, 1fr); } /* 출제 방식(무작위/고정) 두 갈래 세그먼트 */
-.lu-presets--3 { grid-template-columns: repeat(3, 1fr); } /* 출제 방식(무작위/고정/구간) 세 갈래 세그먼트 */
 .lu-preset {
   border: 1.5px solid #e2e8f0;
   border-radius: 10px;
@@ -361,5 +360,3 @@
   font-weight: 700;
   white-space: nowrap;
 }
-/* 풀 문항 0개 — 문항은 있는데 전부 고정·구간이라 무작위 확인이 안 도는 상태(호박색으로 구분) */
-.lu-nowarn--pool { background: #fef3c7; color: #92400e; }

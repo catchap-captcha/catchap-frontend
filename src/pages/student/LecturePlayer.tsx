@@ -31,6 +31,11 @@ const HEARTBEAT_MS = 10_000; // 하트비트 주기 — 서버 상한(시간당 
 const SPEEDS = [0.5, 1.0, 1.25, 1.5, 2.0]; // 배속 상한 2배(서버 속도검증과 일치)
 const MAX_RATE = 2;
 const SEEK_TOLERANCE_SEC = 1; // 본 데(watched_max)에서 이 이상 앞으로 seek하면 되돌린다
+// 오답 상한 — 한 체크포인트에서 이만큼 연속 오답하면 그 대목을 되감아 다시 본다.
+// 서버(lecture_service.MAX_CHECKPOINT_FAILS·REWIND_SEC)가 watched_max를 실제로 되감아
+// 강제하고(그 전엔 새 문항 발급을 409로 막는다), 여기 값은 그와 맞춰 UI(되감기 seek)를 몬다.
+const MAX_CHECKPOINT_FAILS = 3;
+const REWIND_SEC = 30;
 
 /** 배속 표기 — 1 → '1.0', 1.25 → '1.25', 0.5 → '0.5' */
 function formatRate(r: number): string {
@@ -91,11 +96,12 @@ export default function LecturePlayer() {
   const hadOwnSessionRef = useRef(false); // 이 탭에서 발급받은 세션이 있었나(강의 전환 시 자동 이어받기 판단)
   const watchedMaxRef = useRef(0);
   const nextCpRef = useRef<number | null>(null);
-  const interactedRef = useRef(false); // 직전 하트비트 이후 상호작용(pointermove/click/keydown)
-  const hiddenRef = useRef(false); // 직전 하트비트 이후 탭 백그라운드 여부
+  // (제거됨 0717) interacted/tab_hidden 자기신고 추적 — 면제·의심 가중이 서버에서
+  // 걷혀 보낼 곳이 없다. 하트비트 본문은 position_sec 하나다.
   const beatingRef = useRef(false); // 하트비트 in-flight 가드
   const lastBeatAtRef = useRef(0);
   const gateRef = useRef<{ cp: number } | null>(null);
+  const wrongCountRef = useRef(0); // 이 체크포인트에서 연속 오답 수 — 상한 도달 시 되감기
   const overlayRef = useRef<Overlay | null>(null);
   // 강의 전환 세대 토큰 — 이전 강의의 하트비트 응답이 늦게 도착해 새 강의 상태(watchedMax·
   // 게이트·오버레이)를 오염시키지 않게, 응답 적용 전에 세대 일치를 검사한다(skeptic 1-c).
@@ -193,31 +199,12 @@ export default function LecturePlayer() {
     };
   }, [lectureId, applySession]);
 
-  /* ---- 상호작용·탭 가시성 추적 (interacted / tab_hidden 자기신고) ---- */
-  useEffect(() => {
-    const mark = () => {
-      interactedRef.current = true;
-    };
-    const onVis = () => {
-      if (document.hidden) hiddenRef.current = true;
-    };
-    window.addEventListener('pointermove', mark, { passive: true });
-    window.addEventListener('pointerdown', mark, { passive: true });
-    window.addEventListener('keydown', mark);
-    document.addEventListener('visibilitychange', onVis);
-    return () => {
-      window.removeEventListener('pointermove', mark);
-      window.removeEventListener('pointerdown', mark);
-      window.removeEventListener('keydown', mark);
-      document.removeEventListener('visibilitychange', onVis);
-    };
-  }, []);
-
   /* ---- 하트비트 ---- */
   const openGate = useCallback((cp: number) => {
     const v = videoRef.current;
     if (v && !v.paused) v.pause();
     setGateWrong(false);
+    wrongCountRef.current = 0; // 새 체크포인트 — 연속 오답 카운터 초기화
     setGateKey((k) => k + 1);
     setGate({ cp });
   }, []);
@@ -232,7 +219,7 @@ export default function LecturePlayer() {
         setDoneCelebrated(true);
         showToast('강의를 끝까지 다 봤어요! 🎉');
       }
-      if (st.checkpoint_due && !st.exempted && !gateRef.current) {
+      if (st.checkpoint_due && !gateRef.current) {
         openGate(st.next_checkpoint_sec ?? Math.floor(videoRef.current?.currentTime ?? 0));
       }
     },
@@ -246,13 +233,7 @@ export default function LecturePlayer() {
     beatingRef.current = true;
     lastBeatAtRef.current = Date.now();
     const gen = genRef.current; // 이 비트가 속한 강의 세대
-    const body = {
-      position_sec: Math.floor(v.currentTime),
-      interacted: interactedRef.current,
-      tab_hidden: hiddenRef.current,
-    };
-    interactedRef.current = false;
-    hiddenRef.current = false;
+    const body = { position_sec: Math.floor(v.currentTime) };
     try {
       const st = await lectureApi.heartbeat(lectureId, token, body);
       if (gen !== genRef.current) return; // 강의가 바뀐 뒤 도착한 stale 응답 — 버린다
@@ -306,12 +287,32 @@ export default function LecturePlayer() {
           }
         })();
       } else {
-        // 오답 — 게이트를 닫지 않는다. 새 문제로 재도전(위젯 재마운트).
+        // 오답 — 연속 오답 누적. 상한 미만이면 새 문제로 재도전(위젯 재마운트).
+        // 상한에 닿으면 그 대목을 되감아 다시 본다: 서버가 watched_max를 이미 되감아
+        // 새 문항 발급을 409로 막았으므로, 무한 재도전 대신 되감긴 지점으로 seek해
+        // 다시 시청하게 한다(cp에 닿으면 게이트가 새 문항으로 다시 열린다).
         setGateWrong(true);
-        window.setTimeout(() => {
+        wrongCountRef.current += 1;
+        if (wrongCountRef.current >= MAX_CHECKPOINT_FAILS) {
+          wrongCountRef.current = 0;
+          const cp = gateRef.current?.cp ?? 0;
+          const back = Math.max(0, cp - REWIND_SEC);
+          watchedMaxRef.current = back; // 서버 되감기와 로컬 정본 동기화(앞으로-seek 가드가 안 튕기게)
+          setWatchedMax(back);
+          setGate(null);
           setGateWrong(false);
-          setGateKey((k) => k + 1);
-        }, 1400);
+          const v = videoRef.current;
+          if (v) {
+            v.currentTime = back;
+            if (!overlayRef.current) v.play().catch(() => {});
+          }
+          showToast('이 부분을 다시 보고 올게요 🔁');
+        } else {
+          window.setTimeout(() => {
+            setGateWrong(false);
+            setGateKey((k) => k + 1);
+          }, 1400);
+        }
       }
     };
     host.addEventListener('catchap:answer', onAnswer);
