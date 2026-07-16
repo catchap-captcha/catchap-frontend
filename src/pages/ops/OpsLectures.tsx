@@ -200,11 +200,22 @@ export default function OpsLectures() {
                   {/* 문항 0개면 체크포인트에서 낼 문제가 없어 시청 검증이 통째로 없는
                       강의가 된다(챌린지 4xx → 게이트가 뜨지 않음). 숫자만 보고 넘기기
                       쉬우니 눈에 띄게 경고한다. */}
-                  {lec.active_question_count === 0 && (
+                  {lec.active_question_count === 0 ? (
                     <span className="lu-nowarn" title="확인 문항이 없어 시청 검증이 동작하지 않아요">
                       <i className="ph-fill ph-warning" /> 검증 없음
                     </span>
-                  )}
+                  ) : lec.pool_question_count === 0 ? (
+                    /* 활성 문항이 있어도 전부 고정·구간이면 무작위 확인이 예약되지 않는다 —
+                       고정 시점을 이미 지난 학생에겐 남은 강의 내내 확인이 안 뜬다(라이브
+                       사고 사례). 문항 수만 보면 멀쩡해 보이므로 별도 경고. 구버전 서버는
+                       pool_question_count를 안 줘 undefined → 이 배지는 뜨지 않는다. */
+                    <span
+                      className="lu-nowarn lu-nowarn--pool"
+                      title="공개 문항이 전부 고정·구간이에요 — 그 시점을 이미 지난 학생에게는 확인이 뜨지 않아요. '이 시점 이후 무작위로' 문항을 1개 이상 두세요."
+                    >
+                      <i className="ph-fill ph-push-pin" /> 무작위 확인 없음
+                    </span>
+                  ) : null}
                 </span>
                 <span>
                   <span
@@ -980,6 +991,11 @@ function QuestionsModal({
   const endPreview = form && form.pinned && form.windowed ? parseSecInput(form.window_end) : null;
   /* 공개(active) 문항 수 — 0이면 이 강의는 확인이 아예 안 떠서 시청 검증이 조용히 꺼진다 */
   const activeCount = (items ?? []).filter((q) => q.status === 'active').length;
+  /* 공개·풀(pinned=false) 문항 수 — 0이면(고정·구간만 있으면) 무작위 확인이 예약되지 않아
+     고정 시점을 이미 지난 학생에겐 남은 강의 내내 확인이 안 뜬다(라이브 사고 사례).
+     고정의 소진 판정이 '아직 안 지난 학생'에게만 잡히는 설계라, 지난 학생을 받쳐줄
+     풀 문항이 최소 1개는 있어야 검증이 끊기지 않는다. */
+  const activePoolCount = (items ?? []).filter((q) => q.status === 'active' && !q.pinned).length;
   /* 캡처 모달의 첨부 대상 — 시점 선택 전용(position)이면 null(선택·첨부 UI 숨김) */
   const capTarget =
     capture && capture.slot !== 'position'
@@ -1027,6 +1043,20 @@ function QuestionsModal({
             <i className="ph-fill ph-warning" /> 공개(active) 문항이 없어 이 강의는 시청 검증이
             동작하지 않아요 — 학생이 확인 없이 끝까지 볼 수 있어요. 문항을 추가하거나 draft 문항을
             승인하세요.
+          </div>
+        )}
+        {/* 활성 문항은 있는데 전부 고정·구간 = 무작위 확인이 예약되지 않는다. 고정 시점을
+            이미 지난 학생에겐 남은 강의 내내 확인이 안 뜬다(라이브 사고 사례) — 문항을
+            넣었으니 됐다고 믿는 강사가 모르고 지나가지 않게 모달 안에서도 경고. */}
+        {items !== null && !loadErr && activeCount > 0 && activePoolCount === 0 && (
+          <div className="op-lect-banner-warn op-lect-banner">
+            <i className="ph-fill ph-push-pin" />
+            <span>
+              공개 문항이 전부 고정·구간이라 <b>무작위 확인이 동작하지 않아요</b>. 고정·구간
+              시점을 <b>이미 지난 학생에게는 남은 강의 내내 확인이 뜨지 않아요</b>. &ldquo;이
+              시점 이후 무작위로&rdquo; 문항을 1개 이상 두거나, 고정 시점을 학생들의 현재
+              진도보다 뒤에 배치하세요.
+            </span>
           </div>
         )}
 

@@ -32,6 +32,21 @@
   font-weight: 700;
   font-size: 13px;
 }
+/* 풀 문항 0개 경고 — 문항은 있는데 전부 고정·구간이라 무작위 확인이 안 도는 상태.
+   '문항 0개'(빨강)와 다른 상태이므로 호박색으로 구분한다(아이콘이 문장 위로 뜨지 않게
+   상단 정렬 — 문구가 두 줄 이상이다). */
+.op-lect-banner-warn {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #fef3c7;
+  color: #92400e;
+  font-weight: 700;
+  font-size: 13px;
+}
+.op-lect-banner-warn i { margin-top: 2px; }
 .op-lect-qform { border: 1.5px solid #f0e7da; border-radius: 14px; padding: 14px; margin-bottom: 12px; background: #fffdf8; }
 .op-lect-textarea { border: 1.5px solid #eadfce; border-radius: 10px; padding: 10px; font-family: inherit; font-weight: 600; font-size: 13.5px; resize: vertical; }
 .op-lect-qlist { display: flex; flex-direction: column; gap: 10px; }
@@ -346,3 +361,5 @@
   font-weight: 700;
   white-space: nowrap;
 }
+/* 풀 문항 0개 — 문항은 있는데 전부 고정·구간이라 무작위 확인이 안 도는 상태(호박색으로 구분) */
+.lu-nowarn--pool { background: #fef3c7; color: #92400e; }

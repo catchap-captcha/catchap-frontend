@@ -87,6 +87,11 @@ export interface OpsLecture {
   status: string; // active | hidden
   question_count: number;
   active_question_count: number;
+  /** 공개(active)·풀(pinned=false) 문항 수 — 무작위 확인의 출제 재료. active가 있어도
+   *  이 값이 0이면(고정·구간만 있으면) 고정 시점을 이미 지난 학생에겐 남은 강의 내내
+   *  확인이 안 뜬다(라이브 사고 사례). 구버전 서버는 필드를 안 주므로 옵셔널 —
+   *  undefined면 경고를 띄우지 않는다(판정 불가를 사고로 오표기하지 않기). */
+  pool_question_count?: number;
   created_at: string | null;
 }
 
