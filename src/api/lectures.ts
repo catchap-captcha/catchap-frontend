@@ -103,6 +103,10 @@ export interface OpsLectureQuestion {
   options: string[];
   explain: string | null;
   answer_index: number;
+  /** 유효 정답 목록(다답형 — 학생은 전부 담아야 정답, 부분 정답 없음). 단일 정답 행도
+   *  서버가 [answer_index]로 채워 내려 콘솔은 항상 이 필드로 체크박스를 그린다.
+   *  구버전 서버는 필드를 안 주므로 옵셔널 — 없으면 [answer_index]로 본다. */
+  answer_indexes?: number[];
   source: string; // manual | llm
   status: string; // draft | active
   order_no: number;
@@ -211,6 +215,9 @@ export const lectureApi = {
       prompt: string;
       options: string[];
       answer_index: number;
+      /** 다답 정답 목록 — 함께 보내면 이것이 정본(answer_index는 첫 값으로 동기화됨).
+       *  구버전 서버는 이 필드를 무시하고 answer_index만 쓴다(단일 정답으로 저장). */
+      answer_indexes?: number[];
       explain?: string;
       status?: string;
       /** 기본 false — true면 position_sec 정각에 반드시 출제(서버가 1초 이상·영상 길이 미만 검증) */
@@ -232,6 +239,8 @@ export const lectureApi = {
       prompt: string;
       options: string[];
       answer_index: number;
+      /** 다답 정답 목록 — 보내면 목록이 정본, answer_index만 보내면 단일 정답으로 전환 */
+      answer_indexes: number[];
       explain: string;
       status: string;
       pinned: boolean; // 미전송 시 변경 없음

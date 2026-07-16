@@ -602,7 +602,8 @@ interface QForm {
      비울 수 있는데(그림 전용 보기), textarea는 빈 줄을 표현·보존할 수 없고 빈 줄을
      걸러내면 보기 인덱스가 밀려 서버의 이미지(인덱스 키)와 어긋난다. */
   options: string[];
-  answer_index: number;
+  /** 정답 보기 인덱스 목록(다중 선택 가능, 최소 1개) — 학생은 전부 담아야 정답(부분 정답 없음) */
+  answer_indexes: number[];
   explain: string;
   status: string;
   /** 서버 재조회로 확인된 이미지 URL만 담는다(옵티미스틱 반영 금지 — 가짜 성공 방지) */
@@ -622,7 +623,7 @@ const emptyQ = (): QForm => ({
   window_end: '',
   prompt: '',
   options: ['', ''],
-  answer_index: 0,
+  answer_indexes: [0],
   explain: '',
   status: 'active',
   promptImageUrl: null,
@@ -692,7 +693,8 @@ function QuestionsModal({
         !!q.pinned && (q.window_sec ?? 0) > 0 ? fmtMMSS(q.position_sec + q.window_sec) : '',
       prompt: q.prompt ?? '',
       options: [...q.options],
-      answer_index: q.answer_index,
+      // 구버전 서버는 answer_indexes를 안 준다 — [answer_index]로 본다(하위호환)
+      answer_indexes: q.answer_indexes ?? [q.answer_index],
       explain: q.explain ?? '',
       status: q.status,
       promptImageUrl: q.prompt_image_url ?? null,
@@ -705,14 +707,16 @@ function QuestionsModal({
     if (!form) return;
     const options = form.options.map((s) => s.trim());
     const pos = parseSecInput(form.position_sec);
-    const ans = form.answer_index;
+    const ans = [...form.answer_indexes].sort((a, b) => a - b);
     if (!form.prompt.trim()) return setErr('문제는 꼭 적어야 해요.');
     if (options.length < 2 || options.length > 6) return setErr('보기는 2~6개여야 해요.');
     // 이미지가 붙은 보기만 텍스트 생략 허용(그림 전용 보기) — 서버 규칙과 동일
     const missing = options.findIndex((o, i) => !o && !form.optionImageUrls[i]);
     if (missing >= 0)
       return setErr(`${missing + 1}번 보기가 비어 있어요 — 텍스트를 쓰거나 이미지를 붙인 뒤 비우세요.`);
-    if (!(ans >= 0 && ans < options.length)) return setErr('정답으로 지정된 보기가 없어요.');
+    if (ans.length === 0) return setErr('정답 보기를 최소 1개 지정하세요.');
+    if (ans.some((a) => !(a >= 0 && a < options.length)))
+      return setErr('정답으로 지정된 보기가 없어요.');
     if (pos == null || pos < 0)
       return setErr('출제 시점은 초(예: 200) 또는 분:초(예: 3:20) 형태로 입력하세요.');
     /* 시점·구간 범위는 서버(400)와 같은 규칙으로 제출 전에 막는다 — 문구도 서버와 동일하게.
@@ -746,7 +750,9 @@ function QuestionsModal({
         window_sec: windowSec,
         prompt: form.prompt.trim(),
         options,
-        answer_index: ans,
+        // 목록이 정본 — answer_index는 첫 값으로 함께 보내 구버전 서버에서도 깨지지 않는다
+        answer_indexes: ans,
+        answer_index: ans[0],
         explain: form.explain,
         status: form.status,
       };
@@ -929,12 +935,13 @@ function QuestionsModal({
       return setErr(
         `${i + 1}번 보기를 지우려면 그 보기부터 뒤쪽 보기의 이미지를 먼저 삭제하세요 — 보기가 당겨지면 이미지가 다른 보기에 붙어버려요.`,
       );
+    // 지운 행은 정답 목록에서 빼고 뒤 행은 한 칸씩 당긴다 — 다 빠지면 1번 보기로 폴백(최소 1개 유지)
+    const shifted = form.answer_indexes.filter((a) => a !== i).map((a) => (a > i ? a - 1 : a));
     setForm({
       ...form,
       options: form.options.filter((_, j) => j !== i),
       optionImageUrls: form.optionImageUrls.filter((_, j) => j !== i),
-      answer_index:
-        form.answer_index === i ? 0 : form.answer_index > i ? form.answer_index - 1 : form.answer_index,
+      answer_indexes: shifted.length > 0 ? shifted : [0],
       alignedUpTo: Math.min(form.alignedUpTo, i), // 삭제 지점 뒤 행은 당겨져 서버 인덱스와 어긋난다
     });
   };
@@ -1256,15 +1263,24 @@ function QuestionsModal({
                     ? '보기마다 이미지를 붙일 수 있어요. 이미지가 있는 보기는 텍스트를 지워도 돼요 — 그림만으로 낼 수 있어요.'
                     : '보기 이미지는 문항을 먼저 저장한 뒤 붙일 수 있어요.'}
                 </span>
+                <span className="lu-help">
+                  정답을 여러 개 고를 수 있어요 — 학생은 고른 보기를 전부 담아야 정답이에요(부분 정답 없음).
+                </span>
                 <div className="lu-optlist">
                   {form.options.map((opt, i) => (
-                    <div key={i} className={`lu-optrow${form.answer_index === i ? ' lu-optrow--ans' : ''}`}>
-                      <label className="lu-optans" title="이 보기를 정답으로 지정">
+                    <div key={i} className={`lu-optrow${form.answer_indexes.includes(i) ? ' lu-optrow--ans' : ''}`}>
+                      <label className="lu-optans" title="이 보기를 정답으로 지정 — 여러 개 지정 가능">
                         <input
-                          type="radio"
-                          name="lu-q-answer"
-                          checked={form.answer_index === i}
-                          onChange={() => setForm({ ...form, answer_index: i })}
+                          type="checkbox"
+                          checked={form.answer_indexes.includes(i)}
+                          onChange={() =>
+                            setForm({
+                              ...form,
+                              answer_indexes: form.answer_indexes.includes(i)
+                                ? form.answer_indexes.filter((a) => a !== i)
+                                : [...form.answer_indexes, i],
+                            })
+                          }
                         />
                         정답
                       </label>
@@ -1358,6 +1374,9 @@ function QuestionsModal({
 
               <label className="ox-field op-form-span2">
                 해설
+                <span className="lu-help">
+                  해설은 학생에게 표시되지 않아요(운영자 기록용) — 학생 게이트는 검증이라 정답·해설을 내려보내지 않아요.
+                </span>
                 <input value={form.explain} onChange={(e) => setForm({ ...form, explain: e.target.value })} />
               </label>
             </div>
@@ -1435,7 +1454,10 @@ function QuestionsModal({
                 )}
                 <div className="op-lect-qopts">
                   {q.options.map((o, i) => (
-                    <span key={i} className={`op-lect-qopt${i === q.answer_index ? ' op-lect-qopt-ans' : ''}`}>
+                    <span
+                      key={i}
+                      className={`op-lect-qopt${(q.answer_indexes ?? [q.answer_index]).includes(i) ? ' op-lect-qopt-ans' : ''}`}
+                    >
                       {i}.{' '}
                       {q.option_image_urls?.[i] && (
                         <img
