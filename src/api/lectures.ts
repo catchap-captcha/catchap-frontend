@@ -104,10 +104,8 @@ export interface OpsLectureQuestion {
   source: string; // manual | llm
   status: string; // draft | active
   order_no: number;
-  /** 출제 구간 길이(초) — 모든 문항이 핀. 0 = 정확히 position_sec(고정),
-   *  N>0 = [position_sec, position_sec+N] 안에서 서버가 무작위 초를 골라 출제(구간 —
-   *  매번 달라 학생이 지점을 외우지 못한다) */
-  window_sec: number;
+  /* (제거됨 0717) window_sec — 구간 출제. 모든 문항이 position_sec 정각의 고정 핀이다
+     (되감기(cp-REWIND) 기준과 내용 시점이 어긋나는 버그로 구간을 걷어냈다 — 서버 lecture_pin_03) */
   /** 문제 이미지 서빙 URL(`/api/v1/...` 상대경로 — <img>에는 API_ORIGIN을 붙인다). 없으면 null */
   prompt_image_url: string | null;
   /** 보기와 같은 길이 — 이미지 없는 보기는 null. 이미지가 있는 보기는 텍스트를 비울 수 있다(그림 전용 보기) */
@@ -212,9 +210,6 @@ export const lectureApi = {
       answer_indexes?: number[];
       explain?: string;
       status?: string;
-      /** 기본 0(고정) — N>0이면 [position_sec, position_sec+N] 구간 안의 무작위 초에 출제.
-       *  구간 끝이 영상을 넘는 건 허용(서버가 잘라 씀 — "여기부터 끝까지"는 정상 의도) */
-      window_sec?: number;
     },
   ) =>
     client
@@ -233,7 +228,6 @@ export const lectureApi = {
       answer_indexes: number[];
       explain: string;
       status: string;
-      window_sec: number; // 미전송 시 변경 없음 — 구간→고정 전환 시 0을 명시로 보내야 지워진다
     }>,
   ) =>
     client

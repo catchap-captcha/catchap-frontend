@@ -16,8 +16,9 @@ import './OpsLectures.css';
 
 const SUBJECTS = ['국어', '영어', '수학', '과학', '사회', '생활'];
 
-/* (제거됨 0717) 시청 확인 간격 프리셋 — 출제 시점이 전부 핀(문항의 고정/구간)이 되면서
-   무작위 간격 설정 자체가 사라졌다. 확인이 뜨는 시점은 문항 등록에서 지정한다. */
+/* (제거됨 0717) 시청 확인 간격 프리셋 — 출제 시점이 전부 핀(문항의 position_sec 고정)이
+   되면서 무작위 간격 설정 자체가 사라졌다. 확인이 뜨는 시점은 문항 등록에서 지정한다.
+   (구간 모드도 함께 제거 — 되감기(cp-REWIND) 기준과 내용 시점이 어긋나는 버그. 서버 lecture_pin_03) */
 
 /** 초 → "29분 12초" 사람이 읽는 형태 (강사용 표시) */
 function humanDur(sec: number): string {
@@ -469,9 +470,9 @@ function LectureFormModal({
           <div className="ox-field op-form-span2">
             시청 확인 문제
             <span className="lu-help">
-              확인 문제가 뜨는 시점은 <b>문항 등록</b>에서 지정해요(정확한 시점 또는 구간).
-              업로드 후 목록의 &lsquo;문항&rsquo;에서 등록하세요 — 문항이 없으면 시청 검증이
-              동작하지 않아요.
+              확인 문제가 뜨는 시점은 <b>문항 등록</b>에서 지정해요(문항이 다루는 대목의
+              정확한 시점). 업로드 후 목록의 &lsquo;문항&rsquo;에서 등록하세요 — 문항이 없으면
+              시청 검증이 동작하지 않아요.
             </span>
           </div>
 
@@ -517,12 +518,8 @@ function LectureFormModal({
 /* ================= 확인 문항 모달 ================= */
 interface QForm {
   id: string | null; // null = 새 문항(저장하면 이미지 첨부가 열린다)
+  /** 출제 시점 — 모든 문항이 이 시점 정각의 고정 핀(구간 모드는 제거됨 — 서버 lecture_pin_03) */
   position_sec: string;
-  /** true = 구간 모드 — [시작, 끝] 안의 무작위 초에 출제. 전송 시 window_sec = 끝-시작.
-   *  false = 고정(position_sec 정각에 반드시 출제). 모든 문항이 핀 — 풀(무작위) 모드는 없다. */
-  windowed: boolean;
-  /** 구간 끝 입력(초 또는 분:초) — windowed일 때만 사용 */
-  window_end: string;
   prompt: string;
   /* 보기를 줄바꿈 textarea가 아니라 행 배열로 다룬다 — 이미지가 붙은 보기는 텍스트를
      비울 수 있는데(그림 전용 보기), textarea는 빈 줄을 표현·보존할 수 없고 빈 줄을
@@ -544,8 +541,6 @@ interface QForm {
 const emptyQ = (): QForm => ({
   id: null,
   position_sec: '',
-  windowed: false,
-  window_end: '',
   prompt: '',
   options: ['', ''],
   answer_indexes: [0],
@@ -611,9 +606,6 @@ function QuestionsModal({
     setForm({
       id: q.id,
       position_sec: String(q.position_sec),
-      windowed: (q.window_sec ?? 0) > 0,
-      // 구간 끝은 시작+길이로 환산해 보여준다 — 강사는 타임코드 두 개로 생각한다
-      window_end: (q.window_sec ?? 0) > 0 ? fmtMMSS(q.position_sec + q.window_sec) : '',
       prompt: q.prompt ?? '',
       options: [...q.options],
       // 구버전 서버는 answer_indexes를 안 준다 — [answer_index]로 본다(하위호환)
@@ -653,23 +645,11 @@ function QuestionsModal({
       return setErr(
         '공개 문항은 출제 시점이 1초 이상이어야 합니다(0초는 아직 아무것도 보지 않은 지점이라 뜰 수 없어요).',
       );
-    let windowSec = 0;
-    if (form.windowed) {
-      const end = parseSecInput(form.window_end);
-      if (end == null)
-        return setErr('구간 끝을 초(예: 340) 또는 분:초(예: 5:40) 형태로 입력하세요.');
-      if (end < pos)
-        return setErr('구간 끝이 구간 시작보다 앞이에요 — 시작 이후 시점으로 지정하세요.');
-      // 구간 끝이 영상을 넘는 건 막지 않는다 — "여기부터 끝까지"는 정상 의도(서버가 잘라 씀)
-      windowSec = end - pos;
-    }
     setSaving(true);
     setErr('');
     try {
       const body = {
         position_sec: pos,
-        // 구간→고정 전환 시 0을 명시로 보내 서버 값이 지워지게 한다(미전송 = 변경 없음)
-        window_sec: windowSec,
         prompt: form.prompt.trim(),
         options,
         // 목록이 정본 — answer_index는 첫 값으로 함께 보내 구버전 서버에서도 깨지지 않는다
@@ -917,7 +897,6 @@ function QuestionsModal({
 
   /* 입력 중 실시간 환산·범위 안내용 — 저장 검증(save)과 같은 파서를 쓴다 */
   const posPreview = form ? parseSecInput(form.position_sec) : null;
-  const endPreview = form && form.windowed ? parseSecInput(form.window_end) : null;
   /* 공개(active) 문항 수 — 0이면 이 강의는 확인이 아예 안 떠서 시청 검증이 조용히 꺼진다 */
   const activeCount = (items ?? []).filter((q) => q.status === 'active').length;
   /* 캡처 모달의 첨부 대상 — 시점 선택 전용(position)이면 null(선택·첨부 UI 숨김) */
@@ -972,38 +951,11 @@ function QuestionsModal({
         {form && (
           <div className="op-lect-qform">
             <div className="op-form-grid">
-              {/* 출제 방식 — 고정 시점·구간(모든 문항이 핀).
-                  구간은 정확한 초를 강사가 재지 않아도 되고, 매번 같은 초에 뜨지 않아
-                  학생이 "몇 분 몇 초에 문제가 뜬다"를 외우지 못한다. */}
-              <div className="ox-field op-form-span2">
-                출제 방식
-                <div className="lu-presets">
-                  <button
-                    type="button"
-                    className={`lu-preset${!form.windowed ? ' lu-preset--on' : ''}`}
-                    onClick={() => setForm({ ...form, windowed: false })}
-                  >
-                    <b>
-                      <i className="ph-fill ph-push-pin" /> 정확히 이 시점에
-                    </b>
-                    <span>학생이 이 시점에 닿는 순간 반드시 이 문항이 떠요</span>
-                    <em>&ldquo;방금 본 내용&rdquo;을 그 대목 직후에 물을 때</em>
-                  </button>
-                  <button
-                    type="button"
-                    className={`lu-preset${form.windowed ? ' lu-preset--on' : ''}`}
-                    onClick={() => setForm({ ...form, windowed: true })}
-                  >
-                    <b>
-                      <i className="ph-fill ph-arrows-left-right" /> 이 구간 안에서
-                    </b>
-                    <span>구간 안의 무작위 초에 반드시 이 문항이 떠요</span>
-                    <em>정확한 초를 안 재도 되고, 매번 달라 학생이 지점을 못 외워요</em>
-                  </button>
-                </div>
-              </div>
+              {/* 출제 시점 — 모든 문항이 이 시점 정각의 고정 핀. "방금 본 내용"을 그 대목
+                  직후에 묻는다(오답 3회면 이 시점 기준으로 그 대목을 다시 보게 되감는다).
+                  구간(무작위 초) 모드는 제거 — 되감기 기준과 내용 시점이 어긋난다. */}
               <label className="ox-field">
-                {form.windowed ? '구간 시작' : '출제 시점'}
+                출제 시점
                 <span
                   className={`lu-help${
                     posPreview != null &&
@@ -1019,9 +971,7 @@ function QuestionsModal({
                       ? `영상 길이(${fmtMMSS(lec.duration_sec)})를 벗어났어요 — 영상 안의 시점으로 지정하세요`
                       : form.status === 'active' && posPreview < 1
                         ? '공개 문항은 1초 이상이어야 해요 — 0초는 아직 아무것도 보지 않은 지점이에요'
-                        : form.windowed
-                          ? `${fmtMMSS(posPreview)}부터 구간 시작 · 영상 길이 ${fmtMMSS(lec.duration_sec)}`
-                          : `${fmtMMSS(posPreview)}에 반드시 출제 · 영상 길이 ${fmtMMSS(lec.duration_sec)}`}
+                        : `${fmtMMSS(posPreview)}에 반드시 출제 · 영상 길이 ${fmtMMSS(lec.duration_sec)}`}
                 </span>
                 <input
                   value={form.position_sec}
@@ -1036,33 +986,6 @@ function QuestionsModal({
                   <i className="ph-bold ph-monitor-play" /> 영상 보면서 시점 고르기
                 </button>
               </label>
-              {form.windowed && (
-                <label className="ox-field">
-                  구간 끝
-                  <span
-                    className={`lu-help${
-                      endPreview != null && posPreview != null && endPreview < posPreview
-                        ? ' lu-help--bad'
-                        : ''
-                    }`}
-                  >
-                    {endPreview == null
-                      ? '초(예: 340) 또는 분:초(예: 5:40)로 입력하세요'
-                      : posPreview != null && endPreview < posPreview
-                        ? '구간 끝이 시작보다 앞이에요 — 시작 이후 시점으로 지정하세요'
-                        : posPreview != null
-                          ? `${fmtMMSS(posPreview)}~${fmtMMSS(endPreview)} 사이 무작위 초에 출제${
-                              endPreview >= lec.duration_sec ? ' · 영상 끝까지로 잘라 써요' : ''
-                            }`
-                          : `${fmtMMSS(endPreview)}까지`}
-                  </span>
-                  <input
-                    value={form.window_end}
-                    onChange={(e) => setForm({ ...form, window_end: e.target.value })}
-                    placeholder="예: 5:40 또는 340"
-                  />
-                </label>
-              )}
               <label className="ox-field">
                 상태
                 <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
@@ -1314,16 +1237,8 @@ function QuestionsModal({
           {(items ?? []).map((q) => (
             <div key={q.id} className="op-lect-qrow">
               <div className="op-lect-qmeta">
-                {/* 고정=그 시점 정각, 구간=그 사이 무작위 초. draft 0초 = 시점 미배치 */}
-                {(q.window_sec ?? 0) > 0 ? (
-                  <span
-                    className="op-mono lu-pinbadge"
-                    title="이 구간 안의 무작위 초에 반드시 출제돼요 — 매번 달라 학생이 지점을 못 외워요"
-                  >
-                    <i className="ph-fill ph-arrows-left-right" /> {fmtMMSS(q.position_sec)}~
-                    {fmtMMSS(q.position_sec + q.window_sec)} 구간
-                  </span>
-                ) : q.status === 'draft' && q.position_sec < 1 ? (
+                {/* 고정 핀 = 그 시점 정각에 출제. draft 0초 = 시점 미배치 */}
+                {q.status === 'draft' && q.position_sec < 1 ? (
                   <span className="op-mono" title="아직 출제 시점이 없어요 — 수정에서 시점을 지정한 뒤 승인하세요">
                     시점 미배치
                   </span>
