@@ -127,6 +127,11 @@ export default function LoginPage() {
   const [contractType, setContractType] = useState('monthly');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  // 연령 분기(2026-07-17): 학생 가입은 생년월일 필수 — 만 14세 미만이면 보호자 동의 섹션 노출
+  const [birthDate, setBirthDate] = useState(''); // YYYY-MM-DD
+  const [guardianEmail, setGuardianEmail] = useState('');
+  const [guardianCodeSent, setGuardianCodeSent] = useState(false);
+  const [guardianSecondsLeft, setGuardianSecondsLeft] = useState(0);
   const [orgEmail, setOrgEmail] = useState('');
   const [orgTel, setOrgTel] = useState('');
   const [orgPhone, setOrgPhone] = useState('');
@@ -220,7 +225,30 @@ export default function LoginPage() {
     return () => window.clearInterval(t);
   }, [codeSent, verified, codeSecondsLeft > 0]);
 
+  // 보호자 동의 코드 카운트다운 — 본인 이메일 코드와 동일 5분 규칙
+  useEffect(() => {
+    if (!guardianCodeSent || guardianSecondsLeft <= 0) return;
+    const t = window.setInterval(() => {
+      setGuardianSecondsLeft((s) => (s <= 1 ? 0 : s - 1));
+    }, 1000);
+    return () => window.clearInterval(t);
+  }, [guardianCodeSent, guardianSecondsLeft > 0]);
+
   const mmss = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+
+  // 만 나이 — 생일이 안 지났으면 1 뺀다. 서버(register_student)와 동일 규칙.
+  const ageFrom = (iso: string): number | null => {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return null;
+    const b = new Date(iso + 'T00:00:00');
+    if (Number.isNaN(b.getTime())) return null;
+    const now = new Date();
+    let a = now.getFullYear() - b.getFullYear();
+    if (now.getMonth() < b.getMonth() || (now.getMonth() === b.getMonth() && now.getDate() < b.getDate())) a -= 1;
+    return a;
+  };
+  const signupAge = birthDate ? ageFrom(birthDate) : null;
+  // 만 14세 미만 = 보호자(법정대리인) 동의 필요. 서버가 최종 강제 — 여기는 안내·입력 UI.
+  const needsGuardian = signupAge !== null && signupAge >= 0 && signupAge < 14;
 
   // 초대 이름 자동 입력: 이름칸은 비제어(uncontrolled) 입력이라 가입 뷰가 렌더된 뒤 DOM 값을 채운다.
   useEffect(() => {
@@ -254,7 +282,8 @@ export default function LoginPage() {
     student: { idLabel: '학생 아이디', idPlaceholder: '이메일 또는 아이디를 입력해 주세요', notice: '학생·학부모는 회원가입 후, 기관은 관리자 승인 후 이용할 수 있어요.' },
     parent: { idLabel: '학부모 아이디', idPlaceholder: '이메일 또는 아이디', notice: '자녀 연결은 기관 승인 후 이용할 수 있어요.' },
     // 선생님·기관 관리자 공용 — 로그인 구분 없이 계정(이메일)으로 역할 자동 판별
-    org: { idLabel: '기관 아이디', idPlaceholder: '이메일 또는 아이디', notice: '기관 계정은 등록 신청·승인·계약 완료 후 발급돼요.' },
+    // 입구 차단(2026-07-17): 신규 기관 등록 접수 종료 — 로그인 탭은 기존 계정 전용으로 남긴다
+    org: { idLabel: '기관 아이디', idPlaceholder: '이메일 또는 아이디', notice: '기존 기관 계정 전용이에요. 신규 기관 등록은 받지 않아요.' },
   };
   const idLabel = loginMap[role].idLabel;
   const idPlaceholder = loginMap[role].idPlaceholder;
@@ -329,11 +358,19 @@ export default function LoginPage() {
       // 학생 이메일 가입 전환(2026-07-16): 기관·별도 아이디 없이 학부모와 동일 구성 —
       // 서버가 이메일(소문자)을 로그인 아이디로 쓴다. organization_id/org_code/student_login_id는
       // 백엔드에서 옵셔널로 남아 있어 기관 경유 가입을 나중에 되살릴 수 있다.
+      // 연령 분기(2026-07-17): 생년월일 필수, 만 14세 미만은 보호자 이메일 코드 동봉.
       req = authApi.registerStudent({
         name,
         email,
         email_code: emailCode,
         password: pw,
+        birth_date: birthDate,
+        ...(needsGuardian
+          ? {
+              guardian_email: guardianEmail,
+              guardian_email_code: fieldVal('[data-req="보호자 인증코드"]'),
+            }
+          : {}),
       });
     } else if (role === 'parent') {
       req = authApi.registerParent({ name, email, phone, password: pw, email_code: emailCode });
@@ -486,6 +523,27 @@ export default function LoginPage() {
             : '인증코드 발송에 실패했어요. 이메일을 확인해 주세요.',
         );
       });
+  };
+
+  // 보호자(법정대리인) 동의 코드 발송 — 기존 계정 이메일도 허용(purpose=guardian).
+  // 코드는 가입 확정 시 서버가 1회 소비 — 별도 '확인' 단계 없이 입력만 받는다.
+  const sendGuardianCode = () => {
+    if (!isEmail(guardianEmail)) {
+      setFormError('보호자 이메일을 올바른 형식으로 입력해 주세요.');
+      return;
+    }
+    if (guardianEmail.trim().toLowerCase() === email.trim().toLowerCase()) {
+      setFormError('보호자 이메일은 본인 이메일과 달라야 해요.');
+      return;
+    }
+    authApi
+      .sendEmailCode(guardianEmail, 'guardian')
+      .then(() => {
+        setGuardianCodeSent(true);
+        setGuardianSecondsLeft(300);
+        setFormError('');
+      })
+      .catch(() => setFormError('보호자 인증코드 발송에 실패했어요. 이메일을 확인해 주세요.'));
   };
 
   const verifyCode = () => {
@@ -713,6 +771,8 @@ export default function LoginPage() {
   };
   const goSignup = () => {
     // 학생 이메일 가입 전환(2026-07-16): 학생도 이메일 가입 폼 사용(종전 코드 활성화 리다이렉트 제거)
+    // 입구 차단(2026-07-17): 기관/교사 신규 가입 종료 — 기관 탭에서 가입 눌러도 학생 탭으로.
+    if (role === 'org') setRole('student');
     setView('signup');
     setCodeSent(false);
     setCodeSecondsLeft(0);
@@ -739,10 +799,14 @@ export default function LoginPage() {
         <i className="ph-fill ph-users-three" />
         학부모
       </button>
-      <button type="button" onClick={setOrg} className={tabCls(role === 'org')}>
-        <i className="ph-fill ph-buildings" />
-        기관
-      </button>
+      {/* 입구 차단(2026-07-17): 기관/교사 신규 가입 종료 — 가입 뷰에선 기관 탭 자체를 뺀다.
+          로그인 뷰에는 남긴다(기존 기관 계정은 계속 로그인). */}
+      {!signup && (
+        <button type="button" onClick={setOrg} className={tabCls(role === 'org')}>
+          <i className="ph-fill ph-buildings" />
+          기관
+        </button>
+      )}
     </div>
   );
 
@@ -976,6 +1040,81 @@ export default function LoginPage() {
                   <i className="ph-fill ph-identification-card lg-field-icon" />
                   <input type="text" data-req="이름" placeholder={namePlaceholder} className="lg-input" />
                 </div>
+
+                {/* 연령 분기(2026-07-17): 학생 가입은 생년월일 필수 — 만 14세 미만이면
+                    보호자(법정대리인) 이메일 동의 섹션이 아래에 열린다. 서버가 최종 강제. */}
+                {role === 'student' && (
+                  <>
+                    <label className="lg-label">생년월일</label>
+                    <div className="lg-field lg-mb12">
+                      <i className="ph-fill ph-cake lg-field-icon" />
+                      <input
+                        type="date"
+                        data-req="생년월일"
+                        value={birthDate}
+                        onChange={(e) => setBirthDate(e.target.value)}
+                        max={new Date().toISOString().slice(0, 10)}
+                        className="lg-input"
+                      />
+                    </div>
+                    {needsGuardian && (
+                      <div className="lg-guardian lg-mb15" style={{ background: '#FFF6EC', border: '1px solid #FFE1BD', borderRadius: 12, padding: '12px 14px' }}>
+                        <p style={{ margin: '0 0 8px', fontSize: 13, color: '#8A5A1C', fontWeight: 700 }}>
+                          <i className="ph-fill ph-shield-check" /> 만 {signupAge}세는 보호자(법정대리인) 동의가 필요해요
+                        </p>
+                        <p style={{ margin: '0 0 10px', fontSize: 12.5, color: '#9B7A4E', lineHeight: 1.5 }}>
+                          보호자 이메일로 인증코드를 보내 동의를 확인해요. 동의 기록은 안전하게 보관됩니다.
+                        </p>
+                        <label className="lg-label">보호자 이메일</label>
+                        <div className="lg-inline lg-mb12">
+                          <div className="lg-field-grow">
+                            <i className="ph-fill ph-envelope-simple lg-field-icon" />
+                            <input
+                              type="email"
+                              data-req="보호자 이메일"
+                              placeholder="보호자 이메일 주소"
+                              value={guardianEmail}
+                              onChange={(e) => setGuardianEmail(e.target.value)}
+                              className="lg-input"
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            onClick={sendGuardianCode}
+                            className={'lg-sendbtn' + (guardianCodeSent ? ' lg-sendbtn--sent' : '')}
+                          >
+                            {guardianCodeSent ? '재전송' : '동의코드 받기'}
+                          </button>
+                        </div>
+                        {guardianCodeSent && (
+                          <>
+                            <label className="lg-label">보호자 인증코드</label>
+                            <div className="lg-field lg-mb9">
+                              <i className="ph-fill ph-shield-check lg-field-icon" />
+                              <input
+                                type="text"
+                                maxLength={6}
+                                data-req="보호자 인증코드"
+                                placeholder="보호자 이메일로 받은 6자리 코드"
+                                className="lg-input lg-input--otp"
+                              />
+                            </div>
+                            <div className="lg-notverified">
+                              <i className="ph-fill ph-timer" />
+                              {guardianSecondsLeft > 0 ? (
+                                <span>
+                                  동의코드를 보냈어요. 남은 시간 <b>{mmss(guardianSecondsLeft)}</b> · 가입 완료 시 확인돼요.
+                                </span>
+                              ) : (
+                                <span>동의코드가 만료됐어요. <b>재전송</b>을 눌러 새 코드를 받아 주세요.</span>
+                              )}
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </>
+                )}
 
                 {showInstitution && invited && (
                   <>

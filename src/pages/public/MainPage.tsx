@@ -145,15 +145,16 @@ export default function MainPage() {
               <span className="mn-role-item"><i className="ph-fill ph-check-circle" />리포트 다운로드</span>
             </div>
           </div>
+          {/* 제품 전환(2026-07-17): 기관(학교) 카드 → 강사 카드 — 신규 기관 접수 종료 */}
           <div className="mn-role-card mn-role-card--org">
             <div className="mn-role-bubble"></div>
-            <span className="mn-role-icon"><i className="ph-fill ph-buildings" /></span>
-            <h3 className="mn-role-title">기관</h3>
-            <p className="mn-role-desc">강의·수강생, 시청 완료 검증, API·보안까지 기관 전체를 한눈에 관리해요.</p>
+            <span className="mn-role-icon"><i className="ph-fill ph-chalkboard-teacher" /></span>
+            <h3 className="mn-role-title">강사</h3>
+            <p className="mn-role-desc">강의 영상을 올리고, 확인 문제와 출제 시점을 직접 설계해 시청을 검증해요.</p>
             <div className="mn-role-list">
-              <span className="mn-role-item"><i className="ph-fill ph-check-circle" />시청 완료 검증 리포트</span>
-              <span className="mn-role-item"><i className="ph-fill ph-check-circle" />강의·권한 관리</span>
-              <span className="mn-role-item"><i className="ph-fill ph-check-circle" />API·보안 요약</span>
+              <span className="mn-role-item"><i className="ph-fill ph-check-circle" />강의 업로드·목차 관리</span>
+              <span className="mn-role-item"><i className="ph-fill ph-check-circle" />확인 문제·출제 시점 설계</span>
+              <span className="mn-role-item"><i className="ph-fill ph-check-circle" />AI 문항 초안 지원</span>
             </div>
           </div>
         </div>

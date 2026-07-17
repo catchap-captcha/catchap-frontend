@@ -81,6 +81,10 @@ export interface RegisterStudentRequest {
   /** 생략 시 서버가 이메일(소문자)을 로그인 아이디로 사용 */
   student_login_id?: string;
   password: string;
+  /** 연령 분기(2026-07-17): 생년월일 필수 — 만 14세 미만은 보호자 동의 필드도 필요 */
+  birth_date: string; // YYYY-MM-DD
+  guardian_email?: string;
+  guardian_email_code?: string;
 }
 
 export interface RegisterOrgRequest {

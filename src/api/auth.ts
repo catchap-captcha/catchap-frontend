@@ -25,8 +25,9 @@ export const authApi = {
   me: () => client.get<MeResponse>('/auth/me').then((r) => r.data),
 
   /** 회원가입 — 6자리 이메일 인증코드 방식 (디자인 기준).
-   * forAccount: 계정용 이메일(학부모/교사/기관)이면 true — 이미 가입된 이메일이면 409 */
-  sendEmailCode: (email: string, purpose: 'signup' | 'reset' = 'signup', forAccount = false) =>
+   * forAccount: 계정용 이메일(학부모/교사/기관)이면 true — 이미 가입된 이메일이면 409
+   * guardian: 만 14세 미만 학생 가입의 보호자(법정대리인) 동의 코드 — 기존 계정 이메일 허용 */
+  sendEmailCode: (email: string, purpose: 'signup' | 'reset' | 'guardian' = 'signup', forAccount = false) =>
     client
       .post('/auth/email/send', { email, purpose, for_account: forAccount })
       .then((r) => r.data),
