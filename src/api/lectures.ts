@@ -93,6 +93,9 @@ export interface OpsLectureQuestion {
   id: string;
   lecture_id: string;
   position_sec: number;
+  /** 되감기 지점(이 문항이 다루는 내용의 시작, 초) — null = 미지정(서버 폴백: 출제 시점-30초).
+   *  오답 3회 시 서버가 watched_max를 여기로 되감아 그 대목부터 다시 보게 한다. */
+  content_start_sec: number | null;
   prompt: string | null;
   options: string[];
   explain: string | null;
@@ -202,6 +205,8 @@ export const lectureApi = {
     lectureId: string,
     body: {
       position_sec: number;
+      /** 되감기 지점 — null/미전송 = 미지정(서버 폴백). 지정 시 position_sec보다 앞이어야 함(서버 400) */
+      content_start_sec?: number | null;
       prompt: string;
       options: string[];
       answer_index: number;
@@ -221,6 +226,8 @@ export const lectureApi = {
     questionId: string,
     body: Partial<{
       position_sec: number;
+      /** 미전송 = 변경 없음, 명시적 null = 지정 해제(폴백 복귀) — 콘솔은 저장 시 항상 명시로 보낸다 */
+      content_start_sec: number | null;
       prompt: string;
       options: string[];
       answer_index: number;

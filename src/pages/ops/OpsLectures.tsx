@@ -520,6 +520,8 @@ interface QForm {
   id: string | null; // null = 새 문항(저장하면 이미지 첨부가 열린다)
   /** 출제 시점 — 모든 문항이 이 시점 정각의 고정 핀(구간 모드는 제거됨 — 서버 lecture_pin_03) */
   position_sec: string;
+  /** 내용 시작(되감기 지점) 입력 — '' = 미지정(서버 폴백: 출제 시점-30초) */
+  content_start_sec: string;
   prompt: string;
   /* 보기를 줄바꿈 textarea가 아니라 행 배열로 다룬다 — 이미지가 붙은 보기는 텍스트를
      비울 수 있는데(그림 전용 보기), textarea는 빈 줄을 표현·보존할 수 없고 빈 줄을
@@ -541,6 +543,7 @@ interface QForm {
 const emptyQ = (): QForm => ({
   id: null,
   position_sec: '',
+  content_start_sec: '',
   prompt: '',
   options: ['', ''],
   answer_indexes: [0],
@@ -606,6 +609,7 @@ function QuestionsModal({
     setForm({
       id: q.id,
       position_sec: String(q.position_sec),
+      content_start_sec: q.content_start_sec != null ? fmtMMSS(q.content_start_sec) : '',
       prompt: q.prompt ?? '',
       options: [...q.options],
       // 구버전 서버는 answer_indexes를 안 준다 — [answer_index]로 본다(하위호환)
@@ -646,11 +650,24 @@ function QuestionsModal({
       return setErr(
         '공개 문항은 출제 시점이 1초 이상이어야 합니다(0초는 아직 아무것도 보지 않은 지점이라 뜰 수 없어요).',
       );
+    // 내용 시작(되감기 지점) — 빈 값 = 미지정(서버 폴백). 지정 시 서버와 같은 규칙으로 선차단.
+    let contentStart: number | null = null;
+    if (form.content_start_sec.trim() !== '') {
+      contentStart = parseSecInput(form.content_start_sec);
+      if (contentStart == null || contentStart < 0)
+        return setErr('내용 시작 시점은 초(예: 170) 또는 분:초(예: 2:50) 형태로 입력하세요.');
+      if (contentStart >= pos)
+        return setErr(
+          '내용 시작(되감기) 시점은 출제 시점보다 앞이어야 합니다. 문항이 다루는 내용이 시작되는 시점을 지정해 주세요.',
+        );
+    }
     setSaving(true);
     setErr('');
     try {
       const body = {
         position_sec: pos,
+        // 항상 명시로 보낸다 — null이면 서버가 지정 해제(폴백 복귀). 미전송(변경 없음)과 구분.
+        content_start_sec: contentStart,
         prompt: form.prompt.trim(),
         options,
         // 목록이 정본 — answer_index는 첫 값으로 함께 보내 구버전 서버에서도 깨지지 않는다
@@ -987,6 +1004,44 @@ function QuestionsModal({
                   <i className="ph-bold ph-monitor-play" /> 영상 보면서 시점 고르기
                 </button>
               </label>
+              {/* 되감기 지점 — 오답 3회 시 학생이 여기부터 다시 본다. 대목 길이는 문항마다
+                  달라(풀이 2~3분 vs 단어 10초) 상수가 아니라 강사가 아는 사실을 기록한다. */}
+              <label className="ox-field">
+                내용 시작 (되감기 지점)
+                <span
+                  className={`lu-help${
+                    (() => {
+                      const cs = form.content_start_sec.trim() === '' ? null : parseSecInput(form.content_start_sec);
+                      const p = posPreview;
+                      return cs != null && p != null && cs >= p;
+                    })()
+                      ? ' lu-help--bad'
+                      : ''
+                  }`}
+                >
+                  {(() => {
+                    if (form.content_start_sec.trim() === '')
+                      return '비우면 출제 시점 30초 전으로 되감아요 — 이 문항의 설명이 시작되는 시점을 지정하면 더 정확해요';
+                    const cs = parseSecInput(form.content_start_sec);
+                    if (cs == null) return '초(예: 170) 또는 분:초(예: 2:50)로 입력하세요';
+                    if (posPreview != null && cs >= posPreview)
+                      return '출제 시점보다 앞이어야 해요 — 내용이 시작되는 시점을 지정하세요';
+                    return `오답 3회면 ${fmtMMSS(cs)}부터 다시 보게 돼요`;
+                  })()}
+                </span>
+                <input
+                  value={form.content_start_sec}
+                  onChange={(e) => setForm({ ...form, content_start_sec: e.target.value })}
+                  placeholder="예: 2:50 (비우면 자동)"
+                />
+                <button
+                  type="button"
+                  className="lu-capbtn"
+                  onClick={() => setCapture({ slot: 'position' })}
+                >
+                  <i className="ph-bold ph-monitor-play" /> 영상 보면서 시점 고르기
+                </button>
+              </label>
               <label className="ox-field">
                 상태
                 <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
@@ -1248,6 +1303,14 @@ function QuestionsModal({
                     <i className="ph-fill ph-push-pin" /> {fmtMMSS(q.position_sec)} 고정
                   </span>
                 )}
+                {q.content_start_sec != null && (
+                  <span
+                    className="op-mono"
+                    title="오답 3회면 학생이 이 시점부터 다시 봐요(되감기 지점 — 이 문항이 다루는 내용의 시작)"
+                  >
+                    <i className="ph-bold ph-rewind" /> {fmtMMSS(q.content_start_sec)}부터 다시
+                  </span>
+                )}
                 <span className={`op-sys-status op-sys-status--${q.status === 'active' ? 'ok' : 'warn'}`}>
                   {q.status === 'active' ? '공개' : 'draft'}
                 </span>
@@ -1316,6 +1379,9 @@ function QuestionsModal({
               setBanner('강의 화면에서 따온 이미지를 첨부했어요 — 서버 저장까지 확인됐어요.');
             }}
             onUsePosition={(sec) => setForm((f) => (f ? { ...f, position_sec: fmtMMSS(sec) } : f))}
+            onUseContentStart={(sec) =>
+              setForm((f) => (f ? { ...f, content_start_sec: fmtMMSS(sec) } : f))
+            }
             onClose={() => setCapture(null)}
           />
         )}
@@ -1344,6 +1410,7 @@ function FrameCaptureModal({
   onAttach,
   onAttached,
   onUsePosition,
+  onUseContentStart,
   onClose,
 }: {
   lec: OpsLecture;
@@ -1353,6 +1420,8 @@ function FrameCaptureModal({
   onAttach: ((file: File) => Promise<string | null>) | null;
   onAttached: () => void;
   onUsePosition: (sec: number) => void;
+  /** 되감기 지점(내용 시작) 입력에 현재 시점 채우기 — 시점 두 개를 한 재생 흐름에서 고른다 */
+  onUseContentStart: (sec: number) => void;
   onClose: () => void;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -1420,6 +1489,16 @@ function FrameCaptureModal({
     const sec = Math.floor(v.currentTime);
     onUsePosition(sec);
     setNote(`출제 시점 입력에 ${fmtMMSS(sec)}을 채웠어요 — 모달을 닫으면 폼에서 확인할 수 있어요.`);
+  };
+
+  const useContentStart = () => {
+    const v = videoRef.current;
+    if (!v) return;
+    const sec = Math.floor(v.currentTime);
+    onUseContentStart(sec);
+    setNote(
+      `내용 시작(되감기 지점) 입력에 ${fmtMMSS(sec)}을 채웠어요 — 오답 3회면 학생이 여기부터 다시 봐요.`,
+    );
   };
 
   /* ---- 선택 영역을 원본 프레임 좌표로 변환 → canvas 크롭 → 첨부 ---- */
@@ -1562,6 +1641,16 @@ function FrameCaptureModal({
               )}
             </div>
             <div className="lu-cap-tools">
+              {/* 시점 두 개를 한 재생 흐름에서 — 내용이 시작되는 장면에서 '내용 시작',
+                  물을 장면(설명이 끝난 직후)에서 '출제 시점'을 차례로 누른다 */}
+              <button
+                type="button"
+                className="op-btn op-btn--reject"
+                onClick={useContentStart}
+                disabled={busy}
+              >
+                <i className="ph-bold ph-rewind" /> 이 시점을 내용 시작으로
+              </button>
               <button type="button" className="op-btn op-btn--reject" onClick={usePosition} disabled={busy}>
                 <i className="ph-bold ph-timer" /> 이 시점을 출제 시점으로
               </button>
