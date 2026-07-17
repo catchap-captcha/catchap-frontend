@@ -291,12 +291,12 @@
   width: min(560px, 100%);
   background: #fffdf8;
   border-radius: 22px;
-  padding: 20px;
+  padding: 16px 18px 18px;
   box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.6);
   max-height: 100%;
   overflow-y: auto;
 }
-.lp-gatehead { text-align: center; margin-bottom: 10px; }
+.lp-gatehead { text-align: center; margin-bottom: 6px; }
 .lp-gatechip {
   display: inline-flex;
   align-items: center;
@@ -308,8 +308,8 @@
   font-weight: 800;
   font-size: 12.5px;
 }
-.lp-gatetitle { margin: 10px 0 4px; font-weight: 900; font-size: 19px; color: #3a3340; text-align: center; }
-.lp-gatedesc { color: #8a8075; font-weight: 600; font-size: 13.5px; text-align: center; line-height: 1.6; }
+.lp-gatetitle { margin: 8px 0 2px; font-weight: 900; font-size: 17px; color: #3a3340; text-align: center; }
+.lp-gatedesc { color: #8a8075; font-weight: 600; font-size: 12.5px; text-align: center; line-height: 1.5; }
 .lp-gatewrong {
   display: flex;
   align-items: center;
