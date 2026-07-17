@@ -5,9 +5,10 @@ import { PATHS } from './paths';
 export const ROLE_HOME: Record<Role, string> = {
   student: PATHS.STUDENT_HOME,
   parent: PATHS.PARENT_HOME,
-  teacher: PATHS.TEACHER_HOME,
-  grade_head: PATHS.ORG_CLASSES, // 학년부장: 담당 학년 학급·학생 화면(전교 대시보드 접근 불가)
-  org_admin: PATHS.ORG_HOME,
+  // 학교(교사/기관) 콘솔은 제품 전환(2026-07-17)으로 제거 — 기존 계정은 종료 안내로.
+  teacher: PATHS.SCHOOL_SUNSET,
+  grade_head: PATHS.SCHOOL_SUNSET,
+  org_admin: PATHS.SCHOOL_SUNSET,
   ops: PATHS.OPS_APPROVAL, // 운영자: 기관 가입 승인 콘솔
   instructor: PATHS.OPS_LECTURES, // 강사: 자기 강의 관리 콘솔 (운영자 초대로만 생성)
 };
@@ -16,9 +17,6 @@ export const ROLE_HOME: Record<Role, string> = {
 export const ROLE_PREFIX: Array<{ prefix: string; roles: Role[] }> = [
   { prefix: '/student', roles: ['student'] },
   { prefix: '/parent', roles: ['parent'] },
-  { prefix: '/teacher', roles: ['teacher', 'grade_head', 'org_admin'] },
-  // 학년부장도 기관 콘솔 진입 — 관리 동작은 백엔드가 담당 학년으로 스코프
-  { prefix: '/org', roles: ['grade_head', 'org_admin', 'ops'] },
   // 강사도 /ops 콘솔에 진입(강의 관리만) — 페이지별 허용은 라우트 정의가 담당
   { prefix: '/ops', roles: ['ops', 'instructor'] },
 ];

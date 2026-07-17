@@ -47,29 +47,9 @@ export const PATHS = {
   PARENT_NOTIFICATIONS: '/parent/notifications',
   PARENT_MYPAGE: '/parent/mypage',
 
-  // 교사 — handoff: CatChap 선생님 외
-  TEACHER_HOME: '/teacher/home',
-  TEACHER_CLASS: '/teacher/class',
-  TEACHER_STUDENTS: '/teacher/students',
-  TEACHER_STUDENT_SCRATCH: '/teacher/students/:studentId/scratch', // 학생 필기 재생
-  teacherStudentScratch: (studentId: string, name?: string) =>
-    `/teacher/students/${studentId}/scratch${name ? `?name=${encodeURIComponent(name)}` : ''}`,
-  TEACHER_ANALYTICS: '/teacher/analytics',
-  TEACHER_FAMILY_NOTICE: '/teacher/family-notice',
-  TEACHER_MYPAGE: '/teacher/mypage',
-
-  // 기관 관리자 — handoff: CatChap 기관 외
-  ORG_HOME: '/org/home',
-  ORG_CLASSES: '/org/classes',
-  ORG_TEACHERS: '/org/teachers',
-  ORG_ANALYTICS: '/org/analytics',
-  ORG_CAPTCHA_SETTINGS: '/org/captcha-settings',
-  ORG_API_KEYS: '/org/api-keys',
-  ORG_AI_MODELS: '/org/ai-models',
-  ORG_SECURITY_POLICY: '/org/security-policy',
-  ORG_AUDIT: '/org/audit', // 기관 활동 기록 (자기 기관 감사로그)
-  ORG_MYPAGE: '/org/mypage',
-  ORG_CONTACT: '/org/contact', // 관리자 문의 폼 (사이드바 '문의하기' 버튼)
+  // 학교(교사/기관) 콘솔 — 제품 전환(2026-07-17)으로 전부 제거.
+  // 기존 기관·교사 계정이 로그인하면 종료 안내(SCHOOL_SUNSET)로 보낸다.
+  SCHOOL_SUNSET: '/school-sunset',
 
   // 운영자(ops)
   OPS_LOGIN: '/ops/login', // 숨겨진 운영자 전용 로그인 (공개 라우트, 링크 노출 안 함)
@@ -88,10 +68,7 @@ export const PATHS = {
   OPS_LECTURES: '/ops/lectures', // 강의 관리 (영상 업로드·확인 문항·자료실) — 운영자·강사 공용
   OPS_INSTRUCTORS: '/ops/instructors', // 강사 계정 관리 (운영자 초대 발급)
 
-  // 기관 학생 관리 (학생 생성 + 가입코드 배부)
-  ORG_STUDENTS: '/org/students',
-
-  // 학생 코드 활성화 가입 (공개)
+  // 학생 코드 활성화 가입 (공개) — 학교 발급 코드 흐름 종료 안내만 남음
   ACTIVATE: '/activate',
 } as const;
 
@@ -130,18 +107,5 @@ export const HANDOFF_ROUTE_MAP: Record<string, string> = {
   'CatChap 학부모 상담 AI.dc.html': PATHS.PARENT_COUNSEL_AI,
   'CatChap 학부모알림.dc.html': PATHS.PARENT_NOTIFICATIONS,
   'CatChap 학부모 마이페이지.dc.html': PATHS.PARENT_MYPAGE,
-  'CatChap 선생님.dc.html': PATHS.TEACHER_HOME,
-  'CatChap 우리반.dc.html': PATHS.TEACHER_CLASS,
-  'CatChap 전체학생조회.dc.html': PATHS.TEACHER_STUDENTS,
-  'CatChap 선생님 학습분석.dc.html': PATHS.TEACHER_ANALYTICS,
-  'CatChap 가정안내.dc.html': PATHS.TEACHER_FAMILY_NOTICE,
-  'CatChap 선생님 마이페이지.dc.html': PATHS.TEACHER_MYPAGE,
-  'CatChap 기관.dc.html': PATHS.ORG_HOME,
-  'CatChap 학급학생관리.dc.html': PATHS.ORG_CLASSES,
-  'CatChap 선생님관리.dc.html': PATHS.ORG_TEACHERS,
-  'CatChap 학습분석.dc.html': PATHS.ORG_ANALYTICS,
-  'CatChap 캡차설정.dc.html': PATHS.ORG_CAPTCHA_SETTINGS,
-  'CatChap AI모델.dc.html': PATHS.ORG_AI_MODELS,
-  'CatChap 보안정책.dc.html': PATHS.ORG_SECURITY_POLICY,
-  'CatChap 기관 마이페이지.dc.html': PATHS.ORG_MYPAGE,
+  // (학교 콘솔 handoff 매핑은 제품 전환으로 제거 — 남은 링크는 종료 안내로 수렴)
 };

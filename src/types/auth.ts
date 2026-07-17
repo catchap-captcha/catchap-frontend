@@ -60,16 +60,7 @@ export interface RegisterParentRequest {
   email_code: string;
 }
 
-export interface RegisterTeacherRequest {
-  name: string;
-  email: string;
-  password: string;
-  email_code: string;
-  organization_id: string;
-  teacher_code: string;
-  /** 초대 링크로 가입할 때 전달 — 서버가 이메일 소유를 확인해 인증코드를 생략한다 */
-  invite_token?: string;
-}
+// (RegisterTeacherRequest·RegisterOrgRequest는 학교 기능 은퇴로 제거 — git 이력 참고)
 
 export interface RegisterStudentRequest {
   name: string;
@@ -87,16 +78,3 @@ export interface RegisterStudentRequest {
   guardian_email_code?: string;
 }
 
-export interface RegisterOrgRequest {
-  org_name: string;
-  org_type: string;
-  business_number: string;
-  address: string;
-  contact_name: string;
-  contact_email: string;
-  contact_phone: string;
-  password: string;
-  email_code: string;
-  expected_students: string;
-  plan_interest: string;
-}

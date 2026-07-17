@@ -45,28 +45,8 @@ const ParentCounselAi = lazy(() => import('../pages/parent/ParentCounselAi'));
 const ParentNotifications = lazy(() => import('../pages/parent/ParentNotifications'));
 const ParentMyPage = lazy(() => import('../pages/parent/ParentMyPage'));
 
-// 교사
-const TeacherHome = lazy(() => import('../pages/teacher/TeacherHome'));
-const TeacherClass = lazy(() => import('../pages/teacher/TeacherClass'));
-const TeacherStudents = lazy(() => import('../pages/teacher/TeacherStudents'));
-const TeacherScratch = lazy(() => import('../pages/teacher/TeacherScratch'));
-const TeacherAnalytics = lazy(() => import('../pages/teacher/TeacherAnalytics'));
-const FamilyNotice = lazy(() => import('../pages/teacher/FamilyNotice'));
-const TeacherMyPage = lazy(() => import('../pages/teacher/TeacherMyPage'));
-
-// 기관
-const OrgHome = lazy(() => import('../pages/org/OrgHome'));
-const OrgClasses = lazy(() => import('../pages/org/OrgClasses'));
-const OrgTeachers = lazy(() => import('../pages/org/OrgTeachers'));
-const OrgAuditLog = lazy(() => import('../pages/org/OrgAuditLog'));
-const OrgAnalytics = lazy(() => import('../pages/org/OrgAnalytics'));
-const CaptchaSettings = lazy(() => import('../pages/org/CaptchaSettings'));
-const OrgApiKeys = lazy(() => import('../pages/org/OrgApiKeys'));
-const AiModels = lazy(() => import('../pages/org/AiModels'));
-const SecurityPolicy = lazy(() => import('../pages/org/SecurityPolicy'));
-const OrgMyPage = lazy(() => import('../pages/org/OrgMyPage'));
-const OrgStudents = lazy(() => import('../pages/org/OrgStudents'));
-const OrgContact = lazy(() => import('../pages/org/OrgContact'));
+// 학교(교사/기관) 콘솔 — 제품 전환(2026-07-17)으로 제거. 기존 계정은 종료 안내로.
+const SchoolSunset = lazy(() => import('../pages/public/SchoolSunset'));
 
 // 운영자
 const OpsLogin = lazy(() => import('../pages/ops/OpsLogin'));
@@ -136,38 +116,9 @@ export default function AppRoutes() {
           <Route path={PATHS.PARENT_MYPAGE} element={<ParentMyPage />} />
         </Route>
 
-        {/* 교사 */}
-        <Route element={<ProtectedRoute roles={['teacher', 'grade_head', 'org_admin']} />}>
-          <Route path={PATHS.TEACHER_HOME} element={<TeacherHome />} />
-          <Route path={PATHS.TEACHER_CLASS} element={<TeacherClass />} />
-          <Route path={PATHS.TEACHER_STUDENTS} element={<TeacherStudents />} />
-          <Route path={PATHS.TEACHER_STUDENT_SCRATCH} element={<TeacherScratch />} />
-          <Route path={PATHS.TEACHER_ANALYTICS} element={<TeacherAnalytics />} />
-          <Route path={PATHS.TEACHER_FAMILY_NOTICE} element={<FamilyNotice />} />
-          <Route path={PATHS.TEACHER_MYPAGE} element={<TeacherMyPage />} />
-        </Route>
-
-        {/* 기관 관리자(교장) + 학년부장 공용: 학급/교사/학생 관리
-            (백엔드가 학년부장은 담당 학년으로 자동 스코프) */}
-        <Route element={<ProtectedRoute roles={['grade_head', 'org_admin', 'ops']} />}>
-          <Route path={PATHS.ORG_CLASSES} element={<OrgClasses />} />
-          <Route path={PATHS.ORG_TEACHERS} element={<OrgTeachers />} />
-          <Route path={PATHS.ORG_AUDIT} element={<OrgAuditLog />} />
-          <Route path={PATHS.ORG_STUDENTS} element={<OrgStudents />} />
-          <Route path={PATHS.ORG_CONTACT} element={<OrgContact />} />
-        </Route>
-
-        {/* 교장(org_admin) 전용: 전교 대시보드·분석 + 기관 전체 설정
-            (전교 집계는 담당 학년만 보는 학년부장에게 노출하지 않음) */}
-        <Route element={<ProtectedRoute roles={['org_admin', 'ops']} />}>
-          <Route path={PATHS.ORG_HOME} element={<OrgHome />} />
-          <Route path={PATHS.ORG_ANALYTICS} element={<OrgAnalytics />} />
-          <Route path={PATHS.ORG_CAPTCHA_SETTINGS} element={<CaptchaSettings />} />
-          <Route path={PATHS.ORG_API_KEYS} element={<OrgApiKeys />} />
-          <Route path={PATHS.ORG_AI_MODELS} element={<AiModels />} />
-          <Route path={PATHS.ORG_SECURITY_POLICY} element={<SecurityPolicy />} />
-          <Route path={PATHS.ORG_MYPAGE} element={<OrgMyPage />} />
-        </Route>
+        {/* 학교(교사/기관) 콘솔 — 제품 전환으로 제거(19페이지). 기존 계정의 로그인
+            리다이렉트(ROLE_HOME)와 남은 딥링크는 종료 안내 한 장으로 수렴한다. */}
+        <Route path={PATHS.SCHOOL_SUNSET} element={<SchoolSunset />} />
 
         {/* 운영자 전용 로그인 (공개 라우트 — 어디에도 링크하지 않는 숨겨진 진입구) */}
         <Route path={PATHS.OPS_LOGIN} element={<OpsLogin />} />

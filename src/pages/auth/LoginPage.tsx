@@ -2,34 +2,16 @@ import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent }
 import { Link, useNavigate } from 'react-router-dom';
 import { authApi } from '../../api/auth';
 import mascot from '../../assets/characters/catchap-logo.png';
-import InstitutionPicker, { type PickedInstitution } from '../../components/auth/InstitutionPicker';
 import ForestCaptcha from '../../components/captcha/ForestCaptcha';
-import { INVITE_PREFILL_KEY } from './InvitePage';
 import { useAuth } from '../../hooks/useAuth';
 import { PATHS } from '../../routes/paths';
 import { ROLE_HOME } from '../../routes/roleRoutes';
 import './LoginPage.css';
 import PasswordInput from '../../components/common/PasswordInput';
 
-type RoleTab = 'student' | 'parent' | 'org';
-type OrgStep = 'form' | 'submitted' | 'plans' | 'contract' | 'done';
-
-// 데모: 이미 등록된 기관 고유번호 (원본 하드코딩)
-const EXISTING_CODES = ['123-45-67890', '220-88-12345'];
-
-const PLAN_DEFS = [
-  { id: 'starter', name: 'Starter', students: '1~50명', admins: '최대 2개', quota: '월 7,500회 포함', desc: '소규모 기관용', price: '월 49,000원', min: 1, max: 50 },
-  { id: 'basic', name: 'Basic', students: '51~150명', admins: '최대 5개', quota: '월 22,500회 포함', desc: '중소형 기관용', price: '월 129,000원', min: 51, max: 150 },
-  { id: 'standard', name: 'Standard', students: '151~300명', admins: '최대 10개', quota: '월 45,000회 포함', desc: '학교 및 대형 학원용', price: '월 249,000원', min: 151, max: 300 },
-  { id: 'pro', name: 'Pro', students: '301~700명', admins: '최대 20개', quota: '월 100,000회 포함', desc: '대규모 기관용', price: '월 499,000원', min: 301, max: 700 },
-  { id: 'enterprise', name: 'Enterprise', students: '701명 이상', admins: '협의', quota: '맞춤 제공', desc: 'API 연동 및 맞춤 계약', price: '별도 문의', min: 701, max: Infinity },
-];
-
-const CONTRACT_TYPES = [
-  { id: 'monthly', label: '월간 계약' },
-  { id: 'annual', label: '연간 계약' },
-  { id: 'consult', label: '상담 후 결정' },
-];
+// 제품 전환(2026-07-17, 학교 기능 은퇴): 기관/교사 로그인 탭·가입 흐름(신청서·요금제·
+// 계약 스텝, 교사 코드 가입, 초대 프리필)은 전부 제거됐다 — 종전 코드는 git 이력 참고.
+type RoleTab = 'student' | 'parent';
 
 function isEmail(v: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
@@ -42,18 +24,6 @@ function fmtPhone(v: string) {
   return d.slice(0, 3) + '-' + d.slice(3, 7) + '-' + d.slice(7);
 }
 
-function fmtTel(v: string) {
-  let d = (v || '').replace(/\D/g, '');
-  if (d.startsWith('02')) {
-    d = d.slice(0, 10);
-    if (d.length < 3) return d;
-    if (d.length < 6) return d.slice(0, 2) + '-' + d.slice(2);
-    if (d.length < 10) return d.slice(0, 2) + '-' + d.slice(2, d.length - 4) + '-' + d.slice(d.length - 4);
-    return d.slice(0, 2) + '-' + d.slice(2, 6) + '-' + d.slice(6);
-  }
-  return fmtPhone(d);
-}
-
 function markField(el: HTMLElement, bad: boolean) {
   el.style.borderColor = bad ? '#E23D3D' : '#FFE0D6';
   el.style.background = bad ? '#FFF5F5' : '#FFFBF6';
@@ -63,39 +33,6 @@ function markCheck(el: HTMLElement, bad: boolean) {
   el.style.outline = bad ? '2px solid #E23D3D' : '';
   el.style.outlineOffset = bad ? '3px' : '';
   el.style.borderRadius = '4px';
-}
-
-/** 기관 신청/계약 세로 스텝퍼 (원본 buildSteps) */
-function Stepper({ labels, currentIdx }: { labels: string[]; currentIdx: number }) {
-  return (
-    <>
-      {labels.map((text, i) => {
-        const done = i < currentIdx;
-        const active = i === currentIdx;
-        const isLast = i === labels.length - 1;
-        const dotCls =
-          'lg-step-dot ' + (done ? 'lg-step-dot--done' : active ? 'lg-step-dot--active' : 'lg-step-dot--pending');
-        const icon = done ? 'ph-bold ph-check' : active ? 'ph-fill ph-dot-outline' : 'ph-fill ph-circle';
-        const labelCls =
-          'lg-step-label' + (active ? ' lg-step-label--active' : done ? ' lg-step-label--done' : '');
-        const lineCls =
-          'lg-step-line' + (done ? ' lg-step-line--done' : '') + (isLast ? ' lg-step-line--last' : '');
-        return (
-          <div key={text} className="lg-step">
-            <div className="lg-step-rail">
-              <span className={dotCls}>
-                <i className={icon} />
-              </span>
-              <span className={lineCls} />
-            </div>
-            <div className="lg-step-body">
-              <div className={labelCls}>{text}</div>
-            </div>
-          </div>
-        );
-      })}
-    </>
-  );
 }
 
 export default function LoginPage() {
@@ -112,19 +49,11 @@ export default function LoginPage() {
 
   const [view, setView] = useState<'login' | 'signup'>('login');
   const [role, setRole] = useState<RoleTab>('student');
-  const [orgKind, setOrgKind] = useState<'teacher' | 'org' | null | undefined>(undefined);
   const [captcha, setCaptcha] = useState(false);
   const [signupDone, setSignupDone] = useState(false);
   const [codeSent, setCodeSent] = useState(false);
   const [codeSecondsLeft, setCodeSecondsLeft] = useState(0); // 이메일 인증코드 유효시간(5분) 카운트다운
   const [verified, setVerified] = useState(false);
-  // 교사 초대링크로 진입한 경우: 초대 토큰(가입 시 서버로 전달해 이메일 인증코드 생략)과
-  // 초대 시 관리자가 입력한 이름(이름칸 자동 입력). inviteToken이 있으면 '초대 가입' 모드.
-  const [inviteToken, setInviteToken] = useState<string | null>(null);
-  const [prefillName, setPrefillName] = useState('');
-  const [orgStep, setOrgStep] = useState<OrgStep>('form');
-  const [orgPlan, setOrgPlan] = useState('basic');
-  const [contractType, setContractType] = useState('monthly');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   // 연령 분기(2026-07-17): 학생 가입은 생년월일 필수 — 만 14세 미만이면 보호자 동의 섹션 노출
@@ -132,13 +61,7 @@ export default function LoginPage() {
   const [guardianEmail, setGuardianEmail] = useState('');
   const [guardianCodeSent, setGuardianCodeSent] = useState(false);
   const [guardianSecondsLeft, setGuardianSecondsLeft] = useState(0);
-  const [orgEmail, setOrgEmail] = useState('');
-  const [orgTel, setOrgTel] = useState('');
-  const [orgPhone, setOrgPhone] = useState('');
   const [formError, setFormError] = useState('');
-  const [orgDup, setOrgDup] = useState(false);
-  const [orgCode, setOrgCode] = useState('');
-  const [orgCodeStatus, setOrgCodeStatus] = useState<'idle' | 'empty' | 'valid' | 'invalid'>('idle');
   const [loginError, setLoginError] = useState('');
   const [loginBad, setLoginBad] = useState(false);
   // 아이디+비밀번호가 여러 기관에서 일치할 때(409)만 후보 기관 버튼 노출
@@ -147,9 +70,6 @@ export default function LoginPage() {
   >(null);
   // 5회 이상 로그인 실패(서버 집계) 시 캡차 요구
   const [captchaNeeded, setCaptchaNeeded] = useState(false);
-  const [signupInst, setSignupInst] = useState<PickedInstitution | null>(null);
-  // 기관 등록 폼에서 입력한 값 — 승인 후 요금제 선택 화면 요약에 사용 (미입력/직접 진입 시 원본 문구 fallback)
-  const [orgSummary, setOrgSummary] = useState({ orgName: '', contactName: '', expectedStudents: '' });
 
   const formRef = useRef<HTMLDivElement | null>(null);
   const loginIdRef = useRef<HTMLInputElement | null>(null);
@@ -157,8 +77,6 @@ export default function LoginPage() {
   // 마지막 시도의 기관 선택 — 캡차 통과 후 재시도(onCaptchaToken)가 기관을 잃지 않게 기억.
   // (잃으면 다기관 학생은 후보 선택→캡차→후보 선택… 무한 루프가 된다)
   const lastOrgRef = useRef<string | undefined>(undefined);
-  const orgTypeRef = useRef<HTMLSelectElement | null>(null);
-  const purposeRef = useRef<HTMLSelectElement | null>(null);
   const capT = useRef<number | null>(null);
   const boundRoots = useRef(new WeakSet<HTMLElement>());
 
@@ -168,53 +86,6 @@ export default function LoginPage() {
     },
     [],
   );
-
-  // 초대링크(/invite)로 들어온 경우: InvitePage가 담아둔 프리필을 읽어 교사 가입을 자동 구성.
-  // 기관·교사코드는 서버 검증을 이미 통과한 값이라 코드 상태를 'valid'로 세팅(재검증 불필요).
-  useEffect(() => {
-    const raw = sessionStorage.getItem(INVITE_PREFILL_KEY);
-    if (!raw) return;
-    sessionStorage.removeItem(INVITE_PREFILL_KEY);
-    try {
-      const p = JSON.parse(raw) as {
-        token?: string;
-        organizationId: string;
-        organizationName: string;
-        teacherCode: string;
-        name?: string;
-        email: string;
-        role: string;
-        instType?: string;
-        sido?: string;
-        sigungu?: string;
-        dong?: string;
-        road?: string;
-      };
-      if (!p.organizationId || !p.teacherCode) return;
-      setView('signup');
-      setRole('org');
-      setOrgKind('teacher');
-      setSignupInst({
-        id: p.organizationId,
-        organizationId: p.organizationId,
-        name: p.organizationName,
-        type: p.instType ?? '',
-        sido: p.sido ?? '',
-        sigungu: p.sigungu ?? '',
-        dong: p.dong ?? '',
-        road: p.road ?? '',
-      });
-      setOrgCode(p.teacherCode);
-      setOrgCodeStatus('valid');
-      setEmail(p.email);
-      if (p.token) setInviteToken(p.token);
-      if (p.name) setPrefillName(p.name);
-      // 초대 메일 수신으로 이메일 소유가 이미 증명됨 → 인증 완료 상태로 두고 코드 절차 생략
-      setVerified(true);
-    } catch {
-      /* 프리필 파싱 실패 시 일반 로그인 화면 유지 */
-    }
-  }, []);
 
   // 이메일 인증코드 5분 카운트다운 — 코드 발송 후 매초 감소, 인증 완료/미발송 시 정지.
   useEffect(() => {
@@ -250,40 +121,11 @@ export default function LoginPage() {
   // 만 14세 미만 = 보호자(법정대리인) 동의 필요. 서버가 최종 강제 — 여기는 안내·입력 UI.
   const needsGuardian = signupAge !== null && signupAge >= 0 && signupAge < 14;
 
-  // 초대 이름 자동 입력: 이름칸은 비제어(uncontrolled) 입력이라 가입 뷰가 렌더된 뒤 DOM 값을 채운다.
-  useEffect(() => {
-    if (!prefillName) return;
-    const el = formRef.current?.querySelector<HTMLInputElement>('[data-req="이름"]');
-    if (el && !el.value) el.value = prefillName;
-  }, [prefillName, view, orgKind]);
-
-  const isTeacher = role === 'org' && orgKind === 'teacher';
-  // 초대 링크로 온 교사 가입: 기관·코드·이메일이 확정돼 있어 기관 선택/코드/이메일 인증 UI를 숨긴다.
-  const invited = isTeacher && !!inviteToken;
-  const orgChoose = role === 'org' && orgKind === null;
-  const personalSignup = role === 'student' || role === 'parent' || isTeacher;
-  // 학생 이메일 가입 전환(2026-07-16): 학생은 기관 선택·기관 코드 없이 학부모와 같은 구성 —
-  // 기관 선택·코드는 교사 가입만 사용한다 (기관 경유 학생 가입 부활 시 student 조건 복원)
-  const showInstitution = isTeacher;
-  const orgForm = role === 'org' && orgKind === 'org' && orgStep === 'form';
-  const orgSubmitted = role === 'org' && orgKind === 'org' && orgStep === 'submitted';
-  const orgPlansView = role === 'org' && orgKind === 'org' && orgStep === 'plans';
-  const orgContract = role === 'org' && orgKind === 'org' && orgStep === 'contract';
-  const orgDone = role === 'org' && orgKind === 'org' && orgStep === 'done';
-  const showSignupHeader = personalSignup || orgChoose || orgForm;
-
-  const codeHelper = isTeacher
-    ? '소속 기관에서 발급받은 교사용 코드예요. 모르면 기관 관리자에게 문의하세요.'
-    : '소속 기관에서 발급받은 코드예요. 모르면 선생님께 물어봐요.';
-
-  // ===== 라벨/문구 (원본 loginMap/signupMap/titleMap) =====
+  // ===== 라벨/문구 (원본 loginMap/signupMap/titleMap — 학교 탭 제거로 학생/학부모만) =====
   const loginMap: Record<RoleTab, { idLabel: string; idPlaceholder: string; notice: string }> = {
     // 학생 이메일 가입 전환(2026-07-16): 새 학생 계정은 이메일이 아이디 — 기존 아이디도 계속 유효
-    student: { idLabel: '학생 아이디', idPlaceholder: '이메일 또는 아이디를 입력해 주세요', notice: '학생·학부모는 회원가입 후, 기관은 관리자 승인 후 이용할 수 있어요.' },
-    parent: { idLabel: '학부모 아이디', idPlaceholder: '이메일 또는 아이디', notice: '자녀 연결은 기관 승인 후 이용할 수 있어요.' },
-    // 선생님·기관 관리자 공용 — 로그인 구분 없이 계정(이메일)으로 역할 자동 판별
-    // 입구 차단(2026-07-17): 신규 기관 등록 접수 종료 — 로그인 탭은 기존 계정 전용으로 남긴다
-    org: { idLabel: '기관 아이디', idPlaceholder: '이메일 또는 아이디', notice: '기존 기관 계정 전용이에요. 신규 기관 등록은 받지 않아요.' },
+    student: { idLabel: '학생 아이디', idPlaceholder: '이메일 또는 아이디를 입력해 주세요', notice: '학생·학부모는 회원가입 후 바로 이용할 수 있어요.' },
+    parent: { idLabel: '학부모 아이디', idPlaceholder: '이메일 또는 아이디', notice: '가입 후 자녀 계정과 연결하면 학습 현황을 볼 수 있어요.' },
   };
   const idLabel = loginMap[role].idLabel;
   const idPlaceholder = loginMap[role].idPlaceholder;
@@ -298,35 +140,17 @@ export default function LoginPage() {
     namePlaceholder = '학생 이름을 입력해 주세요';
     phoneLabel = '보호자 휴대폰 번호';
     signupNotice = '만 14세 미만은 보호자 동의가 필요해요. 가입 후 바로 로그인해 이용할 수 있어요.';
-  } else if (role === 'parent') {
+  } else {
     nameLabel = '보호자 이름';
     namePlaceholder = '보호자 이름을 입력해 주세요';
     phoneLabel = '휴대폰 번호';
     signupNotice = '가입 후 자녀 계정과 연결하면 학습 현황을 확인할 수 있어요.';
   }
-  if (isTeacher) {
-    nameLabel = '선생님 이름';
-    namePlaceholder = '선생님 이름을 입력해 주세요';
-    signupNotice = '선생님 가입은 소속 기관의 승인 후 담당 학급을 배정받아 이용할 수 있어요.';
-  }
 
-  let signupTitle = '회원가입';
-  let signupSubtitle = '역할을 선택하고 정보를 입력해 주세요';
-  if (role === 'org') {
-    signupTitle = '기관 등록 신청';
-    signupSubtitle =
-      'CatChap 기관 서비스는 관리자 승인 후 이용할 수 있습니다. 기관 정보를 입력해주시면 관리자가 검토한 뒤 담당자 이메일로 승인 결과를 안내드립니다.';
-    if (orgChoose) {
-      signupTitle = '기관 회원가입';
-      signupSubtitle = '선생님이신가요, 기관 관리자이신가요? 가입 유형을 선택해 주세요.';
-    } else if (isTeacher) {
-      signupTitle = '선생님 회원가입';
-      signupSubtitle = '소속 기관을 선택하고 선생님 정보를 입력해 주세요.';
-    }
-  }
+  const signupTitle = '회원가입';
+  const signupSubtitle = '역할을 선택하고 정보를 입력해 주세요';
 
   const emailInvalid = email.length > 0 && !isEmail(email);
-  const orgEmailInvalid = orgEmail.length > 0 && !isEmail(orgEmail);
 
   // ===== 폼 검증 (원본 markField/markCheck/attachClear 로직) =====
   const attachClear = () => {
@@ -340,7 +164,6 @@ export default function LoginPage() {
     root.addEventListener('change', (e) => {
       const t = e.target as HTMLInputElement;
       if (t.matches('[data-req-check]') && t.checked) markCheck(t, false);
-      if (t.hasAttribute('data-org-code')) setOrgDup(false);
     });
   };
 
@@ -372,18 +195,8 @@ export default function LoginPage() {
             }
           : {}),
       });
-    } else if (role === 'parent') {
-      req = authApi.registerParent({ name, email, phone, password: pw, email_code: emailCode });
     } else {
-      req = authApi.registerTeacher({
-        name,
-        email,
-        password: pw,
-        email_code: emailCode,
-        organization_id: signupInst?.organizationId ?? '',
-        teacher_code: orgCode.trim(),
-        invite_token: inviteToken ?? undefined,
-      });
+      req = authApi.registerParent({ name, email, phone, password: pw, email_code: emailCode });
     }
     req
       .then(() => {
@@ -403,32 +216,7 @@ export default function LoginPage() {
       });
   };
 
-  const submitOrgRegistration = () => {
-    const orgName = fieldVal('[data-req="기관명"]');
-    const contactName = fieldVal('[data-req="담당자 이름"]');
-    const expected = fieldVal('[data-req="예상 학생 수"]');
-    // 요금제 선택 단계 요약에서 사용할 입력값 보관
-    setOrgSummary({ orgName, contactName, expectedStudents: expected });
-    authApi
-      .registerOrg({
-        org_name: orgName,
-        org_type: orgTypeRef.current?.value ?? '초등학교',
-        business_number: fieldVal('[data-org-code]'),
-        address: fieldVal('[data-req="기관 주소"]'),
-        contact_name: contactName,
-        contact_email: orgEmail,
-        contact_phone: orgPhone,
-        // TODO(api): 원본 폼에 비밀번호/이메일 인증 없음 — 계정은 승인 후 발급 (1차 자동승인)
-        password: '',
-        email_code: '',
-        expected_students: expected,
-        plan_interest: purposeRef.current?.value ?? '',
-      })
-      .then(() => setOrgStep('submitted'))
-      .catch(() => setFormError('기관 등록 신청에 실패했어요. 잠시 후 다시 시도해 주세요.'));
-  };
-
-  const validateAndSubmit = (kind: 'personal' | 'org') => {
+  const validateAndSubmit = () => {
     const root = formRef.current;
     if (!root) return;
     attachClear();
@@ -454,60 +242,37 @@ export default function LoginPage() {
         if (!firstBad) firstBad = el;
       }
     });
-    if (kind === 'org') {
-      const codeEl = root.querySelector<HTMLInputElement>('[data-org-code]');
-      const codeVal = codeEl ? codeEl.value.replace(/\s/g, '') : '';
-      if (codeEl && codeVal && EXISTING_CODES.includes(codeVal)) {
-        markField(codeEl, true);
-        setOrgDup(true);
-        setFormError('');
-        codeEl.focus();
-        return;
-      }
-      setOrgDup(false);
-    }
     if (missing > 0) {
       setFormError('입력하지 않은 필수 항목이 있어요. 표시된 곳을 다시 확인해 주세요.');
       (firstBad as HTMLElement | null)?.focus();
       return;
     }
-    const codeEl = root.querySelector<HTMLInputElement>('[data-code-field]');
-    if (codeEl && visible(codeEl) && orgCodeStatus !== 'valid') {
-      markField(codeEl, true);
-      if (orgCodeStatus === 'idle') setOrgCodeStatus('empty');
-      setFormError('기관 코드 인증을 먼저 확인해 주세요.');
-      codeEl.focus();
+    // 비밀번호 길이·일치 검증 — 서버 422 전에 어떤 칸이 왜 틀렸는지 명확히 안내
+    // (학생 이메일 가입 전환(2026-07-16): 학생도 학부모와 동일 8자 기준으로 통일)
+    const min = 8;
+    const pwEl = root.querySelector<HTMLInputElement>('[data-req="비밀번호"]');
+    const pw2El = root.querySelector<HTMLInputElement>('[data-req="비밀번호 확인"]');
+    const pwv = pwEl?.value ?? '';
+    if (pwEl && pwv.length < min) {
+      markField(pwEl, true);
+      setFormError(`비밀번호는 ${min}자 이상이어야 해요.`);
+      pwEl.focus();
       return;
     }
-    // 비밀번호 길이·일치 검증 (개인 가입) — 서버 422 전에 어떤 칸이 왜 틀렸는지 명확히 안내
-    if (kind === 'personal') {
-      // 학생 이메일 가입 전환(2026-07-16): 학생도 학부모와 동일 8자 기준으로 통일(종전 4자)
-      const min = 8;
-      const pwEl = root.querySelector<HTMLInputElement>('[data-req="비밀번호"]');
-      const pw2El = root.querySelector<HTMLInputElement>('[data-req="비밀번호 확인"]');
-      const pwv = pwEl?.value ?? '';
-      if (pwEl && pwv.length < min) {
-        markField(pwEl, true);
-        setFormError(`비밀번호는 ${min}자 이상이어야 해요.`);
-        pwEl.focus();
-        return;
-      }
-      if (pw2El && pwv !== (pw2El.value ?? '')) {
-        markField(pw2El, true);
-        setFormError('비밀번호가 서로 달라요. 다시 확인해 주세요.');
-        pw2El.focus();
-        return;
-      }
+    if (pw2El && pwv !== (pw2El.value ?? '')) {
+      markField(pw2El, true);
+      setFormError('비밀번호가 서로 달라요. 다시 확인해 주세요.');
+      pw2El.focus();
+      return;
     }
     setFormError('');
-    if (kind === 'org') submitOrgRegistration();
-    else submitPersonalRegistration();
+    submitPersonalRegistration();
   };
 
   // ===== 이메일 인증 / 코드 확인 (authApi 연결, UI 흐름은 원본 그대로) =====
   const sendCode = () => {
-    // 학부모/교사는 이 이메일이 계정 ID — 이미 가입된 이메일이면 발송 전에 알려줌(409)
-    const forAccount = role === 'parent' || isTeacher;
+    // 학부모는 이 이메일이 계정 ID — 이미 가입된 이메일이면 발송 전에 알려줌(409)
+    const forAccount = role === 'parent';
     authApi
       .sendEmailCode(email, 'signup', forAccount)
       .then(() => {
@@ -556,27 +321,6 @@ export default function LoginPage() {
         else setFormError('인증코드가 올바르지 않아요. 다시 확인해 주세요.');
       })
       .catch(() => setFormError('인증코드가 올바르지 않아요. 다시 확인해 주세요.'));
-  };
-
-  const verifyOrgCodeFn = () => {
-    if (orgCodeStatus === 'valid') return;
-    const v = orgCode.trim();
-    if (!v) {
-      setOrgCodeStatus('empty');
-      return;
-    }
-    // 검색으로 고른 학교가 CatChap 미등록(organizationId=null)이면 가입 대상이 아니다 — 코드 검증 불가.
-    const orgId = signupInst?.organizationId ?? '';
-    if (!orgId) {
-      setOrgCodeStatus('invalid');
-      return;
-    }
-    const req = isTeacher
-      ? authApi.verifyTeacherCode(orgId, v)
-      : authApi.verifyOrgCode(orgId, v);
-    req
-      .then((r) => setOrgCodeStatus(r.valid ? 'valid' : 'invalid'))
-      .catch(() => setOrgCodeStatus('invalid'));
   };
 
   // ===== 캡차 팝업 — 5회+ 실패 시 메인 캡차(forest)를 먼저 통과해야 로그인 재시도 =====
@@ -670,12 +414,12 @@ export default function LoginPage() {
           throw err;
         }
       }
-      // 탭에서 고른 구분(학부모/기관)을 함께 보낸다 — 서버가 계정 역할과 대조해
+      // 탭에서 고른 구분(학부모)을 함께 보낸다 — 서버가 계정 역할과 대조해
       // 불일치면 403으로 거부한다(학부모 탭에서 교사 계정이 교사로 로그인되던 혼선 차단).
       const me = await login({
         email: id,
         password: pw,
-        role: role === 'parent' ? 'parent' : 'org',
+        role: 'parent',
         captcha_token: captchaToken,
       });
       setCaptchaNeeded(false);
@@ -763,32 +507,20 @@ export default function LoginPage() {
     setRole('parent');
     resetLoginFields();
   };
-  const setOrg = () => {
-    setRole('org');
-    setOrgKind(null);
-    setOrgStep('form');
-    resetLoginFields();
-  };
   const goSignup = () => {
     // 학생 이메일 가입 전환(2026-07-16): 학생도 이메일 가입 폼 사용(종전 코드 활성화 리다이렉트 제거)
-    // 입구 차단(2026-07-17): 기관/교사 신규 가입 종료 — 기관 탭에서 가입 눌러도 학생 탭으로.
-    if (role === 'org') setRole('student');
     setView('signup');
     setCodeSent(false);
     setCodeSecondsLeft(0);
     setVerified(false);
-    setOrgStep('form');
   };
   const goLogin = () => setView('login');
 
   const tabCls = (active: boolean) => 'lg-tab' + (active ? ' lg-tab--active' : '');
   const loginInputCls = (base: string) => base + (loginBad ? ' lg-input--bad' : '');
 
-  // ===== 요금제/계약 — 예상 학생 수는 기관 등록 폼 입력값, 없으면 원본 데모값 120 =====
-  const parsedExpected = parseInt(orgSummary.expectedStudents, 10);
-  const expectedStudents = Number.isFinite(parsedExpected) && parsedExpected > 0 ? parsedExpected : 120;
-  const selDef = PLAN_DEFS.find((p) => p.id === orgPlan) ?? PLAN_DEFS[1];
-
+  // 학교 콘솔 은퇴(2026-07-17): 기관 탭은 로그인·가입 모두에서 제거 — 기존 기관·교사
+  // 계정이 로그인하면 종료 안내(SCHOOL_SUNSET)로 간다(ROLE_HOME).
   const roleTabs = (signup: boolean) => (
     <div className={'lg-tabs' + (signup ? ' lg-tabs--signup' : '')}>
       <button type="button" onClick={setStudent} className={tabCls(role === 'student')}>
@@ -799,14 +531,6 @@ export default function LoginPage() {
         <i className="ph-fill ph-users-three" />
         학부모
       </button>
-      {/* 입구 차단(2026-07-17): 기관/교사 신규 가입 종료 — 가입 뷰에선 기관 탭 자체를 뺀다.
-          로그인 뷰에는 남긴다(기존 기관 계정은 계속 로그인). */}
-      {!signup && (
-        <button type="button" onClick={setOrg} className={tabCls(role === 'org')}>
-          <i className="ph-fill ph-buildings" />
-          기관
-        </button>
-      )}
     </div>
   );
 
@@ -958,83 +682,20 @@ export default function LoginPage() {
           </div>
         )}
 
-        {/* ===== SIGNUP VIEW ===== */}
+        {/* ===== SIGNUP VIEW (학생/학부모 — 학교 가입 흐름은 제품 전환으로 제거) ===== */}
         {view === 'signup' && (
           <div ref={formRef} className="lg-signup">
-            {showSignupHeader && (
-              <>
-                <button type="button" onClick={goLogin} className="lg-back">
-                  <i className="ph-bold ph-arrow-left" />
-                  로그인으로 돌아가기
-                </button>
-                <h2 className="lg-h2 lg-h2--signup">{signupTitle}</h2>
-                <p className="lg-signup-sub">{signupSubtitle}</p>
-                {roleTabs(true)}
-              </>
-            )}
+            <button type="button" onClick={goLogin} className="lg-back">
+              <i className="ph-bold ph-arrow-left" />
+              로그인으로 돌아가기
+            </button>
+            <h2 className="lg-h2 lg-h2--signup">{signupTitle}</h2>
+            <p className="lg-signup-sub">{signupSubtitle}</p>
+            {roleTabs(true)}
 
-            {/* ============ ORG SIGNUP : KIND CHOOSER ============ */}
-            {orgChoose && (
+            {/* ============ PERSONAL SIGNUP (student / parent) ============ */}
+            {(
               <>
-                <div className="lg-kinds">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setOrgKind('teacher');
-                      setCodeSent(false);
-                      setCodeSecondsLeft(0);
-                      setVerified(false);
-                    }}
-                    className="lg-kind"
-                  >
-                    <span className="lg-kind-icon lg-kind-icon--red">
-                      <i className="ph-fill ph-chalkboard-teacher" />
-                    </span>
-                    <span className="lg-kind-body">
-                      <span className="lg-kind-title">선생님으로 가입</span>
-                      <span className="lg-kind-desc">
-                        소속 기관과 코드로 신청해요. 학생 가입과 비슷한 방식이에요.
-                      </span>
-                    </span>
-                    <i className="ph-bold ph-arrow-right lg-kind-arrow" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setOrgKind('org');
-                      setOrgStep('form');
-                    }}
-                    className="lg-kind"
-                  >
-                    <span className="lg-kind-icon lg-kind-icon--blue">
-                      <i className="ph-fill ph-buildings" />
-                    </span>
-                    <span className="lg-kind-body">
-                      <span className="lg-kind-title">기관으로 가입</span>
-                      <span className="lg-kind-desc">
-                        우리 기관을 새로 등록하고 관리자 계정을 신청해요.
-                      </span>
-                    </span>
-                    <i className="ph-bold ph-arrow-right lg-kind-arrow" />
-                  </button>
-                </div>
-                <div className="lg-notice lg-notice--mt16">
-                  <i className="ph-fill ph-info" />
-                  <p>선생님은 소속 기관 승인 후, 기관은 관리자 검토·계약 후 이용할 수 있어요.</p>
-                </div>
-              </>
-            )}
-
-            {/* ============ PERSONAL SIGNUP (student / parent / teacher) ============ */}
-            {personalSignup && (
-              <>
-                {isTeacher && (
-                  <button type="button" onClick={() => setOrgKind(null)} className="lg-back">
-                    <i className="ph-bold ph-arrow-left" />
-                    가입 유형 다시 선택
-                  </button>
-                )}
-
                 <label className="lg-label">{nameLabel}</label>
                 <div className="lg-field lg-mb15">
                   <i className="ph-fill ph-identification-card lg-field-icon" />
@@ -1116,92 +777,6 @@ export default function LoginPage() {
                   </>
                 )}
 
-                {showInstitution && invited && (
-                  <>
-                    <label className="lg-label">소속 기관</label>
-                    <div className="lg-invitedInst lg-mb15">
-                      <div className="lg-invitedInst-name">
-                        <i className="ph-fill ph-buildings" />
-                        <span>{signupInst?.name || '소속 기관'}</span>
-                      </div>
-                      {(() => {
-                        const addr = [
-                          signupInst?.sido,
-                          signupInst?.sigungu,
-                          signupInst?.dong,
-                          signupInst?.road,
-                        ]
-                          .filter((s) => s && s.trim())
-                          .join(' ');
-                        return addr ? <p className="lg-invitedInst-addr">{addr}</p> : null;
-                      })()}
-                      <p className="lg-invitedInst-note">
-                        <i className="ph-fill ph-check-circle" /> 초대받은 기관·교사 코드가 자동으로 확인됐어요.
-                      </p>
-                    </div>
-                  </>
-                )}
-
-                {showInstitution && !invited && (
-                  <>
-                    <label className="lg-label">소속 기관</label>
-                    <div className="lg-mb15">
-                      <InstitutionPicker
-                        onSelect={(inst) => {
-                          setSignupInst(inst);
-                          // 기관이 바뀌면 이전 기관에서 통과한 코드 검증은 무효 —
-                          // 유지하면 미등록 학교 + 옛 valid 상태로 빈 organization_id가 서버에 간다
-                          setOrgCodeStatus('idle');
-                        }}
-                        initialSelected={signupInst}
-                      />
-                    </div>
-
-                    <label className="lg-label">기관 코드</label>
-                    <div className="lg-inline lg-mb7">
-                      <div className="lg-field-grow">
-                        <i className="ph-fill ph-key lg-field-icon" />
-                        <input
-                          type="text"
-                          data-req="기관 코드"
-                          data-code-field=""
-                          value={orgCode}
-                          onChange={(e) => {
-                            setOrgCode(e.target.value);
-                            setOrgCodeStatus('idle');
-                          }}
-                          placeholder="기관에서 받은 코드를 입력해 주세요"
-                          className="lg-input lg-input--code"
-                        />
-                      </div>
-                      <button
-                        type="button"
-                        onClick={verifyOrgCodeFn}
-                        className={'lg-codebtn' + (orgCodeStatus === 'valid' ? ' lg-codebtn--valid' : '')}
-                      >
-                        {orgCodeStatus === 'valid' ? '인증됨' : '확인'}
-                      </button>
-                    </div>
-                    {orgCodeStatus === 'valid' && (
-                      <div className="lg-code-ok">
-                        <i className="ph-fill ph-check-circle" />
-                        <span>기관 코드가 확인되었어요.</span>
-                      </div>
-                    )}
-                    {(orgCodeStatus === 'invalid' || orgCodeStatus === 'empty') && (
-                      <div className="lg-code-bad">
-                        <i className="ph-fill ph-warning-circle" />
-                        <span>
-                          {orgCodeStatus === 'empty'
-                            ? '기관 코드를 입력해 주세요.'
-                            : '코드를 확인할 수 없어요. 기관에 문의해 주세요.'}
-                        </span>
-                      </div>
-                    )}
-                    <p className="lg-helper">{codeHelper}</p>
-                  </>
-                )}
-
                 {/* 학생 이메일 가입 전환(2026-07-16): 학생도 이메일이 로그인 아이디 */}
                 <label className="lg-label">이메일 (로그인 아이디)</label>
                 <p className="lg-helper" style={{ margin: '-2px 0 8px' }}>
@@ -1216,31 +791,17 @@ export default function LoginPage() {
                       placeholder="example@email.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      readOnly={invited}
-                      className={
-                        'lg-input' +
-                        (emailInvalid ? ' lg-input--soft-invalid' : '') +
-                        (invited ? ' lg-input--readonly' : '')
-                      }
+                      className={'lg-input' + (emailInvalid ? ' lg-input--soft-invalid' : '')}
                     />
                   </div>
-                  {!invited && (
-                    <button
-                      type="button"
-                      onClick={sendCode}
-                      className={'lg-sendbtn' + (codeSent ? ' lg-sendbtn--sent' : '')}
-                    >
-                      {codeSent ? '재전송' : '인증코드 받기'}
-                    </button>
-                  )}
+                  <button
+                    type="button"
+                    onClick={sendCode}
+                    className={'lg-sendbtn' + (codeSent ? ' lg-sendbtn--sent' : '')}
+                  >
+                    {codeSent ? '재전송' : '인증코드 받기'}
+                  </button>
                 </div>
-
-                {invited && (
-                  <div className="lg-verified lg-mb9">
-                    <i className="ph-fill ph-check-circle" />
-                    <span>초대 메일로 이메일 인증이 완료됐어요. 비밀번호만 정하면 가입이 끝나요.</span>
-                  </div>
-                )}
 
                 {emailInvalid && (
                   <div className="lg-emailerr">
@@ -1351,7 +912,7 @@ export default function LoginPage() {
                     <span>{formError}</span>
                   </div>
                 )}
-                <button type="button" onClick={() => validateAndSubmit('personal')} className="lg-primary">
+                <button type="button" onClick={() => validateAndSubmit()} className="lg-primary">
                   <i className="ph-fill ph-user-plus lg-primary-icon20" />
                   가입하기
                 </button>
@@ -1363,418 +924,6 @@ export default function LoginPage() {
               </>
             )}
 
-            {/* ============ ORG STEP 1 : REGISTRATION FORM ============ */}
-            {orgForm && (
-              <>
-                <button type="button" onClick={() => setOrgKind(null)} className="lg-back">
-                  <i className="ph-bold ph-arrow-left" />
-                  가입 유형 다시 선택
-                </button>
-                <div className="lg-orgform-banner">
-                  <i className="ph-fill ph-shield-check" />
-                  <span>기관은 관리자 승인 후 이용할 수 있어요. 아이디·비밀번호는 승인 후 발급됩니다.</span>
-                </div>
-
-                <div className="lg-section">
-                  <i className="ph-fill ph-buildings" />
-                  기관 정보
-                </div>
-
-                <label className="lg-label">기관명</label>
-                <input
-                  type="text"
-                  data-req="기관명"
-                  placeholder="예) 햇살초등학교"
-                  className="lg-input lg-input--plain lg-mb13"
-                />
-
-                <label className="lg-label">기관 유형</label>
-                <div className="lg-selectwrap lg-mb13">
-                  <select ref={orgTypeRef} className="lg-select">
-                    <option>초등학교</option>
-                    <option>학원</option>
-                    <option>교육기관</option>
-                    <option>지자체</option>
-                    <option>기타</option>
-                  </select>
-                  <i className="ph-bold ph-caret-down lg-select-caret" />
-                </div>
-
-                <label className="lg-label">기관 주소</label>
-                <input
-                  type="text"
-                  data-req="기관 주소"
-                  placeholder="기관 주소를 입력해 주세요"
-                  className="lg-input lg-input--plain lg-mb13"
-                />
-
-                <div className="lg-two lg-mb24">
-                  <div>
-                    <label className="lg-label">대표 전화번호</label>
-                    <input
-                      type="tel"
-                      data-req="대표 전화번호"
-                      placeholder="02-000-0000"
-                      value={orgTel}
-                      onChange={(e) => setOrgTel(fmtTel(e.target.value))}
-                      className="lg-input lg-input--plain lg-input--ls1"
-                    />
-                  </div>
-                  <div>
-                    <label className="lg-label">고유번호</label>
-                    <input
-                      type="text"
-                      data-req="고유번호"
-                      data-org-code=""
-                      placeholder="000-00-00000"
-                      className="lg-input lg-input--plain"
-                    />
-                    {orgDup && (
-                      <div className="lg-orgdup">
-                        <i className="ph-fill ph-warning-circle" />
-                        <span>이미 등록된 기관이에요. 같은 고유번호로는 다시 등록할 수 없어요.</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="lg-section">
-                  <i className="ph-fill ph-user-circle" />
-                  담당자 정보
-                </div>
-
-                <div className="lg-two lg-mb13">
-                  <div>
-                    <label className="lg-label">담당자 이름</label>
-                    <input type="text" data-req="담당자 이름" placeholder="이름" className="lg-input lg-input--plain" />
-                  </div>
-                  <div>
-                    <label className="lg-label">직책</label>
-                    <input type="text" data-req="직책" placeholder="예) 교사 / 원장" className="lg-input lg-input--plain" />
-                  </div>
-                </div>
-
-                <label className="lg-label">담당자 이메일</label>
-                <input
-                  type="email"
-                  data-req="담당자 이메일"
-                  placeholder="manager@example.com"
-                  value={orgEmail}
-                  onChange={(e) => setOrgEmail(e.target.value)}
-                  className={'lg-input lg-orgemail' + (orgEmailInvalid ? ' lg-input--soft-invalid' : '')}
-                />
-                {orgEmailInvalid && (
-                  <div className="lg-emailerr lg-emailerr--org">
-                    <i className="ph-fill ph-warning-circle" />
-                    <span>올바르지 않은 이메일 형식이에요. manager@example.com 형식으로 입력해 주세요.</span>
-                  </div>
-                )}
-
-                <label className="lg-label">담당자 연락처</label>
-                <input
-                  type="tel"
-                  data-req="담당자 연락처"
-                  placeholder="010-0000-0000"
-                  value={orgPhone}
-                  onChange={(e) => setOrgPhone(fmtPhone(e.target.value))}
-                  className="lg-input lg-input--plain lg-input--ls1 lg-mb24"
-                />
-
-                <div className="lg-section">
-                  <i className="ph-fill ph-rocket-launch" />
-                  도입 정보
-                </div>
-
-                <div className="lg-two lg-mb13">
-                  <div>
-                    <label className="lg-label">예상 학생 수</label>
-                    <input type="number" data-req="예상 학생 수" placeholder="예) 120" className="lg-input lg-input--plain" />
-                  </div>
-                  <div>
-                    <label className="lg-label">예상 관리자 수</label>
-                    <input type="number" data-req="예상 관리자 수" placeholder="예) 3" className="lg-input lg-input--plain" />
-                  </div>
-                </div>
-
-                <label className="lg-label">도입 목적</label>
-                <div className="lg-selectwrap lg-mb13">
-                  <select ref={purposeRef} className="lg-select">
-                    <option>학생 로그인 보안 강화</option>
-                    <option>교육형 캡챠 활용</option>
-                    <option>행동 데이터 분석</option>
-                    <option>학습 리포트 확인</option>
-                    <option>학부모 연동</option>
-                    <option>기타</option>
-                  </select>
-                  <i className="ph-bold ph-caret-down lg-select-caret" />
-                </div>
-
-                <label className="lg-label">문의 내용 / 요청사항</label>
-                <textarea
-                  rows={3}
-                  placeholder="도입 관련 문의나 요청사항을 자유롭게 적어 주세요"
-                  className="lg-textarea lg-mb24"
-                />
-
-                <div className="lg-section">
-                  <i className="ph-fill ph-check-square" />
-                  동의 항목
-                </div>
-                <div className="lg-agrees">
-                  <label className="lg-terms lg-terms--agree">
-                    <input type="checkbox" data-req-check="도입 상담 동의" />
-                    <span>
-                      서비스 도입 상담을 위한 개인정보 수집 및 이용에 동의합니다.{' '}
-                      <span className="lg-req">(필수)</span>
-                    </span>
-                  </label>
-                  <label className="lg-terms lg-terms--agree">
-                    <input type="checkbox" data-req-check="승인 절차 동의" />
-                    <span>
-                      기관 정보 확인 및 관리자 승인 절차에 동의합니다. <span className="lg-req">(필수)</span>
-                    </span>
-                  </label>
-                  <label className="lg-terms lg-terms--agree">
-                    <input type="checkbox" data-req-check="데이터 정책 확인" />
-                    <span>
-                      학생 데이터 처리 정책 및 개인정보 보호 기준을 확인했습니다.{' '}
-                      <span className="lg-req">(필수)</span>
-                    </span>
-                  </label>
-                </div>
-
-                {formError && (
-                  <div className="lg-formerr">
-                    <i className="ph-fill ph-warning-circle" />
-                    <span>{formError}</span>
-                  </div>
-                )}
-                <button type="button" onClick={() => validateAndSubmit('org')} className="lg-primary">
-                  <i className="ph-fill ph-paper-plane-tilt lg-primary-icon19" />
-                  기관 등록 신청하기
-                </button>
-              </>
-            )}
-
-            {/* ============ ORG STEP 2 : SUBMITTED ============ */}
-            {orgSubmitted && (
-              <>
-                <div className="lg-orgresult-head">
-                  <div className="lg-orgresult-icon lg-orgresult-icon--red">
-                    <i className="ph-fill ph-paper-plane-tilt" />
-                  </div>
-                  <h2>
-                    기관 등록 신청이
-                    <br />
-                    완료되었습니다
-                  </h2>
-                  <p>
-                    입력하신 기관 정보를 바탕으로 관리자가 검토를 진행합니다.
-                    <br />
-                    승인 결과는 담당자 이메일로 안내됩니다.
-                  </p>
-                </div>
-
-                <div className="lg-pill-pending">
-                  <span className="lg-pill-pending-dot" />
-                  <span>PENDING · 접수 완료</span>
-                </div>
-
-                <div className="lg-steps">
-                  <Stepper labels={['접수 완료', '관리자 검토 중', '승인 완료', '요금제 선택']} currentIdx={0} />
-                </div>
-
-                <div className="lg-banner-green">
-                  <i className="ph-fill ph-clock" />
-                  <span>운영진 검토 후 승인되면 담당자 이메일로 안내드려요. (평균 1~3영업일)</span>
-                </div>
-
-                <div className="lg-actions">
-                  <button type="button" onClick={goLogin} className="lg-ghostbtn">
-                    로그인으로 돌아가기
-                  </button>
-                  <Link to={PATHS.HOME} className="lg-mainlink">
-                    메인으로 이동하기
-                  </Link>
-                </div>
-              </>
-            )}
-
-            {/* ============ ORG STEP 3 : PLAN SELECTION ============ */}
-            {orgPlansView && (
-              <>
-                <div className="lg-pill-approved">
-                  <i className="ph-fill ph-check-circle" />
-                  <span>APPROVED · 승인 완료</span>
-                </div>
-                <h2 className="lg-h2--org">기관 등록이 승인되었습니다</h2>
-                <p className="lg-org-sub">
-                  이제 CatChap 기관 요금제를 선택할 수 있습니다.
-                  <br />
-                  기관 규모에 맞는 요금제를 선택해 주세요.
-                </p>
-
-                <div className="lg-orginfo">
-                  <div className="lg-orginfo-row">
-                    <span className="lg-orginfo-key">기관명</span>
-                    <span className="lg-orginfo-val">{orgSummary.orgName || '햇살초등학교'}</span>
-                  </div>
-                  <div className="lg-orginfo-row">
-                    <span className="lg-orginfo-key">담당자</span>
-                    <span className="lg-orginfo-val">{orgSummary.contactName || '김민서'}</span>
-                  </div>
-                  <div className="lg-orginfo-row">
-                    <span className="lg-orginfo-key">예상 학생 수</span>
-                    <span className="lg-orginfo-val lg-orginfo-val--accent">{expectedStudents}명</span>
-                  </div>
-                </div>
-
-                <div className="lg-plans">
-                  {PLAN_DEFS.map((p) => {
-                    const active = orgPlan === p.id;
-                    const recommended = expectedStudents >= p.min && expectedStudents <= p.max;
-                    const cls =
-                      'lg-plan ' +
-                      (active ? 'lg-plan--active' : recommended ? 'lg-plan--recommended' : 'lg-plan--default');
-                    return (
-                      <button
-                        key={p.id}
-                        type="button"
-                        onClick={() => {
-                          setOrgPlan(p.id);
-                          setOrgStep('contract');
-                        }}
-                        className={cls}
-                      >
-                        <div className="lg-plan-top">
-                          <div className="lg-plan-name-row">
-                            <span className="lg-plan-name">{p.name}</span>
-                            {recommended && (
-                              <span className="lg-plan-badge">
-                                <i className="ph-fill ph-star" />
-                                추천 요금제
-                              </span>
-                            )}
-                          </div>
-                          <span className="lg-plan-price">{p.price}</span>
-                        </div>
-                        <div className="lg-plan-meta">
-                          <div>
-                            학생 수 {p.students} · 관리자 계정 {p.admins}
-                          </div>
-                          <div>CAPTCHA API {p.quota}</div>
-                          <div className="lg-plan-desc">{p.desc}</div>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-
-                <button type="button" onClick={() => setOrgStep('submitted')} className="lg-linkbtn">
-                  ← 이전으로
-                </button>
-              </>
-            )}
-
-            {/* ============ ORG STEP 4 : CONTRACT CONFIRM ============ */}
-            {orgContract && (
-              <>
-                <button type="button" onClick={() => setOrgStep('plans')} className="lg-back">
-                  <i className="ph-bold ph-arrow-left" />
-                  요금제 다시 선택
-                </button>
-                <h2 className="lg-h2--org">계약 신청 확인</h2>
-                <p className="lg-org-sub">선택하신 요금제 내용을 확인하고 계약을 신청해 주세요.</p>
-
-                <div className="lg-contract-card">
-                  <div className="lg-contract-top">
-                    <span className="lg-contract-name">{selDef.name}</span>
-                    <span className="lg-contract-price">{selDef.price}</span>
-                  </div>
-                  <div className="lg-contract-rows">
-                    <div className="lg-contract-row">
-                      <span className="lg-contract-key">학생 수 범위</span>
-                      <span className="lg-contract-val">{selDef.students}</span>
-                    </div>
-                    <div className="lg-contract-row">
-                      <span className="lg-contract-key">포함 CAPTCHA API</span>
-                      <span className="lg-contract-val">{selDef.quota}</span>
-                    </div>
-                    <div className="lg-contract-row">
-                      <span className="lg-contract-key">관리자 계정</span>
-                      <span className="lg-contract-val">{selDef.admins}</span>
-                    </div>
-                    <div className="lg-contract-row lg-contract-row--top">
-                      <span className="lg-contract-key">초과 사용 시</span>
-                      <span className="lg-contract-val">1,000회당 2,000원</span>
-                    </div>
-                  </div>
-                </div>
-
-                <label className="lg-label lg-label--mb9">계약 방식 선택</label>
-                <div className="lg-cts">
-                  {CONTRACT_TYPES.map((c) => (
-                    <button
-                      key={c.id}
-                      type="button"
-                      onClick={() => setContractType(c.id)}
-                      className={'lg-ct' + (contractType === c.id ? ' lg-ct--active' : '')}
-                    >
-                      {c.label}
-                    </button>
-                  ))}
-                </div>
-
-                <label className="lg-label">추가 요청사항</label>
-                <textarea
-                  rows={3}
-                  placeholder="계약 관련 요청사항이 있다면 적어 주세요"
-                  className="lg-textarea lg-mb18"
-                />
-
-                <button type="button" onClick={() => setOrgStep('done')} className="lg-primary">
-                  <i className="ph-fill ph-file-text lg-primary-icon19" />
-                  계약 신청하기
-                </button>
-              </>
-            )}
-
-            {/* ============ ORG STEP 5 : CONTRACT DONE ============ */}
-            {orgDone && (
-              <>
-                <div className="lg-orgresult-head">
-                  <div className="lg-orgresult-icon lg-orgresult-icon--green">
-                    <i className="ph-fill ph-check-circle" />
-                  </div>
-                  <h2>
-                    요금제 계약 신청이
-                    <br />
-                    완료되었습니다
-                  </h2>
-                  <p>
-                    관리자가 계약 정보를 확인한 뒤 기관 관리자 계정을 발급합니다.
-                    <br />
-                    계정 발급 안내는 담당자 이메일로 발송됩니다.
-                  </p>
-                </div>
-
-                <div className="lg-steps lg-steps--mb20">
-                  <Stepper
-                    labels={['기관 승인 완료', '요금제 선택 완료', '계약 검토 중', '기관 계정 발급']}
-                    currentIdx={2}
-                  />
-                </div>
-
-                <div className="lg-actions">
-                  <button type="button" onClick={goLogin} className="lg-ghostbtn">
-                    로그인으로 돌아가기
-                  </button>
-                  <Link to={PATHS.HOME} className="lg-mainlink">
-                    메인으로 이동하기
-                  </Link>
-                </div>
-              </>
-            )}
           </div>
         )}
       </div>
@@ -1857,18 +1006,12 @@ export default function LoginPage() {
 
               <h3>가입이 완료됐어요! 🎉</h3>
               <p className="lg-done-name">
-                {role === 'parent'
-                  ? '학부모님, 환영해요!'
-                  : isTeacher
-                    ? '선생님, 환영해요!'
-                    : '반가워요, 새 친구!'}
+                {role === 'parent' ? '학부모님, 환영해요!' : '반가워요, 새 친구!'}
               </p>
               <p className="lg-done-msg">
                 {role === 'parent'
                   ? '회원가입이 완료됐어요. 로그인 후 자녀 계정과 연결하면 학습 현황을 확인할 수 있어요.'
-                  : isTeacher
-                    ? '선생님 가입이 완료됐어요. 로그인하면 담당 학급과 학생들의 학습 현황을 관리할 수 있어요.'
-                    : '회원가입이 완료됐어요. 이제 로그인해서 냥이와 함께 학습을 시작해요!'}
+                  : '회원가입이 완료됐어요. 이제 로그인해서 냥이와 함께 학습을 시작해요!'}
               </p>
 
               <button

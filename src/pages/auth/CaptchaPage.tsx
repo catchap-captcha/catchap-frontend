@@ -263,7 +263,7 @@ export default function CaptchaPage() {
                 도움말
               </a>
               <span className="cp-foot-dot">·</span>
-              <Link to={PATHS.ORG_SECURITY_POLICY} className="cp-foot-link">
+              <Link to={PATHS.PRIVACY} className="cp-foot-link">
                 개인정보
               </Link>
             </div>
