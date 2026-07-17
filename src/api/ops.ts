@@ -508,3 +508,24 @@ export interface BehaviorExportPreview {
   columns: string[];
   rows: Record<string, string | number | null>[];
 }
+
+/** AI 기능 키 상태 — 원문은 절대 오지 않는다(설정 여부·끝 4자리·출처만) */
+export interface AiKeyStatus {
+  configured: boolean;
+  last4: string | null;
+  /** console = 운영 콘솔에서 입력(정본) · env = 서버 .env 폴백 · stale = 재입력 필요 */
+  source: 'console' | 'env' | 'stale' | null;
+  updated_at: string | null;
+}
+export interface AiSettings {
+  llm: AiKeyStatus;
+  stt: AiKeyStatus;
+  llm_model: string;
+}
+
+export const opsSettingsApi = {
+  getAi: () => client.get<AiSettings>('/ops/settings/ai').then((r) => r.data),
+  /** 미전송 = 변경 없음, 빈 문자열 = 삭제(미설정 복귀). 저장 즉시 반영(재기동 불필요) */
+  putAi: (body: { anthropic_api_key?: string; openai_api_key?: string }) =>
+    client.put<AiSettings>('/ops/settings/ai', body).then((r) => r.data),
+};

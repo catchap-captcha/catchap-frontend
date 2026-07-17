@@ -80,6 +80,7 @@ const OpsScratch = lazy(() => import('../pages/ops/OpsScratch'));
 const OpsAuditLog = lazy(() => import('../pages/ops/OpsAuditLog'));
 const OpsSystem = lazy(() => import('../pages/ops/OpsSystem'));
 const OpsAiModels = lazy(() => import('../pages/ops/OpsAiModels'));
+const OpsSettings = lazy(() => import('../pages/ops/OpsSettings'));
 const OpsLectures = lazy(() => import('../pages/ops/OpsLectures'));
 const OpsOperators = lazy(() => import('../pages/ops/OpsOperators'));
 
@@ -182,6 +183,7 @@ export default function AppRoutes() {
           <Route path={PATHS.OPS_LOGS} element={<OpsAuditLog />} />
           <Route path={PATHS.OPS_SYSTEM} element={<OpsSystem />} />
           <Route path={PATHS.OPS_AI_MODELS} element={<OpsAiModels />} />
+          <Route path={PATHS.OPS_SETTINGS} element={<OpsSettings />} />
           <Route path={PATHS.OPS_LECTURES} element={<OpsLectures />} />
           <Route path={PATHS.OPS_OPERATORS} element={<OpsOperators />} />
         </Route>
