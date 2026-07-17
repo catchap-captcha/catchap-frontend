@@ -31,9 +31,4 @@ export const captchaApi = {
   challenge: () => client.get<any>('/captcha/challenge').then((r) => r.data),
 };
 
-/** 리포트 (학부모 PDF/인쇄) */
-export const reportApi = {
-  list: () => client.get<any>('/parents/me/reports').then((r) => r.data),
-  requestDownload: (reportId: string) =>
-    client.post<any>(`/reports/${reportId}/download`).then((r) => r.data),
-};
+// (학부모 리포트 API는 학부모 콘솔 은퇴(0718)로 제거 — 소비자 0 확인)
