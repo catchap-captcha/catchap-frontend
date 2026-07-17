@@ -42,13 +42,12 @@ function readAvatar(userId: string | undefined | null): AvatarState {
   };
 }
 
+// 게임화 잔재 정리(2026-07-18): AI선생님·필기 다시보기 메뉴 제거
 const ROUTE_ACTIVE: Record<string, StudentNavKey> = {
   [PATHS.STUDENT_HOME]: 'home',
   [PATHS.STUDENT_ALL_LEARNING]: 'all',
   [PATHS.STUDENT_CONCEPTS]: 'concepts',
-  [PATHS.STUDENT_AI_TEACHER]: 'ai',
   [PATHS.STUDENT_RECORDS]: 'records',
-  [PATHS.STUDENT_SCRATCH]: 'scratch',
 };
 
 export function StudentNav({
@@ -110,14 +109,8 @@ export function StudentNav({
           <Link to={PATHS.STUDENT_CONCEPTS} className={cls('concepts')} onClick={closeMenu}>
             개념 설명
           </Link>
-          <Link to={PATHS.STUDENT_AI_TEACHER} className={cls('ai')} onClick={closeMenu}>
-            AI 선생님
-          </Link>
           <Link to={PATHS.STUDENT_RECORDS} className={cls('records')} onClick={closeMenu}>
             나의 기록
-          </Link>
-          <Link to={PATHS.STUDENT_SCRATCH} className={cls('scratch')} onClick={closeMenu}>
-            필기 다시보기
           </Link>
         </nav>
         <button
@@ -139,14 +132,14 @@ export function StudentNav({
             <i className="ph-fill ph-bell" />
             {unread > 0 && <span className="sl-belldot" />}
           </Link>
-          {/* 프로필 — 클릭은 원래대로 마이페이지 이동, hover 시 드롭다운으로 로그아웃만 노출
-              (사용자 결정 0714: 드롭다운엔 로그아웃만) */}
+          {/* 프로필 — 아바타 꾸미기 은퇴(0718)로 클릭은 설정으로 이동, hover 드롭다운은
+              로그아웃만 노출(사용자 결정 0714 유지) */}
           <div
             className={`sl-profilewrap${profileOpen ? ' sl-profilewrap-open' : ''}`}
             onMouseEnter={() => setProfileOpen(true)}
             onMouseLeave={() => setProfileOpen(false)}
           >
-            <Link to={PATHS.STUDENT_PROFILE} title="마이 페이지" className="sl-profile">
+            <Link to={PATHS.STUDENT_SETTINGS} title="설정" className="sl-profile">
               <div className="sl-avatar" style={{ background: avatar.bgCss }}>
                 <img src={mascot} alt="" className="sl-avatarimg" />
                 {avatar.hasHat && (

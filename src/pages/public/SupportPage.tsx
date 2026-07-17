@@ -95,7 +95,7 @@ export default function SupportPage() {
           <div className="sp-nav-right">
             <Link to={PATHS.STUDENT_SEARCH} title="검색" className="sp-icon-btn"><i className="ph-bold ph-magnifying-glass" /></Link>
             <button className="sp-bell-btn"><i className="ph-fill ph-bell" /><span className="sp-bell-dot"></span></button>
-            <Link to={PATHS.STUDENT_PROFILE} title="마이페이지" className="sp-profile">
+            <Link to={PATHS.STUDENT_SETTINGS} title="설정" className="sp-profile">
               <div className="sp-profile-avatar">{displayName.charAt(0)}</div>
               <span className="sp-profile-name">{displayName}</span>
             </Link>

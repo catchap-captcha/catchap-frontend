@@ -968,7 +968,7 @@ function TopBar({ subject, title, name }: { subject: string; title: string; name
           <span className="lp-crumb-cur">{title}</span>
         </div>
         <div className="lp-topspace" />
-        <Link to={PATHS.STUDENT_PROFILE} className="lp-profile">
+        <Link to={PATHS.STUDENT_SETTINGS} className="lp-profile">
           <span className="lp-profile-avatar">{name.slice(0, 1)}</span>
           <span className="lp-profile-name">{name}님</span>
         </Link>

@@ -373,9 +373,7 @@ export default function DailyQuiz() {
                 7일 연속 도전 시 특별 배지
               </div>
             </div>
-            <Link to={PATHS.STUDENT_PROFILE} className="dq-rewardcta">
-              모은 코인으로 꾸미기
-            </Link>
+            {/* 코인 상점(꾸미기) 은퇴(0718) — 보상 CTA 제거 */}
           </div>
         </div>
       </section>

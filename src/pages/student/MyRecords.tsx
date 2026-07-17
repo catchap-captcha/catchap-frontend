@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import StudentLayout from '../../layouts/StudentLayout';
 import DemoBadge from '../../components/common/DemoBadge';
-import { PATHS } from '../../routes/paths';
 import { useAuth } from '../../hooks/useAuth';
 import { studentApi } from '../../api/students';
 import ChapterAccuracyChart, { type SubjectStat } from '../../components/student/ChapterAccuracyChart';
@@ -623,9 +621,7 @@ export default function MyRecords() {
         <div className="mr-card">
           <div className="mr-rhead">
             <h3 className="mr-h3">최근 학습 기록</h3>
-            <Link to={PATHS.STUDENT_BADGES} className="mr-badgelink">
-              획득 배지 보기 <i className="ph-bold ph-arrow-right" />
-            </Link>
+            {/* 배지 페이지 은퇴(0718) — 링크 제거 */}
           </div>
           <div className="mr-alist">
             {data.activities.map((a) => (

@@ -17,9 +17,9 @@ const CaptchaPage = lazy(() => import('../pages/auth/CaptchaPage'));
 const ActivatePage = lazy(() => import('../pages/auth/ActivatePage'));
 const InvitePage = lazy(() => import('../pages/auth/InvitePage'));
 
-// 학생
+// 학생 — 게임화 잔재(챕터 지도·연습장·배지·아바타 꾸미기·AI선생님)는 제품 전환으로 제거.
+// 전체학습·퀴즈·게임화면은 강의 문항 재편 대상이라 유지(0716 결정).
 const StudentHome = lazy(() => import('../pages/student/StudentHome'));
-const ChapterMap = lazy(() => import('../pages/student/ChapterMap'));
 const GameScreen = lazy(() => import('../pages/student/GameScreen'));
 const GameResult = lazy(() => import('../pages/student/GameResult'));
 const DailyQuiz = lazy(() => import('../pages/student/DailyQuiz'));
@@ -29,21 +29,12 @@ const AllLearning = lazy(() => import('../pages/student/AllLearning'));
 const Concepts = lazy(() => import('../pages/student/Concepts'));
 const MyRecords = lazy(() => import('../pages/student/MyRecords'));
 const WrongNotes = lazy(() => import('../pages/student/WrongNotes'));
-const StudentScratch = lazy(() => import('../pages/student/StudentScratch'));
-const Badges = lazy(() => import('../pages/student/Badges'));
-const ProfileCustomize = lazy(() => import('../pages/student/ProfileCustomize'));
 const Recommended = lazy(() => import('../pages/student/Recommended'));
-const AiTeacher = lazy(() => import('../pages/student/AiTeacher'));
 const SearchPage = lazy(() => import('../pages/student/SearchPage'));
 const StudentNotifications = lazy(() => import('../pages/student/StudentNotifications'));
 const StudentSettings = lazy(() => import('../pages/student/StudentSettings'));
 
-// 학부모
-const ParentHome = lazy(() => import('../pages/parent/ParentHome'));
-const ParentReports = lazy(() => import('../pages/parent/ParentReports'));
-const ParentCounselAi = lazy(() => import('../pages/parent/ParentCounselAi'));
-const ParentNotifications = lazy(() => import('../pages/parent/ParentNotifications'));
-const ParentMyPage = lazy(() => import('../pages/parent/ParentMyPage'));
+// 학부모 콘솔 — 제품 전환(2026-07-18)으로 은퇴. 미성년 동의는 가입 게이트(guardian_email)가 담당.
 
 // 학교(교사/기관) 콘솔 — 제품 전환(2026-07-17)으로 제거. 기존 계정은 종료 안내로.
 const SchoolSunset = lazy(() => import('../pages/public/SchoolSunset'));
@@ -87,7 +78,6 @@ export default function AppRoutes() {
         {/* 학생 */}
         <Route element={<ProtectedRoute roles={['student']} />}>
           <Route path={PATHS.STUDENT_HOME} element={<StudentHome />} />
-          <Route path={PATHS.STUDENT_CHAPTERS} element={<ChapterMap />} />
           <Route path={PATHS.STUDENT_GAME} element={<GameScreen />} />
           <Route path={PATHS.STUDENT_RESULT} element={<GameResult />} />
           <Route path={PATHS.STUDENT_DAILY_QUIZ} element={<DailyQuiz />} />
@@ -97,23 +87,10 @@ export default function AppRoutes() {
           <Route path={PATHS.STUDENT_CONCEPTS} element={<Concepts />} />
           <Route path={PATHS.STUDENT_RECORDS} element={<MyRecords />} />
           <Route path={PATHS.STUDENT_WRONG_NOTES} element={<WrongNotes />} />
-          <Route path={PATHS.STUDENT_SCRATCH} element={<StudentScratch />} />
-          <Route path={PATHS.STUDENT_BADGES} element={<Badges />} />
-          <Route path={PATHS.STUDENT_PROFILE} element={<ProfileCustomize />} />
           <Route path={PATHS.STUDENT_RECOMMENDED} element={<Recommended />} />
-          <Route path={PATHS.STUDENT_AI_TEACHER} element={<AiTeacher />} />
           <Route path={PATHS.STUDENT_SEARCH} element={<SearchPage />} />
           <Route path={PATHS.STUDENT_NOTIFICATIONS} element={<StudentNotifications />} />
           <Route path={PATHS.STUDENT_SETTINGS} element={<StudentSettings />} />
-        </Route>
-
-        {/* 학부모 */}
-        <Route element={<ProtectedRoute roles={['parent']} />}>
-          <Route path={PATHS.PARENT_HOME} element={<ParentHome />} />
-          <Route path={PATHS.PARENT_REPORTS} element={<ParentReports />} />
-          <Route path={PATHS.PARENT_COUNSEL_AI} element={<ParentCounselAi />} />
-          <Route path={PATHS.PARENT_NOTIFICATIONS} element={<ParentNotifications />} />
-          <Route path={PATHS.PARENT_MYPAGE} element={<ParentMyPage />} />
         </Route>
 
         {/* 학교(교사/기관) 콘솔 — 제품 전환으로 제거(19페이지). 기존 계정의 로그인

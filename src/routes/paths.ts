@@ -18,11 +18,10 @@ export const PATHS = {
   CAPTCHA: '/captcha',
   INVITE: '/invite', // 교사 초대링크 (?token=) → 검증 후 프리필된 가입화면으로
 
-  // 학생 — handoff: CatChap 학습 홈 외
+  // 학생 — handoff: CatChap 학습 홈 외. 게임화 잔재(챕터/연습장/배지/프로필꾸미기/AI선생님)는
+  // 제품 전환(2026-07-18)으로 제거 — 종전 경로는 git 이력 참고.
   STUDENT_HOME: '/student/home',
-  STUDENT_CHAPTERS: '/student/chapters', // ?subject=
   STUDENT_GAME: '/student/game', // ?subject=&chapter=
-  STUDENT_CHAPTER_PLAY: '/student/chapter-play', // ?subject=&chapter= — 주간 챕터 한 단계(2문항) 플레이
   STUDENT_RESULT: '/student/result', // ?subject=
   STUDENT_DAILY_QUIZ: '/student/daily-quiz',
   STUDENT_LECTURES: '/student/lectures', // ?subject= — 과목별 강의 카탈로그(개념 설명 톤)
@@ -31,21 +30,12 @@ export const PATHS = {
   STUDENT_CONCEPTS: '/student/concepts', // ?tab=
   STUDENT_RECORDS: '/student/records',
   STUDENT_WRONG_NOTES: '/student/wrong-notes',
-  STUDENT_SCRATCH: '/student/scratch', // 연습장 필기 다시보기
-  STUDENT_BADGES: '/student/badges',
-  STUDENT_PROFILE: '/student/profile',
   STUDENT_RECOMMENDED: '/student/recommended',
-  STUDENT_AI_TEACHER: '/student/ai-teacher',
   STUDENT_SEARCH: '/student/search',
   STUDENT_NOTIFICATIONS: '/student/notifications',
   STUDENT_SETTINGS: '/student/settings',
 
-  // 학부모 — handoff: CatChap 학부모 외
-  PARENT_HOME: '/parent/home', // ?child=
-  PARENT_REPORTS: '/parent/reports',
-  PARENT_COUNSEL_AI: '/parent/counsel-ai',
-  PARENT_NOTIFICATIONS: '/parent/notifications',
-  PARENT_MYPAGE: '/parent/mypage',
+  // 학부모 콘솔 — 제품 전환(2026-07-18)으로 은퇴. 미성년 동의는 학생 가입 게이트가 담당.
 
   // 학교(교사/기관) 콘솔 — 제품 전환(2026-07-17)으로 전부 제거.
   // 기존 기관·교사 계정이 로그인하면 종료 안내(SCHOOL_SUNSET)로 보낸다.
@@ -83,7 +73,6 @@ export const HANDOFF_ROUTE_MAP: Record<string, string> = {
   'CatChap 비밀번호 재설정.dc.html': PATHS.PASSWORD_RESET,
   'CatChap 보안캡챠.dc.html': PATHS.CAPTCHA,
   'CatChap 학습 홈.dc.html': PATHS.STUDENT_HOME,
-  'CatChap 챕터지도.dc.html': PATHS.STUDENT_CHAPTERS,
   'CatChap 게임화면.dc.html': PATHS.STUDENT_GAME,
   'CatChap 학습결과.dc.html': PATHS.STUDENT_RESULT,
   'CatChap 오늘의퀴즈.dc.html': PATHS.STUDENT_DAILY_QUIZ,
@@ -91,21 +80,12 @@ export const HANDOFF_ROUTE_MAP: Record<string, string> = {
   'CatChap 개념설명.dc.html': PATHS.STUDENT_CONCEPTS,
   'CatChap 나의기록.dc.html': PATHS.STUDENT_RECORDS,
   'CatChap 오답노트.dc.html': PATHS.STUDENT_WRONG_NOTES,
-  'CatChap 배지.dc.html': PATHS.STUDENT_BADGES,
-  'CatChap 프로필 꾸미기.dc.html': PATHS.STUDENT_PROFILE,
   'CatChap 취약문제추천.dc.html': PATHS.STUDENT_RECOMMENDED,
-  'CatChap AI선생님.dc.html': PATHS.STUDENT_AI_TEACHER,
   'CatChap 검색.dc.html': PATHS.STUDENT_SEARCH,
   'CatChap 알림.dc.html': PATHS.STUDENT_NOTIFICATIONS,
   'CatChap 설정.dc.html': PATHS.STUDENT_SETTINGS,
   // 깨진 링크(파일 없음) → 게임화면으로 통일
   'CatChap 한글낱말.dc.html': `${PATHS.STUDENT_GAME}?subject=국어`,
   'CatChap 그림찾기.dc.html': `${PATHS.STUDENT_GAME}?subject=과학`,
-  'CatChap 학부모.dc.html': PATHS.PARENT_HOME,
-  'CatChap 학부모 도윤.dc.html': `${PATHS.PARENT_HOME}?child=doyun`,
-  'CatChap 학부모리포트.dc.html': PATHS.PARENT_REPORTS,
-  'CatChap 학부모 상담 AI.dc.html': PATHS.PARENT_COUNSEL_AI,
-  'CatChap 학부모알림.dc.html': PATHS.PARENT_NOTIFICATIONS,
-  'CatChap 학부모 마이페이지.dc.html': PATHS.PARENT_MYPAGE,
   // (학교 콘솔 handoff 매핑은 제품 전환으로 제거 — 남은 링크는 종료 안내로 수렴)
 };

@@ -9,19 +9,11 @@ import { ROLE_HOME } from '../../routes/roleRoutes';
 import './LoginPage.css';
 import PasswordInput from '../../components/common/PasswordInput';
 
-// 제품 전환(2026-07-17, 학교 기능 은퇴): 기관/교사 로그인 탭·가입 흐름(신청서·요금제·
-// 계약 스텝, 교사 코드 가입, 초대 프리필)은 전부 제거됐다 — 종전 코드는 git 이력 참고.
-type RoleTab = 'student' | 'parent';
+// 제품 전환: 기관/교사(0717)·학부모(0718) 로그인 탭·가입 흐름은 전부 제거됐다 —
+// 남은 것은 학생(학습자) 단일 흐름. 종전 코드는 git 이력 참고.
 
 function isEmail(v: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
-}
-
-function fmtPhone(v: string) {
-  const d = (v || '').replace(/\D/g, '').slice(0, 11);
-  if (d.length < 4) return d;
-  if (d.length < 8) return d.slice(0, 3) + '-' + d.slice(3);
-  return d.slice(0, 3) + '-' + d.slice(3, 7) + '-' + d.slice(7);
 }
 
 function markField(el: HTMLElement, bad: boolean) {
@@ -37,7 +29,7 @@ function markCheck(el: HTMLElement, bad: boolean) {
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { login, studentLogin, me: authMe, loading: authLoading } = useAuth();
+  const { studentLogin, me: authMe, loading: authLoading } = useAuth();
 
   // 이미 로그인한 사용자가 /login에 오면(주소창 직접 입력 등) 자기 역할 홈으로 보냄.
   // replace: 뒤로가기로 로그인 폼에 다시 안 걸리게.
@@ -48,14 +40,12 @@ export default function LoginPage() {
   }, [authLoading, authMe, navigate]);
 
   const [view, setView] = useState<'login' | 'signup'>('login');
-  const [role, setRole] = useState<RoleTab>('student');
   const [captcha, setCaptcha] = useState(false);
   const [signupDone, setSignupDone] = useState(false);
   const [codeSent, setCodeSent] = useState(false);
   const [codeSecondsLeft, setCodeSecondsLeft] = useState(0); // 이메일 인증코드 유효시간(5분) 카운트다운
   const [verified, setVerified] = useState(false);
   const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
   // 연령 분기(2026-07-17): 학생 가입은 생년월일 필수 — 만 14세 미만이면 보호자 동의 섹션 노출
   const [birthDate, setBirthDate] = useState(''); // YYYY-MM-DD
   const [guardianEmail, setGuardianEmail] = useState('');
@@ -121,34 +111,18 @@ export default function LoginPage() {
   // 만 14세 미만 = 보호자(법정대리인) 동의 필요. 서버가 최종 강제 — 여기는 안내·입력 UI.
   const needsGuardian = signupAge !== null && signupAge >= 0 && signupAge < 14;
 
-  // ===== 라벨/문구 (원본 loginMap/signupMap/titleMap — 학교 탭 제거로 학생/학부모만) =====
-  const loginMap: Record<RoleTab, { idLabel: string; idPlaceholder: string; notice: string }> = {
-    // 학생 이메일 가입 전환(2026-07-16): 새 학생 계정은 이메일이 아이디 — 기존 아이디도 계속 유효
-    student: { idLabel: '학생 아이디', idPlaceholder: '이메일 또는 아이디를 입력해 주세요', notice: '학생·학부모는 회원가입 후 바로 이용할 수 있어요.' },
-    parent: { idLabel: '학부모 아이디', idPlaceholder: '이메일 또는 아이디', notice: '가입 후 자녀 계정과 연결하면 학습 현황을 볼 수 있어요.' },
-  };
-  const idLabel = loginMap[role].idLabel;
-  const idPlaceholder = loginMap[role].idPlaceholder;
-  const notice = loginMap[role].notice;
+  // ===== 라벨/문구 — 학습자 단일 흐름 =====
+  // 학생 이메일 가입 전환(2026-07-16): 새 계정은 이메일이 아이디 — 기존 아이디도 계속 유효
+  const idLabel = '아이디';
+  const idPlaceholder = '이메일 또는 아이디를 입력해 주세요';
+  const notice = '회원가입 후 바로 이용할 수 있어요. 만 14세 미만은 가입 시 보호자 동의가 필요해요.';
 
-  let nameLabel = '';
-  let namePlaceholder = '';
-  let phoneLabel = '';
-  let signupNotice = '';
-  if (role === 'student') {
-    nameLabel = '학생 이름';
-    namePlaceholder = '학생 이름을 입력해 주세요';
-    phoneLabel = '보호자 휴대폰 번호';
-    signupNotice = '만 14세 미만은 보호자 동의가 필요해요. 가입 후 바로 로그인해 이용할 수 있어요.';
-  } else {
-    nameLabel = '보호자 이름';
-    namePlaceholder = '보호자 이름을 입력해 주세요';
-    phoneLabel = '휴대폰 번호';
-    signupNotice = '가입 후 자녀 계정과 연결하면 학습 현황을 확인할 수 있어요.';
-  }
+  const nameLabel = '이름';
+  const namePlaceholder = '이름을 입력해 주세요';
+  const signupNotice = '만 14세 미만은 보호자 동의가 필요해요. 가입 후 바로 로그인해 이용할 수 있어요.';
 
   const signupTitle = '회원가입';
-  const signupSubtitle = '역할을 선택하고 정보를 입력해 주세요';
+  const signupSubtitle = '정보를 입력하면 바로 시작할 수 있어요';
 
   const emailInvalid = email.length > 0 && !isEmail(email);
 
@@ -176,13 +150,10 @@ export default function LoginPage() {
     const name = fieldVal('[data-req="이름"]');
     const pw = fieldVal('[data-req="비밀번호"]');
     const emailCode = fieldVal('[data-req="인증코드"]');
-    let req: Promise<unknown>;
-    if (role === 'student') {
-      // 학생 이메일 가입 전환(2026-07-16): 기관·별도 아이디 없이 학부모와 동일 구성 —
-      // 서버가 이메일(소문자)을 로그인 아이디로 쓴다. organization_id/org_code/student_login_id는
-      // 백엔드에서 옵셔널로 남아 있어 기관 경유 가입을 나중에 되살릴 수 있다.
-      // 연령 분기(2026-07-17): 생년월일 필수, 만 14세 미만은 보호자 이메일 코드 동봉.
-      req = authApi.registerStudent({
+    // 학생 이메일 가입 전환(2026-07-16): 이메일(소문자)이 로그인 아이디.
+    // 연령 분기(2026-07-17): 생년월일 필수, 만 14세 미만은 보호자 이메일 코드 동봉.
+    authApi
+      .registerStudent({
         name,
         email,
         email_code: emailCode,
@@ -194,14 +165,8 @@ export default function LoginPage() {
               guardian_email_code: fieldVal('[data-req="보호자 인증코드"]'),
             }
           : {}),
-      });
-    } else {
-      req = authApi.registerParent({ name, email, phone, password: pw, email_code: emailCode });
-    }
-    req
+      })
       .then(() => {
-        // 학부모 자녀 연결은 가입과 분리 — 로그인 후 '자녀 연결'에서 보호자 동의와 함께 진행한다
-        // (#58 동의 없이 자동 연동 금지). 가입 자체는 여기서 완료 처리.
         setSignupDone(true);
       })
       .catch((err) => {
@@ -271,10 +236,9 @@ export default function LoginPage() {
 
   // ===== 이메일 인증 / 코드 확인 (authApi 연결, UI 흐름은 원본 그대로) =====
   const sendCode = () => {
-    // 학부모는 이 이메일이 계정 ID — 이미 가입된 이메일이면 발송 전에 알려줌(409)
-    const forAccount = role === 'parent';
+    // 학생 가입의 중복(이메일=아이디)은 가입 확정 시 409로 안내 — 발송 단계 검사는 생략
     authApi
-      .sendEmailCode(email, 'signup', forAccount)
+      .sendEmailCode(email, 'signup', false)
       .then(() => {
         setCodeSent(true);
         setVerified(false);
@@ -382,48 +346,36 @@ export default function LoginPage() {
       return;
     }
     try {
-      if (role === 'student') {
-        // 후보 버튼으로 고른 기관 > 기억해 둔 기관 > 미지정(백엔드가 비밀번호로 판별)
-        const orgId = orgOverride ?? rememberedOrg(id);
-        lastOrgRef.current = orgId; // 캡차 재시도가 같은 기관으로 가게 기억
-        try {
+      // 후보 버튼으로 고른 기관 > 기억해 둔 기관 > 미지정(백엔드가 비밀번호로 판별)
+      const orgId = orgOverride ?? rememberedOrg(id);
+      lastOrgRef.current = orgId; // 캡차 재시도가 같은 기관으로 가게 기억
+      try {
+        const me = await studentLogin({
+          organization_id: orgId,
+          student_login_id: id,
+          password: pw,
+          captcha_token: captchaToken,
+        });
+        if (orgId) rememberOrg(id, orgId);
+        setCaptchaNeeded(false);
+        navigate(ROLE_HOME[me.role]);
+        return;
+      } catch (err) {
+        const resp = (err as { response?: { status?: number } })?.response;
+        // 기억해 둔 기관이 더 이상 맞지 않으면(전학 등) 잊고 전체에서 한 번 더
+        if (resp?.status === 401 && orgId && !orgOverride) {
+          forgetOrg(id);
           const me = await studentLogin({
-            organization_id: orgId,
             student_login_id: id,
             password: pw,
             captcha_token: captchaToken,
           });
-          if (orgId) rememberOrg(id, orgId);
           setCaptchaNeeded(false);
           navigate(ROLE_HOME[me.role]);
           return;
-        } catch (err) {
-          const resp = (err as { response?: { status?: number } })?.response;
-          // 기억해 둔 기관이 더 이상 맞지 않으면(전학 등) 잊고 전체에서 한 번 더
-          if (resp?.status === 401 && orgId && !orgOverride) {
-            forgetOrg(id);
-            const me = await studentLogin({
-              student_login_id: id,
-              password: pw,
-              captcha_token: captchaToken,
-            });
-            setCaptchaNeeded(false);
-            navigate(ROLE_HOME[me.role]);
-            return;
-          }
-          throw err;
         }
+        throw err;
       }
-      // 탭에서 고른 구분(학부모)을 함께 보낸다 — 서버가 계정 역할과 대조해
-      // 불일치면 403으로 거부한다(학부모 탭에서 교사 계정이 교사로 로그인되던 혼선 차단).
-      const me = await login({
-        email: id,
-        password: pw,
-        role: 'parent',
-        captcha_token: captchaToken,
-      });
-      setCaptchaNeeded(false);
-      navigate(ROLE_HOME[me.role]);
     } catch (err) {
       const resp = (err as {
         response?: {
@@ -443,7 +395,7 @@ export default function LoginPage() {
       const detailObj = typeof detail === 'object' && detail !== null ? detail : undefined;
 
       // 아이디+비밀번호가 여러 기관에서 일치(409) → 후보 기관 원클릭 선택
-      if (role === 'student' && resp?.status === 409 && Array.isArray(detailObj?.candidates)) {
+      if (resp?.status === 409 && Array.isArray(detailObj?.candidates)) {
         setOrgCandidates(detailObj.candidates);
         setLoginError(detailObj.message ?? '소속 기관을 눌러 주세요.');
         return;
@@ -487,26 +439,6 @@ export default function LoginPage() {
     void doLogin(lastOrgRef.current, token);
   };
 
-  // ===== 탭/뷰 전환 (원본 그대로) =====
-  // 원본은 탭 전환 시 폼이 다시 그려져 입력값이 초기화됨 — 동일하게 입력칸/에러를 리셋
-  const resetLoginFields = () => {
-    if (loginIdRef.current) loginIdRef.current.value = '';
-    if (loginPwRef.current) loginPwRef.current.value = '';
-    setLoginBad(false);
-    setLoginError('');
-    setOrgCandidates(null);
-    setCaptchaNeeded(false); // 계정별 실패 횟수는 서버가 기억 — 다음 실패 시 다시 신호가 온다
-  };
-  const setStudent = () => {
-    // 학생 이메일 가입 전환(2026-07-16): 코드 활성화(PATHS.ACTIVATE)로 보내지 않고
-    // 학부모와 같은 이메일 가입 폼을 그대로 쓴다 (ActivatePage는 기존 코드 활성화용으로 남김)
-    setRole('student');
-    resetLoginFields();
-  };
-  const setParent = () => {
-    setRole('parent');
-    resetLoginFields();
-  };
   const goSignup = () => {
     // 학생 이메일 가입 전환(2026-07-16): 학생도 이메일 가입 폼 사용(종전 코드 활성화 리다이렉트 제거)
     setView('signup');
@@ -516,23 +448,9 @@ export default function LoginPage() {
   };
   const goLogin = () => setView('login');
 
-  const tabCls = (active: boolean) => 'lg-tab' + (active ? ' lg-tab--active' : '');
   const loginInputCls = (base: string) => base + (loginBad ? ' lg-input--bad' : '');
-
-  // 학교 콘솔 은퇴(2026-07-17): 기관 탭은 로그인·가입 모두에서 제거 — 기존 기관·교사
-  // 계정이 로그인하면 종료 안내(SCHOOL_SUNSET)로 간다(ROLE_HOME).
-  const roleTabs = (signup: boolean) => (
-    <div className={'lg-tabs' + (signup ? ' lg-tabs--signup' : '')}>
-      <button type="button" onClick={setStudent} className={tabCls(role === 'student')}>
-        <i className="ph-fill ph-student" />
-        학생
-      </button>
-      <button type="button" onClick={setParent} className={tabCls(role === 'parent')}>
-        <i className="ph-fill ph-users-three" />
-        학부모
-      </button>
-    </div>
-  );
+  // 역할 탭 제거(기관·교사 0717 / 학부모 0718 은퇴) — 학습자 단일 흐름이라 탭 UI가 없다.
+  // 은퇴 역할의 기존 계정이 로그인하면 종료 안내(SCHOOL_SUNSET)로 간다(ROLE_HOME).
 
   // 로그인 상태면 폼 렌더 없이 위 효과가 홈으로 이동 (폼 깜빡임 방지)
   if (authMe) return null;
@@ -594,12 +512,10 @@ export default function LoginPage() {
         {view === 'login' && (
           <div className="lg-login">
             <h2 className="lg-h2">로그인</h2>
-            <p className="lg-login-sub">역할을 선택하고 로그인해 주세요</p>
-
-            {roleTabs(false)}
+            <p className="lg-login-sub">아이디와 비밀번호를 입력해 주세요</p>
 
             {/* 아이디+비밀번호가 여러 기관에서 일치할 때(409)만 후보 기관 원클릭 선택 */}
-            {role === 'student' && orgCandidates && (
+            {orgCandidates && (
               <>
                 <label className="lg-label">소속 기관을 눌러 주세요</label>
                 <div className="lg-orgpick lg-mb16">
@@ -691,9 +607,8 @@ export default function LoginPage() {
             </button>
             <h2 className="lg-h2 lg-h2--signup">{signupTitle}</h2>
             <p className="lg-signup-sub">{signupSubtitle}</p>
-            {roleTabs(true)}
 
-            {/* ============ PERSONAL SIGNUP (student / parent) ============ */}
+            {/* ============ 학습자 가입 (단일 흐름) ============ */}
             {(
               <>
                 <label className="lg-label">{nameLabel}</label>
@@ -702,9 +617,9 @@ export default function LoginPage() {
                   <input type="text" data-req="이름" placeholder={namePlaceholder} className="lg-input" />
                 </div>
 
-                {/* 연령 분기(2026-07-17): 학생 가입은 생년월일 필수 — 만 14세 미만이면
+                {/* 연령 분기(2026-07-17): 생년월일 필수 — 만 14세 미만이면
                     보호자(법정대리인) 이메일 동의 섹션이 아래에 열린다. 서버가 최종 강제. */}
-                {role === 'student' && (
+                {(
                   <>
                     <label className="lg-label">생년월일</label>
                     <div className="lg-field lg-mb12">
@@ -853,28 +768,6 @@ export default function LoginPage() {
                   </>
                 )}
 
-                {role === 'parent' && (
-                  <>
-                    <label className="lg-label">{phoneLabel}</label>
-                    <div className="lg-field lg-mb15">
-                      <i className="ph-fill ph-device-mobile lg-field-icon" />
-                      <input
-                        type="tel"
-                        data-req="보호자 휴대폰"
-                        placeholder="010-0000-0000"
-                        value={phone}
-                        onChange={(e) => setPhone(fmtPhone(e.target.value))}
-                        className="lg-input lg-input--code"
-                      />
-                    </div>
-
-                    <p style={{ margin: '4px 0 15px', fontSize: '12.5px', color: '#8A8F9E', lineHeight: 1.5 }}>
-                      자녀 연결은 가입 후 <b>자녀 연결</b> 메뉴에서 학교 초대코드 입력과
-                      보호자 동의를 거쳐 진행됩니다.
-                    </p>
-                  </>
-                )}
-
                 {/* 학생 이메일 가입 전환(2026-07-16): 별도 아이디 칸 제거 — 이메일이 로그인 아이디.
                     (종전: 학생 전역 유일 아이디 + 중복 확인. 부활 시 git 이력 참고) */}
 
@@ -1005,13 +898,9 @@ export default function LoginPage() {
               <span className="lg-conf4" />
 
               <h3>가입이 완료됐어요! 🎉</h3>
-              <p className="lg-done-name">
-                {role === 'parent' ? '학부모님, 환영해요!' : '반가워요, 새 친구!'}
-              </p>
+              <p className="lg-done-name">반가워요, 새 친구!</p>
               <p className="lg-done-msg">
-                {role === 'parent'
-                  ? '회원가입이 완료됐어요. 로그인 후 자녀 계정과 연결하면 학습 현황을 확인할 수 있어요.'
-                  : '회원가입이 완료됐어요. 이제 로그인해서 냥이와 함께 학습을 시작해요!'}
+                회원가입이 완료됐어요. 이제 로그인해서 냥이와 함께 학습을 시작해요!
               </p>
 
               <button

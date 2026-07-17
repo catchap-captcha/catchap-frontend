@@ -125,10 +125,7 @@ export default function StudentSettings() {
               {school} · 학습 레벨 {level}
             </div>
           </div>
-          <Link to={PATHS.STUDENT_PROFILE} className="st-profilebtn">
-            <i className="ph-fill ph-paint-brush" />
-            프로필 꾸미기
-          </Link>
+          {/* 아바타 꾸미기(상점) 은퇴(0718) — 버튼 제거 */}
         </div>
 
         {/* SECTION: 화면 & 눈 건강 */}

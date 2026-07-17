@@ -603,9 +603,7 @@ export default function GameResult() {
           {/* AI 한마디도 성적에 맞춰 — 서버 코멘트는 과목별 고정(성적 무반영)이라, 실제로
               푼 세션이면 정답률 기반 멘트를 우선한다(다 틀린 아이에게 칭찬만 하지 않게). */}
           <p className="gr-aitext">{perf !== 'none' ? perfInfo.ai : s.ai}</p>
-          <Link to={PATHS.STUDENT_AI_TEACHER} className="gr-ailink">
-            AI 선생님과 더 이야기하기 <i className="ph-bold ph-arrow-right" />
-          </Link>
+          {/* AI선생님 페이지 은퇴(0718) — 더보기 링크 제거, 한마디 카드는 유지 */}
         </div>
 
         {/* QUESTION REVIEW — 이번에 실제로 푼 문항만(맞음/틀림). 중도 종료면 푼 만큼만 표시. */}

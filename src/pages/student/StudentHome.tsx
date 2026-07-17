@@ -8,7 +8,6 @@ import { useAuth } from '../../hooks/useAuth';
 import { studentApi } from '../../api/students';
 import { lectureApi, type LectureItem } from '../../api/lectures';
 import { notificationApi } from '../../api/notifications';
-import { RANKING_ENABLED } from '../../config/features';
 import mascot from '../../assets/characters/catchap-logo.png';
 import './StudentHome.css';
 
@@ -174,24 +173,15 @@ const QUICK_MENU = [
   { label: '개념 설명', to: PATHS.STUDENT_CONCEPTS, bg: '#FFE7D8', color: '#FF7A4D', icon: 'ph-fill ph-book-bookmark', badge: null as string | null, badgeNew: false },
   { label: '오늘의 강의', to: PATHS.STUDENT_LECTURES, bg: '#FFEDE0', color: '#FF922E', icon: 'ph-fill ph-video-camera', badge: null as string | null, badgeNew: false },
   { label: '오답 노트', to: PATHS.STUDENT_WRONG_NOTES, bg: '#FFE3E9', color: '#FF5A6E', icon: 'ph-fill ph-notebook', badge: null, badgeNew: false },
-  { label: '획득 배지', to: PATHS.STUDENT_BADGES, bg: '#FFF3D6', color: '#F0A400', icon: 'ph-fill ph-medal', badge: null, badgeNew: false },
-  { label: 'AI 선생님', to: PATHS.STUDENT_AI_TEACHER, bg: '#E6F0FF', color: '#2E7BFF', icon: 'ph-fill ph-robot', badge: 'NEW', badgeNew: true },
   { label: '추천 문제', to: PATHS.STUDENT_RECOMMENDED, bg: '#EDE6FF', color: '#8B6BFF', icon: 'ph-fill ph-sparkle', badge: null, badgeNew: false },
   { label: '성장 리포트', to: PATHS.STUDENT_RECORDS, bg: '#DFF6ED', color: '#17B08C', icon: 'ph-fill ph-chart-line-up', badge: null, badgeNew: false },
-  { label: '마이페이지', to: PATHS.STUDENT_PROFILE, bg: '#FFE9F1', color: '#FF6DA6', icon: 'ph-fill ph-cat', badge: null, badgeNew: false },
+  { label: '설정', to: PATHS.STUDENT_SETTINGS, bg: '#FFE9F1', color: '#FF6DA6', icon: 'ph-fill ph-gear-six', badge: null, badgeNew: false },
 ];
 
 const STAT_TILES = [
   { icon: 'ph-fill ph-fire', bg: '#FFEDE0', color: '#FF922E', unit: '일', label: '연속 학습', key: 'streakDays' as const },
   { icon: 'ph-fill ph-puzzle-piece', bg: '#E6F0FF', color: '#2E7BFF', unit: '개', label: '이번 주 푼 문제', key: 'weekSolved' as const },
   { icon: 'ph-fill ph-target', bg: '#E1F5EC', color: '#17B08C', unit: '%', label: '평균 정답률', key: 'accuracy' as const },
-];
-
-const BADGE_ICONS = [
-  { icon: 'ph-fill ph-star', color: '#FF922E' },
-  { icon: 'ph-fill ph-heart', color: '#FF5A6E' },
-  { icon: 'ph-fill ph-lightning', color: '#2E7BFF' },
-  { icon: 'ph-fill ph-crown-simple', color: '#17B08C' },
 ];
 
 /**
@@ -667,68 +657,8 @@ export default function StudentHome() {
             </div>
           </div>
 
-          {/* right: badges + rank */}
+          {/* right: 추천 — 배지·학년 랭킹·AI선생님 카드는 게임화 잔재 정리(0718)로 제거 */}
           <div className="sh-growth-right">
-            <div className="sh-badges">
-              <div className="sh-badges-head">
-                <h3 className="sh-badges-title">내가 모은 배지</h3>
-                <span className="sh-badges-count">{data.badgeCount}개 획득</span>
-              </div>
-              <div className="sh-badges-row">
-                {BADGE_ICONS.map((b) => (
-                  <div key={b.icon} className="sh-badge" style={{ color: b.color }}>
-                    <i className={b.icon} />
-                  </div>
-                ))}
-                <div className="sh-badge-locked">
-                  <i className="ph-bold ph-lock-simple" />
-                  <span className="sh-badge-next">다음</span>
-                </div>
-              </div>
-            </div>
-
-            {!RANKING_ENABLED ? (
-              <div className="sh-rank">
-                <div className="sh-rank-head">
-                  <span className="sh-rank-chip">
-                    <i className="ph-fill ph-trophy" />
-                  </span>
-                  <h3 className="sh-rank-title">우리 학년에서 나의 위치</h3>
-                </div>
-                <p className="sh-rank-text">
-                  학년 랭킹은 <span className="sh-rank-pct">준비중</span>이에요.
-                  <br />
-                  곧 만나요 🐾
-                </p>
-              </div>
-            ) : (
-              data.showRank && (
-                <div className="sh-rank">
-                  <div className="sh-rank-head">
-                    <span className="sh-rank-chip">
-                      <i className="ph-fill ph-trophy" />
-                    </span>
-                    <h3 className="sh-rank-title">우리 학년에서 나의 위치</h3>
-                  </div>
-                  <p className="sh-rank-text">
-                    우리 학년 <span className="sh-rank-pct">{data.rankLabel}</span> 구간이에요.
-                    <br />
-                    친구 이름·점수는 보이지 않아요 🙂
-                  </p>
-                </div>
-              )
-            )}
-
-            <div className="sh-ai">
-              <div className="sh-ai-avatar">
-                <i className="ph-fill ph-robot" />
-              </div>
-              <div className="sh-ai-body">
-                <div className="sh-ai-name">AI 선생님 냥냥이</div>
-                <p className="sh-ai-text">{data.aiComment}</p>
-              </div>
-            </div>
-
             <Link to={PATHS.STUDENT_RECOMMENDED} className="sh-reco">
               <div className="sh-reco-icon">
                 <i className="ph-fill ph-sparkle" />
