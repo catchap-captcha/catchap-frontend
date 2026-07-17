@@ -107,27 +107,6 @@
 /* 입력 중 실시간 범위 경고(고정 시점이 0초·영상 밖일 때) — 제출 전에 미리 알린다 */
 .lu-help--bad { color: #c2554a; font-weight: 700; }
 
-.lu-presets { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 6px; }
-.lu-presets--2 { grid-template-columns: repeat(2, 1fr); } /* 출제 방식(무작위/고정) 두 갈래 세그먼트 */
-.lu-preset {
-  border: 1.5px solid #e2e8f0;
-  border-radius: 10px;
-  background: #fff;
-  padding: 10px 8px;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  text-align: center;
-  transition: border-color 0.15s, background 0.15s;
-}
-.lu-preset:hover { border-color: #94a3b8; }
-.lu-preset--on { border-color: #2563eb; background: #eff6ff; }
-.lu-preset b { font-size: 13.5px; color: #1e293b; }
-.lu-preset span { font-size: 12px; color: #475569; }
-.lu-preset em { font-size: 11px; color: #94a3b8; font-style: normal; }
-@media (max-width: 640px) { .lu-presets { grid-template-columns: repeat(2, 1fr); } }
-
 /* ── 문항 이미지 첨부 (강사용) ─────────────────────────────
    강의 화면 캡처를 문제·보기에 붙인다 — 텍스트 보기는 상식으로 찍히지만
    그림 보기는 실제로 본 학생만 고를 수 있다(시청 검증의 핵심). */

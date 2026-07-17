@@ -634,9 +634,10 @@ function QuestionsModal({
       return setErr('정답으로 지정된 보기가 없어요.');
     if (pos == null || pos < 0)
       return setErr('출제 시점은 초(예: 200) 또는 분:초(예: 3:20) 형태로 입력하세요.');
-    /* 시점·구간 범위는 서버(400)와 같은 규칙으로 제출 전에 막는다 — 문구도 서버와 동일하게.
-       영상 밖 시점이 유일 문항이면 체크포인트가 안 잡혀 시청 검증이 통째로 조용히 꺼진다. */
-    if (pos >= lec.duration_sec)
+    /* 시점 범위는 서버(400)와 같은 규칙으로 제출 전에 막는다 — 문구도 서버와 동일하게.
+       둘 다 공개(active)만 강제: draft는 '시점 미배치·후보'라 범위 밖도 저장된다(영상
+       길이 축소로 밖에 남은 draft의 프롬프트 수정이 막히지 않게 — 활성화 때 걸러진다). */
+    if (form.status === 'active' && pos >= lec.duration_sec)
       return setErr(
         `출제 시점이 영상 길이를 벗어났습니다. 영상 안의 시점을 지정해 주세요. (영상 길이 ${fmtMMSS(lec.duration_sec)})`,
       );
@@ -959,15 +960,15 @@ function QuestionsModal({
                 <span
                   className={`lu-help${
                     posPreview != null &&
-                    (posPreview >= lec.duration_sec ||
-                      (form.status === 'active' && posPreview < 1))
+                    form.status === 'active' &&
+                    (posPreview >= lec.duration_sec || posPreview < 1)
                       ? ' lu-help--bad'
                       : ''
                   }`}
                 >
                   {posPreview == null
                     ? '초(예: 200) 또는 분:초(예: 3:20)로 입력하세요'
-                    : posPreview >= lec.duration_sec
+                    : form.status === 'active' && posPreview >= lec.duration_sec
                       ? `영상 길이(${fmtMMSS(lec.duration_sec)})를 벗어났어요 — 영상 안의 시점으로 지정하세요`
                       : form.status === 'active' && posPreview < 1
                         ? '공개 문항은 1초 이상이어야 해요 — 0초는 아직 아무것도 보지 않은 지점이에요'

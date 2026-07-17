@@ -272,7 +272,23 @@ export default function LecturePlayer() {
     const host = gateHostRef.current;
     if (!host) return;
     const onAnswer = (ev: Event) => {
-      const d = (ev as CustomEvent).detail as { correct?: boolean } | undefined;
+      const d = (ev as CustomEvent).detail as
+        | {
+            correct?: boolean;
+            /** 강의 게이트의 서버 정본 — verify가 통과 재예약·오답 되감기까지 반영해 돌려준다 */
+            lecture?: {
+              watched_max_sec?: number;
+              next_checkpoint_sec?: number | null;
+            } | null;
+          }
+        | undefined;
+      // 서버 정본이 오면 로컬 미러를 즉시 동기화 — 되감기·재예약 판정의 기준값.
+      const lec = d?.lecture ?? null;
+      if (lec && typeof lec.watched_max_sec === 'number') {
+        watchedMaxRef.current = lec.watched_max_sec;
+        setWatchedMax(lec.watched_max_sec);
+        nextCpRef.current = lec.next_checkpoint_sec ?? null;
+      }
       if (d?.correct) {
         setGate(null);
         setGateWrong(false);
@@ -287,17 +303,27 @@ export default function LecturePlayer() {
           }
         })();
       } else {
-        // 오답 — 연속 오답 누적. 상한 미만이면 새 문제로 재도전(위젯 재마운트).
-        // 상한에 닿으면 그 대목을 되감아 다시 본다: 서버가 watched_max를 이미 되감아
-        // 새 문항 발급을 409로 막았으므로, 무한 재도전 대신 되감긴 지점으로 seek해
-        // 다시 시청하게 한다(cp에 닿으면 게이트가 새 문항으로 다시 열린다).
+        // 오답 — 되감기 여부는 '서버 정본'으로 판정한다. 서버는 연속 오답이 상한에 닿는
+        // 순간 watched_max를 cp 아래로 되감아 새 문항 발급을 409로 막는다. 로컬 오답
+        // 카운터로 판정하면 새로고침·재진입 시 카운터만 0으로 리셋돼(서버 checkpoint_fails는
+        // 유지) 서버만 되감은 순간을 놓치고, 재도전 위젯이 409 무한 반복에 갇힌다
+        // (게이트가 열린 동안 하트비트 중단 + 닫기 버튼 없음 = 새로고침 전까지 교착 —
+        // skeptic CONFIRMED). 카운터는 lecture 정본이 없는 구버전 위젯 폴백에만 쓴다.
         setGateWrong(true);
         wrongCountRef.current += 1;
-        if (wrongCountRef.current >= MAX_CHECKPOINT_FAILS) {
+        const cp = gateRef.current?.cp ?? 0;
+        const rewound =
+          lec && typeof lec.watched_max_sec === 'number'
+            ? lec.watched_max_sec < cp // 서버가 되감았다 — cp 아래로 내려간 정본이 증거
+            : wrongCountRef.current >= MAX_CHECKPOINT_FAILS; // 폴백(구버전 위젯 캐시)
+        if (rewound) {
           wrongCountRef.current = 0;
-          const cp = gateRef.current?.cp ?? 0;
-          const back = Math.max(0, cp - REWIND_SEC);
-          watchedMaxRef.current = back; // 서버 되감기와 로컬 정본 동기화(앞으로-seek 가드가 안 튕기게)
+          // 되감긴 위치는 서버 정본 우선 — 로컬 계산(cp-REWIND_SEC)은 폴백에서만 쓴다
+          const back =
+            lec && typeof lec.watched_max_sec === 'number'
+              ? lec.watched_max_sec
+              : Math.max(0, cp - REWIND_SEC);
+          watchedMaxRef.current = back; // 앞으로-seek 가드가 안 튕기게 로컬 정본 동기화
           setWatchedMax(back);
           setGate(null);
           setGateWrong(false);
