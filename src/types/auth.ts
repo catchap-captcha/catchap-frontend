@@ -1,4 +1,4 @@
-export type Role = 'student' | 'parent' | 'teacher' | 'grade_head' | 'org_admin' | 'ops';
+export type Role = 'student' | 'parent' | 'teacher' | 'grade_head' | 'org_admin' | 'ops' | 'instructor';
 
 export interface TokenPair {
   access_token: string;

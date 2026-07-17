@@ -83,6 +83,7 @@ const OpsAiModels = lazy(() => import('../pages/ops/OpsAiModels'));
 const OpsSettings = lazy(() => import('../pages/ops/OpsSettings'));
 const OpsLectures = lazy(() => import('../pages/ops/OpsLectures'));
 const OpsOperators = lazy(() => import('../pages/ops/OpsOperators'));
+const OpsInstructors = lazy(() => import('../pages/ops/OpsInstructors'));
 
 // 시스템
 const NotFoundPage = lazy(() => import('../pages/system/NotFoundPage'));
@@ -184,8 +185,13 @@ export default function AppRoutes() {
           <Route path={PATHS.OPS_SYSTEM} element={<OpsSystem />} />
           <Route path={PATHS.OPS_AI_MODELS} element={<OpsAiModels />} />
           <Route path={PATHS.OPS_SETTINGS} element={<OpsSettings />} />
-          <Route path={PATHS.OPS_LECTURES} element={<OpsLectures />} />
           <Route path={PATHS.OPS_OPERATORS} element={<OpsOperators />} />
+          <Route path={PATHS.OPS_INSTRUCTORS} element={<OpsInstructors />} />
+        </Route>
+
+        {/* 강의 제작 콘솔 — 운영자(전체) + 강사(자기 강의만, 스코프는 서버가 강제) */}
+        <Route element={<ProtectedRoute roles={['ops', 'instructor']} />}>
+          <Route path={PATHS.OPS_LECTURES} element={<OpsLectures />} />
         </Route>
 
         {/* 404 — handoff: CatChap 404 */}

@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import { settingsApi } from '../../api/settings';
 import { PATHS } from '../../routes/paths';
 import mascot from '../../assets/characters/catchap-logo.png';
 
@@ -7,13 +9,17 @@ import mascot from '../../assets/characters/catchap-logo.png';
  *
  *  상단 가로 네비는 메뉴 11개에서 이미 잘려 가로 스크롤로 새고 있었다 — 실무 콘솔
  *  표준인 좌측 사이드바 + 업무 영역 그룹으로 바꾼다(기관·교사 콘솔의 사이드바와도
- *  한 계열). 좁은 화면(≤1080px)에서는 아이콘 레일(64px)로 접혀 전 메뉴가 유지된다. */
+ *  한 계열). 좁은 화면(≤1080px)에서는 아이콘 레일(64px)로 접혀 전 메뉴가 유지된다.
+ *
+ *  강사(instructor)도 같은 사이드바를 쓰되 '내 강의'만 보인다 — 운영 메뉴는 서버가
+ *  403으로 막지만, 애초에 링크를 노출하지 않는 것이 콘솔의 예의다. */
 const GROUPS: { label: string; items: { to: string; icon: string; label: string }[] }[] = [
   {
     label: '운영',
     items: [
       { to: PATHS.OPS_APPROVAL, icon: 'ph-buildings', label: '기관 승인' },
       { to: PATHS.OPS_ORGS, icon: 'ph-list-checks', label: '기관 관리' },
+      { to: PATHS.OPS_INSTRUCTORS, icon: 'ph-chalkboard-teacher', label: '강사 관리' },
       { to: PATHS.OPS_INQUIRIES, icon: 'ph-chat-circle-dots', label: '문의 관리' },
     ],
   },
@@ -41,27 +47,74 @@ const GROUPS: { label: string; items: { to: string; icon: string; label: string 
   },
 ];
 
+const INSTRUCTOR_GROUPS: typeof GROUPS = [
+  {
+    label: '강의',
+    items: [{ to: PATHS.OPS_LECTURES, icon: 'ph-video-camera', label: '내 강의' }],
+  },
+];
+
 export default function OpsNav() {
   const { pathname } = useLocation();
   const { me, logout } = useAuth();
   const navigate = useNavigate();
+  const isInstructor = me?.role === 'instructor';
+  const groups = isInstructor ? INSTRUCTOR_GROUPS : GROUPS;
+  const home = isInstructor ? PATHS.OPS_LECTURES : PATHS.OPS_APPROVAL;
+
+  // 강사 본인 비밀번호 변경 — 운영자는 운영자 계정 페이지에 같은 기능이 있지만,
+  // 강사는 접근 가능한 관리 페이지가 없어 사이드바 푸터에서 직접 연다.
+  const [pwOpen, setPwOpen] = useState(false);
+  const [curPw, setCurPw] = useState('');
+  const [newPw, setNewPw] = useState('');
+  const [newPw2, setNewPw2] = useState('');
+  const [pwErr, setPwErr] = useState('');
+  const [pwMsg, setPwMsg] = useState('');
+  const [pwSaving, setPwSaving] = useState(false);
 
   const onLogout = async () => {
     await logout();
     navigate(PATHS.HOME, { replace: true });
   };
 
+  const openPw = () => {
+    setCurPw('');
+    setNewPw('');
+    setNewPw2('');
+    setPwErr('');
+    setPwMsg('');
+    setPwOpen(true);
+  };
+  const changePw = async () => {
+    if (!curPw) return setPwErr('현재 비밀번호를 입력해 주세요.');
+    if (newPw.length < 8) return setPwErr('새 비밀번호는 8자 이상으로 정해 주세요.');
+    if (newPw !== newPw2) return setPwErr('새 비밀번호가 서로 달라요.');
+    if (newPw === curPw) return setPwErr('현재 비밀번호와 다른 비밀번호로 정해 주세요.');
+    setPwSaving(true);
+    setPwErr('');
+    try {
+      await settingsApi.changePassword(curPw, newPw);
+      setPwMsg('비밀번호를 변경했어요.');
+      setTimeout(() => setPwOpen(false), 900);
+    } catch (e) {
+      const err = e as { response?: { data?: { detail?: string } } };
+      setPwErr(err.response?.data?.detail ?? '변경에 실패했어요. 현재 비밀번호를 확인해 주세요.');
+    } finally {
+      setPwSaving(false);
+    }
+  };
+
   return (
-    <aside className="op-side" aria-label="운영 콘솔 메뉴">
-      <Link to={PATHS.OPS_APPROVAL} className="op-side-brand">
+    <aside className="op-side" aria-label={isInstructor ? '강사 콘솔 메뉴' : '운영 콘솔 메뉴'}>
+      <Link to={home} className="op-side-brand">
         <img src={mascot} alt="CatChap" className="op-side-logo" />
         <div className="op-side-brandtext">
           <div className="op-side-name">CatChap</div>
-          <div className="op-side-sub">운영 콘솔</div>
+          <div className="op-side-sub">{isInstructor ? '강사 콘솔' : '운영 콘솔'}</div>
         </div>
       </Link>
       <nav className="op-side-menu">
-        {GROUPS.map((g) => (
+        {groups.map((g) => (
           <div key={g.label} className="op-side-group">
             <div className="op-side-grouplabel">{g.label}</div>
             {g.items.map((l) => (
@@ -80,17 +133,64 @@ export default function OpsNav() {
         ))}
       </nav>
       <div className="op-side-foot">
-        <Link to={PATHS.OPS_OPERATORS} className="op-side-me" title="운영자 계정 관리">
-          <span className="op-side-avatar">
-            <i className="ph-fill ph-shield-star" />
-          </span>
-          <span className="op-side-mename">{me?.name ?? '운영자'}</span>
-        </Link>
+        {isInstructor ? (
+          <button type="button" className="op-side-me" onClick={openPw} title="내 비밀번호 변경">
+            <span className="op-side-avatar">
+              <i className="ph-fill ph-chalkboard-teacher" />
+            </span>
+            <span className="op-side-mename">{me?.name ?? '강사'}</span>
+          </button>
+        ) : (
+          <Link to={PATHS.OPS_OPERATORS} className="op-side-me" title="운영자 계정 관리">
+            <span className="op-side-avatar">
+              <i className="ph-fill ph-shield-star" />
+            </span>
+            <span className="op-side-mename">{me?.name ?? '운영자'}</span>
+          </Link>
+        )}
         <button type="button" className="op-side-logout" onClick={onLogout} title="로그아웃">
           <i className="ph-fill ph-sign-out" />
           <span>로그아웃</span>
         </button>
       </div>
+
+      {/* 강사 본인 비밀번호 변경 모달 (OpsApproval.css 공용 모달 스타일) */}
+      {pwOpen && (
+        <div className="op-bh-overlay" onClick={() => !pwSaving && setPwOpen(false)}>
+          <div className="op-formmodal" onClick={(e) => e.stopPropagation()}>
+            <div className="op-bh-modal-h">
+              <span><i className="ph-fill ph-lock-key" /> 내 비밀번호 변경</span>
+              <button className="op-bh-modal-x" onClick={() => !pwSaving && setPwOpen(false)}>
+                <i className="ph-bold ph-x" />
+              </button>
+            </div>
+            <div className="op-form">
+              <p className="op-form-hint">현재 비밀번호를 확인한 뒤 새 비밀번호(8자 이상)로 바꿔요.</p>
+              <label className="op-form-row">
+                <span className="op-form-lb">현재 비밀번호 <b>*</b></span>
+                <input className="op-form-in" type="password" value={curPw} onChange={(e) => setCurPw(e.target.value)} placeholder="현재 비밀번호" />
+              </label>
+              <label className="op-form-row">
+                <span className="op-form-lb">새 비밀번호 <b>*</b></span>
+                <input className="op-form-in" type="password" value={newPw} onChange={(e) => setNewPw(e.target.value)} placeholder="8자 이상" />
+              </label>
+              <label className="op-form-row">
+                <span className="op-form-lb">새 비밀번호 확인 <b>*</b></span>
+                <input className="op-form-in" type="password" value={newPw2} onChange={(e) => setNewPw2(e.target.value)} placeholder="새 비밀번호 다시" />
+              </label>
+              {pwErr && <div className="op-form-err"><i className="ph-fill ph-warning-circle" />{pwErr}</div>}
+              {pwMsg && <div className="op-form-hint" style={{ color: '#1d9e6f', fontWeight: 700 }}>{pwMsg}</div>}
+              <div className="op-form-actions">
+                <button className="op-btn op-btn--reject" disabled={pwSaving} onClick={() => setPwOpen(false)}>취소</button>
+                <button className="op-btn op-btn--approve" disabled={pwSaving} onClick={changePw}>
+                  <i className="ph-bold ph-check" />
+                  {pwSaving ? '변경 중…' : '비밀번호 변경'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </aside>
   );
 }

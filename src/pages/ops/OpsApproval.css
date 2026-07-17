@@ -80,6 +80,14 @@
   text-decoration: none;
   padding: 7px 8px;
   border-radius: 10px;
+  /* 강사 콘솔에서는 링크 대신 버튼(비밀번호 변경 모달)이라 버튼 기본값 중화 */
+  background: none;
+  border: 0;
+  width: 100%;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
 }
 .op-side-me:hover { background: #fff4ef; }
 .op-side-avatar {

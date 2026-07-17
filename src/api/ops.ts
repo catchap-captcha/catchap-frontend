@@ -99,6 +99,22 @@ export interface OpsOperatorCreated extends OpsOperator {
   email_status: string; // sent | dry_run | failed — 임시 비번 자동 통보 결과
 }
 
+/** 강사(instructor) 계정 — 운영자 초대로만 생성, 콘솔에선 자기 강의만 관리 */
+export interface OpsInstructor {
+  id: string;
+  name: string;
+  email: string | null;
+  status: string; // active | disabled
+  last_login_at: string | null;
+  created_at: string | null;
+}
+
+export interface OpsInstructorCreated extends OpsInstructor {
+  ok: boolean;
+  temp_password: string; // 생성/재설정 응답에서만 1회 노출
+  email_status: string; // sent | dry_run | failed
+}
+
 export interface OpsOrg {
   id: string;
   name: string;
@@ -369,6 +385,15 @@ export const opsApi = {
   /** 운영자 임시 비밀번호 재설정 → 새 임시 비번 이메일 발송(1회 노출) + 기존 세션 폐기 */
   resetOperatorPassword: (id: string) =>
     client.post<OpsOperatorCreated>(`/ops/operators/${id}/reset-password`).then((r) => r.data),
+
+  /** 강사 계정 관리 (초대 발급 — 공개 가입 없음) */
+  instructors: () => client.get<OpsInstructor[]>('/ops/instructors').then((r) => r.data),
+  createInstructor: (body: { name: string; email: string }) =>
+    client.post<OpsInstructorCreated>('/ops/instructors', body).then((r) => r.data),
+  updateInstructor: (id: string, body: { name?: string; status?: string }) =>
+    client.patch<OpsInstructor>(`/ops/instructors/${id}`, body).then((r) => r.data),
+  resetInstructorPassword: (id: string) =>
+    client.post<OpsInstructorCreated>(`/ops/instructors/${id}/reset-password`).then((r) => r.data),
   logs: (filter?: OpsLogFilter) =>
     client
       .get<OpsAuditLogPage>('/ops/logs', { params: filter && Object.keys(filter).length ? filter : undefined })
