@@ -10,6 +10,33 @@
 .op-lect-actions { display: inline-flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
 .op-lect-danger { color: #c2554a !important; }
 
+/* 헤더 우측 버튼 묶음(코스 관리 + 강의 업로드) */
+.op-lect-headbtns { display: inline-flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+/* 강의 행의 소속 코스 태그 — 제목 옆 작은 칩. 미분류는 옅게 처리해 '코스 없음'을 구분한다 */
+.op-lect-coursechip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #eef2ff;
+  color: #4f46e5;
+  font-weight: 800;
+  font-size: 11px;
+  vertical-align: middle;
+}
+.op-lect-coursechip--none { background: #f4efe6; color: #a89d8e; }
+
+/* 코스 목록 그리드 — 코스 / 과목 / 강의수 / 상태 / 관리 */
+.op-course-grid {
+  display: grid;
+  grid-template-columns: minmax(200px, 2fr) 72px 64px 76px minmax(150px, 1fr);
+  gap: 10px;
+  align-items: center;
+}
+
 /* 업로드 진행률 */
 .op-lect-progress { margin-top: 12px; display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 12.5px; color: #6e6558; }
 .op-lect-progress-track { flex: 1; height: 8px; border-radius: 999px; background: #f0e7da; overflow: hidden; }
@@ -70,6 +97,8 @@
 @media (max-width: 900px) {
   .op-lect-grid { grid-template-columns: 1fr; gap: 4px; }
   .op-lect-grid > .op-col-right { justify-content: flex-start; }
+  .op-course-grid { grid-template-columns: 1fr; gap: 4px; }
+  .op-course-grid > .op-col-right { justify-content: flex-start; }
 }
 
 /* ── 강의 업로드 폼 (강사용) ─────────────────────────────

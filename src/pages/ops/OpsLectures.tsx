@@ -3,6 +3,7 @@ import {
   API_ORIGIN,
   errorDetail,
   lectureApi,
+  type OpsCourse,
   type OpsLecture,
   type OpsLectureMaterial,
   type OpsLectureQuestion,
@@ -39,6 +40,7 @@ type Modal =
   | { mode: 'edit'; lec: OpsLecture }
   | { mode: 'questions'; lec: OpsLecture }
   | { mode: 'materials'; lec: OpsLecture }
+  | { mode: 'courses' }
   | null;
 
 interface LectureForm {
@@ -48,6 +50,8 @@ interface LectureForm {
   description: string;
   order_no: string;
   status: string;
+  /** 소속 코스 id — '' = 미분류. 과목을 바꾸면 안 맞는 코스는 자동 해제된다(코스=과목 고정) */
+  course_id: string;
 }
 
 const EMPTY_FORM: LectureForm = {
@@ -57,6 +61,7 @@ const EMPTY_FORM: LectureForm = {
   description: '',
   order_no: '',
   status: 'active',
+  course_id: '',
 };
 
 function fmtBytes(n: number): string {
@@ -96,6 +101,7 @@ function parseSecInput(raw: string): number | null {
 
 export default function OpsLectures() {
   const [rows, setRows] = useState<OpsLecture[]>([]);
+  const [courses, setCourses] = useState<OpsCourse[]>([]);
   const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading');
   const [modal, setModal] = useState<Modal>(null);
   const [toast, setToast] = useState('');
@@ -115,7 +121,22 @@ export default function OpsLectures() {
       })
       .catch(() => setState('error'));
   };
-  useEffect(load, []);
+  /* 코스 목록 — 강의 폼의 배정 select와 목록의 코스 태그에 쓴다. 실패해도 강의 관리 자체는
+     막지 않는다(코스는 부가 기능) — 조용히 빈 배열로 두고, 폼에선 '미분류'만 남는다. */
+  const loadCourses = () => {
+    lectureApi
+      .opsCourses()
+      .then((d) => setCourses(Array.isArray(d) ? d : []))
+      .catch(() => setCourses([]));
+  };
+  useEffect(() => {
+    load();
+    loadCourses();
+  }, []);
+
+  /** 강의의 소속 코스 제목(없거나 못 찾으면 null) — 목록 태그 표시용 */
+  const courseTitle = (courseId: string | null): string | null =>
+    courseId ? (courses.find((c) => c.id === courseId)?.title ?? null) : null;
 
   const remove = async (lec: OpsLecture) => {
     if (!window.confirm(`'${lec.title}' 강의를 삭제할까요? 학생 화면에서 즉시 사라져요(시청 이력은 보존).`))
@@ -142,10 +163,16 @@ export default function OpsLectures() {
               문항을 등록하세요.
             </p>
           </div>
-          <button className="op-refresh" onClick={() => setModal({ mode: 'create' })}>
-            <i className="ph-bold ph-upload-simple" />
-            강의 업로드
-          </button>
+          <div className="op-lect-headbtns">
+            <button className="op-btn op-btn--reject" onClick={() => setModal({ mode: 'courses' })}>
+              <i className="ph-bold ph-stack" />
+              코스 관리
+            </button>
+            <button className="op-refresh" onClick={() => setModal({ mode: 'create' })}>
+              <i className="ph-bold ph-upload-simple" />
+              강의 업로드
+            </button>
+          </div>
         </div>
 
         <div className="op-logcard">
@@ -174,6 +201,15 @@ export default function OpsLectures() {
               <div key={lec.id} className="op-logrow op-lect-grid">
                 <span>
                   <b>{lec.title}</b>
+                  {/* 소속 코스 태그 — 미분류(course_id=null)면 옅은 안내로 구분해 노출
+                      (코스 없이 떠 있는 강의는 학생 화면에서 과목 최상위에 낱개로 보인다) */}
+                  {courseTitle(lec.course_id) ? (
+                    <span className="op-lect-coursechip">
+                      <i className="ph-fill ph-stack" /> {courseTitle(lec.course_id)}
+                    </span>
+                  ) : (
+                    <span className="op-lect-coursechip op-lect-coursechip--none">미분류</span>
+                  )}
                   <small className="op-aimodel-desc">
                     {lec.video_ext} · {fmtBytes(lec.video_bytes)}
                     {lec.description ? ` · ${lec.description}` : ''}
@@ -232,11 +268,13 @@ export default function OpsLectures() {
       {(modal?.mode === 'create' || modal?.mode === 'edit') && (
         <LectureFormModal
           modal={modal}
+          courses={courses}
           onClose={() => setModal(null)}
           onSaved={(msg) => {
             setModal(null);
             say(msg);
             load();
+            loadCourses(); // 강의 코스 배정이 바뀌면 코스별 강의 수(lecture_count)도 갱신
           }}
         />
       )}
@@ -245,6 +283,17 @@ export default function OpsLectures() {
       )}
       {modal?.mode === 'materials' && (
         <MaterialsModal lec={modal.lec} onClose={() => setModal(null)} />
+      )}
+      {modal?.mode === 'courses' && (
+        <CoursesModal
+          courses={courses}
+          onClose={() => setModal(null)}
+          onChanged={() => {
+            loadCourses();
+            load(); // 코스 삭제로 강의가 미분류로 풀리면 강의 목록 태그도 갱신
+          }}
+          say={say}
+        />
       )}
 
       {toast && (
@@ -260,10 +309,12 @@ export default function OpsLectures() {
 /* ================= 강의 업로드/수정 모달 ================= */
 function LectureFormModal({
   modal,
+  courses,
   onClose,
   onSaved,
 }: {
   modal: { mode: 'create' } | { mode: 'edit'; lec: OpsLecture };
+  courses: OpsCourse[];
   onClose: () => void;
   onSaved: (msg: string) => void;
 }) {
@@ -277,6 +328,7 @@ function LectureFormModal({
           description: editing.description ?? '',
           order_no: editing.order_no != null ? String(editing.order_no) : '',
           status: editing.status,
+          course_id: editing.course_id ?? '',
         }
       : EMPTY_FORM,
   );
@@ -287,6 +339,20 @@ function LectureFormModal({
   const [autoDur, setAutoDur] = useState<'idle' | 'reading' | 'ok' | 'fail'>('idle');
   const [dragOver, setDragOver] = useState(false);
   const set = (k: keyof LectureForm) => (v: string) => setForm((f) => ({ ...f, [k]: v }));
+
+  /* 이 과목에 담을 수 있는 코스만 노출(코스=과목 고정). 편집 중인 강의가 이미 담긴 코스는
+     혹시 숨김(hidden)이어도 계속 보이게 유지한다(현재 소속을 감추면 실수로 빼게 된다). */
+  const subjectCourses = courses.filter(
+    (c) => c.subject === form.subject && (c.status !== 'hidden' || c.id === form.course_id),
+  );
+  /* 과목 변경 시 — 지금 고른 코스가 새 과목과 안 맞으면 미분류로 되돌린다(서버 400 선제 차단).
+     맞으면 유지. 코스=과목 고정이라 "국어 코스에 담긴 채 과목만 수학으로" 같은 상태를 못 만든다. */
+  const changeSubject = (v: string) =>
+    setForm((f) => ({
+      ...f,
+      subject: v,
+      course_id: courses.find((c) => c.id === f.course_id)?.subject === v ? f.course_id : '',
+    }));
 
   /* 파일 선택 시 브라우저가 영상 메타데이터에서 길이를 읽어 자동 기입한다.
      운영자가 초를 손으로 계산하면 틀리기 쉽고, 틀리면 시청 검증이 깨진다
@@ -334,6 +400,9 @@ function LectureFormModal({
           duration_sec: duration,
           ...(form.order_no !== '' ? { order_no: Number(form.order_no) } : {}),
           status: form.status,
+          // 항상 명시 전송 — 폼이 현재/의도한 소속을 그대로 담고 있다('' → null=미분류).
+          // 과목을 바꾸면 changeSubject가 안 맞는 코스를 미리 해제하므로 서버 과목불일치 400은 안 난다.
+          course_id: form.course_id || null,
         });
         onSaved('강의 정보를 수정했어요.');
       } else {
@@ -343,6 +412,7 @@ function LectureFormModal({
         fd.append('duration_sec', String(duration));
         if (form.description) fd.append('description', form.description);
         if (form.order_no !== '') fd.append('order_no', form.order_no);
+        if (form.course_id) fd.append('course_id', form.course_id); // 미지정이면 미분류(서버 기본)
         fd.append('file', file as File);
         setProgress(0);
         const created = await lectureApi.opsCreate(fd, (e) => {
@@ -449,9 +519,28 @@ function LectureFormModal({
           </label>
           <label className="ox-field">
             과목
-            <select value={form.subject} onChange={(e) => set('subject')(e.target.value)}>
+            <select value={form.subject} onChange={(e) => changeSubject(e.target.value)}>
               {SUBJECTS.map((s) => (
                 <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+          </label>
+          {/* 코스 배정 — 같은 과목 코스만 고를 수 있다(코스=과목 고정). 없으면 '코스 관리'에서
+              먼저 만든다. 미분류로 두면 학생 화면에서 과목 최상위에 낱개 강의로 보인다. */}
+          <label className="ox-field">
+            코스
+            <span className="lu-help">
+              {subjectCourses.length === 0
+                ? `'${form.subject}' 과목 코스가 없어요 — 미분류로 두거나 '코스 관리'에서 만드세요`
+                : '같은 과목 코스에만 담을 수 있어요'}
+            </span>
+            <select value={form.course_id} onChange={(e) => set('course_id')(e.target.value)}>
+              <option value="">미분류(코스 없음)</option>
+              {subjectCourses.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.title}
+                  {c.status === 'hidden' ? ' (숨김)' : ''}
+                </option>
               ))}
             </select>
           </label>
@@ -509,6 +598,231 @@ function LectureFormModal({
             <i className="ph-bold ph-check" />
             {saving ? '저장 중…' : editing ? '저장' : '업로드'}
           </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ================= 강사 코스 관리 모달 =================
+   코스 = 한 강사·한 과목 고정(생성 때 과목 선택, 이후 못 바꿈 — 소속 강의와 어긋나므로).
+   강사는 자기 코스만(서버 스코프), 운영자는 전체를 감독. 삭제는 소프트 — 소속 강의는
+   미분류(course_id=null)로 풀려날 뿐 보존된다. 설계 배경: docs/product-direction.md §3.5 */
+interface CourseForm {
+  id: string | null; // null = 새 코스
+  title: string;
+  subject: string; // 새 코스에서만 고를 수 있다(수정 시 읽기 전용)
+  description: string;
+  status: string;
+}
+
+function CoursesModal({
+  courses,
+  onClose,
+  onChanged,
+  say,
+}: {
+  courses: OpsCourse[];
+  onClose: () => void;
+  onChanged: () => void;
+  say: (m: string) => void;
+}) {
+  const [form, setForm] = useState<CourseForm | null>(null); // null = 편집 폼 닫힘
+  const [err, setErr] = useState('');
+  const [saving, setSaving] = useState(false);
+  const editing = form?.id != null;
+
+  const save = async () => {
+    if (!form) return;
+    if (!form.title.trim()) return setErr('코스 이름은 필수예요.');
+    setSaving(true);
+    setErr('');
+    try {
+      if (form.id) {
+        // 수정 — subject는 보내지 않는다(코스=과목 고정). 제목·소개·공개 상태만.
+        await lectureApi.opsCourseUpdate(form.id, {
+          title: form.title.trim(),
+          description: form.description,
+          status: form.status,
+        });
+        say('코스를 수정했어요.');
+      } else {
+        await lectureApi.opsCourseCreate({
+          title: form.title.trim(),
+          subject: form.subject,
+          description: form.description || null,
+        });
+        say('코스를 만들었어요.');
+      }
+      setForm(null);
+      onChanged();
+    } catch (e) {
+      // 미지원 과목 400 등 서버 사유를 그대로 노출
+      setErr(errorDetail(e, '코스 저장에 실패했어요.'));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const remove = async (c: OpsCourse) => {
+    if (
+      !window.confirm(
+        `'${c.title}' 코스를 삭제할까요? 담긴 강의 ${c.lecture_count}개는 삭제되지 않고 '미분류'로 풀려요.`,
+      )
+    )
+      return;
+    try {
+      const res = await lectureApi.opsCourseDelete(c.id);
+      say(
+        res.lectures_unassigned > 0
+          ? `코스를 삭제했어요 — 강의 ${res.lectures_unassigned}개가 미분류로 풀렸어요.`
+          : '코스를 삭제했어요.',
+      );
+      if (form?.id === c.id) setForm(null); // 편집 중이던 코스가 사라졌으면 폼도 닫는다
+      onChanged();
+    } catch (e) {
+      say(errorDetail(e, '코스 삭제에 실패했어요.'));
+    }
+  };
+
+  return (
+    <div className="op-bh-overlay" onClick={() => !saving && onClose()}>
+      <div className="op-formmodal op-lect-widemodal" onClick={(e) => e.stopPropagation()}>
+        <div className="op-bh-modal-h">
+          <span>
+            <i className="ph-fill ph-stack" /> 코스 관리
+          </span>
+          <button className="op-bh-modal-x" onClick={onClose} disabled={saving}>
+            <i className="ph-bold ph-x" />
+          </button>
+        </div>
+
+        <div className="op-lect-qtools">
+          <button
+            className="op-btn op-btn--approve"
+            onClick={() => {
+              setErr('');
+              setForm({ id: null, title: '', subject: '국어', description: '', status: 'active' });
+            }}
+          >
+            <i className="ph-bold ph-plus" /> 코스 만들기
+          </button>
+          <span className="lu-help">
+            코스는 <b>한 과목</b>으로 고정돼요 — 만든 뒤엔 과목을 못 바꿔요(새 코스를 만드세요).
+          </span>
+        </div>
+
+        {form && (
+          <div className="op-lect-qform">
+            <div className="op-form-grid">
+              <label className="ox-field op-form-span2">
+                코스 이름
+                <input
+                  value={form.title}
+                  onChange={(e) => setForm({ ...form, title: e.target.value })}
+                  placeholder="예: 수학 기초반"
+                />
+              </label>
+              <label className="ox-field">
+                과목
+                {editing && <span className="lu-help">코스=과목 고정 — 수정할 수 없어요</span>}
+                <select
+                  value={form.subject}
+                  disabled={editing}
+                  onChange={(e) => setForm({ ...form, subject: e.target.value })}
+                >
+                  {SUBJECTS.map((s) => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
+              </label>
+              {editing && (
+                <label className="ox-field">
+                  공개 상태
+                  <select
+                    value={form.status}
+                    onChange={(e) => setForm({ ...form, status: e.target.value })}
+                  >
+                    <option value="active">공개</option>
+                    <option value="hidden">숨김</option>
+                  </select>
+                </label>
+              )}
+              <label className="ox-field op-form-span2">
+                코스 소개 (선택)
+                <input
+                  value={form.description}
+                  onChange={(e) => setForm({ ...form, description: e.target.value })}
+                  placeholder="예: 개념부터 차근차근 다지는 기초 과정"
+                />
+              </label>
+            </div>
+            {err && (
+              <div className="op-form-err">
+                <i className="ph-fill ph-warning-circle" /> {err}
+              </div>
+            )}
+            <div className="op-form-actions">
+              <button className="op-btn op-btn--reject" disabled={saving} onClick={() => setForm(null)}>
+                취소
+              </button>
+              <button className="op-btn op-btn--approve" disabled={saving} onClick={save}>
+                <i className="ph-bold ph-check" /> {saving ? '저장 중…' : editing ? '저장' : '만들기'}
+              </button>
+            </div>
+          </div>
+        )}
+
+        <div className="op-logcard">
+          <div className="op-loghead op-course-grid">
+            <span>코스</span>
+            <span>과목</span>
+            <span>강의</span>
+            <span>상태</span>
+            <span className="op-col-right">관리</span>
+          </div>
+          {courses.length === 0 && (
+            <div className="op-logrow">
+              아직 코스가 없어요. 위의 &lsquo;코스 만들기&rsquo;로 첫 코스를 만드세요.
+            </div>
+          )}
+          {courses.map((c) => (
+            <div key={c.id} className="op-logrow op-course-grid">
+              <span>
+                <b>{c.title}</b>
+                {c.description ? <small className="op-aimodel-desc">{c.description}</small> : null}
+              </span>
+              <span>{c.subject}</span>
+              <span>{c.lecture_count}개</span>
+              <span>
+                <span
+                  className={`op-sys-status op-sys-status--${c.status === 'active' ? 'ok' : 'warn'}`}
+                >
+                  {c.status === 'active' ? '공개' : '숨김'}
+                </span>
+              </span>
+              <span className="op-col-right op-lect-actions">
+                <button
+                  className="op-btn op-btn--reject"
+                  onClick={() => {
+                    setErr('');
+                    setForm({
+                      id: c.id,
+                      title: c.title,
+                      subject: c.subject,
+                      description: c.description ?? '',
+                      status: c.status,
+                    });
+                  }}
+                >
+                  <i className="ph-bold ph-pencil-simple" /> 수정
+                </button>
+                <button className="op-btn op-btn--reject op-lect-danger" onClick={() => remove(c)}>
+                  <i className="ph-bold ph-trash" /> 삭제
+                </button>
+              </span>
+            </div>
+          ))}
         </div>
       </div>
     </div>

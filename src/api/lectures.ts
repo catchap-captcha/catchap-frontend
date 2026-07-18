@@ -86,6 +86,22 @@ export interface OpsLecture {
   question_count: number;
   /** 공개 문항 수 — 0이면 확인(캡차)이 아예 안 떠서 시청 검증이 없는 강의(콘솔 경고 근거) */
   active_question_count: number;
+  /** 소속 코스 id — null이면 미분류(코스 도입 전 강의 또는 코스에서 뺀 강의) */
+  course_id: string | null;
+  created_at: string | null;
+}
+
+/** 강사 코스 — 한 강사가 한 과목으로 묶는 강의 묶음(예: '수학 기초반'). 코스=과목 고정
+ *  (도입 배경·설계는 docs/product-direction.md §3.5). 강사는 자기 코스만, 운영자는 전체. */
+export interface OpsCourse {
+  id: string;
+  title: string;
+  subject: string; // 고정 — 담기는 모든 강의가 이 과목
+  description: string | null;
+  order_no: number;
+  status: string; // active | hidden
+  instructor_id: string;
+  lecture_count: number;
   created_at: string | null;
 }
 
@@ -198,11 +214,34 @@ export const lectureApi = {
       duration_sec: number;
       order_no: number;
       status: string;
+      /** 소속 코스 — 미전송=변경 없음, null=미분류로 빼기, id=그 코스로 이동(과목 일치 강제·서버 400).
+       *  콘솔은 코스 변경 의도가 있을 때만 이 키를 넣는다(과목 변경 등 무관 수정은 코스 유지). */
+      course_id: string | null;
     }>,
   ) => client.put<OpsLecture>(`/ops/lectures/${lectureId}`, body).then((r) => r.data),
 
   opsDelete: (lectureId: string) =>
     client.delete<{ ok: boolean }>(`/ops/lectures/${lectureId}`).then((r) => r.data),
+
+  /* ---- 강사 코스 ---- (코스=과목 고정. 강사는 자기 코스만, 운영자는 전체 — 서버 스코프) */
+  opsCourses: () => client.get<OpsCourse[]>('/ops/courses').then((r) => r.data),
+
+  /** 코스 생성 — subject는 여기서 고정된다(생성 후 못 바꿈). 미지원 과목은 400. */
+  opsCourseCreate: (body: { title: string; subject: string; description?: string | null }) =>
+    client.post<OpsCourse>('/ops/courses', body).then((r) => r.data),
+
+  /** 코스 수정 — subject는 스키마에 없다(코스=과목 고정). 미전송 필드는 변경 없음. */
+  opsCourseUpdate: (
+    courseId: string,
+    body: Partial<{ title: string; description: string | null; order_no: number; status: string }>,
+  ) => client.put<OpsCourse>(`/ops/courses/${courseId}`, body).then((r) => r.data),
+
+  /** 코스 소프트 삭제 — 소속 강의는 미분류(course_id=null)로 풀려날 뿐 삭제되지 않는다.
+   *  lectures_unassigned = 풀려난 강의 수(사용자 안내용). */
+  opsCourseDelete: (courseId: string) =>
+    client
+      .delete<{ ok: boolean; lectures_unassigned: number }>(`/ops/courses/${courseId}`)
+      .then((r) => r.data),
 
   /** 운영자 미리보기 스트림 발급 — 문항 시점을 눈으로 찾고 강의 화면을 따오기 위한 재생.
    *  학생 세션을 만들지 않는다(같은 계정 학생 세션을 걷어차지 않음). stream_url은 서명 토큰이
