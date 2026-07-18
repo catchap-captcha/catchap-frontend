@@ -108,10 +108,18 @@ export interface OpsLectureQuestion {
   status: string; // draft | active
   order_no: number;
   /** 자기검증(2번째 LLM) 판정 — LLM 자동 생성 문항에만. null=미판정/수기 문항.
-   *  true = 자막 없이도 상식으로 풀림 → 전체학습 은행 후보(봇 저항 없음).
-   *  false = 강의를 봐야 풀림 → 강의 시청 검증(캡차) 후보(봇은 못 풂). */
+   *  왜 이렇게 판정하나(팀 학습용): 데이터셋 구축의 'adversarial filtering' 기법.
+   *  강의를 안 본 LLM(=봇)이 풀 수 있는 문제는 시청 검증용으로 무가치하므로 걸러낸다.
+   *  - solver_passed(블라인드): 공개 맥락(제목·과목)만 주고 보기를 셔플해 3회 다수결로
+   *    풀렸는지. true = 상식으로 풀림 → 캡차 부적합(전체학습 은행 후보).
+   *  - transcript_solver_passed: 자막을 '주면' 풀리는지. false면 자막을 줘도 못 푸는
+   *    문항 = 환각·모호 등 불량 의심(폐기 권고). null = 자막(STT) 미사용이라 판별 불가. */
   solver_passed?: boolean | null;
-  suggested_placement?: 'bank' | 'captcha' | null;
+  transcript_solver_passed?: boolean | null;
+  /** captcha = 강의 의존·정상(이상적) / bank = 상식 / discard = 불량 의심. null=미판정 */
+  suggested_placement?: 'captcha' | 'bank' | 'discard' | null;
+  /** 판정 감사 메타 — 어느 모델이 언제 몇 회 다수결로 판정했나(재현·추적용) */
+  solver_meta?: { model: string; verified_at: string; trials: number } | null;
   /* (제거됨 0717) window_sec — 구간 출제. 모든 문항이 position_sec 정각의 고정 핀이다
      (되감기(cp-REWIND) 기준과 내용 시점이 어긋나는 버그로 구간을 걷어냈다 — 서버 lecture_pin_03) */
   /** 문제 이미지 서빙 URL(`/api/v1/...` 상대경로 — <img>에는 API_ORIGIN을 붙인다). 없으면 null */
@@ -301,6 +309,7 @@ export const lectureApi = {
         self_verified: boolean;
         bank_candidates: number | null;
         captcha_candidates: number | null;
+        discard_candidates: number | null;
         verify_error: string | null;
         questions: OpsLectureQuestion[];
       }>(`/ops/lectures/${lectureId}/questions/generate`, { n })

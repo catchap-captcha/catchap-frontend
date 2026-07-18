@@ -903,10 +903,13 @@ function QuestionsModal({
       changedRef.current = true;
       setBannerOk(true);
       if (res.self_verified) {
-        // 자기검증(2번째 LLM) 요약 — 봇이 푼 문제(은행 후보)/못 푼 문제(캡차 후보)
+        // 자기검증(2번째 LLM) 요약 — 3분류: 캡차 적합(강의 의존)/은행(상식)/불량 의심
+        const discardNote = res.discard_candidates
+          ? ` · 불량 의심 ${res.discard_candidates}개(자막을 줘도 안 풀림 — 폐기 검토)`
+          : '';
         setBanner(
-          `AI가 ${res.created}개 생성 → 자기검증 결과 캡차 후보 ${res.captcha_candidates}개(강의를 봐야 풀림)·` +
-            `은행 후보 ${res.bank_candidates}개(상식으로 풀림). 각 문항 배지를 보고 검수·배치하세요.`,
+          `AI가 ${res.created}개 생성 → 캡차 적합 ${res.captcha_candidates}개(강의를 봐야 풀림)·` +
+            `은행 적합 ${res.bank_candidates}개(상식으로 풀림)${discardNote}. 각 문항 배지를 보고 검수·배치하세요.`,
         );
       } else {
         setBanner(
@@ -1326,21 +1329,30 @@ function QuestionsModal({
                   {q.status === 'active' ? '공개' : 'draft'}
                 </span>
                 <span className="op-sys-status op-sys-status--neutral">{q.source === 'llm' ? 'AI' : '수동'}</span>
-                {/* 자기검증(2번째 LLM) 배지 — 봇 저항성 판정으로 배치를 돕는다 */}
-                {q.solver_passed === false && (
+                {/* 자기검증(2번째 LLM) 배지 — 봇 저항성 판정으로 배치를 돕는다(3분류).
+                    판정 근거는 suggested_placement. 왜 3분류인지는 배지 title에 요약. */}
+                {q.suggested_placement === 'captcha' && (
                   <span
                     className="op-sys-status op-sys-status--ok"
-                    title="자막 없이 AI(봇)가 못 푼 문제 — 강의를 봐야 풀립니다. 강의 시청 검증(캡차)에 적합해요."
+                    title="블라인드 AI(봇)는 못 풀고 자막을 주면 풀리는 문제 — 강의를 봐야 답할 수 있어요. 강의 시청 검증(캡차)에 이상적입니다."
                   >
                     <i className="ph-bold ph-shield-check" /> 캡차 적합
                   </span>
                 )}
-                {q.solver_passed === true && (
+                {q.suggested_placement === 'bank' && (
                   <span
                     className="op-sys-status op-sys-status--warn"
-                    title="자막 없이 AI(봇)도 상식으로 푼 문제 — 시청 검증(캡차)엔 부적합. 전체학습 지식 은행에 어울려요."
+                    title="블라인드 AI(봇)도 상식으로 푼 문제 — 시청 검증(캡차)엔 부적합(봇이 그냥 통과). 전체학습 지식 은행에 어울려요."
                   >
                     <i className="ph-bold ph-brain" /> 은행 적합
+                  </span>
+                )}
+                {q.suggested_placement === 'discard' && (
+                  <span
+                    className="op-sys-status op-sys-status--no"
+                    title="자막을 줘도 AI가 못 푼 문제 — 문항 자체가 모호하거나 정답이 틀렸을 수 있어요(환각 의심). 폐기하거나 직접 고쳐 주세요."
+                  >
+                    <i className="ph-bold ph-warning" /> 불량 의심
                   </span>
                 )}
               </div>
