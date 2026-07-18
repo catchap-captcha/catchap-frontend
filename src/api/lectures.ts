@@ -266,7 +266,7 @@ export const lectureApi = {
    *  다답형·이미지 문항은 400, 은행 미적재(파일 폴백)·중복 배치는 409. */
   opsQuestionToBank: (lectureId: string, questionId: string) =>
     client
-      .post<{ ok: boolean; bank_id: string; runtime_visible: boolean }>(
+      .post<{ ok: boolean; bank_id: string; runtime_visible: boolean; demoted_from_active: boolean }>(
         `/ops/lectures/${lectureId}/questions/${questionId}/to-bank`,
       )
       .then((r) => r.data),

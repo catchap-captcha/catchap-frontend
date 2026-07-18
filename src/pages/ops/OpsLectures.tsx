@@ -884,10 +884,14 @@ function QuestionsModal({
       const res = await lectureApi.opsQuestionToBank(lec.id, q.id);
       setBannerOk(true);
       // runtime_visible=false = DB엔 들어갔지만 런타임 반영 실패(재기동 필요) — 숨기지 않는다
+      const demoteNote = res.demoted_from_active
+        ? ' (이 문항은 강의 캡차 출제에서 빠졌어요 — 상식으로 풀려 시청 검증엔 부적합)'
+        : '';
       setBanner(
-        res.runtime_visible
+        (res.runtime_visible
           ? `은행에 배치했어요(${res.bank_id}) — 오늘의퀴즈·은행 풀에 바로 반영됩니다.`
-          : `은행 DB에는 저장됐지만 즉시 반영에 실패했어요(${res.bank_id}) — 서버 재기동 후 나타납니다.`,
+          : `은행 DB에는 저장됐지만 즉시 반영에 실패했어요(${res.bank_id}) — 서버 재기동 후 나타납니다.`) +
+          demoteNote,
       );
       load();
     } catch (e) {
