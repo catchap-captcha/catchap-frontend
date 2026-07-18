@@ -701,10 +701,10 @@ export default function GameScreen() {
             </div>
           )}
           {EDU_SITE_KEY && chapter == null && bankMode && (
-            /* 과목 전체 SRS 큐(오늘의 큐) — 큐를 비우면 '오늘 완료'가 뜬다 */
+            /* 과목 전체 SRS 큐 — 사용자 대면 명칭은 '오늘의 Q'(0719 사용자 결정). 비우면 '오늘 완료' */
             <div className="gs-live-daybar">
               <i className={earlyReview ? 'ph-fill ph-arrow-counter-clockwise' : 'ph-fill ph-stack'} />
-              {earlyReview ? '미리 복습 중 · 만기가 가까운 문제부터' : '오늘의 큐 · 복습→틀린→새 문제 순'}
+              {earlyReview ? '미리 복습 중 · 만기가 가까운 문제부터' : '오늘의 Q · 복습→틀린→새 문제 순'}
             </div>
           )}
           {EDU_SITE_KEY && chapter != null && !bankMode && (
