@@ -902,7 +902,18 @@ function QuestionsModal({
       const res = await lectureApi.opsQuestionGenerate(lec.id, n);
       changedRef.current = true;
       setBannerOk(true);
-      setBanner(`AI가 ${res.created}개 문항을 생성했어요(draft) — 검수 후 승인하세요.`);
+      if (res.self_verified) {
+        // 자기검증(2번째 LLM) 요약 — 봇이 푼 문제(은행 후보)/못 푼 문제(캡차 후보)
+        setBanner(
+          `AI가 ${res.created}개 생성 → 자기검증 결과 캡차 후보 ${res.captcha_candidates}개(강의를 봐야 풀림)·` +
+            `은행 후보 ${res.bank_candidates}개(상식으로 풀림). 각 문항 배지를 보고 검수·배치하세요.`,
+        );
+      } else {
+        setBanner(
+          `AI가 ${res.created}개 문항을 생성했어요(draft) — 검수 후 승인하세요.` +
+            (res.verify_error ? ` (자기검증 미수행: ${res.verify_error})` : ''),
+        );
+      }
       load();
     } catch (e) {
       // 503(키 미설정)·502(생성 실패)를 그대로 정직하게 노출 — stub 생성/성공 위장 없음
@@ -1315,6 +1326,23 @@ function QuestionsModal({
                   {q.status === 'active' ? '공개' : 'draft'}
                 </span>
                 <span className="op-sys-status op-sys-status--neutral">{q.source === 'llm' ? 'AI' : '수동'}</span>
+                {/* 자기검증(2번째 LLM) 배지 — 봇 저항성 판정으로 배치를 돕는다 */}
+                {q.solver_passed === false && (
+                  <span
+                    className="op-sys-status op-sys-status--ok"
+                    title="자막 없이 AI(봇)가 못 푼 문제 — 강의를 봐야 풀립니다. 강의 시청 검증(캡차)에 적합해요."
+                  >
+                    <i className="ph-bold ph-shield-check" /> 캡차 적합
+                  </span>
+                )}
+                {q.solver_passed === true && (
+                  <span
+                    className="op-sys-status op-sys-status--warn"
+                    title="자막 없이 AI(봇)도 상식으로 푼 문제 — 시청 검증(캡차)엔 부적합. 전체학습 지식 은행에 어울려요."
+                  >
+                    <i className="ph-bold ph-brain" /> 은행 적합
+                  </span>
+                )}
               </div>
               <div className="op-lect-qbody">
                 <b>{q.prompt}</b>

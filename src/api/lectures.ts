@@ -107,6 +107,11 @@ export interface OpsLectureQuestion {
   source: string; // manual | llm
   status: string; // draft | active
   order_no: number;
+  /** 자기검증(2번째 LLM) 판정 — LLM 자동 생성 문항에만. null=미판정/수기 문항.
+   *  true = 자막 없이도 상식으로 풀림 → 전체학습 은행 후보(봇 저항 없음).
+   *  false = 강의를 봐야 풀림 → 강의 시청 검증(캡차) 후보(봇은 못 풂). */
+  solver_passed?: boolean | null;
+  suggested_placement?: 'bank' | 'captcha' | null;
   /* (제거됨 0717) window_sec — 구간 출제. 모든 문항이 position_sec 정각의 고정 핀이다
      (되감기(cp-REWIND) 기준과 내용 시점이 어긋나는 버그로 구간을 걷어냈다 — 서버 lecture_pin_03) */
   /** 문제 이미지 서빙 URL(`/api/v1/...` 상대경로 — <img>에는 API_ORIGIN을 붙인다). 없으면 null */
@@ -286,13 +291,19 @@ export const lectureApi = {
       })
       .then((r) => r.data),
 
-  /** LLM 문항 자동 생성 — 키 미설정이면 503(정직한 에러, stub 생성 없음) */
+  /** LLM 문항 자동 생성 — 키 미설정이면 503(정직한 에러, stub 생성 없음).
+   *  self_verified: 2번째 LLM이 봇 저항성을 판정했는지. bank/captcha_candidates=후보 수. */
   opsQuestionGenerate: (lectureId: string, n: number) =>
     client
-      .post<{ created: number; questions: OpsLectureQuestion[] }>(
-        `/ops/lectures/${lectureId}/questions/generate`,
-        { n },
-      )
+      .post<{
+        created: number;
+        transcript_used: boolean;
+        self_verified: boolean;
+        bank_candidates: number | null;
+        captcha_candidates: number | null;
+        verify_error: string | null;
+        questions: OpsLectureQuestion[];
+      }>(`/ops/lectures/${lectureId}/questions/generate`, { n })
       .then((r) => r.data),
 
   /* ---- 자료실 ---- */
