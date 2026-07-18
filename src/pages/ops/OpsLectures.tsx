@@ -43,6 +43,36 @@ type Modal =
   | { mode: 'courses' }
   | null;
 
+/** 강의 목록을 과목 → 코스 → 강의로 묶은 섹션. 각 섹션 안에서만 드래그로 순서를 바꾼다
+ *  (코스 이동은 순서가 아니라 소속 변경이라 강의 수정에서 한다). courseId=null = 그 과목의 미분류. */
+interface LectureGroup {
+  key: string;
+  subject: string;
+  courseId: string | null;
+  title: string;
+  lectures: OpsLecture[];
+}
+
+/** rows(백엔드 목차순: 과목·order_no·created_at)를 과목별로 코스 그룹 + 미분류 그룹으로 나눈다.
+ *  courses는 (과목·order_no)순이라 그 순서대로 코스 섹션이 놓인다. 강의 0개 코스는 목록에선
+ *  숨긴다(코스 관리에서 보임) — 여기선 순서를 바꿀 게 없다. */
+function buildLectureGroups(rows: OpsLecture[], courses: OpsCourse[]): LectureGroup[] {
+  const groups: LectureGroup[] = [];
+  const subjectsInUse = SUBJECTS.filter(
+    (s) => rows.some((l) => l.subject === s) || courses.some((c) => c.subject === s),
+  );
+  for (const subj of subjectsInUse) {
+    for (const c of courses.filter((c) => c.subject === subj)) {
+      const lects = rows.filter((l) => l.course_id === c.id);
+      if (lects.length) groups.push({ key: `c-${c.id}`, subject: subj, courseId: c.id, title: c.title, lectures: lects });
+    }
+    const uncoursed = rows.filter((l) => l.subject === subj && !l.course_id);
+    if (uncoursed.length)
+      groups.push({ key: `u-${subj}`, subject: subj, courseId: null, title: '미분류', lectures: uncoursed });
+  }
+  return groups;
+}
+
 interface LectureForm {
   title: string;
   subject: string;
@@ -134,9 +164,42 @@ export default function OpsLectures() {
     loadCourses();
   }, []);
 
-  /** 강의의 소속 코스 제목(없거나 못 찾으면 null) — 목록 태그 표시용 */
-  const courseTitle = (courseId: string | null): string | null =>
-    courseId ? (courses.find((c) => c.id === courseId)?.title ?? null) : null;
+  /* 드래그 중인 강의(id·소속 그룹) — 같은 그룹 안에서만 드롭을 허용한다 */
+  const [drag, setDrag] = useState<{ id: string; group: string } | null>(null);
+
+  const groups = state === 'ready' ? buildLectureGroups(rows, courses) : [];
+
+  /** 재배열 결과(그룹 강의 전체의 새 순서)를 서버에 저장하고 목록을 다시 읽는다.
+   *  성공은 재조회로 확인 — 응답만 믿고 낙관적으로 바꾸지 않는다(순서가 어긋나면 혼란). */
+  const applyOrder = async (ids: string[]) => {
+    try {
+      await lectureApi.opsReorderLectures(ids);
+      load();
+    } catch (e) {
+      say(errorDetail(e, '순서 변경에 실패했어요.'));
+    }
+  };
+  /** ▲▼ 버튼 — 한 칸 이동(드래그의 키보드·클릭 대체 경로). */
+  const move = (g: LectureGroup, id: string, dir: -1 | 1) => {
+    const ids = g.lectures.map((l) => l.id);
+    const i = ids.indexOf(id);
+    const j = i + dir;
+    if (i < 0 || j < 0 || j >= ids.length) return;
+    [ids[i], ids[j]] = [ids[j], ids[i]];
+    applyOrder(ids);
+  };
+  /** 드롭 — 드래그한 강의를 대상 강의 자리로 옮긴다(같은 그룹 안에서만). */
+  const dropOn = (g: LectureGroup, targetId: string) => {
+    if (!drag || drag.group !== g.key) return;
+    const ids = g.lectures.map((l) => l.id);
+    const from = ids.indexOf(drag.id);
+    const to = ids.indexOf(targetId);
+    if (from < 0 || to < 0 || from === to) return;
+    ids.splice(from, 1);
+    ids.splice(to, 0, drag.id);
+    setDrag(null);
+    applyOrder(ids);
+  };
 
   const remove = async (lec: OpsLecture) => {
     if (!window.confirm(`'${lec.title}' 강의를 삭제할까요? 학생 화면에서 즉시 사라져요(시청 이력은 보존).`))
@@ -197,69 +260,123 @@ export default function OpsLectures() {
             <div className="op-logrow">등록된 강의가 없어요. 우측 상단에서 영상을 업로드해 보세요.</div>
           )}
           {state === 'ready' &&
-            rows.map((lec) => (
-              <div key={lec.id} className="op-logrow op-lect-grid">
-                <span>
-                  <b>{lec.title}</b>
-                  {/* 소속 코스 태그 — 미분류(course_id=null)면 옅은 안내로 구분해 노출
-                      (코스 없이 떠 있는 강의는 학생 화면에서 과목 최상위에 낱개로 보인다) */}
-                  {courseTitle(lec.course_id) ? (
-                    <span className="op-lect-coursechip">
-                      <i className="ph-fill ph-stack" /> {courseTitle(lec.course_id)}
+            groups.map((g) => (
+              <div key={g.key} className="op-lect-group">
+                {/* 섹션 머리 — 과목 · 코스(또는 미분류). 이 안에서만 순서를 바꾼다 */}
+                <div className="op-lect-grouphead">
+                  <span className="op-lect-groupsubj">{g.subject}</span>
+                  {g.courseId ? (
+                    <span className="op-lect-grouptitle">
+                      <i className="ph-fill ph-stack" /> {g.title}
                     </span>
                   ) : (
-                    <span className="op-lect-coursechip op-lect-coursechip--none">미분류</span>
+                    <span className="op-lect-grouptitle op-lect-grouptitle--none">미분류</span>
                   )}
-                  <small className="op-aimodel-desc">
-                    {lec.video_ext} · {fmtBytes(lec.video_bytes)}
-                    {lec.description ? ` · ${lec.description}` : ''}
-                  </small>
-                </span>
-                <span>{lec.subject}</span>
-                <span>{fmtDur(lec.duration_sec)}</span>
-                <span>
-                  <b>{lec.active_question_count}</b>
-                  <small className="op-lect-dim">/{lec.question_count}</small>
-                  {/* 문항 0개면 체크포인트에서 낼 문제가 없어 시청 검증이 통째로 없는
-                      강의가 된다(챌린지 4xx → 게이트가 뜨지 않음). 숫자만 보고 넘기기
-                      쉬우니 눈에 띄게 경고한다. */}
-                  {lec.active_question_count === 0 && (
-                    <span className="lu-nowarn" title="확인 문항이 없어 시청 검증이 동작하지 않아요">
-                      <i className="ph-fill ph-warning" /> 검증 없음
+                  <span className="op-lect-groupcount">{g.lectures.length}강</span>
+                  {g.lectures.length > 1 && (
+                    <span className="op-lect-grouphint">
+                      <i className="ph-bold ph-arrows-down-up" /> 끌어서 순서 변경
                     </span>
                   )}
-                </span>
-                <span>
-                  <span
-                    className={`op-sys-status op-sys-status--${lec.status === 'active' ? 'ok' : 'warn'}`}
+                </div>
+                {g.lectures.map((lec, idx) => (
+                  <div
+                    key={lec.id}
+                    className={`op-logrow op-lect-grid${g.lectures.length > 1 ? ' op-lect-draggable' : ''}${
+                      drag?.id === lec.id ? ' op-lect-dragging' : ''
+                    }`}
+                    draggable={g.lectures.length > 1}
+                    onDragStart={() => setDrag({ id: lec.id, group: g.key })}
+                    onDragEnd={() => setDrag(null)}
+                    onDragOver={(e) => {
+                      // 같은 그룹의 드래그일 때만 드롭 허용(다른 그룹으로는 못 옮긴다)
+                      if (drag && drag.group === g.key) e.preventDefault();
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      dropOn(g, lec.id);
+                    }}
                   >
-                    {lec.status === 'active' ? '공개' : '숨김'}
-                  </span>
-                </span>
-                <span className="op-col-right op-lect-actions">
-                  <button
-                    className="op-btn op-btn--approve"
-                    onClick={() => setModal({ mode: 'questions', lec })}
-                  >
-                    <i className="ph-bold ph-seal-question" />
-                    문항
-                  </button>
-                  <button
-                    className="op-btn op-btn--reject"
-                    onClick={() => setModal({ mode: 'materials', lec })}
-                  >
-                    <i className="ph-bold ph-folder-open" />
-                    자료
-                  </button>
-                  <button className="op-btn op-btn--reject" onClick={() => setModal({ mode: 'edit', lec })}>
-                    <i className="ph-bold ph-pencil-simple" />
-                    수정
-                  </button>
-                  <button className="op-btn op-btn--reject op-lect-danger" onClick={() => remove(lec)}>
-                    <i className="ph-bold ph-trash" />
-                    삭제
-                  </button>
-                </span>
+                    <span>
+                      {g.lectures.length > 1 && (
+                        <span className="op-lect-draghandle" title="끌어서 순서 변경">
+                          <i className="ph-bold ph-dots-six-vertical" />
+                        </span>
+                      )}
+                      <b>{lec.title}</b>
+                      <small className="op-aimodel-desc">
+                        {lec.video_ext} · {fmtBytes(lec.video_bytes)}
+                        {lec.description ? ` · ${lec.description}` : ''}
+                      </small>
+                    </span>
+                    <span>{lec.subject}</span>
+                    <span>{fmtDur(lec.duration_sec)}</span>
+                    <span>
+                      <b>{lec.active_question_count}</b>
+                      <small className="op-lect-dim">/{lec.question_count}</small>
+                      {/* 문항 0개면 체크포인트에서 낼 문제가 없어 시청 검증이 통째로 없는
+                          강의가 된다(챌린지 4xx → 게이트가 뜨지 않음). 숫자만 보고 넘기기
+                          쉬우니 눈에 띄게 경고한다. */}
+                      {lec.active_question_count === 0 && (
+                        <span className="lu-nowarn" title="확인 문항이 없어 시청 검증이 동작하지 않아요">
+                          <i className="ph-fill ph-warning" /> 검증 없음
+                        </span>
+                      )}
+                    </span>
+                    <span>
+                      <span
+                        className={`op-sys-status op-sys-status--${lec.status === 'active' ? 'ok' : 'warn'}`}
+                      >
+                        {lec.status === 'active' ? '공개' : '숨김'}
+                      </span>
+                    </span>
+                    <span className="op-col-right op-lect-actions">
+                      {/* ▲▼ — 드래그의 클릭·키보드 대체(접근성). 그룹 경계에서 비활성 */}
+                      {g.lectures.length > 1 && (
+                        <span className="op-lect-movebtns">
+                          <button
+                            className="op-btn op-btn--reject op-lect-movebtn"
+                            disabled={idx === 0}
+                            title="위로"
+                            onClick={() => move(g, lec.id, -1)}
+                          >
+                            <i className="ph-bold ph-caret-up" />
+                          </button>
+                          <button
+                            className="op-btn op-btn--reject op-lect-movebtn"
+                            disabled={idx === g.lectures.length - 1}
+                            title="아래로"
+                            onClick={() => move(g, lec.id, 1)}
+                          >
+                            <i className="ph-bold ph-caret-down" />
+                          </button>
+                        </span>
+                      )}
+                      <button
+                        className="op-btn op-btn--approve"
+                        onClick={() => setModal({ mode: 'questions', lec })}
+                      >
+                        <i className="ph-bold ph-seal-question" />
+                        문항
+                      </button>
+                      <button
+                        className="op-btn op-btn--reject"
+                        onClick={() => setModal({ mode: 'materials', lec })}
+                      >
+                        <i className="ph-bold ph-folder-open" />
+                        자료
+                      </button>
+                      <button className="op-btn op-btn--reject" onClick={() => setModal({ mode: 'edit', lec })}>
+                        <i className="ph-bold ph-pencil-simple" />
+                        수정
+                      </button>
+                      <button className="op-btn op-btn--reject op-lect-danger" onClick={() => remove(lec)}>
+                        <i className="ph-bold ph-trash" />
+                        삭제
+                      </button>
+                    </span>
+                  </div>
+                ))}
               </div>
             ))}
         </div>

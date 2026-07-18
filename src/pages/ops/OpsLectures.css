@@ -13,21 +13,54 @@
 /* 헤더 우측 버튼 묶음(코스 관리 + 강의 업로드) */
 .op-lect-headbtns { display: inline-flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 
-/* 강의 행의 소속 코스 태그 — 제목 옆 작은 칩. 미분류는 옅게 처리해 '코스 없음'을 구분한다 */
-.op-lect-coursechip {
+/* 강의 목록 — 과목·코스 섹션 묶음 + 그 안에서 드래그 재배열 */
+.op-lect-group { margin-top: 6px; }
+.op-lect-group:first-of-type { margin-top: 0; }
+.op-lect-grouphead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 6px 6px;
+  border-top: 1.5px solid #f0e7da;
+}
+.op-lect-group:first-of-type .op-lect-grouphead { border-top: none; }
+.op-lect-groupsubj {
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: #fff3e0;
+  color: #b45309;
+  font-weight: 800;
+  font-size: 11.5px;
+}
+.op-lect-grouptitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 800;
+  font-size: 14px;
+  color: #3a3340;
+}
+.op-lect-grouptitle--none { color: #a89d8e; font-weight: 700; }
+.op-lect-groupcount { font-weight: 700; font-size: 12px; color: #a89d8e; }
+.op-lect-grouphint {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  margin-left: 8px;
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: #eef2ff;
-  color: #4f46e5;
-  font-weight: 800;
-  font-size: 11px;
-  vertical-align: middle;
+  margin-left: auto;
+  font-weight: 700;
+  font-size: 11.5px;
+  color: #b9ad9b;
 }
-.op-lect-coursechip--none { background: #f4efe6; color: #a89d8e; }
+
+/* 드래그 가능한 강의 행 — 손잡이·잡는 커서·드래그 중 반투명 */
+.op-lect-draggable { cursor: grab; }
+.op-lect-draggable:active { cursor: grabbing; }
+.op-lect-dragging { opacity: 0.45; }
+.op-lect-draghandle { color: #c9bda9; margin-right: 6px; cursor: grab; vertical-align: middle; }
+.op-lect-draghandle:hover { color: #8a7f6d; }
+.op-lect-movebtns { display: inline-flex; flex-direction: column; gap: 2px; margin-right: 2px; }
+.op-lect-movebtn { padding: 2px 6px !important; line-height: 1; }
+.op-lect-movebtn:disabled { opacity: 0.35; cursor: default; }
 
 /* 코스 목록 그리드 — 코스 / 과목 / 강의수 / 상태 / 관리 */
 .op-course-grid {

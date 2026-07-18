@@ -223,6 +223,13 @@ export const lectureApi = {
   opsDelete: (lectureId: string) =>
     client.delete<{ ok: boolean }>(`/ops/lectures/${lectureId}`).then((r) => r.data),
 
+  /** 드래그로 바꾼 강의 순서 저장 — 한 그룹(한 코스 또는 한 과목의 미분류)의 강의 전체를
+   *  새 순서대로 보낸다. 서버가 차례대로 order_no=1,2,3…을 부여한다(부분 전송 금지 — 서버 주석). */
+  opsReorderLectures: (lectureIds: string[]) =>
+    client
+      .put<{ ok: boolean; count: number }>('/ops/lectures/reorder', { lecture_ids: lectureIds })
+      .then((r) => r.data),
+
   /* ---- 강사 코스 ---- (코스=과목 고정. 강사는 자기 코스만, 운영자는 전체 — 서버 스코프) */
   opsCourses: () => client.get<OpsCourse[]>('/ops/courses').then((r) => r.data),
 
