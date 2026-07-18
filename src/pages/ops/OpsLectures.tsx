@@ -877,6 +877,26 @@ function QuestionsModal({
     }
   };
 
+  const toBank = async (q: OpsLectureQuestion) => {
+    if (!window.confirm('이 문항을 전체학습 지식 은행으로 보낼까요? (캡차가 아닌 일반 학습 문제로 쓰여요)'))
+      return;
+    try {
+      const res = await lectureApi.opsQuestionToBank(lec.id, q.id);
+      setBannerOk(true);
+      // runtime_visible=false = DB엔 들어갔지만 런타임 반영 실패(재기동 필요) — 숨기지 않는다
+      setBanner(
+        res.runtime_visible
+          ? `은행에 배치했어요(${res.bank_id}) — 오늘의퀴즈·은행 풀에 바로 반영됩니다.`
+          : `은행 DB에는 저장됐지만 즉시 반영에 실패했어요(${res.bank_id}) — 서버 재기동 후 나타납니다.`,
+      );
+      load();
+    } catch (e) {
+      // 다답형·이미지 400, 은행 미적재·중복 409 — 서버 사유를 그대로 노출
+      setBannerOk(false);
+      setBanner(errorDetail(e, '은행 배치에 실패했어요.'));
+    }
+  };
+
   const remove = async (q: OpsLectureQuestion) => {
     if (!window.confirm('이 문항을 삭제할까요?')) return;
     try {
@@ -1386,6 +1406,24 @@ function QuestionsModal({
                   <button className="op-btn op-btn--approve" onClick={() => approve(q)}>
                     승인
                   </button>
+                )}
+                {/* 은행 배치 — 자기검증 '은행 적합'(상식) 문항의 재활용 경로. 이미 배치되면
+                    배지로 대체(중복 방지는 서버 409가 최종 방어) */}
+                {q.bank_placed ? (
+                  <span className="op-sys-status op-sys-status--neutral" title={`전체학습 은행에 배치됨 (${q.bank_placed.bank_id})`}>
+                    <i className="ph-bold ph-bank" /> 은행 배치됨
+                  </span>
+                ) : (
+                  q.status === 'draft' &&
+                  q.suggested_placement === 'bank' && (
+                    <button
+                      className="op-btn op-btn--reject"
+                      title="이 문항을 전체학습 지식 은행으로 보냅니다(캡차에는 부적합 — 상식으로 풀림). 형식은 서버가 변환해요."
+                      onClick={() => toBank(q)}
+                    >
+                      은행으로
+                    </button>
+                  )
                 )}
                 <button className="op-btn op-btn--reject" onClick={() => openEdit(q)}>
                   수정

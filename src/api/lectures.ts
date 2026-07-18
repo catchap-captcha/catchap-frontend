@@ -120,6 +120,8 @@ export interface OpsLectureQuestion {
   suggested_placement?: 'captcha' | 'bank' | 'discard' | null;
   /** 판정 감사 메타 — 어느 모델이 언제 몇 회 다수결로 판정했나(재현·추적용) */
   solver_meta?: { model: string; verified_at: string; trials: number } | null;
+  /** 전체학습 은행 배치 이력 — 배치되면 {bank_id, at}. 중복 배치 방지·배지 근거 */
+  bank_placed?: { bank_id: string; at: string } | null;
   /* (제거됨 0717) window_sec — 구간 출제. 모든 문항이 position_sec 정각의 고정 핀이다
      (되감기(cp-REWIND) 기준과 내용 시점이 어긋나는 버그로 구간을 걷어냈다 — 서버 lecture_pin_03) */
   /** 문제 이미지 서빙 URL(`/api/v1/...` 상대경로 — <img>에는 API_ORIGIN을 붙인다). 없으면 null */
@@ -257,6 +259,16 @@ export const lectureApi = {
   opsQuestionDelete: (lectureId: string, questionId: string) =>
     client
       .delete<{ ok: boolean }>(`/ops/lectures/${lectureId}/questions/${questionId}`)
+      .then((r) => r.data),
+
+  /** 강의 문항 → 전체학습 은행 배치 — 자기검증 '은행 적합' 판정의 실행.
+   *  형식 변환(인덱스→옵션id)은 서버가 담당. runtime_visible=false면 반영 실패(정직 노출).
+   *  다답형·이미지 문항은 400, 은행 미적재(파일 폴백)·중복 배치는 409. */
+  opsQuestionToBank: (lectureId: string, questionId: string) =>
+    client
+      .post<{ ok: boolean; bank_id: string; runtime_visible: boolean }>(
+        `/ops/lectures/${lectureId}/questions/${questionId}/to-bank`,
+      )
       .then((r) => r.data),
 
   /** 문항 이미지 첨부(multipart) — slot=prompt는 문제, slot=option은 optionIndex 보기(0부터).
