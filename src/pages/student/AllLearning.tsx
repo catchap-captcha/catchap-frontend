@@ -138,6 +138,8 @@ export default function AllLearning() {
   const [filter, setFilter] = useState('all');
   const [data, setData] = useState<AllLearningData>(FALLBACK);
   const [chapStats, setChapStats] = useState<SubjectStat[]>([]);
+  /* 오늘의 Q 현황(퀴즈 통합 1단계) — 일일 목표·연속 학습일·과목별 큐. 실패 시 카드 미노출 */
+  const [qToday, setQToday] = useState<any>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -158,12 +160,33 @@ export default function AllLearning() {
         if (mounted && Array.isArray(d?.subjects)) setChapStats(d.subjects);
       })
       .catch(() => {});
+    // 오늘의 Q — 목표·연속·큐 요약(실패는 조용히 카드 생략 — 가짜 수치 표시 안 함)
+    studentApi
+      .qToday()
+      .then((d: any) => {
+        if (mounted && d && typeof d.goal === 'number') setQToday(d);
+      })
+      .catch(() => {});
     return () => {
       mounted = false;
     };
   }, []);
 
   const cats = data.cats.filter((c) => filter === 'all' || c.key === filter);
+
+  /* 오늘의 Q 시작 과목 — 만기 많은 과목 우선 → 틀린 것 있는 과목 → 새 문항 많은 과목.
+     (발급은 기존 과목 단위 챌린지 그대로 — '통합'은 진입점·목표·집계 레벨에서) */
+  const qStartHref = (() => {
+    const subs: any[] = qToday?.subjects ?? [];
+    if (!subs.length) return null;
+    const mostDue = [...subs].sort((a, b) => (b.due ?? 0) - (a.due ?? 0))[0];
+    const mostNew = [...subs].sort((a, b) => (b.new ?? 0) - (a.new ?? 0))[0];
+    const pick =
+      (mostDue?.due ?? 0) > 0 ? mostDue : subs.find((s) => (s.wrong ?? 0) > 0) ?? mostNew;
+    if (!pick || ((pick.due ?? 0) === 0 && (pick.wrong ?? 0) === 0 && (pick.new ?? 0) === 0))
+      return null; // 풀 게 하나도 없음(전부 휴면·잠김) — 버튼 대신 완료 문구
+    return `${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(pick.subject)}&bank=1`;
+  })();
 
   return (
     <div className="al-root">
@@ -193,6 +216,55 @@ export default function AllLearning() {
             </div>
           </div>
         </div>
+
+        {/* 오늘의 Q — 일일 목표(1세트)·연속 학습일·전과목 큐 요약(퀴즈 통합 1단계).
+            데이터를 못 받으면 카드 자체를 생략(가짜 수치 금지). */}
+        {qToday && (
+          <div className="al-qcard">
+            <div className="al-qcard-left">
+              <div className="al-qcard-titlerow">
+                <span className="al-qcard-badge">
+                  <i className="ph-fill ph-stack" /> 오늘의 Q
+                </span>
+                {qToday.streak_days > 0 && (
+                  <span className="al-qcard-streak" title="일일 목표(10문제) 달성일 연속">
+                    🔥 연속 {qToday.streak_days}일
+                  </span>
+                )}
+              </div>
+              <div className="al-qcard-counts">
+                <span className="al-qcard-count al-qcard-count--due">
+                  복습 도착 <b>{qToday.total?.due ?? 0}</b>
+                </span>
+                <span className="al-qcard-count al-qcard-count--wrong">
+                  틀린 문제 <b>{qToday.total?.wrong ?? 0}</b>
+                </span>
+                <span className="al-qcard-count">
+                  새 문제 <b>{qToday.total?.new ?? 0}</b>
+                </span>
+              </div>
+              <div className="al-qcard-goal">
+                <div className="al-qcard-goaltrack">
+                  <div
+                    className="al-qcard-goalfill"
+                    style={{ width: `${Math.min(100, Math.round(((qToday.done_today ?? 0) / (qToday.goal || 10)) * 100))}%` }}
+                  />
+                </div>
+                <span className="al-qcard-goaltext">
+                  오늘 목표 {Math.min(qToday.done_today ?? 0, qToday.goal ?? 10)}/{qToday.goal ?? 10}
+                  {qToday.goal_met ? ' · 달성! 🎉' : ''}
+                </span>
+              </div>
+            </div>
+            {qStartHref ? (
+              <Link to={qStartHref} className="al-qcard-start">
+                {qToday.goal_met ? '더 풀기' : '오늘의 Q 시작'} <i className="ph-bold ph-arrow-right" />
+              </Link>
+            ) : (
+              <span className="al-qcard-done">오늘 풀 문제를 모두 끝냈어요 ✨</span>
+            )}
+          </div>
+        )}
 
         {/* FILTER CHIPS */}
         <div className="al-chips">

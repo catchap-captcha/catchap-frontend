@@ -296,10 +296,18 @@ export default function StudentHome() {
   const lastCheer = useRef(-1);
   // 학부모 연동 알림 팝업 (미읽음 parent_link 알림이 있으면 1회 노출)
   const [linkNotice, setLinkNotice] = useState<{ id: string; title: string; message: string } | null>(null);
+  // 오늘의 Q 요약(퀴즈 통합 1단계) — 실패 시 null(줄 생략)
+  const [qToday, setQToday] = useState<any>(null);
   // 오늘의 생활 교육과정 과제 — '이어서 학습하기'를 실전 플레이로 연동 (실패 시 원본 데모 링크 유지)
 
   useEffect(() => {
     let mounted = true;
+    studentApi
+      .qToday()
+      .then((d: any) => {
+        if (mounted && typeof d?.goal === 'number') setQToday(d);
+      })
+      .catch(() => {});
     studentApi
       .dashboard()
       .then((d: any) => {
@@ -428,6 +436,25 @@ export default function StudentHome() {
                 <div className="sh-progress-fill" style={{ width: barWidth }} />
               </div>
             </div>
+
+            {/* 오늘의 Q 요약(퀴즈 통합 1단계) — 복습 도착·일일 목표·연속 학습일 한 줄.
+                데이터를 못 받으면 줄 자체를 생략(가짜 수치 금지). */}
+            {qToday && (
+              <Link to={PATHS.STUDENT_ALL_LEARNING} className="sh-qrow">
+                <span className="sh-qrow-badge">
+                  <i className="ph-fill ph-stack" /> 오늘의 Q
+                </span>
+                <span className="sh-qrow-item">
+                  복습 도착 <b>{qToday.total?.due ?? 0}</b>
+                </span>
+                <span className="sh-qrow-item">
+                  목표 <b>{Math.min(qToday.done_today ?? 0, qToday.goal ?? 10)}/{qToday.goal ?? 10}</b>
+                  {qToday.goal_met ? ' 🎉' : ''}
+                </span>
+                {qToday.streak_days > 0 && <span className="sh-qrow-item">🔥 연속 {qToday.streak_days}일</span>}
+                <i className="ph-bold ph-caret-right sh-qrow-go" />
+              </Link>
+            )}
 
             <div className="sh-cta-row">
               {/* 메인 CTA는 '오늘의 강의' — 목차 순 첫 미완료 과목의 강의실로 바로 진입.

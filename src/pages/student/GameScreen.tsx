@@ -245,6 +245,26 @@ export default function GameScreen() {
   /* 문제은행 SRS 큐(설계 question-bank-scale-design.md) — 오늘 큐 소진(catchap:bankdone) 시
      완료 화면, '미리 복습하기'는 위젯을 early로 재마운트해 휴면 문항을 잇는다. */
   const [bankDone, setBankDone] = useState<{ nextReviewAt: string | null } | null>(null);
+  /* 오늘의 Q 일일 목표(1세트=10문제, 퀴즈 통합 1단계) — 입장 시점의 오늘 완료 수(base)에
+     이번 세션 응답을 더해 진행을 그린다. ref로 들고 리스너 스테일 클로저를 피한다. */
+  const goalRef = useRef<{ base: number; goal: number; celebrated: boolean } | null>(null);
+  const [goalView, setGoalView] = useState<{ done: number; goal: number } | null>(null);
+  useEffect(() => {
+    if (!bankMode || !EDU_SITE_KEY) return;
+    let on = true;
+    studentApi
+      .qToday()
+      .then((d: any) => {
+        if (!on || typeof d?.goal !== 'number') return;
+        goalRef.current = { base: d.done_today ?? 0, goal: d.goal, celebrated: !!d.goal_met };
+        setGoalView({ done: Math.min(d.done_today ?? 0, d.goal), goal: d.goal });
+      })
+      .catch(() => {}); // 실패 시 목표 표시만 생략(플레이는 정상)
+    return () => {
+      on = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bankMode]);
   const [earlyReview, setEarlyReview] = useState(false);
   /* 세트 단위(10문항) 중간 요약 — 무한처럼 느껴지던 은행 플레이에 단위감을 준다 */
   const BANK_SET_SIZE = 10;
@@ -387,6 +407,17 @@ export default function GameScreen() {
           });
           bag.setAnswered = 0;
           bag.setCorrect = 0;
+        }
+        // 일일 목표(오늘의 Q) 진행 갱신 + 달성 순간 1회 축하(비방해 토스트)
+        const g = goalRef.current;
+        if (g) {
+          const doneNow = g.base + bag.answered;
+          setGoalView({ done: Math.min(doneNow, g.goal), goal: g.goal });
+          if (!g.celebrated && doneNow >= g.goal) {
+            g.celebrated = true;
+            setStageBanner(`🎉 오늘 목표 달성! (${g.goal}문제) 연속 학습일이 쌓였어요`);
+            window.setTimeout(() => setStageBanner(null), 3500);
+          }
         }
       }
     };
@@ -705,6 +736,12 @@ export default function GameScreen() {
             <div className="gs-live-daybar">
               <i className={earlyReview ? 'ph-fill ph-arrow-counter-clockwise' : 'ph-fill ph-stack'} />
               {earlyReview ? '미리 복습 중 · 만기가 가까운 문제부터' : '오늘의 Q · 복습→틀린→새 문제 순'}
+              {goalView && (
+                <span className="gs-daybar-goal">
+                  오늘 목표 {goalView.done}/{goalView.goal}
+                  {goalView.done >= goalView.goal ? ' 🎉' : ''}
+                </span>
+              )}
             </div>
           )}
           {EDU_SITE_KEY && chapter != null && !bankMode && (

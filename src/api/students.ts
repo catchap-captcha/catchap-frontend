@@ -29,6 +29,10 @@ export const studentApi = {
       .get<any>('/students/me/chapter-history', { params: { subject, chapter, before } })
       .then((r) => r.data),
 
+  /** 오늘의 Q 현황(퀴즈 통합 1단계) — 일일 목표(1세트)·연속 학습일 + 과목별 큐(만기/틀린/새).
+   *  홈·문제은행의 Q 카드 원천. 진입 과목 선택(만기 많은 곳 우선)도 이 데이터로 한다. */
+  qToday: () => client.get<any>('/students/me/q-today').then((r) => r.data),
+
   /** 전체학습(숙련 축) 과목×챕터별 정답률 — 대시보드 그래프. 오늘의퀴즈 정답률은 분리 필드 */
   chapterStats: () => client.get<any>('/students/me/chapter-stats').then((r) => r.data),
   /** 오늘의 퀴즈(습관 축) 일별 완료·정답률 + 연속일 */

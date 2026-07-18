@@ -1388,3 +1388,29 @@
   color: #17b08c;
   margin-left: 6px;
 }
+
+/* ── 오늘의 Q 요약 줄(퀴즈 통합 1단계) — 히어로 CTA 위 한 줄 ── */
+.sh-qrow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 12px 0 4px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.75);
+  border: 1.5px solid #f0e7da;
+  text-decoration: none;
+  color: #6e6558;
+  font-weight: 700;
+  font-size: 13px;
+  transition: background 0.15s ease;
+}
+.sh-qrow:hover { background: #fff; }
+.sh-qrow-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 10px; border-radius: 999px;
+  background: #eef2ff; color: #4f46e5; font-weight: 800; font-size: 12px;
+}
+.sh-qrow-item b { color: #3a3340; }
+.sh-qrow-go { margin-left: auto; color: #b9ad9b; }
