@@ -64,7 +64,7 @@ export default function ChapterAccuracyChart({ subjects }: { subjects: SubjectSt
           <span className="cac-overall-num" style={{ color }}>
             {cur.overall_accuracy != null ? `${cur.overall_accuracy}%` : '—'}
           </span>
-          <span className="cac-overall-lbl">전체학습 정답률</span>
+          <span className="cac-overall-lbl">문제은행 정답률</span>
         </div>
         <div className="cac-badges">
           {cur.daily_quiz_accuracy != null && (
@@ -112,7 +112,7 @@ export default function ChapterAccuracyChart({ subjects }: { subjects: SubjectSt
       ) : (
         <div className="cac-empty">
           <i className="ph-fill ph-chart-bar" />
-          <p>아직 {cur.subject} 전체학습 기록이 없어요. 한 챕터 풀면 여기에 정답률이 그려져요!</p>
+          <p>아직 {cur.subject} 문제은행 기록이 없어요. 한 챕터 풀면 여기에 정답률이 그려져요!</p>
         </div>
       )}
 

@@ -89,7 +89,7 @@ export default function SupportPage() {
           </Link>
           <nav className="sp-nav-menu">
             <Link to={PATHS.STUDENT_HOME} className="sp-nav-link">홈</Link>
-            <Link to={PATHS.STUDENT_ALL_LEARNING} className="sp-nav-link">전체 학습</Link>
+            <Link to={PATHS.STUDENT_ALL_LEARNING} className="sp-nav-link">문제은행</Link>
             <a href="#" className="sp-nav-link--active">고객 지원</a>
           </nav>
           <div className="sp-nav-right">

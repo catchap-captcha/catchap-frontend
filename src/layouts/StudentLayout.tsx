@@ -104,7 +104,7 @@ export function StudentNav({
             </Link>
           )}
           <Link to={PATHS.STUDENT_ALL_LEARNING} className={cls('all')} onClick={closeMenu}>
-            전체 학습
+            문제은행
           </Link>
           <Link to={PATHS.STUDENT_CONCEPTS} className={cls('concepts')} onClick={closeMenu}>
             개념 설명

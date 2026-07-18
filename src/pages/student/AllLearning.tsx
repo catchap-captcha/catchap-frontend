@@ -178,7 +178,7 @@ export default function AllLearning() {
               <i className="ph-fill ph-squares-four" />
             </span>
             <div>
-              <h1 className="al-title">전체 학습</h1>
+              <h1 className="al-title">문제은행</h1>
               <p className="al-subtitle">국어·영어·수학·과학·사회·생활 여섯 과목을 단계별로 차근차근 배워요</p>
             </div>
           </div>

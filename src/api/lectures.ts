@@ -25,10 +25,23 @@ export interface LectureItem {
   title: string;
   description: string | null;
   subject: string;
+  /** 소속 코스 id — null이면 미분류. 학생 목록을 과목 → 강사별 코스 → 강의로 묶는 근거 */
+  course_id: string | null;
   order_no: number;
   duration_sec: number;
   question_count: number;
   progress: LectureProgress | null; // null = 아직 시작 안 함
+}
+
+/** 학생용 코스 — 활성 코스 + 강사 실명 + 활성 강의 수. GET /courses. */
+export interface StudentCourse {
+  id: string;
+  title: string;
+  subject: string;
+  description: string | null;
+  order_no: number;
+  instructor_name: string | null;
+  lecture_count: number;
 }
 
 export interface LectureMaterialItem {
@@ -163,6 +176,11 @@ export const lectureApi = {
   /* ================= 학생 ================= */
   list: (subject?: string) =>
     client.get<LectureItem[]>('/lectures', { params: { subject } }).then((r) => r.data),
+
+  /** 학생용 코스 목록 — 활성 코스(강사 실명·활성 강의 수 포함). 강의 목록을 과목 →
+   *  강사별 코스 → 강의로 묶을 때 상위 그룹 메타로 쓴다(활성 강의 0개 코스는 서버가 제외). */
+  courses: (subject?: string) =>
+    client.get<StudentCourse[]>('/courses', { params: { subject } }).then((r) => r.data),
 
   detail: (lectureId: string) =>
     client.get<LectureDetail>(`/lectures/${lectureId}`).then((r) => r.data),

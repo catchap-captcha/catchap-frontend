@@ -40,7 +40,7 @@ const FALLBACK: SearchItem[] = [
 
 const POPULAR = [
   { label: '오늘의 퀴즈', icon: 'ph-fill ph-lightning', color: '#F0A400', bg: '#FFF3D6', href: 'CatChap 오늘의퀴즈.dc.html' },
-  { label: '전체 학습', icon: 'ph-fill ph-squares-four', color: '#17B08C', bg: '#E1F5EC', href: 'CatChap 전체학습.dc.html' },
+  { label: '문제은행', icon: 'ph-fill ph-squares-four', color: '#17B08C', bg: '#E1F5EC', href: 'CatChap 전체학습.dc.html' },
   { label: '한글 낱말', icon: 'ph-fill ph-text-aa', color: '#FF5A4D', bg: '#FFE7E2', href: 'CatChap 한글낱말.dc.html' },
   { label: '숫자 놀이터', icon: 'ph-fill ph-calculator', color: '#FF922E', bg: '#FFEDE0', href: 'CatChap 숫자놀이터.dc.html' },
   { label: '끌어놓기 놀이', icon: 'ph-fill ph-hand-grabbing', color: '#17B08C', bg: '#E1F5EC', href: 'CatChap 끌어놓기.dc.html' },

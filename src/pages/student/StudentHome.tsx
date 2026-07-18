@@ -447,7 +447,7 @@ export default function StudentHome() {
                     : '오늘의 강의 시작하기'}
               </Link>
               <Link to={PATHS.STUDENT_ALL_LEARNING} className="sh-cta-secondary">
-                전체 학습 보기
+                문제은행 보기
               </Link>
             </div>
           </div>

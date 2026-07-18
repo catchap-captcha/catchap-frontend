@@ -609,7 +609,7 @@ export default function MyRecords() {
           )}
           {chapStats.some((s) => s.chapters?.some((c) => c.total > 0)) && (
             <div className="mr-card">
-              <h3 className="mr-h3">전체학습 · 주차별 정답률</h3>
+              <h3 className="mr-h3">문제은행 · 주차별 정답률</h3>
               <ChapterAccuracyChart subjects={chapStats} />
             </div>
           )}

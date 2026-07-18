@@ -636,7 +636,7 @@ export default function GameResult() {
 
         {/* ACTIONS */}
         {isBank ? (
-          /* 전체학습 무한 문제은행 — 같은 주차 계속 풀거나 전체 학습으로 */
+          /* 전체학습 무한 문제은행 — 같은 주차 계속 풀거나 문제은행으로 */
           <div className="gr-actions">
             <Link
               to={`${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(subjectKey)}${sess?.chapter ? `&chapter=${sess.chapter}` : ''}&bank=1`}
@@ -647,7 +647,7 @@ export default function GameResult() {
             </Link>
             <Link to={PATHS.STUDENT_ALL_LEARNING} className="gr-btn-primary">
               <i className="ph-fill ph-arrow-right" />
-              전체 학습으로
+              문제은행으로
             </Link>
           </div>
         ) : isChapter && sess?.chapter ? (
@@ -663,7 +663,7 @@ export default function GameResult() {
               </Link>
               <Link to={PATHS.STUDENT_ALL_LEARNING} className="gr-btn-primary">
                 <i className="ph-fill ph-arrow-right" />
-                전체 학습으로
+                문제은행으로
               </Link>
             </div>
           ) : (
@@ -671,7 +671,7 @@ export default function GameResult() {
             <div className="gr-actions">
               <Link to={PATHS.STUDENT_ALL_LEARNING} className="gr-btn-secondary">
                 <i className="ph-fill ph-squares-four" />
-                전체 학습으로
+                문제은행으로
               </Link>
               <Link
                 to={`${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(subjectKey)}&chapter=${sess.chapter}&stage=${Math.min(5, sess.lastDoneStage + 1)}${sess.replay ? '&replay=1' : ''}`}
@@ -689,7 +689,7 @@ export default function GameResult() {
               다시 하기
             </Link>
             {/* 이 분기는 비챕터(오늘의 퀴즈 축) — 다른 과목은 오늘의 퀴즈 화면에서 고른다.
-                전체 학습(챕터) 세션의 '전체 학습으로'는 위 sess.chapter 분기가 담당. */}
+                전체 학습(챕터) 세션의 '문제은행으로'는 위 sess.chapter 분기가 담당. */}
             <Link to={PATHS.STUDENT_DAILY_QUIZ} className="gr-btn-secondary">
               <i className="ph-fill ph-lightning" />
               다른 과목 풀기
