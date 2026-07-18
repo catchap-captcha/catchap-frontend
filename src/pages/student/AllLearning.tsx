@@ -215,10 +215,11 @@ export default function AllLearning() {
           const panelVars = { '--al-c1': c.c1, '--al-c2': c.c2, '--al-sh': `${c.c2}cc` } as CSSProperties;
           // 이번 주(이어할) 챕터의 단계 진행 — 홈/오늘의퀴즈 바와 같은 5단계 세그먼트
           const cur = c.chapters.find((ch) => ch.no === c.currentChapter) || c.chapters[0];
-          // 전체학습 = 문제은행 무한 모드(사용자 결정 0714): 주차(chapter)는 목차로 유지하되
-          // 그 주차 문항을 안 푼>틀린>푼 우선으로 단계 없이 무한 출제한다(bank=1). 종료는 그만하기.
+          // 메인 CTA '이어서 하기' = 과목 전체 SRS 큐(만기 복습→틀린→새, 챕터 없이) —
+          // 큐를 다 비우면 '오늘 완료' 화면이 뜬다(설계 question-bank-scale-design.md).
+          // 주차 카드는 기존대로 챕터 스코프(bank+chapter) — 명시적 챕터 복습 경로로 유지.
           const playHref = cur
-            ? `${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(c.tag)}&chapter=${cur.no}&bank=1`
+            ? `${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(c.tag)}&bank=1`
             : '';
           return (
             <div key={c.key} className="al-cat">

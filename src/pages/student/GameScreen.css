@@ -882,3 +882,49 @@
   cursor: pointer;
   font-family: inherit;
 }
+
+/* ── 문제은행 SRS 큐 오버레이(오늘 완료 · 세트 요약) — 설계 question-bank-scale-design.md ── */
+.gs-bankoverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  background: rgba(58, 51, 64, 0.42);
+  border-radius: inherit;
+  padding: 18px;
+}
+.gs-bankcard {
+  width: min(360px, 100%);
+  background: #fff;
+  border-radius: 22px;
+  padding: 26px 22px 20px;
+  text-align: center;
+  box-shadow: 0 24px 48px -18px rgba(60, 40, 30, 0.45);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+.gs-bankcard-emoji { font-size: 40px; line-height: 1; }
+.gs-bankcard-title { font-size: 19px; font-weight: 800; color: #3a3340; }
+.gs-bankcard-desc { margin: 0; font-size: 13.5px; font-weight: 600; color: #6e6558; line-height: 1.55; }
+.gs-bankcard-actions { display: flex; gap: 8px; width: 100%; margin-top: 10px; }
+.gs-bankcard-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 10px;
+  border: none;
+  border-radius: 13px;
+  background: var(--gs-solid, #ff5a4d);
+  color: #fff;
+  font-weight: 800;
+  font-size: 13.5px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.gs-bankcard-btn--sub { background: #f4efe6; color: #6e6558; }
+.gs-bankcard-btn:hover { filter: brightness(1.04); }

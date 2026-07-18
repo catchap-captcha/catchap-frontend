@@ -104,6 +104,22 @@ const QUESTIONS: Record<string, { q: string; pre: string; hi: string; post: stri
 // TODO(api): 과목별 보상 별 개수 — API 실패 시 원본 REWARDS 유지
 const REWARDS: Record<string, number> = { '국어': 3, '영어': 1, '수학': 4, '과학': 0, '사회': 2, '생활': 4 };
 
+/** SRS 다음 복습일 표시 — "7월 21일 (내일)" 형태. 파싱 실패 시 빈 문자열(표시 생략). */
+function fmtNextReview(iso: string | null): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const target = new Date(d);
+  target.setHours(0, 0, 0, 0);
+  const diff = Math.round((target.getTime() - today.getTime()) / 86400000);
+  const md = `${d.getMonth() + 1}월 ${d.getDate()}일`;
+  if (diff <= 0) return `${md} (오늘)`;
+  if (diff === 1) return `${md} (내일)`;
+  return `${md} (${diff}일 후)`;
+}
+
 export default function GameScreen() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -226,6 +242,13 @@ export default function GameScreen() {
   const [stageBanner, setStageBanner] = useState<string | null>(null); // 비방해 전환 표시(토스트)
   const [quitAsk, setQuitAsk] = useState(false); // 그만하기 확인 팝업
   const [widgetStats, setWidgetStats] = useState({ answered: 0, correct: 0, wrong: 0, streak: 0 });
+  /* 문제은행 SRS 큐(설계 question-bank-scale-design.md) — 오늘 큐 소진(catchap:bankdone) 시
+     완료 화면, '미리 복습하기'는 위젯을 early로 재마운트해 휴면 문항을 잇는다. */
+  const [bankDone, setBankDone] = useState<{ nextReviewAt: string | null } | null>(null);
+  const [earlyReview, setEarlyReview] = useState(false);
+  /* 세트 단위(10문항) 중간 요약 — 무한처럼 느껴지던 은행 플레이에 단위감을 준다 */
+  const BANK_SET_SIZE = 10;
+  const [setBreak, setSetBreak] = useState<{ set: number; correct: number; total: number } | null>(null);
   // 인증이 풀려 채점은 되는데 적립(session 응답)이 빠지는 상태 — 조용히 유실되지 않게 경고
   const [authLost, setAuthLost] = useState(false);
   // 이벤트 리스너 안에서 최신 값을 읽기 위한 세션 가방(ref) — 스테일 클로저 방지
@@ -233,6 +256,7 @@ export default function GameScreen() {
     answered: 0, correct: 0, wrong: 0,
     stagesDone: 0, coins: 0, sticker: false, stickerCoins: 0,
     bumpFailed: false, // 단계 저장(chapterStageComplete) 실패 — 결과 화면에 경고 표시
+    setAnswered: 0, setCorrect: 0, // 은행 세트(10문항) 단위 카운터 — 세트 요약에 쓰고 리셋
   });
   const navigatedRef = useRef(false); // 결과 이동 1회 가드(결과 보기 이중클릭 → 중복 내비 방지)
   useEffect(() => {
@@ -244,6 +268,8 @@ export default function GameScreen() {
     sessRef.current = {
       answered: 0, correct: 0, wrong: 0, stagesDone: 0, coins: 0,
       sticker: false, stickerCoins: 0, bumpFailed: false,
+      // 은행 세트 카운터도 리셋 — 빠뜨리면 undefined+1=NaN으로 세트 요약이 영영 안 뜬다(0719 실증)
+      setAnswered: 0, setCorrect: 0,
     };
     navigatedRef.current = false;
   }, [key, chapter, stage]);
@@ -349,6 +375,26 @@ export default function GameScreen() {
         wrong: st.wrong + (d?.correct ? 0 : 1),
         streak: d?.correct ? st.streak + 1 : 0,
       }));
+      // 은행 모드 세트 단위감 — 10문항마다 중간 요약(계속/그만)을 띄운다
+      if (bankMode) {
+        bag.setAnswered += 1;
+        if (d?.correct) bag.setCorrect += 1;
+        if (bag.setAnswered >= BANK_SET_SIZE) {
+          setSetBreak({
+            set: Math.max(1, Math.round(bag.answered / BANK_SET_SIZE)),
+            correct: bag.setCorrect,
+            total: bag.setAnswered,
+          });
+          bag.setAnswered = 0;
+          bag.setCorrect = 0;
+        }
+      }
+    };
+    /* 문제은행 '오늘 완료' — 위젯이 큐 소진을 알리면(서버 all_done) 완료 화면을 띄운다.
+       에러가 아니라 상태다(무한 재순환 폐지 — 설계 question-bank-scale-design.md). */
+    const onBankDone = (e: Event) => {
+      const d = (e as CustomEvent).detail as { next_review_at?: string | null } | undefined;
+      setBankDone({ nextReviewAt: d?.next_review_at ?? null });
     };
     const onFinished = () => {
       playSfx('reward'); // 세션/단계 완주 팡파르 — 설정 '효과음' on일 때만
@@ -377,11 +423,13 @@ export default function GameScreen() {
     };
     el.addEventListener('catchap:answer', onAnswer);
     el.addEventListener('catchap:finished', onFinished);
+    el.addEventListener('catchap:bankdone', onBankDone);
     return () => {
       el.removeEventListener('catchap:answer', onAnswer);
       el.removeEventListener('catchap:finished', onFinished);
+      el.removeEventListener('catchap:bankdone', onBankDone);
     };
-  }, [key, day, chapter, stage, curStage, isReplay, navigate, goResult]);
+  }, [key, day, chapter, stage, curStage, isReplay, navigate, goResult, bankMode]);
 
   /* 완료 클릭 → 실제 학습기록 저장(오늘의퀴즈 done·코인·진도·연속도전 반영) 후 결과로 이동.
      저장 실패 시에는 결과/코인 화면으로 넘어가지 않고 실패를 노출한다(거짓 완료 금지). */
@@ -646,10 +694,17 @@ export default function GameScreen() {
             </div>
           )}
           {EDU_SITE_KEY && chapter != null && bankMode && (
-            /* 전체학습(무한 문제은행) — 주차 목차는 유지, 안 푼>틀린>푼 우선 무한 출제 */
+            /* 챕터 스코프 문제은행 — 주차 목차 유지, 그 주차 안에서 SRS 우선(복습 폴백) */
             <div className={`gs-live-daybar${isReplay ? ' gs-live-daybar--replay' : ''}`}>
               <i className="ph-fill ph-infinity" />
-              {chapter}주차 · 안 푼 문제 먼저 · 무한 연습{isReplay ? ' · 복습' : ''}
+              {chapter}주차 · 복습→틀린→새 문제 순{isReplay ? ' · 복습' : ''}
+            </div>
+          )}
+          {EDU_SITE_KEY && chapter == null && bankMode && (
+            /* 과목 전체 SRS 큐(오늘의 큐) — 큐를 비우면 '오늘 완료'가 뜬다 */
+            <div className="gs-live-daybar">
+              <i className={earlyReview ? 'ph-fill ph-arrow-counter-clockwise' : 'ph-fill ph-stack'} />
+              {earlyReview ? '미리 복습 중 · 만기가 가까운 문제부터' : '오늘의 큐 · 복습→틀린→새 문제 순'}
             </div>
           )}
           {EDU_SITE_KEY && chapter != null && !bankMode && (
@@ -697,6 +752,64 @@ export default function GameScreen() {
               /* 비방해 전환/축하 토스트 — 위젯 조작을 막지 않는다(pointer-events 없음) */
               <div className="gs-stagebanner">{stageBanner}</div>
             )}
+            {bankMode && bankDone && (
+              /* 오늘의 큐 소진 — 완료를 축하하고 다음 복습일을 알린다(무한 재순환 폐지).
+                 '미리 복습하기'는 위젯을 early로 재마운트해 휴면 문항을 이어서 낸다. */
+              <div className="gs-bankoverlay">
+                <div className="gs-bankcard">
+                  <span className="gs-bankcard-emoji">🎉</span>
+                  <b className="gs-bankcard-title">오늘 몫을 다 끝냈어요!</b>
+                  <p className="gs-bankcard-desc">
+                    복습할 문제도, 틀린 문제도, 새 문제도 지금은 없어요.
+                    {bankDone.nextReviewAt && fmtNextReview(bankDone.nextReviewAt) ? (
+                      <>
+                        <br />다음 복습: <b>{fmtNextReview(bankDone.nextReviewAt)}</b>
+                      </>
+                    ) : null}
+                  </p>
+                  <div className="gs-bankcard-actions">
+                    <button
+                      className="gs-bankcard-btn gs-bankcard-btn--sub"
+                      onClick={() => {
+                        setBankDone(null);
+                        setEarlyReview(true); // 위젯 재마운트 → early=true로 휴면 복습
+                      }}
+                    >
+                      <i className="ph-bold ph-arrow-counter-clockwise" /> 미리 복습하기
+                    </button>
+                    <button
+                      className="gs-bankcard-btn"
+                      onClick={() => {
+                        if (sessRef.current.answered > 0) goResult(true);
+                        else navigate(PATHS.STUDENT_ALL_LEARNING);
+                      }}
+                    >
+                      오늘은 여기까지 <i className="ph-bold ph-arrow-right" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+            {bankMode && setBreak && !bankDone && (
+              /* 세트(10문항) 중간 요약 — 무한처럼 느껴지던 플레이에 단위감(계속/그만) */
+              <div className="gs-bankoverlay">
+                <div className="gs-bankcard">
+                  <span className="gs-bankcard-emoji">✨</span>
+                  <b className="gs-bankcard-title">{setBreak.set}세트 완료!</b>
+                  <p className="gs-bankcard-desc">
+                    {setBreak.total}문제 중 <b>{setBreak.correct}개</b> 맞혔어요.
+                  </p>
+                  <div className="gs-bankcard-actions">
+                    <button className="gs-bankcard-btn gs-bankcard-btn--sub" onClick={() => goResult(true)}>
+                      그만하기
+                    </button>
+                    <button className="gs-bankcard-btn" onClick={() => setSetBreak(null)}>
+                      계속 풀기 <i className="ph-bold ph-arrow-right" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
             {EDU_SITE_KEY && resumeOffset === null ? (
               /* 이어하기 위치(오늘 푼 수) 조회 중 — 잘못된 총문항으로 마운트했다 갈아끼우지 않게 잠깐 대기 */
               <div className="gs-mount-body">
@@ -721,6 +834,7 @@ export default function GameScreen() {
                 stage={bankMode ? undefined : curStage}
                 replay={isReplay}
                 bank={pBank}
+                early={earlyReview}
                 total={infinite ? undefined : EDU_TOTAL - skipToday}
               />
             ) : (
