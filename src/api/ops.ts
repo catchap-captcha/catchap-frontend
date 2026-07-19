@@ -554,3 +554,49 @@ export const opsSettingsApi = {
   putAi: (body: { anthropic_api_key?: string; openai_api_key?: string }) =>
     client.put<AiSettings>('/ops/settings/ai', body).then((r) => r.data),
 };
+
+/** 운영자 AI 모델 선택(#26) — 실제 LLM 호출(문항 생성·자기검증)에 쓰는 모델의 런타임 설정.
+ *  주의: 기관 콘솔에 표시만 하는 카탈로그(OpsAiModel, /ops/ai-models)와 '다른' 것.
+ *  이건 생성/검증 두 슬롯에 모델을 배정하고, 자동 스왑·토큰/추정비용을 관리한다. */
+export interface AiRuntimeModel {
+  id: string;
+  provider: string; // 회사(표시용 라벨) — 실제 호출은 Anthropic API
+  model_id: string; // 실제 API 모델 문자열(예: claude-opus-4-8)
+  name: string;
+  enabled: boolean; // On/Off — 꺼지면 슬롯·자동스왑 대상 제외
+  cost_in_usd: number; // 단가 $/100만 입력 토큰
+  cost_out_usd: number; // 단가 $/100만 출력 토큰
+  tokens_in: number; // 누적 입력 토큰
+  tokens_out: number; // 누적 출력 토큰
+  est_cost_usd: number; // 누적 토큰 × 단가(추정)
+}
+export interface AiRuntime {
+  models: AiRuntimeModel[];
+  slots: { generate: string | null; verify: string | null }; // 배정된 모델 id
+  auto_swap: boolean;
+  fallback_model: string; // 슬롯 미설정 시 안전망(.env LLM_MODEL)
+}
+export type AiRuntimeModelBody = {
+  provider: string;
+  model_id: string;
+  name: string;
+  enabled?: boolean;
+  cost_in_usd?: number;
+  cost_out_usd?: number;
+};
+
+export const opsAiRuntimeApi = {
+  get: () => client.get<AiRuntime>('/ops/ai-runtime').then((r) => r.data),
+  createModel: (body: AiRuntimeModelBody) =>
+    client.post<AiRuntimeModel>('/ops/ai-runtime/models', body).then((r) => r.data),
+  updateModel: (id: string, body: Partial<AiRuntimeModelBody>) =>
+    client.patch<AiRuntimeModel>(`/ops/ai-runtime/models/${id}`, body).then((r) => r.data),
+  deleteModel: (id: string) =>
+    client.delete(`/ops/ai-runtime/models/${id}`).then((r) => r.data),
+  /** 슬롯 배정 + 자동 스왑 — 지정한 필드만 바뀐다. 빈 문자열/null = 미배정 */
+  putConfig: (body: {
+    generate_model_id?: string | null;
+    verify_model_id?: string | null;
+    auto_swap?: boolean;
+  }) => client.put<AiRuntime>('/ops/ai-runtime/config', body).then((r) => r.data),
+};

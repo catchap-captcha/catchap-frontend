@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import OpsNav from '../../components/ops/OpsNav';
+import OpsAiRuntimeSection from './OpsAiRuntimeSection';
 import { opsSettingsApi, type AiSettings, type AiKeyStatus } from '../../api/ops';
 import { errorDetail } from '../../api/lectures';
 import './OpsApproval.css';
@@ -148,9 +149,9 @@ export default function OpsSettings() {
           <div>
             <h1>설정</h1>
             <p>
-              AI 기능에 쓰는 API 키를 관리해요. 키를 저장하면 <b>재시작 없이</b> 다음 요청부터
-              바로 적용돼요. 저장된 키는 암호화되어 서버에만 보관되고, 화면에는 끝 4자리만
-              표시돼요.
+              AI 문항 생성에 쓰는 <b>모델</b>과 <b>API 키</b>를 관리해요. 모델·키를 바꾸면{' '}
+              <b>재시작 없이</b> 다음 요청부터 바로 적용돼요. 키는 암호화되어 서버에만 보관되고,
+              화면에는 끝 4자리만 표시돼요.
             </p>
           </div>
         </div>
@@ -169,6 +170,9 @@ export default function OpsSettings() {
             {banner.text}
           </div>
         )}
+
+        {/* AI 모델 선택(#26) — 실제 호출 모델. 키보다 먼저 둔다("모델 먼저, 키는 맨 나중"). */}
+        <OpsAiRuntimeSection />
 
         <div className="ops-set-flow">
           <i className="ph-fill ph-magic-wand" />
