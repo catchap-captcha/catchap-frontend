@@ -15,7 +15,8 @@ interface WrongItem {
   cat: Cat;
   subject?: string; // 실제 과목명(국어/수학/…) — 카드 표시는 이걸 쓴다(없으면 카테고리→과목 폴백)
   question: string;
-  wrong: string;
+  /** 틀린 횟수 — SRS wrong 상자의 wrong_count(결정 ④: '내 답' 텍스트 기록은 은퇴) */
+  wrongCount: number;
   answer: string;
   tip: string;
   date: string;
@@ -42,64 +43,36 @@ const TAG: Record<Cat, { label: string; icon: string; c: string; bg: string; sub
   eng: { label: '영어·어휘', icon: 'ph-fill ph-translate', c: '#E0489E', bg: '#FCE4F1', subject: '영어' },
 };
 
-// TODO(api): studentApi.wrongNotes() 실패 시 원본 하드코딩 데이터 유지
-const FALLBACK: WrongItem[] = [
-  { cat: 'img', question: '고양이는 모두 몇 마리일까요?', wrong: '강아지도 골랐어요', answer: '고양이 3마리만', tip: '고양이는 귀가 뾰족하고 수염이 길어요. 귀 모양부터 살펴보면 쉬워요!', date: '오늘' },
-  { cat: 'num', question: '7 + 5 = ?', wrong: '11', answer: '12', tip: '7에서 3을 더하면 10, 남은 2를 더하면 12! 10을 먼저 만들어 보세요.', date: '오늘' },
-  { cat: 'word', question: '그림에 알맞은 받침은? (고ㅇ이)', wrong: 'ㅁ', answer: 'ㅇ (고양이)', tip: '"고양이"를 천천히 소리 내보면 "양"에서 ㅇ 받침이 들려요.', date: '어제' },
-  { cat: 'word', question: '"바ㄷ" 에 알맞은 받침은?', wrong: 'ㅅ', answer: 'ㄷ (받다)', tip: '끝소리가 "ㄷ"으로 나는지 "ㅅ"으로 나는지 입 모양을 확인해요.', date: '어제' },
-  { cat: 'safe', question: '횡단보도에서 바른 행동은?', wrong: '빨간불에 뛰기', answer: '초록불에 손들고 건너기', tip: '초록불에도 좌우를 살피고 손을 들어 운전자에게 알려요.', date: '2일 전' },
-  { cat: 'img', question: '생선을 모두 골라요', wrong: '문어를 골랐어요', answer: '생선 2마리', tip: '생선은 지느러미와 비늘이 있어요. 문어는 다리가 많답니다!', date: '3일 전' },
-];
-
 /**
- * GET /students/me/wrong-notes 응답 → WrongItem[] 매핑.
- * 실제 응답 형태: { items: [{ id, cat, subject, question, wrong, answer, tip, date, reviewed, tag{...} }],
- *                 summary: { total, pending, reviewed, by_category }, tags: {...} }
- * 카드에 필요한 필드만 추출한다. (tag 색/아이콘은 cat 기준 TAG 테마와 동일해 디자인 값을 유지)
+ * GET /students/me/wrong-notes 응답 → WrongItem[] 매핑 ('틀린 문제' 뷰 — Q 통합 결정 ④).
+ * 응답 형태: { items: [{ id, cat, subject, question, answer, tip, date, wrong_count }],
+ *             summary: { total, by_category }, tags: {...} }
+ * 목록은 SRS wrong 상자의 뷰라 다시 맞히면 서버에서 자동으로 빠진다(복습완료 개념 은퇴).
  */
-function mapWrongNotes(d: any): {
-  items: WrongItem[] | null;
-  pending: number | null;
-  reviewed: number | null;
-} {
-  const list = Array.isArray(d) ? d : Array.isArray(d.items) ? d.items : null;
-  let items: WrongItem[] | null = null;
-  if (list) {
-    const valid = list.filter(
+function mapWrongNotes(d: any): { items: WrongItem[]; total: number } {
+  const list = Array.isArray(d) ? d : Array.isArray(d?.items) ? d.items : [];
+  const items = list
+    .filter(
       (it: any) => it && typeof it.cat === 'string' && it.cat in TAG && typeof it.question === 'string',
-    );
-    if (valid.length) {
-      items = valid.map((it: any): WrongItem => ({
+    )
+    .map(
+      (it: any): WrongItem => ({
         cat: it.cat as Cat,
-        // 실제 과목명 — 없으면 카테고리→과목 매핑으로 폴백
         subject: typeof it.subject === 'string' && it.subject ? it.subject : TAG[it.cat as Cat].subject,
         question: it.question,
-        wrong: it.wrong ?? '',
+        wrongCount: typeof it.wrong_count === 'number' ? it.wrong_count : 1,
         answer: it.answer ?? '',
         tip: it.tip ?? '',
         date: it.date ?? '',
-      }));
-    }
-  }
-  const s = d?.summary ?? {};
-  const pending =
-    typeof s.pending === 'number'
-      ? s.pending
-      : typeof s.total === 'number'
-        ? s.total
-        : items
-          ? items.length
-          : null;
-  // 복습 완료 수: wrong_answers.reviewed 실데이터
-  const reviewed = typeof s.reviewed === 'number' ? s.reviewed : null;
-  return { items, pending, reviewed };
+      }),
+    );
+  const total = typeof d?.summary?.total === 'number' ? d.summary.total : items.length;
+  return { items, total };
 }
 
 export default function WrongNotes() {
-  const [items, setItems] = useState<WrongItem[]>(FALLBACK);
-  const [pendingCount, setPendingCount] = useState(6);
-  const [reviewedCount, setReviewedCount] = useState(14);
+  const [items, setItems] = useState<WrongItem[]>([]);
+  const [loaded, setLoaded] = useState(false); // 실패 시 가짜 데이터 대신 정직한 빈/에러 상태
   const [filter, setFilter] = useState<FilterKey>('all');
 
   useEffect(() => {
@@ -107,14 +80,12 @@ export default function WrongNotes() {
     studentApi
       .wrongNotes()
       .then((d: any) => {
-        if (!mounted || !d) return;
-        const mapped = mapWrongNotes(d);
-        if (mapped.items) setItems(mapped.items);
-        if (typeof mapped.pending === 'number') setPendingCount(mapped.pending);
-        if (typeof mapped.reviewed === 'number') setReviewedCount(mapped.reviewed);
+        if (!mounted) return;
+        setItems(mapWrongNotes(d).items);
+        setLoaded(true);
       })
       .catch(() => {
-        // TODO(api): 백엔드 미구현/실패 시 FALLBACK 유지
+        if (mounted) setLoaded(true); // 실패 → 빈 목록(데모 오답을 실데이터처럼 보이지 않게)
       });
     return () => {
       mounted = false;
@@ -122,12 +93,9 @@ export default function WrongNotes() {
   }, []);
 
   const visible = items.filter((i) => filter === 'all' || i.cat === filter);
-  // 오답 모아 풀기: 현재 필터 과목(전체면 첫 오답 과목, 없으면 생활)으로 복습 세션 진입
+  // 다시 풀기 = 오늘의 Q로 — 틀린 문항이 어차피 최우선 출제라 별도 복습 모드가 필요 없다
   const solveAllSubject =
-    filter !== 'all' ? TAG[filter].subject : visible[0] ? TAG[visible[0].cat].subject : '생활';
-  // 복습 진행률 = 복습 완료 / (복습 완료 + 남은 문제)
-  const reviewTotal = reviewedCount + pendingCount;
-  const reviewPct = reviewTotal > 0 ? Math.round((reviewedCount / reviewTotal) * 100) : 0;
+    filter !== 'all' ? TAG[filter].subject : visible[0] ? TAG[visible[0].cat].subject : '국어';
 
   return (
     <div className="wn-root">
@@ -142,12 +110,12 @@ export default function WrongNotes() {
             <i className="ph-fill ph-notebook" />
           </span>
           <div>
-            <h1 className="wn-title">오답 노트</h1>
-            <p className="wn-subtitle">틀린 문제를 다시 풀면 실력이 쑥쑥 자라요</p>
+            <h1 className="wn-title">틀린 문제</h1>
+            <p className="wn-subtitle">다시 맞히면 목록에서 자동으로 사라져요 — 오늘의 Q가 틀린 문제부터 내줘요</p>
           </div>
         </div>
 
-        {/* summary + progress */}
+        {/* summary — SRS wrong 상자의 뷰라 '복습 완료/진행률' 개념이 없다(맞히면 이탈) */}
         <div className="wn-summary">
           <div className="wn-sumitem">
             <span className="wn-sumicon wn-sumicon-x">
@@ -155,37 +123,16 @@ export default function WrongNotes() {
             </span>
             <div>
               <div className="wn-sumval">
-                {pendingCount}<span className="wn-sumunit">개</span>
+                {items.length}<span className="wn-sumunit">개</span>
               </div>
-              <div className="wn-sumlabel">복습할 문제</div>
-            </div>
-          </div>
-          <div className="wn-sumdivider" />
-          <div className="wn-sumitem">
-            <span className="wn-sumicon wn-sumicon-ok">
-              <i className="ph-fill ph-check-circle" />
-            </span>
-            <div>
-              <div className="wn-sumval">
-                {reviewedCount}<span className="wn-sumunit">개</span>
-              </div>
-              <div className="wn-sumlabel">복습 완료</div>
-            </div>
-          </div>
-          <div className="wn-progress">
-            <div className="wn-progresshead">
-              <span>복습 진행률</span>
-              <span className="wn-progresspct">{reviewPct}%</span>
-            </div>
-            <div className="wn-progressbar">
-              <div className="wn-progressfill" style={{ width: `${reviewPct}%` }} />
+              <div className="wn-sumlabel">다시 만날 문제</div>
             </div>
           </div>
           <Link
-            to={`${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(solveAllSubject)}&replay=1`}
+            to={`${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(solveAllSubject)}&bank=1`}
             className="wn-solveall"
           >
-            <i className="ph-fill ph-arrows-clockwise" />오답 모아 풀기
+            <i className="ph-fill ph-arrows-clockwise" />오늘의 Q에서 다시 풀기
           </Link>
         </div>
 
@@ -204,7 +151,16 @@ export default function WrongNotes() {
         </div>
       </section>
 
-      {/* WRONG ANSWER LIST */}
+      {/* WRONG ANSWER LIST — SRS wrong 상자 뷰(비면 그 자체가 좋은 소식) */}
+      {loaded && visible.length === 0 && (
+        <section className="wn-footwrap">
+          <div className="wn-empty">
+            <i className="ph-fill ph-confetti" />
+            <h3>지금 틀린 문제가 없어요!</h3>
+            <p>문제를 풀다 틀리면 여기에 모여요. 다시 맞히면 자동으로 사라진답니다.</p>
+          </div>
+        </section>
+      )}
       <section className="wn-grid">
         {visible.map((q) => {
           const t = TAG[q.cat];
@@ -221,12 +177,13 @@ export default function WrongNotes() {
               </div>
               <div className="wn-question">{q.question}</div>
               <div className="wn-answers">
+                {/* '내 답' 텍스트는 결정 ④로 은퇴 — SRS wrong_count(틀린 횟수)로 대체 */}
                 <div className="wn-wrongbox">
                   <span className="wn-wrongmark">
                     <i className="ph-bold ph-x" />
                   </span>
-                  <span className="wn-wronglabel">내 답</span>
-                  <span className="wn-wrongval">{q.wrong}</span>
+                  <span className="wn-wronglabel">틀린 횟수</span>
+                  <span className="wn-wrongval">{q.wrongCount}번</span>
                 </div>
                 <div className="wn-rightbox">
                   <span className="wn-rightmark">
@@ -241,16 +198,13 @@ export default function WrongNotes() {
                 <p>{q.tip}</p>
               </div>
               <div className="wn-actions">
-                {/* 복습 모드(replay=1): 기록은 남지만 오늘의퀴즈 상태·코인 중복 반영 없음 */}
+                {/* Q(bank=1)로 진입 — SRS가 틀린 문항을 최우선 출제하므로 별도 복습 모드 불필요 */}
                 <Link
-                  to={`${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(t.subject)}&replay=1`}
+                  to={`${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(t.subject)}&bank=1`}
                   className="wn-retry"
                 >
                   <i className="ph-fill ph-arrow-counter-clockwise" />다시 풀기
                 </Link>
-                <button className="wn-explain">
-                  <i className="ph-fill ph-robot" />설명 듣기
-                </button>
               </div>
             </div>
           );
