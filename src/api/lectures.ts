@@ -225,6 +225,19 @@ export interface ExamSubmitResult {
   passed: boolean;
   perfect: boolean;
 }
+/** 수료증 데이터 — 실제 수료한 학생만 받는다(서버가 수료 검증 후 발급, 미수료 404). */
+export interface ExamCertificate {
+  course_id: string;
+  course_title: string;
+  subject: string;
+  student_name: string; // 가명(nickname) — 학생 화면 규약
+  instructor_name: string;
+  passed_at: string;
+  perfect: boolean;
+  question_count: number;
+  sittings_count: number;
+  serial: string; // 검증용 일련번호
+}
 
 /** 강의 전사(자막) 상태 — 강사 제공(srt/vtt/paste) 또는 자동 STT(stt) */
 export interface TranscriptStatus {
@@ -442,6 +455,10 @@ export const lectureApi = {
   /** 회차 제출 → 결과지(문항별 정오·해설·출처) + 진행 + 수료 여부 */
   examSubmit: (courseId: string, body: ExamSubmitInput) =>
     client.post<ExamSubmitResult>(`/courses/${courseId}/exam/submit`, body).then((r) => r.data),
+
+  /** 수료증 데이터 — 서버가 수료 검증 후 발급(미수료 404). 프론트가 캔버스로 그려 PDF/PNG 저장. */
+  examCertificate: (courseId: string) =>
+    client.get<ExamCertificate>(`/courses/${courseId}/exam/certificate`).then((r) => r.data),
 
   /** 운영자 미리보기 스트림 발급 — 문항 시점을 눈으로 찾고 강의 화면을 따오기 위한 재생.
    *  학생 세션을 만들지 않는다(같은 계정 학생 세션을 걷어차지 않음). stream_url은 서명 토큰이

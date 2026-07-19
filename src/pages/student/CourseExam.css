@@ -194,6 +194,19 @@
   padding: 15px 34px;
   min-height: 56px;
 }
+/* 수료증 다운로드 — 주 동작(완벽 도전·다음 회차)과 구분되는 보조 강조(청록) */
+.ce-btn--soft {
+  background: #e5f6f0;
+  border: 2px solid #b9e6d8;
+  color: #12775f;
+}
+.ce-btn--soft:hover {
+  background: #d8f0e8;
+}
+.ce-btn--soft:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
 
 /* ===== TAKING ===== */
 .ce-take-head {

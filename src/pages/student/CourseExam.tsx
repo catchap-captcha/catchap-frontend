@@ -9,6 +9,8 @@ import {
 } from '../../api/lectures';
 import mascot from '../../assets/characters/catchap-logo.png';
 import { StudentNav } from '../../layouts/StudentLayout';
+import { drawCourseCertificate } from '../../utils/certificate';
+import { canvasToPdf } from '../../utils/pdf';
 import './CourseExam.css';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -40,6 +42,33 @@ export default function CourseExam() {
     progress: { mastered: number; total: number }; passed: boolean; perfect: boolean; stale: number;
   } | null>(null);
   const [startedAt, setStartedAt] = useState(0);
+  const [certBusy, setCertBusy] = useState(false);
+
+  // 수료증 발급 — 서버가 수료를 검증해 데이터를 내려주고(미수료 404), 프론트가 캔버스로 그려
+  // PDF로 저장한다. 위조 방지의 핵심은 서버 검증이라 클라이언트는 받은 값만 렌더한다.
+  const downloadCertificate = useCallback(async () => {
+    if (!courseId || certBusy) return;
+    setCertBusy(true);
+    setLoadErr('');
+    try {
+      const cert = await lectureApi.examCertificate(courseId);
+      const canvas = drawCourseCertificate({
+        studentName: cert.student_name,
+        courseTitle: cert.course_title,
+        subject: cert.subject,
+        instructorName: cert.instructor_name,
+        passedAt: cert.passed_at,
+        perfect: cert.perfect,
+        questionCount: cert.question_count,
+        serial: cert.serial,
+      });
+      await canvasToPdf(`수료증_${cert.course_title}.pdf`, canvas);
+    } catch (e: any) {
+      setLoadErr(e?.response?.data?.detail ?? '수료증을 발급하지 못했어요. 잠시 후 다시 시도해 주세요.');
+    } finally {
+      setCertBusy(false);
+    }
+  }, [courseId, certBusy]);
 
   const loadState = useCallback(() => {
     if (!courseId) return;
@@ -135,7 +164,7 @@ export default function CourseExam() {
 
         {/* ===== INTRO — 상태 카드 ===== */}
         {phase === 'intro' && state && (
-          <IntroCard state={state} onStart={start} />
+          <IntroCard state={state} onStart={start} onCertificate={downloadCertificate} certBusy={certBusy} />
         )}
         {phase === 'intro' && !state && !loadErr && <div className="ce-empty">불러오는 중…</div>}
 
@@ -264,6 +293,11 @@ export default function CourseExam() {
 
             <div className="ce-take-actions">
               <Link to={PATHS.STUDENT_LECTURES} className="ce-btn ce-btn--ghost">강의 목록으로</Link>
+              {result.passed && (
+                <button className="ce-btn ce-btn--soft" onClick={downloadCertificate} disabled={certBusy}>
+                  <i className="ph-fill ph-certificate" /> {certBusy ? '발급 중…' : '수료증 다운로드'}
+                </button>
+              )}
               {!result.passed && (
                 <button className="ce-btn ce-btn--primary" onClick={() => { setResult(null); start(); }}>
                   <i className="ph-fill ph-arrow-right" /> 다음 회차 풀기
@@ -289,7 +323,14 @@ export default function CourseExam() {
 }
 
 /** 인트로 — 응시 자격·진행·수료 상태를 한 카드에 (잠김/응시 가능/수료/완벽 도전). */
-function IntroCard({ state, onStart }: { state: ExamState; onStart: (perfect?: boolean) => void }) {
+function IntroCard({
+  state, onStart, onCertificate, certBusy,
+}: {
+  state: ExamState;
+  onStart: (perfect?: boolean) => void;
+  onCertificate: () => void;
+  certBusy: boolean;
+}) {
   if (!state.has_exam) {
     return (
       <div className="ce-introcard">
@@ -328,6 +369,9 @@ function IntroCard({ state, onStart }: { state: ExamState; onStart: (perfect?: b
               </button>
             </>
           )}
+          <button className="ce-btn ce-btn--soft ce-btn--lg" onClick={onCertificate} disabled={certBusy}>
+            <i className="ph-fill ph-certificate" /> {certBusy ? '발급 중…' : '수료증 다운로드'}
+          </button>
           <Link to={PATHS.STUDENT_LECTURES} className="ce-btn ce-btn--ghost">강의 목록으로</Link>
         </>
       ) : state.available ? (
