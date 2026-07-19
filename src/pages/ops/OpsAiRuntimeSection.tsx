@@ -64,21 +64,31 @@ function ModelModal({
         </div>
         <div className="op-form">
           <p className="op-form-hint">
-            실제 호출은 Anthropic Messages API로 나가요. <b>모델 ID</b>에는 API 모델 문자열
-            (예: <code>claude-opus-4-8</code>, <code>claude-haiku-4-5</code>)을 넣어 주세요.
-            단가는 모델사 공시가($/100만 토큰)를 넣으면 추정 비용 계산에 쓰여요(선택).
+            <b>회사</b>가 실제 호출 API를 정해요 — Anthropic(Messages) 또는 OpenAI(Chat
+            Completions). <b>모델 ID</b>에는 그 회사의 API 모델 문자열을 넣어 주세요(예:{' '}
+            <code>claude-opus-4-8</code>, <code>gpt-5</code>). OpenAI 모델은 아래 <b>STT 키
+            (OpenAI)</b>를 함께 써요. 단가는 공시가($/100만 토큰)를 넣으면 추정 비용에 쓰여요(선택).
           </p>
+          <label className="op-form-row">
+            <span className="op-form-lb">회사 <b>*</b></span>
+            <select className="op-form-in" value={provider} onChange={(e) => setProvider(e.target.value)}>
+              <option value="Anthropic">Anthropic (Claude)</option>
+              <option value="OpenAI">OpenAI (GPT)</option>
+            </select>
+          </label>
           <label className="op-form-row">
             <span className="op-form-lb">표시 이름 <b>*</b></span>
             <input className="op-form-in" value={name} onChange={(e) => setName(e.target.value)} placeholder="예: 오퍼스(생성용)" />
           </label>
           <label className="op-form-row">
             <span className="op-form-lb">모델 ID <b>*</b></span>
-            <input className="op-form-in" value={modelId} onChange={(e) => setModelId(e.target.value)} placeholder="claude-opus-4-8" spellCheck={false} />
-          </label>
-          <label className="op-form-row">
-            <span className="op-form-lb">회사</span>
-            <input className="op-form-in" value={provider} onChange={(e) => setProvider(e.target.value)} placeholder="Anthropic" />
+            <input
+              className="op-form-in"
+              value={modelId}
+              onChange={(e) => setModelId(e.target.value)}
+              placeholder={provider === 'OpenAI' ? 'gpt-5' : 'claude-opus-4-8'}
+              spellCheck={false}
+            />
           </label>
           <div className="op-form-row op-form-row--split">
             <label className="op-form-half">
@@ -240,9 +250,10 @@ export default function OpsAiRuntimeSection() {
         </button>
       </div>
       <p className="ops-set-desc">
-        문항 <b>생성</b>과 자기 <b>검증</b>에 쓰는 모델을 각각 골라요. 슬롯을 비워 두면 아래
-        안전망 모델(<code>{rt.fallback_model}</code>)로 동작해요. 실제 호출은 Anthropic API로
-        나가므로 모델 ID는 Anthropic 계열을 넣어 주세요.
+        문항 <b>생성</b>과 자기 <b>검증</b>에 쓰는 모델을 각각 골라요. <b>Anthropic(Claude)</b>과{' '}
+        <b>OpenAI(GPT)</b> 둘 다 등록할 수 있고, 회사에 따라 실제 호출 API가 정해져요. 예를 들어
+        생성은 Claude, 검증은 GPT로 두면 서로 다른 회사가 교차로 검증해 더 독립적이에요. 슬롯을
+        비워 두면 안전망 모델(<code>{rt.fallback_model}</code>)로 동작해요.
       </p>
 
       {banner && (

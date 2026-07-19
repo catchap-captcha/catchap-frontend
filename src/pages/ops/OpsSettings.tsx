@@ -198,8 +198,8 @@ export default function OpsSettings() {
           saving={saving === 'llm'}
         />
         <KeyCard
-          title="STT — 강의 음성 전사 (OpenAI Whisper)"
-          desc="강의 영상의 음성을 타임스탬프 있는 자막으로 바꿔요. 이 자막이 있어야 문항의 출제 시점·되감기 지점을 AI가 제안할 수 있어요. (현재 25MB 이하 영상만 전사 가능)"
+          title="OpenAI 키 — 음성 전사(STT) + GPT 모델"
+          desc="강의 음성을 타임스탬프 있는 자막으로 바꾸는 Whisper 전사에 써요(25MB 이하). 위 'AI 모델 선택'에서 GPT 모델을 슬롯에 넣으면 이 키로 문항 생성·검증도 호출해요 — OpenAI는 이 키 하나로 둘 다 동작해요."
           status={data?.stt ?? null}
           placeholder="sk-…"
           value={sttKey}
