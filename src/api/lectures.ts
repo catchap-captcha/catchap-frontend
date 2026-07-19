@@ -59,6 +59,7 @@ export interface StudentCourse {
     passed: boolean;
     perfect: boolean;
     passed_at: string | null; // 수료일(미수료면 null)
+    last_activity_at: string | null; // 마지막 시험 활동 시각 — '진행 중' 최신순 정렬용(안 본 코스는 null)
   };
 }
 

@@ -362,10 +362,24 @@ export default function MyRecords() {
   }, []);
 
   const name = (me?.name ?? '하은').trim() || '하은';
-  // 수료 시험 코스를 상태별로 나눈다 — 수료 완료 / 진행 중(응시 가능) / 잠김(강의 미완주)
-  const passedCourses = (examCourses ?? []).filter((c) => c.exam?.passed);
-  const inProgressCourses = (examCourses ?? []).filter((c) => !c.exam?.passed && c.exam?.available);
-  const lockedCourses = (examCourses ?? []).filter((c) => !c.exam?.passed && !c.exam?.available);
+  // 수료 시험 코스를 상태별로 나눈다 — 진행 중(응시 가능) / 잠김(강의 미완주) / 수료 완료.
+  // 실무 표준 '행동 우선' 정렬(사용자 결정 0719): 지금 할 것을 위, 끝낸 것을 아래. 각 칸은
+  // 최신순 — 진행 중=마지막 시험 활동 최신(안 본 코스는 뒤), 잠김=완주에 가까운 순(다음 할 것),
+  // 수료 완료=수료일 최신. desc 비교는 문자열 ISO 그대로(사전식=시간순), null은 뒤로.
+  const descNulls = (a: string | null, b: string | null) => (b ?? '').localeCompare(a ?? '');
+  const inProgressCourses = (examCourses ?? [])
+    .filter((c) => !c.exam?.passed && c.exam?.available)
+    .sort((a, b) => descNulls(a.exam?.last_activity_at ?? null, b.exam?.last_activity_at ?? null));
+  const lockedCourses = (examCourses ?? [])
+    .filter((c) => !c.exam?.passed && !c.exam?.available)
+    .sort((a, b) => {
+      const ra = (a.exam?.lectures_done ?? 0) / Math.max(1, a.exam?.lectures_total ?? 1);
+      const rb = (b.exam?.lectures_done ?? 0) / Math.max(1, b.exam?.lectures_total ?? 1);
+      return rb - ra; // 완주에 가까운(열리기 직전) 코스가 위
+    });
+  const passedCourses = (examCourses ?? [])
+    .filter((c) => c.exam?.passed)
+    .sort((a, b) => descNulls(a.exam?.passed_at ?? null, b.exam?.passed_at ?? null));
   const perfectCount = passedCourses.filter((c) => c.exam?.perfect).length;
 
   const learned = new Set(data.calendar.learned);
@@ -517,9 +531,10 @@ export default function MyRecords() {
             </div>
           ) : (
             <div className="mr-compgroups">
-              <CompGroup title="수료 완료" icon="ph-fill ph-seal-check" items={passedCourses} navigate={navigate} />
+              {/* 행동 우선(0719): 지금 할 것(진행 중→잠김)을 위, 끝낸 것(수료 완료)을 아래 */}
               <CompGroup title="진행 중" icon="ph-fill ph-hourglass-medium" items={inProgressCourses} navigate={navigate} />
               <CompGroup title="잠김" icon="ph-fill ph-lock-simple" items={lockedCourses} navigate={navigate} />
+              <CompGroup title="수료 완료" icon="ph-fill ph-seal-check" items={passedCourses} navigate={navigate} />
             </div>
           )}
         </div>
