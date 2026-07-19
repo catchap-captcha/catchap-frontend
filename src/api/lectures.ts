@@ -226,6 +226,15 @@ export interface ExamSubmitResult {
   perfect: boolean;
 }
 
+/** 강의 전사(자막) 상태 — 강사 제공(srt/vtt/paste) 또는 자동 STT(stt) */
+export interface TranscriptStatus {
+  has_transcript: boolean;
+  source: 'srt' | 'vtt' | 'paste' | 'stt' | null;
+  segment_count: number;
+  preview: { start: number; end: number; text: string }[];
+  updated_at: string | null;
+}
+
 export interface OpsLectureQuestion {
   id: string;
   lecture_id: string;
@@ -545,6 +554,7 @@ export const lectureApi = {
       .post<{
         created: number;
         transcript_used: boolean;
+        transcript_source: 'srt' | 'vtt' | 'paste' | 'stt' | null;
         self_verified: boolean;
         bank_candidates: number | null;
         captcha_candidates: number | null;
@@ -553,6 +563,25 @@ export const lectureApi = {
         questions: OpsLectureQuestion[];
       }>(`/ops/lectures/${lectureId}/questions/generate`, { n })
       .then((r) => r.data),
+
+  /* ---- 강사 제공 자막(전사) — 자동 STT 대체·캐시 ---- */
+  opsTranscriptGet: (lectureId: string) =>
+    client.get<TranscriptStatus>(`/ops/lectures/${lectureId}/transcript`).then((r) => r.data),
+  /** 붙여넣기/텍스트 저장 — 파싱 실패(빈 자막)면 400 */
+  opsTranscriptPut: (lectureId: string, content: string, format = 'auto') =>
+    client
+      .put<TranscriptStatus>(`/ops/lectures/${lectureId}/transcript`, { content, format })
+      .then((r) => r.data),
+  /** SRT/VTT 파일 업로드 */
+  opsTranscriptUpload: (lectureId: string, file: File) => {
+    const fd = new FormData();
+    fd.append('file', file);
+    return client
+      .post<TranscriptStatus>(`/ops/lectures/${lectureId}/transcript/upload`, fd)
+      .then((r) => r.data);
+  },
+  opsTranscriptDelete: (lectureId: string) =>
+    client.delete<{ ok: boolean }>(`/ops/lectures/${lectureId}/transcript`).then((r) => r.data),
 
   /* ---- 자료실 ---- */
   opsMaterials: (lectureId: string) =>

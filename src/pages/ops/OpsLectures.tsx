@@ -9,6 +9,7 @@ import {
   type OpsLecture,
   type OpsLectureMaterial,
   type OpsLectureQuestion,
+  type TranscriptStatus,
 } from '../../api/lectures';
 import OpsNav from '../../components/ops/OpsNav';
 import './OpsApproval.css';
@@ -1349,6 +1350,129 @@ const emptyQ = (): QForm => ({
   alignedUpTo: 0,
 });
 
+/* 강사 제공 자막(전사) 바 — 확인 문항 모달 안. 자막이 있으면 AI 생성이 자동 STT 대신
+   이 자막을 쓴다(품질↑·비용↓·OpenAI 키·25MB 한계 우회). SRT/VTT 업로드 + 붙여넣기. */
+const _TR_SRC_LABEL: Record<string, string> = {
+  srt: '강사 제공 SRT', vtt: '강사 제공 VTT', paste: '강사 붙여넣기', stt: '자동 STT',
+};
+function TranscriptBar({
+  lectureId,
+  note,
+}: {
+  lectureId: string;
+  note: (ok: boolean, msg: string) => void;
+}) {
+  const [st, setSt] = useState<TranscriptStatus | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [pasteOpen, setPasteOpen] = useState(false);
+  const [pasteText, setPasteText] = useState('');
+  const fileRef = useRef<HTMLInputElement | null>(null);
+
+  const load = () => {
+    lectureApi.opsTranscriptGet(lectureId).then(setSt).catch(() => setSt(null));
+  };
+  useEffect(load, [lectureId]);
+
+  const onUpload = async (f: File | null) => {
+    if (!f) return;
+    setBusy(true);
+    try {
+      const r = await lectureApi.opsTranscriptUpload(lectureId, f);
+      setSt(r);
+      note(true, `자막을 저장했어요 (${(r.source ?? '').toUpperCase()} · ${r.segment_count}개 구간). 이제 AI 생성이 이 자막을 써요.`);
+    } catch (e) {
+      note(false, errorDetail(e, '자막 업로드에 실패했어요. (SRT/VTT 파일)'));
+    } finally {
+      setBusy(false);
+      if (fileRef.current) fileRef.current.value = '';
+    }
+  };
+
+  const savePaste = async () => {
+    if (!pasteText.trim()) return;
+    setBusy(true);
+    try {
+      const r = await lectureApi.opsTranscriptPut(lectureId, pasteText, 'auto');
+      setSt(r);
+      setPasteOpen(false);
+      setPasteText('');
+      note(true, `자막을 저장했어요 (붙여넣기 · ${r.segment_count}개 구간). 이제 AI 생성이 이 자막을 써요.`);
+    } catch (e) {
+      note(false, errorDetail(e, '자막 저장에 실패했어요. (SRT/VTT 내용이거나 "00:12 내용" 형식이어야 해요)'));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const clear = async () => {
+    if (!window.confirm('저장된 자막을 삭제할까요? 다음 AI 생성부터 자동 STT로 돌아가요.')) return;
+    setBusy(true);
+    try {
+      await lectureApi.opsTranscriptDelete(lectureId);
+      setSt({ has_transcript: false, source: null, segment_count: 0, preview: [], updated_at: null });
+      note(true, '자막을 삭제했어요 — 다음 생성은 자동 STT를 써요.');
+    } catch (e) {
+      note(false, errorDetail(e, '자막 삭제에 실패했어요.'));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="op-lect-transcript">
+      <div className="op-lect-tr-row">
+        <div className="op-lect-tr-status">
+          <i className="ph-fill ph-closed-captioning" />
+          {st?.has_transcript ? (
+            <span>
+              <b>자막 있음</b> · {_TR_SRC_LABEL[st.source ?? ''] ?? st.source} · {st.segment_count}개 구간
+              {' '}— AI 생성이 이 자막을 써요(자동 STT 안 돎).
+            </span>
+          ) : (
+            <span>
+              자막 없음 — AI 생성 시 <b>자동 STT</b>로 전사해요. 강사 자막이 있으면 올리면
+              품질↑·비용↓(25MB 한계도 우회).
+            </span>
+          )}
+        </div>
+        <div className="op-lect-tr-actions">
+          <input
+            ref={fileRef} type="file" accept=".srt,.vtt,text/plain" hidden
+            onChange={(e) => onUpload(e.target.files?.[0] ?? null)}
+          />
+          <button className="op-btn op-btn--soft" disabled={busy} onClick={() => fileRef.current?.click()}>
+            <i className="ph-bold ph-upload-simple" /> 자막 파일
+          </button>
+          <button className="op-btn op-btn--soft" disabled={busy} onClick={() => setPasteOpen((v) => !v)}>
+            <i className="ph-bold ph-clipboard-text" /> 붙여넣기
+          </button>
+          {st?.has_transcript && (
+            <button className="op-btn op-btn--soft" disabled={busy} onClick={clear}>
+              <i className="ph-bold ph-trash" /> 삭제
+            </button>
+          )}
+        </div>
+      </div>
+      {pasteOpen && (
+        <div className="op-lect-tr-paste">
+          <textarea
+            value={pasteText} onChange={(e) => setPasteText(e.target.value)} rows={5} spellCheck={false}
+            placeholder={'자막 붙여넣기 — SRT/VTT 내용 또는 줄마다 "시각 내용" 형식:\n00:05 오늘은 분수를 배워요\n01:30 분모와 분자'}
+          />
+          <div className="op-lect-tr-paste-act">
+            <button className="op-btn op-btn--reject" disabled={busy} onClick={() => { setPasteOpen(false); setPasteText(''); }}>
+              취소
+            </button>
+            <button className="op-btn op-btn--approve" disabled={busy || !pasteText.trim()} onClick={savePaste}>
+              {busy ? '저장 중…' : '자막 저장'}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function QuestionsModal({
   lec,
   onClose,
@@ -1721,18 +1845,24 @@ function QuestionsModal({
       const res = await lectureApi.opsQuestionGenerate(lec.id, n);
       changedRef.current = true;
       setBannerOk(true);
+      // 전사 출처를 정직하게 앞에 밝힌다 — 강사 자막 / 자동 STT / 자막 없음(메타)
+      const trNote = res.transcript_source
+        ? res.transcript_source === 'stt'
+          ? '자동 STT 자막 기반'
+          : '강사 제공 자막 기반'
+        : '자막 없이 제목·설명 기반';
       if (res.self_verified) {
         // 자기검증(2번째 LLM) 요약 — 3분류: 캡차 적합(강의 의존)/은행(상식)/불량 의심
         const discardNote = res.discard_candidates
           ? ` · 불량 의심 ${res.discard_candidates}개(자막을 줘도 안 풀림 — 폐기 검토)`
           : '';
         setBanner(
-          `AI가 ${res.created}개 생성 → 캡차 적합 ${res.captcha_candidates}개(강의를 봐야 풀림)·` +
+          `${trNote}로 AI가 ${res.created}개 생성 → 캡차 적합 ${res.captcha_candidates}개(강의를 봐야 풀림)·` +
             `은행 적합 ${res.bank_candidates}개(상식으로 풀림)${discardNote}. 각 문항 배지를 보고 검수·배치하세요.`,
         );
       } else {
         setBanner(
-          `AI가 ${res.created}개 문항을 생성했어요(draft) — 검수 후 승인하세요.` +
+          `${trNote}로 AI가 ${res.created}개 문항을 생성했어요(draft) — 검수 후 승인하세요.` +
             (res.verify_error ? ` (자기검증 미수행: ${res.verify_error})` : ''),
         );
       }
@@ -1781,6 +1911,8 @@ function QuestionsModal({
             </button>
           </div>
         </div>
+        {/* 강사 제공 자막 — 있으면 위 'AI 문항 생성'이 자동 STT 대신 이 자막을 쓴다 */}
+        <TranscriptBar lectureId={lec.id} note={(ok, msg) => { setBannerOk(ok); setBanner(msg); }} />
         {banner && (
           <div className={`op-lect-banner ${bannerOk ? 'op-lect-banner-ok' : 'op-form-err'}`}>
             <i className={bannerOk ? 'ph-fill ph-check-circle' : 'ph-fill ph-info'} /> {banner}
