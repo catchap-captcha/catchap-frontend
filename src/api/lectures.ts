@@ -414,13 +414,16 @@ export const lectureApi = {
       )
       .then((r) => r.data),
 
-  /** LLM 코스 시험 문항 자동 생성(origin=llm, draft) — 운영자가 고른 생성 슬롯 모델 사용. */
+  /** LLM 코스 시험 문항 자동 생성(origin=llm, draft) — 운영자가 고른 생성 슬롯 모델 사용.
+   *  used_transcripts = 자막을 근거로 쓴 강의 수(0이면 제목·설명만으로 생성). */
   opsExamGenerate: (courseId: string, n: number) =>
     client
-      .post<{ created: number; questions: OpsExamQuestion[] }>(
-        `/ops/courses/${courseId}/exam-questions/generate`,
-        { n },
-      )
+      .post<{
+        created: number;
+        used_transcripts: number;
+        lecture_count: number;
+        questions: OpsExamQuestion[];
+      }>(`/ops/courses/${courseId}/exam-questions/generate`, { n })
       .then((r) => r.data),
 
   /* ---- 코스 수료 시험(학생) ---- */

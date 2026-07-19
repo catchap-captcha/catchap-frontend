@@ -138,6 +138,19 @@ export default function OpsLectures() {
   const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading');
   const [modal, setModal] = useState<Modal>(null);
   const [toast, setToast] = useState('');
+  // 처음 오는 강사용 이용 안내 — 첫 방문이면 힌트 배너를 띄우고, 본 뒤엔 접는다(localStorage).
+  const [guideOpen, setGuideOpen] = useState(false);
+  const [guideSeen, setGuideSeen] = useState(
+    () => localStorage.getItem('catchap_lecture_guide_seen') === '1',
+  );
+  const markGuideSeen = () => {
+    localStorage.setItem('catchap_lecture_guide_seen', '1');
+    setGuideSeen(true);
+  };
+  const openGuide = () => {
+    setGuideOpen(true);
+    markGuideSeen();
+  };
 
   const say = (m: string) => {
     setToast(m);
@@ -230,6 +243,10 @@ export default function OpsLectures() {
             </p>
           </div>
           <div className="op-lect-headbtns">
+            <button className="op-btn op-btn--soft" onClick={openGuide}>
+              <i className="ph-bold ph-question" />
+              이용 안내
+            </button>
             <button className="op-btn op-btn--reject" onClick={() => setModal({ mode: 'courses' })}>
               <i className="ph-bold ph-stack" />
               코스 관리
@@ -240,6 +257,22 @@ export default function OpsLectures() {
             </button>
           </div>
         </div>
+
+        {/* 첫 방문 강사용 힌트 — 이용 안내를 열면 접힌다 */}
+        {!guideSeen && (
+          <div className="op-lect-hint">
+            <i className="ph-fill ph-hand-waving" />
+            <span>
+              처음이신가요? <b>강의 업로드 → (선택) 자막 → AI 문항 생성 → 검수·공개</b> 순서예요.
+            </span>
+            <button className="op-btn op-btn--soft op-lect-hint-btn" onClick={openGuide}>
+              이용 안내 보기
+            </button>
+            <button className="op-lect-hint-x" title="닫기" onClick={markGuideSeen}>
+              <i className="ph-bold ph-x" />
+            </button>
+          </div>
+        )}
 
         <div className="op-logcard">
           <div className="op-loghead op-lect-grid">
@@ -416,12 +449,81 @@ export default function OpsLectures() {
         />
       )}
 
+      {guideOpen && <LectureGuideModal onClose={() => setGuideOpen(false)} />}
+
       {toast && (
         <div className="op-toast">
           <i className="ph-fill ph-check-circle" />
           {toast}
         </div>
       )}
+    </div>
+  );
+}
+
+/* 처음 오는 강사용 이용 안내 — 강의 제작 워크플로를 순서대로. 인터랙티브 투어 대신
+   단계 설명 모달(가볍고 안 깨짐). 실제 버튼 이름(문항·AI 문항 생성·자막 등)을 그대로 써서
+   화면과 1:1로 대응시킨다. */
+const _GUIDE_STEPS: { icon: string; title: string; body: string }[] = [
+  {
+    icon: 'ph-upload-simple',
+    title: '1. 강의 영상 업로드',
+    body: "오른쪽 위 '강의 업로드'로 영상(mp4·webm)과 과목을 올려요. 코스에 소속시키면 학생 화면에서 코스 단위로 묶여 보여요.",
+  },
+  {
+    icon: 'ph-closed-captioning',
+    title: '2. (선택) 자막 넣기',
+    body: "강의 행의 '문항'을 열면 위쪽에 '자막' 바가 있어요. 이미 자막(SRT/VTT)이 있으면 올리거나 붙여넣으세요 — AI가 그 자막으로 더 정확한 문항을 만들어요. 없으면 자동 음성 전사(STT)를 쓰니 건너뛰어도 돼요.",
+  },
+  {
+    icon: 'ph-sparkle',
+    title: '3. AI 문항 생성',
+    body: "'문항' 창에서 개수를 정하고 'AI 문항 생성'을 누르면 확인 문항 초안이 만들어져요. 직접 '문항 추가'로 손수 낼 수도 있어요.",
+  },
+  {
+    icon: 'ph-seal-check',
+    title: '4. 검수 & 공개',
+    body: "만든 문항은 초안(draft)이에요. 배지(캡차 적합/은행/불량 의심)를 보고 다듬은 뒤 '공개(active)'로 바꿔야 학생에게 떠요. 공개 문항이 0개면 그 강의는 시청 검증이 동작하지 않아요.",
+  },
+  {
+    icon: 'ph-exam',
+    title: '5. (선택) 코스 & 수료 시험',
+    body: "여러 강의를 '코스 관리'로 묶고, 코스에는 수료 시험을 붙일 수 있어요. 시험 문항도 '강의 문항 가져오기'·'AI로 생성'으로 빠르게 채워요(자막이 있으면 시험도 더 깊어져요).",
+  },
+];
+function LectureGuideModal({ onClose }: { onClose: () => void }) {
+  return (
+    <div className="op-bh-overlay" onClick={onClose}>
+      <div className="op-formmodal op-lect-guide" onClick={(e) => e.stopPropagation()}>
+        <div className="op-bh-modal-h">
+          <span>
+            <i className="ph-fill ph-graduation-cap" /> 강의 제작 이용 안내
+          </span>
+          <button className="op-bh-modal-x" onClick={onClose}>
+            <i className="ph-bold ph-x" />
+          </button>
+        </div>
+        <p className="op-lect-guide-lead">
+          이 화면에서 <b>영상 → (자막) → AI 문항 → 검수·공개</b> 순서로 시청 검증 강의를 만들어요.
+          자막과 코스·수료 시험은 선택이에요.
+        </p>
+        <ol className="op-lect-guide-steps">
+          {_GUIDE_STEPS.map((s) => (
+            <li key={s.title}>
+              <span className="op-lect-guide-ic"><i className={`ph-fill ${s.icon}`} /></span>
+              <div>
+                <b>{s.title}</b>
+                <p>{s.body}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
+        <div className="op-lect-guide-foot">
+          <button className="op-btn op-btn--approve" onClick={onClose}>
+            <i className="ph-bold ph-check" /> 알겠어요
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -1119,7 +1221,10 @@ function ExamQuestionsModal({
     setBulkBusy('gen');
     try {
       const r = await lectureApi.opsExamGenerate(course.id, n);
-      say(`AI가 시험 문항 ${r.created}개를 초안으로 만들었어요. 검수 후 공개하세요.`);
+      const trNote = r.used_transcripts > 0
+        ? `강의 자막 ${r.used_transcripts}개 기반`
+        : '강의 제목·설명 기반(자막을 넣으면 더 깊은 문항이 나와요)';
+      say(`${trNote}로 AI가 시험 문항 ${r.created}개를 초안으로 만들었어요. 검수 후 공개하세요.`);
       load();
     } catch (e) {
       say(errorDetail(e, 'AI 문항 생성에 실패했어요. (운영 콘솔 설정에서 모델·키를 확인하세요)'));
