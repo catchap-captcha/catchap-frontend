@@ -53,12 +53,12 @@ export default function CourseExam() {
 
   useEffect(loadState, [loadState]);
 
-  const start = async () => {
+  const start = async (perfectChallenge = false) => {
     setLoadErr('');
     try {
-      const s = await lectureApi.examSession(courseId);
-      if (s.passed) {
-        // 발급 대신 이미 수료 — 상태 새로고침 후 인트로에 수료 표시
+      const s = await lectureApi.examSession(courseId, perfectChallenge);
+      if (s.passed && !s.questions) {
+        // 발급 대신 이미 (완벽) 수료 — 상태 새로고침 후 인트로 갱신
         loadState();
         return;
       }
@@ -145,12 +145,19 @@ export default function CourseExam() {
             <header className="ce-take-head">
               <div>
                 <h1 className="ce-title">
-                  <i className="ph-fill ph-exam" /> {state?.title ?? '수료 시험'}
+                  <i className={session.perfect_challenge ? 'ph-fill ph-crown' : 'ph-fill ph-exam'} />
+                  {session.perfect_challenge ? '완벽 도전' : (state?.title ?? '수료 시험')}
                 </h1>
                 <p className="ce-sub">
-                  이번 회차 {session.questions.length}문항 · 다 맞히지 못한 문항은 다음 회차에 다시 나와요.
-                  {session.progress && (
-                    <> 지금까지 <b>{session.progress.mastered}/{session.progress.total}</b> 정복.</>
+                  {session.perfect_challenge ? (
+                    <>전 문항 {session.questions.length}개를 <b>한 번에 모두 맞히면 완벽 통과</b>! 한 문제라도 틀리면 다시 도전할 수 있어요.</>
+                  ) : (
+                    <>
+                      이번 회차 {session.questions.length}문항 · 다 맞히지 못한 문항은 다음 회차에 다시 나와요.
+                      {session.progress && (
+                        <> 지금까지 <b>{session.progress.mastered}/{session.progress.total}</b> 정복.</>
+                      )}
+                    </>
                   )}
                 </p>
               </div>
@@ -258,11 +265,17 @@ export default function CourseExam() {
             <div className="ce-take-actions">
               <Link to={PATHS.STUDENT_LECTURES} className="ce-btn ce-btn--ghost">강의 목록으로</Link>
               {!result.passed && (
-                <button className="ce-btn ce-btn--primary" onClick={() => { setResult(null); setPhase('intro'); loadState(); start(); }}>
+                <button className="ce-btn ce-btn--primary" onClick={() => { setResult(null); start(); }}>
                   <i className="ph-fill ph-arrow-right" /> 다음 회차 풀기
                 </button>
               )}
-              {result.passed && (
+              {result.passed && !result.perfect && (
+                // 수료했지만 완벽 통과 미달 — 완벽 도전(전 문항 한 판) 재도전
+                <button className="ce-btn ce-btn--primary" onClick={() => { setResult(null); start(true); }}>
+                  <i className="ph-fill ph-crown" /> 완벽 도전 다시
+                </button>
+              )}
+              {result.passed && result.perfect && (
                 <button className="ce-btn ce-btn--primary" onClick={() => navigate(PATHS.STUDENT_LECTURES)}>
                   <i className="ph-fill ph-confetti" /> 완료
                 </button>
@@ -275,8 +288,8 @@ export default function CourseExam() {
   );
 }
 
-/** 인트로 — 응시 자격·진행·수료 상태를 한 카드에 (잠김/응시 가능/수료). */
-function IntroCard({ state, onStart }: { state: ExamState; onStart: () => void }) {
+/** 인트로 — 응시 자격·진행·수료 상태를 한 카드에 (잠김/응시 가능/수료/완벽 도전). */
+function IntroCard({ state, onStart }: { state: ExamState; onStart: (perfect?: boolean) => void }) {
   if (!state.has_exam) {
     return (
       <div className="ce-introcard">
@@ -301,9 +314,20 @@ function IntroCard({ state, onStart }: { state: ExamState; onStart: () => void }
           </div>
           <p className="ce-sub">
             {state.perfect
-              ? '모든 문항을 첫 시도에 맞혀 완벽하게 수료했어요. 대단해요! 🏆'
+              ? '전 문항을 한 번에 다 맞혀 완벽하게 수료했어요. 대단해요! 🏆'
               : '이 코스의 모든 시험 문항을 정복했어요. 수료를 축하해요! 🎉'}
           </p>
+          {state.can_perfect_challenge && (
+            // 재도전 경로 — 수료했지만 완벽 통과 전이면 전 문항 한 판으로 승급 도전
+            <>
+              <p className="ce-sub ce-challenge-hint">
+                전 문항을 한 번에 다 맞히면 <b>완벽 통과</b>로 올라가요. 도전해 볼까요?
+              </p>
+              <button className="ce-btn ce-btn--primary ce-btn--lg" onClick={() => onStart(true)}>
+                <i className="ph-fill ph-crown" /> 완벽 도전
+              </button>
+            </>
+          )}
           <Link to={PATHS.STUDENT_LECTURES} className="ce-btn ce-btn--ghost">강의 목록으로</Link>
         </>
       ) : state.available ? (
@@ -319,7 +343,7 @@ function IntroCard({ state, onStart }: { state: ExamState; onStart: () => void }
             </div>
             <div className="ce-progressbar"><div className="ce-progressfill" style={{ width: `${pct}%` }} /></div>
           </div>
-          <button className="ce-btn ce-btn--primary ce-btn--lg" onClick={onStart}>
+          <button className="ce-btn ce-btn--primary ce-btn--lg" onClick={() => onStart(false)}>
             <i className="ph-fill ph-play" /> {state.mastered_count > 0 ? '이어서 풀기' : '시험 시작'}
           </button>
         </>
@@ -361,8 +385,8 @@ function ResultHero({
         <h1 className="ce-title">{title} 수료를 축하해요! 🎉</h1>
         <p className="ce-sub">
           {result.perfect
-            ? '모든 문항을 첫 시도에 맞혔어요. 정말 대단해요!'
-            : '이 코스의 모든 시험 문항을 정복했어요.'}
+            ? '전 문항을 한 번에 다 맞혔어요. 정말 대단해요!'
+            : '이 코스의 모든 시험 문항을 정복했어요. 완벽 통과에도 도전해 보세요!'}
         </p>
       </div>
     );

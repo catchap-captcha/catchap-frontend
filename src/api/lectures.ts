@@ -174,6 +174,8 @@ export interface ExamState {
   passed: boolean;
   perfect: boolean;
   passed_at: string | null;
+  /** 완벽 도전 가능 — 수료했지만 아직 완벽 통과 아님(전 문항 한 판으로 승급 도전) */
+  can_perfect_challenge: boolean;
 }
 /** 발급된 회차 — 정답·해설 없음. 수료 후엔 questions 없이 passed=true. */
 export interface ExamSessionQuestion {
@@ -190,6 +192,8 @@ export interface ExamSession {
   passed_at?: string | null;
   sitting_id?: string;
   questions?: ExamSessionQuestion[];
+  /** 완벽 도전 회차(전 문항 한 판) 여부 — 화면 문구를 '완벽 도전'으로 바꾼다 */
+  perfect_challenge?: boolean;
   progress?: { mastered: number; total: number };
 }
 export interface ExamSubmitInput {
@@ -212,6 +216,8 @@ export interface ExamSubmitResult {
   total: number;
   correct: number;
   results: ExamResultItem[];
+  /** 발급 후 강사 편집으로 채점 못 한 문항 수 — >0이면 '다음 회차에 다시' 안내 */
+  stale: number;
   progress: { mastered: number; total: number };
   passed: boolean;
   perfect: boolean;
@@ -392,9 +398,14 @@ export const lectureApi = {
   examState: (courseId: string) =>
     client.get<ExamState>(`/courses/${courseId}/exam`).then((r) => r.data),
 
-  /** 회차 발급 — 미완주면 403, 수료 후엔 {passed:true}. 정답·해설 미포함, 보기 셔플됨. */
-  examSession: (courseId: string) =>
-    client.post<ExamSession>(`/courses/${courseId}/exam/session`).then((r) => r.data),
+  /** 회차 발급 — 미완주면 403, 수료 후엔 {passed:true}. 정답·해설 미포함, 보기 셔플됨.
+   *  perfect=true(완벽 도전)는 수료 학생 전용 — 전 문항을 한 판에 내서 다 맞히면 완벽 통과 승급. */
+  examSession: (courseId: string, perfect = false) =>
+    client
+      .post<ExamSession>(`/courses/${courseId}/exam/session`, undefined, {
+        params: perfect ? { perfect: true } : undefined,
+      })
+      .then((r) => r.data),
 
   /** 회차 제출 → 결과지(문항별 정오·해설·출처) + 진행 + 수료 여부 */
   examSubmit: (courseId: string, body: ExamSubmitInput) =>

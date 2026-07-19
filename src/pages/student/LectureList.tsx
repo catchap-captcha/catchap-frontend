@@ -89,7 +89,7 @@ function ExamCard({
         </b>
         <span className="ll-examdesc">
           {passed
-            ? (perfect ? '모든 문항을 첫 시도에 맞혔어요 🏆' : '이 코스를 수료했어요 🎉')
+            ? (perfect ? '전 문항을 한 번에 다 맞혔어요 🏆' : '수료 완료 · 완벽 통과에 도전할 수 있어요')
             : locked
               ? `강의 ${ex.lectures_done}/${ex.lectures_total} 완주 시 열려요`
               : ex.mastered_count > 0
