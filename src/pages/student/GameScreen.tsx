@@ -129,6 +129,7 @@ export default function GameScreen() {
      이렇게 하면 앱 내 이동 시 주소창은 '/student/game' 만 깔끔히 보이고 파라미터는 노출 안 된다. */
   const navState = (location.state ?? null) as {
     subject?: string; chapter?: number; stage?: number; day?: number; replay?: boolean; bank?: boolean;
+    course?: string;
   } | null;
   const numQ = (k: string) => (searchParams.get(k) ? Number(searchParams.get(k)) : NaN);
   const pSubject = navState?.subject ?? searchParams.get('subject') ?? undefined;
@@ -138,6 +139,8 @@ export default function GameScreen() {
   const pStage = navState?.stage ?? numQ('stage');
   // 전체학습 문제은행 모드 — 안 푼>틀린>맞춘 우선 출제, 코인·오늘의퀴즈 미반영
   const pBank = navState?.bank ?? (searchParams.get('bank') === '1');
+  // 코스 Q(3단계-b) — bank와 함께 오면 그 코스 강의 유래 문항만(수료 시험 훈련장)
+  const pCourse = navState?.course ?? (searchParams.get('course') || undefined);
 
   /* 원본 componentDidMount: subject → 없으면 hash → 기본 국어 */
   const [subjectIdx, setSubjectIdx] = useState(() => {
@@ -186,6 +189,10 @@ export default function GameScreen() {
   // '다음 문제'를 낸다(2문항마다 '결과 보기'로 끊기던 문제 해소). 종료는 '그만하기'뿐.
   const bankMode = pBank;
   const infinite = bankMode; // 세션 총량 없음(무한)
+  // 코스 Q 활성 조건: 코스는 과목 고정이라, 탭으로 진입 과목을 벗어나면 코스 범위도 벗어난
+  // 것으로 보고 일반 오늘의 Q로 자연 전환한다(서버는 코스가 정본이라 과목 탭만 바꾸면
+  // 계속 코스 문항이 나와 혼란 — 진입 URL엔 늘 코스의 과목이 함께 실린다).
+  const courseId = bankMode && pCourse && key === (pSubject ?? key) ? pCourse : undefined;
   const EDU_TOTAL = chapter && !bankMode ? 2 : 5; // 챕터 단계=2문항, 오늘의퀴즈=5문항(bank는 미사용)
   const CHAPTER_STAGES = 5; // (구)챕터 5단계 — bank 모드에선 안 씀
   // 챕터 연속 진행: URL의 stage는 시작 단계(없으면 1단계부터), 이후 단계는 상태로 전진(위젯 재마운트)
@@ -226,13 +233,13 @@ export default function GameScreen() {
   // 주소창 정리 — 쿼리스트링(?subject=%EC..&chapter=..)으로 들어오면 최초 1회 clean path
   // '/student/game' 로 즉시 치환하고 파라미터는 navigate state로 보존한다(실서비스처럼 주소가 깔끔).
   useEffect(() => {
-    const hasQuery = ['subject', 'chapter', 'stage', 'day', 'replay'].some(
+    const hasQuery = ['subject', 'chapter', 'stage', 'day', 'replay', 'bank', 'course'].some(
       (k) => searchParams.get(k) != null,
     );
     if (hasQuery) {
       navigate(location.pathname, {
         replace: true,
-        state: { subject: key, chapter, stage, day, replay: isReplay, bank: pBank },
+        state: { subject: key, chapter, stage, day, replay: isReplay, bank: pBank, course: pCourse },
       });
     }
     // 최초 1회만 — strip 후 쿼리가 비므로 재실행되지 않는다.
@@ -732,10 +739,15 @@ export default function GameScreen() {
             </div>
           )}
           {EDU_SITE_KEY && chapter == null && bankMode && (
-            /* 과목 전체 SRS 큐 — 사용자 대면 명칭은 '오늘의 Q'(0719 사용자 결정). 비우면 '오늘 완료' */
+            /* 과목 전체 SRS 큐 — 사용자 대면 명칭은 '오늘의 Q'(0719 사용자 결정). 비우면 '오늘 완료'.
+               코스 Q(course)는 같은 큐를 그 코스 강의 유래 문항으로만 좁힌 것. */
             <div className="gs-live-daybar">
               <i className={earlyReview ? 'ph-fill ph-arrow-counter-clockwise' : 'ph-fill ph-stack'} />
-              {earlyReview ? '미리 복습 중 · 만기가 가까운 문제부터' : '오늘의 Q · 복습→틀린→새 문제 순'}
+              {earlyReview
+                ? '미리 복습 중 · 만기가 가까운 문제부터'
+                : courseId
+                  ? '코스 Q · 이 코스 강의의 문제만'
+                  : '오늘의 Q · 복습→틀린→새 문제 순'}
               {goalView && (
                 <span className="gs-daybar-goal">
                   오늘 목표 {goalView.done}/{goalView.goal}
@@ -872,6 +884,7 @@ export default function GameScreen() {
                 replay={isReplay}
                 bank={pBank}
                 early={earlyReview}
+                course={courseId}
                 total={infinite ? undefined : EDU_TOTAL - skipToday}
               />
             ) : (

@@ -66,12 +66,14 @@ interface Props {
   bank?: boolean; // 문제은행 — SRS 큐(만기>틀린>새) 출제, 코인·퀴즈 미반영
   /** 문제은행 '복습 미리 하기' — 오늘 큐 소진(catchap:bankdone) 후 휴면 문항을 미리 복습 */
   early?: boolean;
+  /** 코스 Q — bank와 함께 주면 그 코스의 강의 유래 문항만 출제(수료 시험 훈련장) */
+  course?: string;
   lecture?: string; // 강의 시청 검증 — 그 강의의 체크포인트 확인 문제 출제(코인·퀴즈 미반영)
   total?: number; // 세션 문항 수 — 채우면 위젯이 catchap:finished 발신
 }
 
 export default function CatchapWidget({
-  siteKey, api, subject, size = 'full', className, auth, day, chapter, stage, replay, bank, early, lecture, total,
+  siteKey, api, subject, size = 'full', className, auth, day, chapter, stage, replay, bank, early, course, lecture, total,
 }: Props) {
   const hostRef = useRef<HTMLDivElement | null>(null);
 
@@ -99,6 +101,7 @@ export default function CatchapWidget({
     if (replay) box.setAttribute('data-replay', '1');
     if (bank) box.setAttribute('data-bank', '1');
     if (bank && early) box.setAttribute('data-early', '1');
+    if (bank && course) box.setAttribute('data-course', course);
     if (lecture) box.setAttribute('data-lecture', lecture);
     if (total) box.setAttribute('data-total', String(total));
     // 인앱은 게임 화면이 학생 설정(효과음 토글)에 따라 직접 재생 — 위젯 자체 효과음은 꺼서
@@ -122,7 +125,7 @@ export default function CatchapWidget({
       if (box.parentNode) box.parentNode.removeChild(box);
     };
     // subject/siteKey 등이 바뀌면 재마운트 (early 전환도 재마운트 — 새 큐로 재요청)
-  }, [siteKey, api, subject, size, auth, day, chapter, stage, replay, bank, early, lecture, total]);
+  }, [siteKey, api, subject, size, auth, day, chapter, stage, replay, bank, early, course, lecture, total]);
 
   return <div ref={hostRef} className={className} />;
 }

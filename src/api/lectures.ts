@@ -42,6 +42,11 @@ export interface StudentCourse {
   order_no: number;
   instructor_name: string | null;
   lecture_count: number;
+  /** 코스 Q(3단계-b) — 이 코스 강의에서 은행에 배치된 문항 수(총). 0이면 배지 숨김 */
+  bank_question_count?: number;
+  /** 그중 이 학생이 완주한 강의의 문항 수 — >0이면 '이 코스 문제 풀기' 버튼,
+   *  0인데 총>0이면 "강의 완주 시 열려요" 잠금 안내(배움→연습 순서를 화면이 말해준다) */
+  unlocked_question_count?: number;
 }
 
 export interface LectureMaterialItem {

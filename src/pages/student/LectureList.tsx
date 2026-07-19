@@ -27,6 +27,8 @@ interface CourseGroup {
   title: string | null; // null = 미분류(기타)
   instructor: string | null;
   lectures: LectureItem[];
+  /** 코스 Q 배지(3단계-b) — 코스 그룹에만. 미분류(기타)는 코스 Q가 없다 */
+  course?: StudentCourse;
 }
 function courseGroupsForSubject(
   subject: string,
@@ -38,7 +40,9 @@ function courseGroupsForSubject(
   for (const c of courses.filter((c) => c.subject === subject)) {
     const lects = rows.filter((l) => l.course_id === c.id);
     if (lects.length)
-      groups.push({ key: `c-${c.id}`, title: c.title, instructor: c.instructor_name, lectures: lects });
+      groups.push({
+        key: `c-${c.id}`, title: c.title, instructor: c.instructor_name, lectures: lects, course: c,
+      });
   }
   // '기타'는 코스 없음(null)뿐 아니라 '보이지 않는 코스(숨김·삭제)에 매인 강의'도 담는다 —
   // 숨겨진 코스의 course_id를 가진 활성 강의가 어느 그룹에도 안 걸려 목록에서 사라지는 것을 막는다.
@@ -297,6 +301,31 @@ export default function LectureList() {
                                 <h3 className="ll-coursetitle ll-coursetitle--none">기타 강의</h3>
                               )}
                               <span className="ll-coursecount">{g.lectures.length}강</span>
+                              {/* 코스 Q(3단계-b) — 완주로 열린 문항이 있으면 연습 버튼, 문항은
+                                  있는데 전부 잠겨 있으면 '완주하면 열려요'(배움→연습 순서 안내).
+                                  은행 배치 문항이 0개면 아무것도 안 보인다(빈 약속 금지). */}
+                              {g.course && (g.course.unlocked_question_count ?? 0) > 0 && (
+                                <button
+                                  className="ll-course-qbtn"
+                                  style={{ background: s.color }}
+                                  onClick={() =>
+                                    navigate(
+                                      `${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(sub)}&bank=1&course=${g.course!.id}`,
+                                    )
+                                  }
+                                >
+                                  <i className="ph-fill ph-lightning" />
+                                  이 코스 문제 풀기 ({g.course.unlocked_question_count})
+                                </button>
+                              )}
+                              {g.course &&
+                                (g.course.bank_question_count ?? 0) > 0 &&
+                                (g.course.unlocked_question_count ?? 0) === 0 && (
+                                  <span className="ll-course-qlock">
+                                    <i className="ph-fill ph-lock-simple" />
+                                    문제 {g.course.bank_question_count}개 · 강의 완주 시 열려요
+                                  </span>
+                                )}
                             </div>
                           )}
                         <div className="cp-grid">
