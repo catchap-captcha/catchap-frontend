@@ -3,7 +3,9 @@ import {
   API_ORIGIN,
   errorDetail,
   lectureApi,
+  type ExamOrigin,
   type OpsCourse,
+  type OpsExamQuestion,
   type OpsLecture,
   type OpsLectureMaterial,
   type OpsLectureQuestion,
@@ -747,6 +749,7 @@ function CoursesModal({
   const [form, setForm] = useState<CourseForm | null>(null); // null = 편집 폼 닫힘
   const [err, setErr] = useState('');
   const [saving, setSaving] = useState(false);
+  const [examCourse, setExamCourse] = useState<OpsCourse | null>(null); // 시험 문항 모달 대상
   const editing = form?.id != null;
 
   const save = async () => {
@@ -920,6 +923,13 @@ function CoursesModal({
               </span>
               <span className="op-col-right op-lect-actions">
                 <button
+                  className="op-btn op-btn--approve"
+                  onClick={() => setExamCourse(c)}
+                  title="이 코스의 수료 시험 문항을 관리해요"
+                >
+                  <i className="ph-fill ph-exam" /> 시험 문항
+                </button>
+                <button
                   className="op-btn op-btn--reject"
                   onClick={() => {
                     setErr('');
@@ -936,6 +946,303 @@ function CoursesModal({
                 </button>
                 <button className="op-btn op-btn--reject op-lect-danger" onClick={() => remove(c)}>
                   <i className="ph-bold ph-trash" /> 삭제
+                </button>
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {examCourse && (
+        <ExamQuestionsModal
+          course={examCourse}
+          onClose={() => setExamCourse(null)}
+          say={say}
+        />
+      )}
+    </div>
+  );
+}
+
+/* ================= 코스 수료 시험 문항 모달 =================
+   완전학습(mastery) — 강의 문항 모달의 단순화판. 출제 시점·되감기·이미지가 없는 대신
+   origin(자작/기출)·source(출처)가 있다. 기출은 출처가 필수(비영리 교육용 이용 전제 —
+   서버 400). 설계: docs/course-exam-design.md */
+interface ExamQForm {
+  id: string | null; // null = 새 문항
+  prompt: string;
+  options: string[]; // 2~6개
+  answerIdx: number[]; // 정답(다답 지원). 옵션 인덱스 집합
+  explain: string;
+  origin: ExamOrigin;
+  source: string;
+  status: string;
+}
+
+const EXAM_ORIGIN_LABEL: Record<ExamOrigin, string> = {
+  manual: '자작',
+  past_exam: '기출',
+  lecture: '강의',
+  llm: 'AI',
+};
+
+function ExamQuestionsModal({
+  course,
+  onClose,
+  say,
+}: {
+  course: OpsCourse;
+  onClose: () => void;
+  say: (m: string) => void;
+}) {
+  const [rows, setRows] = useState<OpsExamQuestion[] | null>(null);
+  const [loadErr, setLoadErr] = useState('');
+  const [form, setForm] = useState<ExamQForm | null>(null);
+  const [err, setErr] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  const load = () => {
+    lectureApi
+      .opsExamQuestions(course.id)
+      .then(setRows)
+      .catch((e) => setLoadErr(errorDetail(e, '시험 문항을 불러오지 못했어요.')));
+  };
+  useEffect(load, [course.id]);
+
+  const activeCount = (rows ?? []).filter((q) => q.status === 'active').length;
+
+  const newForm = (): ExamQForm => ({
+    id: null, prompt: '', options: ['', ''], answerIdx: [0], explain: '',
+    origin: 'manual', source: '', status: 'active',
+  });
+
+  const editForm = (q: OpsExamQuestion): ExamQForm => ({
+    id: q.id, prompt: q.prompt, options: [...q.options], answerIdx: [...q.answer_indexes],
+    explain: q.explain ?? '', origin: q.origin, source: q.source ?? '', status: q.status,
+  });
+
+  const setOpt = (i: number, v: string) => {
+    if (!form) return;
+    const options = [...form.options];
+    options[i] = v;
+    setForm({ ...form, options });
+  };
+  const addOpt = () => form && form.options.length < 6 && setForm({ ...form, options: [...form.options, ''] });
+  const removeOpt = (i: number) => {
+    if (!form || form.options.length <= 2) return;
+    const options = form.options.filter((_, j) => j !== i);
+    // 정답 인덱스 재조정 — 지운 뒤 인덱스가 밀리므로 유효한 것만 남겨 다시 매핑
+    const answerIdx = form.answerIdx
+      .filter((a) => a !== i)
+      .map((a) => (a > i ? a - 1 : a));
+    setForm({ ...form, options, answerIdx: answerIdx.length ? answerIdx : [0] });
+  };
+  const toggleAnswer = (i: number) => {
+    if (!form) return;
+    const has = form.answerIdx.includes(i);
+    const answerIdx = has ? form.answerIdx.filter((a) => a !== i) : [...form.answerIdx, i];
+    setForm({ ...form, answerIdx: answerIdx.length ? answerIdx.sort((a, b) => a - b) : [i] });
+  };
+
+  const save = async () => {
+    if (!form) return;
+    if (!form.prompt.trim()) return setErr('문제를 입력해 주세요.');
+    if (form.options.some((o) => !o.trim())) return setErr('보기를 모두 채워 주세요(빈 보기 불가).');
+    if (!form.answerIdx.length) return setErr('정답을 하나 이상 선택해 주세요.');
+    if (form.origin === 'past_exam' && !form.source.trim())
+      return setErr('기출 문항은 출처가 필수예요. 예: 2024학년도 수능 수학 15번');
+    setSaving(true);
+    setErr('');
+    const body = {
+      prompt: form.prompt.trim(),
+      options: form.options.map((o) => o.trim()),
+      answer_indexes: form.answerIdx,
+      explain: form.explain.trim() || null,
+      origin: form.origin,
+      source: form.source.trim() || null,
+      status: form.status,
+    };
+    try {
+      if (form.id) {
+        await lectureApi.opsExamQuestionUpdate(course.id, form.id, body);
+        say('시험 문항을 수정했어요.');
+      } else {
+        await lectureApi.opsExamQuestionCreate(course.id, body);
+        say('시험 문항을 추가했어요.');
+      }
+      setForm(null);
+      load();
+    } catch (e) {
+      setErr(errorDetail(e, '시험 문항 저장에 실패했어요.'));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const remove = async (q: OpsExamQuestion) => {
+    if (!window.confirm('이 시험 문항을 삭제할까요? 학생 응답 기록은 보존돼요.')) return;
+    try {
+      await lectureApi.opsExamQuestionDelete(course.id, q.id);
+      say('시험 문항을 삭제했어요.');
+      if (form?.id === q.id) setForm(null);
+      load();
+    } catch (e) {
+      say(errorDetail(e, '시험 문항 삭제에 실패했어요.'));
+    }
+  };
+
+  return (
+    <div className="op-bh-overlay" onClick={() => !saving && onClose()}>
+      <div className="op-formmodal op-lect-widemodal" onClick={(e) => e.stopPropagation()}>
+        <div className="op-bh-modal-h">
+          <span>
+            <i className="ph-fill ph-exam" /> 수료 시험 문항 · {course.title}
+          </span>
+          <button className="op-bh-modal-x" onClick={onClose} disabled={saving}>
+            <i className="ph-bold ph-x" />
+          </button>
+        </div>
+
+        <div className="op-lect-qtools">
+          <button
+            className="op-btn op-btn--approve"
+            onClick={() => { setErr(''); setForm(newForm()); }}
+          >
+            <i className="ph-bold ph-plus" /> 문항 추가
+          </button>
+          <span className="lu-help">
+            {activeCount > 0
+              ? `공개 문항 ${activeCount}개 — 학생이 강의를 전부 완주하면 이 문항들을 다 맞혀야 수료해요(틀린 건 다시).`
+              : '공개 문항이 없어요 — 활성 문항이 0개면 학생에게 수료 시험이 보이지 않아요.'}
+          </span>
+        </div>
+
+        {form && (
+          <div className="op-lect-qform">
+            <label className="ox-field op-form-span2">
+              문제
+              <textarea
+                value={form.prompt}
+                onChange={(e) => setForm({ ...form, prompt: e.target.value })}
+                placeholder="예: 다음 중 이차함수의 그래프가 위로 볼록한 경우는?"
+                rows={2}
+              />
+            </label>
+
+            <div className="op-exam-opts">
+              <div className="op-exam-opts-head">
+                <span>보기 · 정답 체크(복수 가능)</span>
+                {form.options.length < 6 && (
+                  <button className="op-btn op-btn--reject" onClick={addOpt}>
+                    <i className="ph-bold ph-plus" /> 보기 추가
+                  </button>
+                )}
+              </div>
+              {form.options.map((o, i) => (
+                <div key={i} className="op-exam-optrow">
+                  <button
+                    className={`op-exam-ansbtn${form.answerIdx.includes(i) ? ' op-exam-ansbtn--on' : ''}`}
+                    onClick={() => toggleAnswer(i)}
+                    title="정답으로 표시"
+                  >
+                    <i className={form.answerIdx.includes(i) ? 'ph-fill ph-check-circle' : 'ph-bold ph-circle'} />
+                  </button>
+                  <input
+                    value={o}
+                    onChange={(e) => setOpt(i, e.target.value)}
+                    placeholder={`보기 ${i + 1}`}
+                  />
+                  {form.options.length > 2 && (
+                    <button className="op-btn op-btn--reject op-lect-danger" onClick={() => removeOpt(i)}>
+                      <i className="ph-bold ph-x" />
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            <div className="op-form-grid">
+              <label className="ox-field">
+                출제 유형
+                <select
+                  value={form.origin}
+                  onChange={(e) => setForm({ ...form, origin: e.target.value as ExamOrigin })}
+                >
+                  <option value="manual">자작</option>
+                  <option value="past_exam">기출</option>
+                </select>
+              </label>
+              <label className="ox-field">
+                공개 상태
+                <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
+                  <option value="active">공개(응시 대상)</option>
+                  <option value="draft">임시(검수 중)</option>
+                </select>
+              </label>
+              <label className="ox-field op-form-span2">
+                출처 {form.origin === 'past_exam' && <span className="op-exam-req">필수</span>}
+                <input
+                  value={form.source}
+                  onChange={(e) => setForm({ ...form, source: e.target.value })}
+                  placeholder="예: 2024학년도 대학수학능력시험 수학 15번"
+                />
+                <span className="lu-help">
+                  기출은 비영리 교육용으로만 쓰고 출처를 항상 표시해요(학생 결과지에도 노출).
+                </span>
+              </label>
+              <label className="ox-field op-form-span2">
+                해설 (선택)
+                <textarea
+                  value={form.explain}
+                  onChange={(e) => setForm({ ...form, explain: e.target.value })}
+                  placeholder="채점 후 학생에게 보여줄 풀이"
+                  rows={2}
+                />
+              </label>
+            </div>
+
+            {err && (
+              <div className="op-form-err">
+                <i className="ph-fill ph-warning-circle" /> {err}
+              </div>
+            )}
+            <div className="op-form-actions">
+              <button className="op-btn op-btn--reject" disabled={saving} onClick={() => setForm(null)}>
+                취소
+              </button>
+              <button className="op-btn op-btn--approve" disabled={saving} onClick={save}>
+                <i className="ph-bold ph-check" /> {saving ? '저장 중…' : form.id ? '저장' : '추가'}
+              </button>
+            </div>
+          </div>
+        )}
+
+        <div className="op-logcard">
+          {loadErr && <div className="op-form-err">{loadErr}</div>}
+          {rows === null && !loadErr && <div className="op-logrow">불러오는 중…</div>}
+          {rows !== null && rows.length === 0 && (
+            <div className="op-logrow">
+              아직 시험 문항이 없어요. &lsquo;문항 추가&rsquo;로 첫 문항을 만드세요.
+            </div>
+          )}
+          {(rows ?? []).map((q, i) => (
+            <div key={q.id} className="op-logrow op-exam-qrow">
+              <span className="op-exam-qnum">{i + 1}</span>
+              <span className="op-exam-qbody">
+                <b>{q.prompt}</b>
+                <small className="op-aimodel-desc">
+                  <span className={`op-exam-tag op-exam-tag--${q.origin}`}>{EXAM_ORIGIN_LABEL[q.origin]}</span>
+                  {q.status !== 'active' && <span className="op-exam-tag op-exam-tag--draft">임시</span>}
+                  정답 {q.answer_indexes.length}개 · 보기 {q.options.length}개
+                  {q.source ? ` · 출처: ${q.source}` : ''}
+                </small>
+              </span>
+              <span className="op-col-right op-lect-actions">
+                <button className="op-btn op-btn--reject" onClick={() => { setErr(''); setForm(editForm(q)); }}>
+                  <i className="ph-bold ph-pencil-simple" /> 수정
+                </button>
+                <button className="op-btn op-btn--reject op-lect-danger" onClick={() => remove(q)}>
+                  <i className="ph-bold ph-trash" />
                 </button>
               </span>
             </div>

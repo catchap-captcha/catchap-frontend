@@ -26,6 +26,7 @@ export const PATHS = {
   STUDENT_DAILY_QUIZ: '/student/daily-quiz', // 은퇴(Q 통합 0719) — 문제은행으로 리다이렉트만 남음
   STUDENT_LECTURES: '/student/lectures', // ?subject= — 과목별 강의 카탈로그(개념 설명 톤)
   STUDENT_LECTURE: '/student/lecture', // ?id= — 강의실(플레이어 + 시청 검증)
+  STUDENT_COURSE_EXAM: '/student/course-exam', // ?course= — 코스 수료 시험(완전학습)
   STUDENT_ALL_LEARNING: '/student/all-learning',
   STUDENT_CONCEPTS: '/student/concepts', // ?tab=
   STUDENT_RECORDS: '/student/records',

@@ -47,6 +47,17 @@ export interface StudentCourse {
   /** 그중 이 학생이 완주한 강의의 문항 수 — >0이면 '이 코스 문제 풀기' 버튼,
    *  0인데 총>0이면 "강의 완주 시 열려요" 잠금 안내(배움→연습 순서를 화면이 말해준다) */
   unlocked_question_count?: number;
+  /** 수료 시험 요약(#28) — 없음/잠김/응시가능(진행)/수료 카드 렌더의 원천 */
+  exam?: {
+    has_exam: boolean; // 활성 시험 문항 0개면 false(시험 카드 숨김)
+    question_count: number;
+    mastered_count: number;
+    available: boolean; // 전 강의 완주 + 문항 있음
+    lectures_done: number;
+    lectures_total: number;
+    passed: boolean;
+    perfect: boolean;
+  };
 }
 
 export interface LectureMaterialItem {
@@ -121,6 +132,89 @@ export interface OpsCourse {
   instructor_id: string;
   lecture_count: number;
   created_at: string | null;
+}
+
+/** 코스 수료 시험 문항(강사) — 인덱스 기반(강의 문항과 같은 형식·채점 재사용). */
+export type ExamOrigin = 'manual' | 'past_exam' | 'lecture' | 'llm';
+export interface OpsExamQuestion {
+  id: string;
+  course_id: string;
+  prompt: string;
+  options: string[];
+  answer_indexes: number[];
+  explain: string | null;
+  origin: ExamOrigin;
+  /** 출처 문구 — origin=past_exam이면 필수. 화면(카드·결과지)에 상시 노출(비영리 전제) */
+  source: string | null;
+  order_no: number;
+  status: string; // draft | active
+  created_at: string | null;
+}
+export interface ExamQuestionInput {
+  prompt: string;
+  options: string[];
+  answer_indexes: number[];
+  explain?: string | null;
+  origin?: ExamOrigin;
+  source?: string | null;
+  status?: string;
+  order_no?: number;
+}
+
+/** 코스 수료 시험 상태(학생) — 시험 카드가 읽는 단일 원천. */
+export interface ExamState {
+  course_id: string;
+  title: string;
+  has_exam: boolean; // 활성 문항 0개면 false(시험 없는 코스)
+  question_count: number;
+  mastered_count: number; // 정복(정답 이력) 문항 수
+  lectures_total: number;
+  lectures_done: number;
+  available: boolean; // 전 강의 완주 + 문항 있음
+  passed: boolean;
+  perfect: boolean;
+  passed_at: string | null;
+}
+/** 발급된 회차 — 정답·해설 없음. 수료 후엔 questions 없이 passed=true. */
+export interface ExamSessionQuestion {
+  question_id: string;
+  prompt: string;
+  options: string[]; // 표시 순서(셔플됨)
+  multi: boolean; // 다답(복수 선택) 여부
+  origin: ExamOrigin;
+  source: string | null;
+}
+export interface ExamSession {
+  passed: boolean;
+  perfect?: boolean;
+  passed_at?: string | null;
+  sitting_id?: string;
+  questions?: ExamSessionQuestion[];
+  progress?: { mastered: number; total: number };
+}
+export interface ExamSubmitInput {
+  sitting_id: string;
+  answers: { question_id: string; picks: number[] }[]; // picks = 표시 순서 기준 선택
+  solve_time_ms?: number;
+}
+export interface ExamResultItem {
+  question_id: string;
+  prompt: string;
+  options: string[];
+  picked: number[];
+  answer: number[]; // 정답의 표시 위치
+  correct: boolean;
+  explain: string | null;
+  origin: ExamOrigin;
+  source: string | null;
+}
+export interface ExamSubmitResult {
+  total: number;
+  correct: number;
+  results: ExamResultItem[];
+  progress: { mastered: number; total: number };
+  passed: boolean;
+  perfect: boolean;
 }
 
 export interface OpsLectureQuestion {
@@ -272,6 +366,39 @@ export const lectureApi = {
     client
       .delete<{ ok: boolean; lectures_unassigned: number }>(`/ops/courses/${courseId}`)
       .then((r) => r.data),
+
+  /* ---- 코스 수료 시험 문항(강사) ---- (완전학습 — docs/course-exam-design.md)
+   *  강의 문항 모달의 단순화판: 출제 시점·되감기 없음, 대신 origin·source(기출 출처).
+   *  기출(past_exam)은 source 필수(서버 400) — 비영리 교육용 이용 전제. */
+  opsExamQuestions: (courseId: string) =>
+    client.get<OpsExamQuestion[]>(`/ops/courses/${courseId}/exam-questions`).then((r) => r.data),
+
+  opsExamQuestionCreate: (courseId: string, body: ExamQuestionInput) =>
+    client
+      .post<OpsExamQuestion>(`/ops/courses/${courseId}/exam-questions`, body)
+      .then((r) => r.data),
+
+  opsExamQuestionUpdate: (courseId: string, questionId: string, body: Partial<ExamQuestionInput>) =>
+    client
+      .put<OpsExamQuestion>(`/ops/courses/${courseId}/exam-questions/${questionId}`, body)
+      .then((r) => r.data),
+
+  opsExamQuestionDelete: (courseId: string, questionId: string) =>
+    client
+      .delete<{ ok: boolean }>(`/ops/courses/${courseId}/exam-questions/${questionId}`)
+      .then((r) => r.data),
+
+  /* ---- 코스 수료 시험(학생) ---- */
+  examState: (courseId: string) =>
+    client.get<ExamState>(`/courses/${courseId}/exam`).then((r) => r.data),
+
+  /** 회차 발급 — 미완주면 403, 수료 후엔 {passed:true}. 정답·해설 미포함, 보기 셔플됨. */
+  examSession: (courseId: string) =>
+    client.post<ExamSession>(`/courses/${courseId}/exam/session`).then((r) => r.data),
+
+  /** 회차 제출 → 결과지(문항별 정오·해설·출처) + 진행 + 수료 여부 */
+  examSubmit: (courseId: string, body: ExamSubmitInput) =>
+    client.post<ExamSubmitResult>(`/courses/${courseId}/exam/submit`, body).then((r) => r.data),
 
   /** 운영자 미리보기 스트림 발급 — 문항 시점을 눈으로 찾고 강의 화면을 따오기 위한 재생.
    *  학생 세션을 만들지 않는다(같은 계정 학생 세션을 걷어차지 않음). stream_url은 서명 토큰이

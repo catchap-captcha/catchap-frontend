@@ -54,6 +54,58 @@ function courseGroupsForSubject(
   return groups;
 }
 
+/** 코스 수료 시험 카드(#28) — 코스 그룹 말미. 배움(강의)→연습(Q)→증명(시험)의 마지막 조각.
+ *  상태 흐름을 한 카드에: 잠김(완주 필요) → 응시 가능(진행) → 수료(+완벽 통과). */
+function ExamCard({
+  course, color, soft, onGo,
+}: {
+  course: StudentCourse;
+  color: string;
+  soft: string;
+  onGo: () => void;
+}) {
+  const ex = course.exam!;
+  const passed = ex.passed;
+  const perfect = ex.perfect;
+  const locked = !ex.available && !passed;
+  return (
+    <button
+      className={`ll-examcard${passed ? ' ll-examcard--passed' : ''}${locked ? ' ll-examcard--locked' : ''}`}
+      style={!passed && !locked ? { borderColor: soft } : undefined}
+      onClick={onGo}
+    >
+      <span
+        className="ll-examicon"
+        style={{ background: passed ? '#dff6ee' : locked ? '#f4efe6' : soft, color: passed ? '#17b08c' : locked ? '#a89d8e' : color }}
+      >
+        <i className={passed ? (perfect ? 'ph-fill ph-crown' : 'ph-fill ph-seal-check') : locked ? 'ph-fill ph-lock-simple' : 'ph-fill ph-exam'} />
+      </span>
+      <span className="ll-exambody">
+        <b className="ll-examtitle">
+          수료 시험
+          {passed && <span className="ll-exambadge" style={{ background: perfect ? '#fff3d6' : '#dff6ee', color: perfect ? '#e08a00' : '#17b08c' }}>
+            {perfect ? '완벽 통과' : '수료'}
+          </span>}
+        </b>
+        <span className="ll-examdesc">
+          {passed
+            ? (perfect ? '모든 문항을 첫 시도에 맞혔어요 🏆' : '이 코스를 수료했어요 🎉')
+            : locked
+              ? `강의 ${ex.lectures_done}/${ex.lectures_total} 완주 시 열려요`
+              : ex.mastered_count > 0
+                ? `수료까지 ${ex.question_count - ex.mastered_count}문항 (${ex.mastered_count}/${ex.question_count} 정복)`
+                : `문항 ${ex.question_count}개를 모두 맞히면 수료해요`}
+        </span>
+      </span>
+      {!passed && !locked && (
+        <span className="ll-exsmgo" style={{ color }}>
+          <i className="ph-bold ph-arrow-right" />
+        </span>
+      )}
+    </button>
+  );
+}
+
 export default function LectureList() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -344,6 +396,13 @@ export default function LectureList() {
                             </button>
                           )}
                         </div>
+                        {/* 수료 시험 카드(#28) — 코스 그룹 말미. 배움→연습→증명의 마지막 조각.
+                            활성 문항 0개면 렌더 안 함(시험 없는 코스). 상태: 잠김/응시/진행/수료 */}
+                        {g.course?.exam?.has_exam && (
+                          <ExamCard course={g.course} color={s.color} soft={s.soft} onGo={() =>
+                            navigate(`${PATHS.STUDENT_COURSE_EXAM}?course=${g.course!.id}`)
+                          } />
+                        )}
                       </div>
                     );
                   });

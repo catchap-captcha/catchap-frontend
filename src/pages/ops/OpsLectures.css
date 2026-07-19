@@ -401,3 +401,92 @@
   font-weight: 700;
   white-space: nowrap;
 }
+
+/* ===== 코스 수료 시험 문항 모달 (완전학습) ===== */
+.op-exam-opts {
+  margin: 12px 0;
+}
+.op-exam-opts-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 12.5px;
+  font-weight: 800;
+  color: #6b6152;
+}
+.op-exam-optrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 7px;
+}
+.op-exam-optrow input {
+  flex: 1;
+}
+.op-exam-ansbtn {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border: 2px solid #e4dccb;
+  border-radius: 10px;
+  background: #fff;
+  color: #b7ad9c;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+.op-exam-ansbtn--on {
+  border-color: #17b08c;
+  background: #dff6ee;
+  color: #17b08c;
+}
+.op-exam-req {
+  display: inline-block;
+  margin-left: 4px;
+  padding: 1px 7px;
+  border-radius: 8px;
+  background: #ffe3e9;
+  color: #e0489e;
+  font-size: 10.5px;
+  font-weight: 800;
+}
+.op-exam-qrow {
+  align-items: flex-start;
+  gap: 10px;
+}
+.op-exam-qnum {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  background: #f4efe6;
+  color: #8a7f6d;
+  font-weight: 800;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.op-exam-qbody {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.op-exam-tag {
+  display: inline-block;
+  margin-right: 6px;
+  padding: 1px 8px;
+  border-radius: 8px;
+  font-size: 10.5px;
+  font-weight: 800;
+}
+.op-exam-tag--manual { background: #e6f0ff; color: #2e7bff; }
+.op-exam-tag--past_exam { background: #fff1e0; color: #ff922e; }
+.op-exam-tag--lecture { background: #ede6ff; color: #8b6bff; }
+.op-exam-tag--llm { background: #dff6ee; color: #17b08c; }
+.op-exam-tag--draft { background: #f4efe6; color: #9b9086; }

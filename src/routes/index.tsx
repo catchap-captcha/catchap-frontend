@@ -25,6 +25,7 @@ const GameResult = lazy(() => import('../pages/student/GameResult'));
 // 오늘의퀴즈 페이지는 Q 통합(0719 결정)으로 은퇴 — 옛 경로는 문제은행으로 보낸다(아래 라우트)
 const LectureList = lazy(() => import('../pages/student/LectureList'));
 const LecturePlayer = lazy(() => import('../pages/student/LecturePlayer'));
+const CourseExam = lazy(() => import('../pages/student/CourseExam'));
 const AllLearning = lazy(() => import('../pages/student/AllLearning'));
 const Concepts = lazy(() => import('../pages/student/Concepts'));
 const MyRecords = lazy(() => import('../pages/student/MyRecords'));
@@ -87,6 +88,7 @@ export default function AppRoutes() {
           />
           <Route path={PATHS.STUDENT_LECTURES} element={<LectureList />} />
           <Route path={PATHS.STUDENT_LECTURE} element={<LecturePlayer />} />
+          <Route path={PATHS.STUDENT_COURSE_EXAM} element={<CourseExam />} />
           <Route path={PATHS.STUDENT_ALL_LEARNING} element={<AllLearning />} />
           <Route path={PATHS.STUDENT_CONCEPTS} element={<Concepts />} />
           <Route path={PATHS.STUDENT_RECORDS} element={<MyRecords />} />
