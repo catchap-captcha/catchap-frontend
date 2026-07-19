@@ -1091,6 +1091,42 @@ function ExamQuestionsModal({
     }
   };
 
+  // 2단계 문항 채우기 가속 — 가져온/생성한 문항은 모두 draft라 강사 검수 후 공개한다.
+  const [bulkBusy, setBulkBusy] = useState<'import' | 'gen' | null>(null);
+
+  const importFromLectures = async () => {
+    setBulkBusy('import');
+    try {
+      const r = await lectureApi.opsExamImportFromLectures(course.id);
+      say(
+        r.imported > 0
+          ? `강의 문항 ${r.imported}개를 시험 문항 초안으로 가져왔어요${r.skipped ? ` (${r.skipped}개 건너뜀)` : ''}. 검수 후 공개하세요.`
+          : `가져올 새 강의 문항이 없어요${r.skipped ? ` (${r.skipped}개는 이미 가져왔거나 미지원)` : ''}.`,
+      );
+      load();
+    } catch (e) {
+      say(errorDetail(e, '강의 문항 가져오기에 실패했어요.'));
+    } finally {
+      setBulkBusy(null);
+    }
+  };
+
+  const generateLlm = async () => {
+    const raw = window.prompt('AI로 만들 시험 문항 개수 (1~20)', '5');
+    if (raw == null) return;
+    const n = Math.max(1, Math.min(20, parseInt(raw, 10) || 5));
+    setBulkBusy('gen');
+    try {
+      const r = await lectureApi.opsExamGenerate(course.id, n);
+      say(`AI가 시험 문항 ${r.created}개를 초안으로 만들었어요. 검수 후 공개하세요.`);
+      load();
+    } catch (e) {
+      say(errorDetail(e, 'AI 문항 생성에 실패했어요. (운영 콘솔 설정에서 모델·키를 확인하세요)'));
+    } finally {
+      setBulkBusy(null);
+    }
+  };
+
   return (
     <div className="op-bh-overlay" onClick={() => !saving && onClose()}>
       <div className="op-formmodal op-lect-widemodal" onClick={(e) => e.stopPropagation()}>
@@ -1104,16 +1140,37 @@ function ExamQuestionsModal({
         </div>
 
         <div className="op-lect-qtools">
-          <button
-            className="op-btn op-btn--approve"
-            onClick={() => { setErr(''); setForm(newForm()); }}
-          >
-            <i className="ph-bold ph-plus" /> 문항 추가
-          </button>
+          <div className="op-lect-qbtns">
+            <button
+              className="op-btn op-btn--approve"
+              onClick={() => { setErr(''); setForm(newForm()); }}
+              disabled={bulkBusy !== null}
+            >
+              <i className="ph-bold ph-plus" /> 문항 추가
+            </button>
+            <button
+              className="op-btn op-btn--soft"
+              onClick={importFromLectures}
+              disabled={bulkBusy !== null}
+              title="이 코스 강의의 확인 문항을 시험 문항 초안으로 가져와요(이미 가져온 건 건너뜀)"
+            >
+              <i className="ph-bold ph-download-simple" />{' '}
+              {bulkBusy === 'import' ? '가져오는 중…' : '강의 문항 가져오기'}
+            </button>
+            <button
+              className="op-btn op-btn--soft"
+              onClick={generateLlm}
+              disabled={bulkBusy !== null}
+              title="AI가 코스 강의 구성으로 시험 문항 초안을 만들어요(운영 콘솔 설정의 생성 모델 사용)"
+            >
+              <i className="ph-bold ph-magic-wand" />{' '}
+              {bulkBusy === 'gen' ? '생성 중…' : 'AI로 생성'}
+            </button>
+          </div>
           <span className="lu-help">
             {activeCount > 0
               ? `공개 문항 ${activeCount}개 — 학생이 강의를 전부 완주하면 이 문항들을 다 맞혀야 수료해요(틀린 건 다시).`
-              : '공개 문항이 없어요 — 활성 문항이 0개면 학생에게 수료 시험이 보이지 않아요.'}
+              : '공개 문항이 없어요 — 활성 문항이 0개면 학생에게 수료 시험이 보이지 않아요. (가져오기·AI 생성 문항은 초안이라 검수 후 공개하세요.)'}
           </span>
         </div>
 

@@ -397,6 +397,23 @@ export const lectureApi = {
       .delete<{ ok: boolean }>(`/ops/courses/${courseId}/exam-questions/${questionId}`)
       .then((r) => r.data),
 
+  /** to-exam: 코스 강의의 활성 확인 문항을 시험 문항(draft)으로 일괄 복사(멱등). */
+  opsExamImportFromLectures: (courseId: string) =>
+    client
+      .post<{ imported: number; skipped: number }>(
+        `/ops/courses/${courseId}/exam-questions/import-from-lectures`,
+      )
+      .then((r) => r.data),
+
+  /** LLM 코스 시험 문항 자동 생성(origin=llm, draft) — 운영자가 고른 생성 슬롯 모델 사용. */
+  opsExamGenerate: (courseId: string, n: number) =>
+    client
+      .post<{ created: number; questions: OpsExamQuestion[] }>(
+        `/ops/courses/${courseId}/exam-questions/generate`,
+        { n },
+      )
+      .then((r) => r.data),
+
   /* ---- 코스 수료 시험(학생) ---- */
   examState: (courseId: string) =>
     client.get<ExamState>(`/courses/${courseId}/exam`).then((r) => r.data),
