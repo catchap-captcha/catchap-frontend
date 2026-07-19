@@ -791,13 +791,32 @@
   overflow-y: auto;
 }
 
-/* 수료 완료 / 진행 중 / 잠김 — 라벨 붙은 칸으로 구분 */
+/* 수료 완료 / 진행 중 / 잠김 — 라벨 붙은 칸으로 구분. 칸마다 기본 4개 + '더 보기'라
+   스크롤 대신 펼치기로 처리(코스가 많아져도 묻히지 않음). */
 .mr-compgroups {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  max-height: 420px;
-  overflow-y: auto;
+}
+/* 이 행만 위 정렬 — 수료 현황 카드가 '더 보기'로 길어져도 달력이 함께 늘지 않게 */
+.mr-row2--start {
+  align-items: start;
+}
+.mr-compmore {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: none;
+  background: none;
+  color: #8a7f6d;
+  font-weight: 800;
+  font-size: 12.5px;
+  padding: 4px 2px;
+  cursor: pointer;
+}
+.mr-compmore:hover {
+  color: #ff922e;
 }
 .mr-compgroup {
   display: flex;

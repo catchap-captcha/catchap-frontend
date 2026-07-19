@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, type NavigateFunction } from 'react-router-dom';
 import StudentLayout from '../../layouts/StudentLayout';
 import DemoBadge from '../../components/common/DemoBadge';
 import { useAuth } from '../../hooks/useAuth';
@@ -116,10 +116,96 @@ const FALLBACK: RecordsData = {
 const GRID_LINES = [50, 60, 70, 80, 90, 100];
 
 /** 수료일 표기 — 'YYYY-MM-DD…' ISO → 'M월 D일'(파싱 실패 시 빈 문자열) */
-function fmtPassedAt(iso: string | null): string {
+function fmtPassedAt(iso: string | null | undefined): string {
   if (!iso) return '';
   const d = new Date(iso);
   return Number.isNaN(d.getTime()) ? '' : `${d.getMonth() + 1}월 ${d.getDate()}일 수료`;
+}
+
+// 칸마다 기본 노출 수 — 코스가 많아져도 스크롤에 묻히지 않게, 넘치면 '더 보기'로 펼친다.
+const COMP_CAP = 4;
+
+/** 수료 현황 카드 1장 — 상태(수료/진행/잠김)에 따라 배지·문구가 갈린다. 클릭 시 그 코스 시험으로. */
+function CompCard({ c, navigate }: { c: StudentCourse; navigate: NavigateFunction }) {
+  const ex = c.exam!;
+  const go = () => navigate(`${PATHS.STUDENT_COURSE_EXAM}?course=${c.id}`);
+  if (ex.passed) {
+    const perfect = ex.perfect;
+    return (
+      <button className={`mr-comp${perfect ? ' mr-comp--perfect' : ''}`} onClick={go}>
+        <span className={`mr-compicon${perfect ? ' mr-compicon--perfect' : ''}`}>
+          <i className={perfect ? 'ph-fill ph-crown' : 'ph-fill ph-seal-check'} />
+        </span>
+        <span className="mr-compbody">
+          <span className="mr-comptitle">{c.title}</span>
+          <span className="mr-compmeta">
+            {c.subject} · 문항 {ex.question_count}개
+            {fmtPassedAt(ex.passed_at) && ` · ${fmtPassedAt(ex.passed_at)}`}
+          </span>
+        </span>
+        <span className={`mr-compbadge${perfect ? ' mr-compbadge--perfect' : ''}`}>
+          {perfect ? '완벽 통과' : '수료'}
+        </span>
+      </button>
+    );
+  }
+  if (ex.available) {
+    return (
+      <button className="mr-comp mr-comp--progress" onClick={go}>
+        <span className="mr-compicon mr-compicon--progress"><i className="ph-fill ph-exam" /></span>
+        <span className="mr-compbody">
+          <span className="mr-comptitle">{c.title}</span>
+          <span className="mr-compmeta">
+            {c.subject} · 수료까지 {Math.max(0, ex.question_count - ex.mastered_count)}문항 ({ex.mastered_count}/{ex.question_count} 정복)
+          </span>
+        </span>
+        <span className="mr-compbadge mr-compbadge--progress">응시 가능</span>
+      </button>
+    );
+  }
+  return (
+    <button className="mr-comp mr-comp--locked" onClick={go}>
+      <span className="mr-compicon mr-compicon--locked"><i className="ph-fill ph-lock-simple" /></span>
+      <span className="mr-compbody">
+        <span className="mr-comptitle">{c.title}</span>
+        <span className="mr-compmeta">
+          {c.subject} · 강의 {ex.lectures_done}/{ex.lectures_total} 완주 시 열려요
+        </span>
+      </span>
+      <span className="mr-compbadge mr-compbadge--locked">잠김</span>
+    </button>
+  );
+}
+
+/** 수료 현황 한 칸(수료 완료/진행 중/잠김) — 기본 COMP_CAP개만 보이고 넘치면 접었다 편다. */
+function CompGroup({
+  title, icon, items, navigate,
+}: {
+  title: string; icon: string; items: StudentCourse[]; navigate: NavigateFunction;
+}) {
+  const [showAll, setShowAll] = useState(false);
+  if (!items.length) return null;
+  const shown = showAll ? items : items.slice(0, COMP_CAP);
+  const hidden = items.length - shown.length;
+  return (
+    <div className="mr-compgroup">
+      <div className="mr-compgrouphead">
+        <i className={icon} /> {title}
+        <span className="mr-compgroupn">{items.length}</span>
+      </div>
+      {shown.map((c) => <CompCard key={c.id} c={c} navigate={navigate} />)}
+      {hidden > 0 && (
+        <button className="mr-compmore" onClick={() => setShowAll(true)}>
+          <i className="ph-bold ph-caret-down" /> {hidden}개 더 보기
+        </button>
+      )}
+      {showAll && items.length > COMP_CAP && (
+        <button className="mr-compmore" onClick={() => setShowAll(false)}>
+          <i className="ph-bold ph-caret-up" /> 접기
+        </button>
+      )}
+    </div>
+  );
 }
 
 /** 정답률 흐름 탭 순서 — 디자인 순서(전체 → 과목들) 유지용 */
@@ -409,8 +495,9 @@ export default function MyRecords() {
       </section>
 
       {/* 코스 수료 현황 + 학습 달력 ROW — 재중심화: 워치볼륨 막대 대신 '해낸 것 + 남은 것'을
-          수료 완료/진행 중/잠김 칸으로 나눠 한눈에(사용자 결정 0719) */}
-      <section className="mr-section mr-row2">
+          수료 완료/진행 중/잠김 칸으로 나눠 한눈에(사용자 결정 0719). 칸마다 기본 4개 +
+          '더 보기'라 코스가 많아도 스크롤에 묻히지 않는다. --start = 펼쳐도 달력과 안 어긋남 */}
+      <section className="mr-section mr-row2 mr-row2--start">
         <div className="mr-card">
           <div className="mr-weekhead">
             <h3 className="mr-h3">코스 수료 현황</h3>
@@ -430,97 +517,9 @@ export default function MyRecords() {
             </div>
           ) : (
             <div className="mr-compgroups">
-              {/* 수료 완료 칸 — 완벽 통과(왕관)/수료(seal) 배지 */}
-              {passedCourses.length > 0 && (
-                <div className="mr-compgroup">
-                  <div className="mr-compgrouphead">
-                    <i className="ph-fill ph-seal-check" /> 수료 완료
-                    <span className="mr-compgroupn">{passedCourses.length}</span>
-                  </div>
-                  {passedCourses.map((c) => {
-                    const perfect = !!c.exam?.perfect;
-                    return (
-                      <button
-                        key={c.id}
-                        className={`mr-comp${perfect ? ' mr-comp--perfect' : ''}`}
-                        onClick={() => navigate(`${PATHS.STUDENT_COURSE_EXAM}?course=${c.id}`)}
-                      >
-                        <span className={`mr-compicon${perfect ? ' mr-compicon--perfect' : ''}`}>
-                          <i className={perfect ? 'ph-fill ph-crown' : 'ph-fill ph-seal-check'} />
-                        </span>
-                        <span className="mr-compbody">
-                          <span className="mr-comptitle">{c.title}</span>
-                          <span className="mr-compmeta">
-                            {c.subject} · 문항 {c.exam?.question_count ?? 0}개
-                            {fmtPassedAt(c.exam?.passed_at ?? null) && ` · ${fmtPassedAt(c.exam?.passed_at ?? null)}`}
-                          </span>
-                        </span>
-                        <span className={`mr-compbadge${perfect ? ' mr-compbadge--perfect' : ''}`}>
-                          {perfect ? '완벽 통과' : '수료'}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-              {/* 진행 중 칸 — 응시 가능, 정복 진행률 */}
-              {inProgressCourses.length > 0 && (
-                <div className="mr-compgroup">
-                  <div className="mr-compgrouphead">
-                    <i className="ph-fill ph-hourglass-medium" /> 진행 중
-                    <span className="mr-compgroupn">{inProgressCourses.length}</span>
-                  </div>
-                  {inProgressCourses.map((c) => {
-                    const q = c.exam?.question_count ?? 0;
-                    const m = c.exam?.mastered_count ?? 0;
-                    return (
-                      <button
-                        key={c.id}
-                        className="mr-comp mr-comp--progress"
-                        onClick={() => navigate(`${PATHS.STUDENT_COURSE_EXAM}?course=${c.id}`)}
-                      >
-                        <span className="mr-compicon mr-compicon--progress">
-                          <i className="ph-fill ph-exam" />
-                        </span>
-                        <span className="mr-compbody">
-                          <span className="mr-comptitle">{c.title}</span>
-                          <span className="mr-compmeta">
-                            {c.subject} · 수료까지 {Math.max(0, q - m)}문항 ({m}/{q} 정복)
-                          </span>
-                        </span>
-                        <span className="mr-compbadge mr-compbadge--progress">응시 가능</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-              {/* 잠김 칸 — 강의 완주가 남음 */}
-              {lockedCourses.length > 0 && (
-                <div className="mr-compgroup">
-                  <div className="mr-compgrouphead">
-                    <i className="ph-fill ph-lock-simple" /> 잠김
-                    <span className="mr-compgroupn">{lockedCourses.length}</span>
-                  </div>
-                  {lockedCourses.map((c) => (
-                    <button
-                      key={c.id}
-                      className="mr-comp mr-comp--locked"
-                      onClick={() => navigate(`${PATHS.STUDENT_COURSE_EXAM}?course=${c.id}`)}
-                    >
-                      <span className="mr-compicon mr-compicon--locked">
-                        <i className="ph-fill ph-lock-simple" />
-                      </span>
-                      <span className="mr-compbody">
-                        <span className="mr-comptitle">{c.title}</span>
-                        <span className="mr-compmeta">
-                          {c.subject} · 강의 {c.exam?.lectures_done ?? 0}/{c.exam?.lectures_total ?? 0} 완주 시 열려요
-                        </span>
-                      </span>
-                      <span className="mr-compbadge mr-compbadge--locked">잠김</span>
-                    </button>
-                  ))}
-                </div>
-              )}
+              <CompGroup title="수료 완료" icon="ph-fill ph-seal-check" items={passedCourses} navigate={navigate} />
+              <CompGroup title="진행 중" icon="ph-fill ph-hourglass-medium" items={inProgressCourses} navigate={navigate} />
+              <CompGroup title="잠김" icon="ph-fill ph-lock-simple" items={lockedCourses} navigate={navigate} />
             </div>
           )}
         </div>
