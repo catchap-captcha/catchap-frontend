@@ -85,7 +85,7 @@ export const HANDOFF_ROUTE_MAP: Record<string, string> = {
   'CatChap 알림.dc.html': PATHS.STUDENT_NOTIFICATIONS,
   'CatChap 설정.dc.html': PATHS.STUDENT_SETTINGS,
   // 깨진 링크(파일 없음) → 게임화면으로 통일
-  'CatChap 한글낱말.dc.html': `${PATHS.STUDENT_GAME}?subject=국어`,
-  'CatChap 그림찾기.dc.html': `${PATHS.STUDENT_GAME}?subject=과학`,
+  'CatChap 한글낱말.dc.html': `${PATHS.STUDENT_GAME}?subject=국어&bank=1`,
+  'CatChap 그림찾기.dc.html': `${PATHS.STUDENT_GAME}?subject=과학&bank=1`,
   // (학교 콘솔 handoff 매핑은 제품 전환으로 제거 — 남은 링크는 종료 안내로 수렴)
 };

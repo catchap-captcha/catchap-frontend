@@ -187,7 +187,10 @@ export default function GameScreen() {
   // 전체학습 = 문제은행(bank) 무한 모드(사용자 결정 0714): 주차(chapter)는 목차로 유지하되
   // 그 안에서 안 푼>틀린>푼 우선으로 '단계 없이' 무한 출제 — 위젯이 세션 총량 없이 계속
   // '다음 문제'를 낸다(2문항마다 '결과 보기'로 끊기던 문제 해소). 종료는 '그만하기'뿐.
-  const bankMode = pBank;
+  // (Q 통합 3단계-c) 은행이 기본 모드 — 챕터(구 5단계)·일차(day) 지정이 없는 진입은 전부
+  // 오늘의 Q다(퀴즈 세션 은퇴로 비-bank 자유 세션이라는 것이 더 이상 없음). ?subject=만 있는
+  // 옛 딥링크·북마크도 자연스럽게 Q로 흡수된다.
+  const bankMode = pBank || (!chapter && !day);
   const infinite = bankMode; // 세션 총량 없음(무한)
   // 코스 Q 활성 조건: 코스는 과목 고정이라, 탭으로 진입 과목을 벗어나면 코스 범위도 벗어난
   // 것으로 보고 일반 오늘의 Q로 자연 전환한다(서버는 코스가 정본이라 과목 탭만 바꾸면
@@ -199,36 +202,9 @@ export default function GameScreen() {
   const startStage = chapter && !bankMode ? (stage ?? 1) : stage;
   const [curStage, setCurStage] = useState<number | undefined>(startStage);
 
-  /* 오늘의퀴즈 이어하기 — 서버는 오늘 푼 수를 이미 세지만(5번째에 done 승격) 화면 카운터가
-     로컬이라 새로고침하면 늘 1/5부터 다시 보였다. 오늘 이 과목에서 이미 푼 수(stage_done)를
-     받아와 그만큼 건너뛰고 남은 문항만 위젯 세션으로 연다. null = 조회 중(위젯 마운트 보류). */
-  const [resumeOffset, setResumeOffset] = useState<number | null>(null);
-  useEffect(() => {
-    let on = true;
-    // 챕터는 단계 커서(stagesDone)로 이미 이어하기가 되고, 복습·문제은행은 처음부터가 맞다
-    // (은행은 세션 개념이 없는 무한 연습 — 오늘의퀴즈 진행과도 분리)
-    if (!EDU_SITE_KEY || chapter || isReplay || pBank) {
-      setResumeOffset(0);
-      return;
-    }
-    setResumeOffset(null);
-    studentApi
-      .dailyQuiz()
-      .then((d: any) => {
-        if (!on) return;
-        const row = Array.isArray(d?.quizzes) ? d.quizzes.find((q: any) => q.subject === key) : null;
-        const done = typeof row?.stage_done === 'number' ? row.stage_done : 0;
-        // 이미 완료(5/5)면 재도전 = 새 5문항 세션 (기존 동작 유지)
-        setResumeOffset(done >= 1 && done <= 4 && row?.status !== 'done' ? done : 0);
-      })
-      .catch(() => {
-        if (on) setResumeOffset(0); // 조회 실패 시 처음부터 (기존 동작)
-      });
-    return () => {
-      on = false;
-    };
-  }, [key, chapter, isReplay, pBank]);
-  const skipToday = resumeOffset ?? 0;
+  /* (은퇴 0719, Q 통합 3단계-c) 오늘의퀴즈 이어하기(resumeOffset·dailyQuiz 조회) 삭제 —
+     퀴즈 세션 자체가 은퇴됐다(비-챕터·비-일차 진입은 아래 bankMode 기본값으로 전부 Q). */
+  const skipToday = 0;
 
   // 주소창 정리 — 쿼리스트링(?subject=%EC..&chapter=..)으로 들어오면 최초 1회 clean path
   // '/student/game' 로 즉시 치환하고 파라미터는 navigate state로 보존한다(실서비스처럼 주소가 깔끔).
@@ -281,7 +257,7 @@ export default function GameScreen() {
   // 이벤트 리스너 안에서 최신 값을 읽기 위한 세션 가방(ref) — 스테일 클로저 방지
   const sessRef = useRef({
     answered: 0, correct: 0, wrong: 0,
-    stagesDone: 0, coins: 0, sticker: false, stickerCoins: 0,
+    stagesDone: 0, coins: 0,
     bumpFailed: false, // 단계 저장(chapterStageComplete) 실패 — 결과 화면에 경고 표시
     setAnswered: 0, setCorrect: 0, // 은행 세트(10문항) 단위 카운터 — 세트 요약에 쓰고 리셋
   });
@@ -294,7 +270,7 @@ export default function GameScreen() {
     setStageBanner(null);
     sessRef.current = {
       answered: 0, correct: 0, wrong: 0, stagesDone: 0, coins: 0,
-      sticker: false, stickerCoins: 0, bumpFailed: false,
+      bumpFailed: false,
       // 은행 세트 카운터도 리셋 — 빠뜨리면 undefined+1=NaN으로 세트 요약이 영영 안 뜬다(0719 실증)
       setAnswered: 0, setCorrect: 0,
     };
@@ -347,8 +323,6 @@ export default function GameScreen() {
             timeMs: Math.max(0, Date.now() - startedAt.current),
             replay: isReplay,
             coins: bag.coins,
-            sticker: bag.sticker,
-            stickerCoins: bag.stickerCoins,
             bumpFailed: bag.bumpFailed,
             startedIso: new Date(startedAt.current).toISOString(),
           },
@@ -366,12 +340,8 @@ export default function GameScreen() {
       const d = (e as CustomEvent).detail as
         | {
             correct?: boolean;
-            session?: {
-              coins_earned?: number;
-              sticker_awarded?: boolean;
-              sticker_coins?: number;
-              quiz_bonus?: number; // 오늘의퀴즈 완료 보상 — 완료 승격 문항에서만 >0
-            };
+            // (은퇴 0719) 퀴즈 보상 키(quiz_bonus·sticker_*)는 서버 응답에서 키째 사라짐
+            session?: { coins_earned?: number };
           }
         | undefined;
       playSfx(d?.correct ? 'correct' : 'wrong');
@@ -383,18 +353,6 @@ export default function GameScreen() {
       else bag.wrong += 1;
       if (d?.session) {
         bag.coins += d.session.coins_earned ?? 0;
-        if ((d.session.quiz_bonus ?? 0) > 0) {
-          bag.coins += d.session.quiz_bonus ?? 0;
-          setStageBanner(`🎁 오늘의 퀴즈 완료 보상 +${d.session.quiz_bonus}코인!`);
-          window.setTimeout(() => setStageBanner(null), 3000);
-        }
-        if (d.session.sticker_awarded) {
-          bag.sticker = true;
-          bag.stickerCoins += d.session.sticker_coins ?? 0;
-          // 6과목 완주 순간 — 방해 없는 토스트로 축하 (자정에 초기화되는 오늘의 스티커)
-          setStageBanner(`🌟 오늘의 스티커 획득! 6과목 모두 완료 (+${d.session.sticker_coins ?? 0}코인)`);
-          window.setTimeout(() => setStageBanner(null), 3000);
-        }
       }
       setWidgetStats((st) => ({
         answered: st.answered + 1,
@@ -859,17 +817,9 @@ export default function GameScreen() {
                 </div>
               </div>
             )}
-            {EDU_SITE_KEY && resumeOffset === null ? (
-              /* 이어하기 위치(오늘 푼 수) 조회 중 — 잘못된 총문항으로 마운트했다 갈아끼우지 않게 잠깐 대기 */
-              <div className="gs-mount-body">
-                <span className="gs-mount-icon">
-                  <i className="ph-fill ph-hourglass-medium" />
-                </span>
-                <span className="gs-mount-title">오늘 진행을 확인하고 있어요…</span>
-              </div>
-            ) : EDU_SITE_KEY ? (
+            {EDU_SITE_KEY ? (
               /* 1st-party 임베드 — 우리 앱이 교육형 API(위젯)를 직접 소비.
-                 학생 토큰(auth)을 실어 서버가 채점 시점에 코인·진도·오늘의퀴즈를 적립하고,
+                 학생 토큰(auth)을 실어 서버가 채점 시점에 학습기록·SRS 상태를 적립하고,
                  행동데이터(behavior_summaries)도 학생 귀속으로 수집한다. */
               <CatchapWidget
                 siteKey={EDU_SITE_KEY}
@@ -882,7 +832,7 @@ export default function GameScreen() {
                 chapter={chapter}
                 stage={bankMode ? undefined : curStage}
                 replay={isReplay}
-                bank={pBank}
+                bank={bankMode}
                 early={earlyReview}
                 course={courseId}
                 total={infinite ? undefined : EDU_TOTAL - skipToday}

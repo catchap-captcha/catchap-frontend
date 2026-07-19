@@ -6,7 +6,8 @@ import './HabitTrendLine.css';
 export interface HabitDay {
   date: string;
   attempts: number;
-  done: number;
+  /** 그날 일일 목표(Q_DAILY_GOAL) 달성 여부 — 옛 done(완료 과목 수)을 대체(Q 통합 3단계-c) */
+  goal_met: boolean;
   accuracy: number | null;
 }
 
@@ -55,7 +56,7 @@ export default function HabitTrendLine({ days, streak }: { days: HabitDay[]; str
       </div>
       {hasData ? (
         <svg viewBox={`0 0 ${W} ${H}`} className="htl-svg" preserveAspectRatio="none" role="img"
-             aria-label="일별 오늘의 퀴즈 정답률 추세">
+             aria-label="일별 오늘의 Q 정답률 추세">
           {[25, 50, 75].map((g) => (
             <line key={g} x1={PAD} x2={W - PAD} y1={H - PAD - (g / 100) * (H - PAD * 2)}
                   y2={H - PAD - (g / 100) * (H - PAD * 2)} className="htl-grid" />
@@ -66,9 +67,9 @@ export default function HabitTrendLine({ days, streak }: { days: HabitDay[]; str
           ))}
           {pts.map((p, i) =>
             p.y == null ? null : (
-              <circle key={i} cx={p.x} cy={p.y} r={p.d.done >= 6 ? 3.6 : 2.4}
-                      className={`htl-dot${p.d.done >= 6 ? ' htl-dot-full' : ''}`}>
-                <title>{`${p.d.date} · 정답률 ${p.d.accuracy}% · ${p.d.done}과목 완료`}</title>
+              <circle key={i} cx={p.x} cy={p.y} r={p.d.goal_met ? 3.6 : 2.4}
+                      className={`htl-dot${p.d.goal_met ? ' htl-dot-full' : ''}`}>
+                <title>{`${p.d.date} · 정답률 ${p.d.accuracy}%${p.d.goal_met ? ' · 목표 달성' : ''}`}</title>
               </circle>
             ),
           )}

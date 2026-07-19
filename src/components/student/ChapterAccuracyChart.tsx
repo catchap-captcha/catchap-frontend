@@ -18,7 +18,6 @@ export interface SubjectStat {
   unlocked_chapters: number;
   max_chapters: number;
   overall_accuracy: number | null;
-  daily_quiz_accuracy: number | null;
   unreviewed_wrong?: number;
   chapters: ChapterStat[];
 }
@@ -67,11 +66,6 @@ export default function ChapterAccuracyChart({ subjects }: { subjects: SubjectSt
           <span className="cac-overall-lbl">문제은행 정답률</span>
         </div>
         <div className="cac-badges">
-          {cur.daily_quiz_accuracy != null && (
-            <span className="cac-badge" title="오늘의 퀴즈(습관)는 별도 지표예요">
-              <i className="ph-fill ph-lightning" /> 오늘의 퀴즈 {cur.daily_quiz_accuracy}%
-            </span>
-          )}
           <span className="cac-badge cac-badge-soft">
             열린 {cur.unlocked_chapters} / 전체 {cur.max_chapters} 챕터
           </span>

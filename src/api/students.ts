@@ -55,7 +55,7 @@ export const studentApi = {
 
   recommendations: () => client.get<any>('/students/me/recommendations').then((r) => r.data),
 
-  dailyQuiz: () => client.get<any>('/students/me/daily-quiz').then((r) => r.data),
+  /* (은퇴 0719, Q 통합 3단계-c) dailyQuiz 제거 — 서버 엔드포인트도 삭제됨. '매일'은 qToday. */
 
   /** 전체학습(문제은행) 진도 — 과목별 안 푼/틀린/맞춘 문항 수 (출제 우선순위와 동일 분류) */
   bankProgress: () => client.get<any>('/students/me/bank-progress').then((r) => r.data),

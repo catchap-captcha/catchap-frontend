@@ -201,7 +201,7 @@ export default function Recommended() {
                 </div>
               </div>
               <Link
-                to={`${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(r.subject)}&chapter=${r.chapter}`}
+                to={`${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(r.subject)}&chapter=${r.chapter}&bank=1`}
                 className="rc-solve"
               >
                 풀어보기 <i className="ph-bold ph-arrow-right" />
@@ -214,7 +214,7 @@ export default function Recommended() {
       {/* START ALL */}
       <section className="rc-startsec">
         <Link
-          to={`${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(startRec?.subject ?? '수학')}&chapter=${startRec?.chapter ?? 2}`}
+          to={`${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(startRec?.subject ?? '수학')}&chapter=${startRec?.chapter ?? 2}&bank=1`}
           className="rc-startall"
         >
           <i className="ph-fill ph-play-circle" />

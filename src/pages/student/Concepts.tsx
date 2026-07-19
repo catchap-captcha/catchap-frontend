@@ -177,7 +177,7 @@ export default function Concepts() {
 
   const goQuiz = (subject: string, num: number, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
-    navigate(`${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(subject)}&chapter=${num}`);
+    navigate(`${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(subject)}&chapter=${num}&bank=1`);
   };
 
   /* 원본 renderVals(): total + readCount */
@@ -215,7 +215,7 @@ export default function Concepts() {
         grad: s.grad,
         points: c.points,
         example: c.example,
-        quizHref: `${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(sub)}&chapter=${idx + 1}`,
+        quizHref: `${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(sub)}&chapter=${idx + 1}&bank=1`,
       };
     }
   }

@@ -74,7 +74,7 @@ function mapHref(href: string): string {
   if (href.startsWith('/')) return href; // API가 route를 직접 줄 경우
   const [file, query] = href.split('?');
   const subject = GAME_FILE_SUBJECT[file];
-  if (subject) return `${PATHS.STUDENT_GAME}?subject=${subject}`;
+  if (subject) return `${PATHS.STUDENT_GAME}?subject=${subject}&bank=1`;
   const route = HANDOFF_ROUTE_MAP[file];
   if (!route) return PATHS.STUDENT_HOME;
   return query ? `${route}?${query}` : route;

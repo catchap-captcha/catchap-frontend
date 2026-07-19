@@ -34,19 +34,8 @@ const FALLBACK: Record<string, ResultEntry> = {
   '생활': { solid: '#FF6DA6', soft: '#FFE3EF', cleared: 1, correct: 4, score: '+110', time: '2:35', streak: 4, ai: '안전 규칙을 잘 지켰어요! 멈추고, 살피고, 건너기 — 참 잘 기억했어요. 다음 단계도 안전하게! 🐾' },
 };
 
-const MAP: Record<string, { color: string; soft: string; icon: string }> = {
-  '국어': { color: '#FF5A4D', soft: '#FFE0DB', icon: 'ph-fill ph-book-open' },
-  '영어': { color: '#FF922E', soft: '#FFEDD6', icon: 'ph-fill ph-translate' },
-  '수학': { color: '#17B08C', soft: '#DFF6EE', icon: 'ph-fill ph-plus-minus' },
-  '과학': { color: '#2E7BFF', soft: '#E1EDFF', icon: 'ph-fill ph-flask' },
-  '사회': { color: '#8B6BFF', soft: '#EAE2FF', icon: 'ph-fill ph-scroll' },
-  '생활': { color: '#FF6DA6', soft: '#FFE3EF', icon: 'ph-fill ph-house-line' },
-};
-
-const ORDER = ['국어', '영어', '수학', '과학', '사회', '생활'];
-
-// TODO(api): 오늘 완료한 과목 — API 실패 시 원본 TODAY_DONE 유지
-const TODAY_DONE = ['국어', '영어', '수학'];
+/* (은퇴 0719, Q 통합 3단계-c) 학습 지도용 MAP/ORDER/TODAY_DONE 상수 삭제 —
+   6과목 완료 지도 카드가 사라지며 소비처가 없어졌다. */
 
 const CONFETTI = [
   { left: '6%', bg: '#FF5A4D', delay: '0s' },
@@ -77,8 +66,6 @@ interface SessState {
   timeMs: number;
   replay: boolean;
   coins: number;
-  sticker: boolean;
-  stickerCoins: number;
   bumpFailed?: boolean;
   startedIso: string;
 }
@@ -147,8 +134,6 @@ export default function GameResult() {
   }, []);
 
   const [data, setData] = useState<Record<string, ResultEntry>>(FALLBACK);
-  const [todayDone, setTodayDone] = useState<string[]>(TODAY_DONE);
-  const [order, setOrder] = useState<string[]>(ORDER);
   // 서버 실집계 없음(예시값) 여부 — 세션(sess)도 없이 이 값이면 화면 전체가 데모라 명시한다.
   const [demo, setDemo] = useState(false);
 
@@ -175,14 +160,7 @@ export default function GameResult() {
             },
           };
         });
-        if (Array.isArray(d.today_done)) {
-          setTodayDone(d.today_done.filter((k: any) => typeof k === 'string'));
-        }
-        /* 오늘의 학습 지도 과목 순서 — 스타일(MAP)에 있는 과목만 반영 */
-        if (Array.isArray(d.subject_order)) {
-          const so = d.subject_order.filter((k: any) => typeof k === 'string' && MAP[k]);
-          if (so.length) setOrder(so);
-        }
+        /* (은퇴 0719) today_done·subject_order(오늘의 학습 지도)는 서버에서 키째 사라짐 */
         if (typeof d.nickname === 'string' && d.nickname) setApiNick(d.nickname);
         setDemo(!!d.demo); // 실집계 없음(예시값) — 세션도 없으면 화면에 데모 명시
       })
@@ -203,23 +181,13 @@ export default function GameResult() {
         correct: sess.correct,
         total: Math.max(1, sess.answered),
         time: fmtTime(sess.timeMs),
-        score: sess.replay ? '+0' : `+${sess.coins + sess.stickerCoins}`,
+        score: sess.replay ? '+0' : `+${sess.coins}`,
       }
     : server;
   const total = s.total ?? 5;
 
-  /* ---- 오늘의 학습 지도 (원본 renderVals 그대로) ---- */
-  const doneSet: Record<string, boolean> = {};
-  todayDone.forEach((k) => {
-    doneSet[k] = true;
-  });
-  // 방금 과목을 완료로 칠하는 건 '오늘의퀴즈 세션을 끝까지 마쳤을 때'만 —
-  // 중도 종료·챕터 세션까지 칠하면 학습 지도(6과목)가 부풀고 다음 과목 추천이 어긋난다.
-  if (!sess || (sess.finished && !sess.chapter && !sess.replay)) doneSet[subjectKey] = true;
-  const doneCount = order.filter((k) => doneSet[k]).length;
-  const allDoneToday = doneCount >= order.length;
-  const nextUndone = order.find((k) => !doneSet[k]) || null;
-
+  /* (은퇴 0719, Q 통합 3단계-c) '오늘의 학습 지도'(6과목 완료 지도·다음 과목 추천) 제거 —
+     과목당 완료 개념이 퀴즈와 함께 은퇴됐다. 다음 행동 안내는 '문제은행으로' CTA 하나. */
   const pct = Math.round((s.correct / total) * 100);
   const circ = 339.29;
   const offset = (circ * (1 - pct / 100)).toFixed(2);
@@ -236,16 +204,13 @@ export default function GameResult() {
   const isBank = !!sess?.bank; // 전체학습 무한 문제은행 세션
   const isChapter = !!sess?.chapter && !isBank; // bank는 5단계 챕터 UI를 쓰지 않는다
 
-  // 다시 하기 = 복습 모드(replay=1): 기록은 남되 오늘의퀴즈 상태·코인 중복 반영 없음.
-  // 일차 플레이였으면 같은 일차(day)로 다시 들어간다.
+  // 다시 하기: 일차(day) 플레이였으면 같은 일차로, 아니면 같은 과목 오늘의 Q(bank)로.
   const dayParam = dayVal; // state 우선(strip 후에도 유지) — '같은 일차로 다시' 링크가 안 깨지게
-  const gameHref = `${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(subjectKey)}${
-    dayParam ? `&day=${encodeURIComponent(String(dayParam))}` : ''
-  }&replay=1`;
-  // 챕터맵 폐지(문제은행 전환 0713) — 다음 미완료 과목의 오늘의퀴즈로 바로 진입
-  const primaryHref = allDoneToday
-    ? PATHS.STUDENT_HOME
-    : `${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(nextUndone || subjectKey)}`;
+  const gameHref = dayParam
+    ? `${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(subjectKey)}&day=${encodeURIComponent(String(dayParam))}&replay=1`
+    : `${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(subjectKey)}&bank=1`;
+  // (은퇴 0719) '다음 미완료 과목' 추천 폐지 — 기본 다음 행동은 오늘의 Q 계속
+  const primaryHref = `${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(subjectKey)}&bank=1`;
 
   // 성적 티어 — 이번에 푼 문항 정답률(pct) 기준으로 멘트·아이콘·색을 바꾼다.
   // (다 맞힌 아이와 다 틀린 아이에게 같은 "참 잘했어요"를 주지 않는다. 단, 저성적도
@@ -330,9 +295,7 @@ export default function GameResult() {
                         ? `${sess?.lastDoneStage}단계까지`
                         : '도전'
                   }${sess?.replay ? ' · 복습' : ''}`
-                : allDoneToday
-                  ? '오늘의 학습 끝!'
-                  : `${subjectKey} 완료!`}
+                : `${subjectKey} 완료!`}
           </div>
           <div className="gr-mascotwrap">
             <img src={mascot} alt="마스코트" className="gr-mascotimg" />
@@ -355,11 +318,9 @@ export default function GameResult() {
                   : (sess?.lastDoneStage ?? 0) > 0
                     ? `${sess?.lastDoneStage}단계까지 완료했어요. 다음에 이어서 하면 돼요!`
                     : '풀던 단계는 다음에 이어서 할 수 있어요!'
-                : allDoneToday
-                  ? `오늘 하루 학습을 다 마쳤어요! 여섯 과목을 모두 끝낸 ${name}, 정말 대단해요 🏆`
-                  : perf !== 'none'
-                    ? perfInfo.sub
-                    : `${subjectKey} 학습을 끝냈어요. 오늘도 한 뼘 더 자랐네요!`}
+                : perf !== 'none'
+                  ? perfInfo.sub
+                  : `${subjectKey} 학습을 끝냈어요. 오늘도 한 뼘 더 자랐네요!`}
           </p>
           {isChapter && (
             /* 챕터 5단계 진행 뱃지 — 완료 단계 채움 (bank 무한모드는 미표시) */
@@ -372,11 +333,6 @@ export default function GameResult() {
                   {i + 1 <= sess.lastDoneStage ? <i className="ph-fill ph-check" /> : i + 1}
                 </span>
               ))}
-            </div>
-          )}
-          {sess?.sticker && (
-            <div className="gr-stickerline">
-              🌟 오늘의 스티커 획득! 6과목 모두 완료 (+{sess.stickerCoins}코인)
             </div>
           )}
           {sess?.bumpFailed && (
@@ -519,75 +475,8 @@ export default function GameResult() {
           </div>
         )}
 
-        {/* 오늘의 퀴즈 결과: 6과목 학습 지도. (챕터·전체학습 bank 결과에는 표시하지 않는다) */}
-        {!isChapter && !isBank && (
-        <div className="gr-mapcard">
-          <div className="gr-maphead">
-            <div className="gr-maphead-left">
-              <span className="gr-mapicon">
-                <i className="ph-fill ph-map-trifold" />
-              </span>
-              <div>
-                <h3 className="gr-maptitle">오늘의 학습 지도</h3>
-                <p className="gr-mapsub">6과목 중 {doneCount}개 완료</p>
-              </div>
-            </div>
-            <span
-              className="gr-todaybadge"
-              style={{
-                background: allDoneToday ? '#DFF6ED' : s.soft,
-                color: allDoneToday ? '#17B08C' : s.solid,
-              }}
-            >
-              <i className={allDoneToday ? 'ph-fill ph-check-circle' : 'ph-fill ph-flag'} />
-              {allDoneToday ? '오늘의 학습 끝! 🎉' : `남은 과목 ${order.length - doneCount}개`}
-            </span>
-          </div>
-          <div className="gr-mapnodes">
-            {order.map((subject, i) => {
-              const m = MAP[subject];
-              const isHero = subject === subjectKey;
-              const isDone = !!doneSet[subject] && !isHero;
-              return (
-                <div key={subject} className="gr-mapnode">
-                  <div
-                    className="gr-mapline"
-                    style={{
-                      borderTopColor: doneSet[subject] ? m.color : '#E4DCD0',
-                      display: i === 0 ? 'none' : 'block',
-                    }}
-                  />
-                  {isHero ? (
-                    <div
-                      className="gr-node gr-node-hero"
-                      style={{
-                        background: m.color,
-                        boxShadow: `0 0 0 5px ${m.soft}, 0 12px 22px -8px ${m.color}`,
-                      }}
-                    >
-                      <i className="ph-fill ph-trophy" />
-                    </div>
-                  ) : isDone ? (
-                    <div className="gr-node gr-node-done" style={{ background: m.color }}>
-                      <i className="ph-fill ph-check" />
-                    </div>
-                  ) : (
-                    <div className="gr-node gr-node-todo">
-                      <i className={m.icon} />
-                    </div>
-                  )}
-                  <span
-                    className="gr-maplabel"
-                    style={{ color: isHero ? m.color : isDone ? '#5A5248' : '#B0A79B' }}
-                  >
-                    {subject}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-        )}
+        {/* (은퇴 0719, Q 통합 3단계-c) '오늘의 학습 지도'(6과목 완료 지도) 카드 삭제 —
+            과목당 완료 개념이 퀴즈와 함께 은퇴됐고, 다음 행동은 오늘의 Q CTA가 안내한다. */}
 
         {/* AI COMMENT */}
         <div className="gr-aicard">
@@ -694,8 +583,8 @@ export default function GameResult() {
               문제은행으로
             </Link>
             <Link to={primaryHref} className="gr-btn-primary">
-              <i className={allDoneToday ? 'ph-fill ph-house' : 'ph-fill ph-arrow-right'} />
-              {allDoneToday ? '홈으로 가기' : '다음 과목 하러 가기'}
+              <i className="ph-fill ph-arrow-right" />
+              오늘의 Q 계속하기
             </Link>
           </div>
         )}
