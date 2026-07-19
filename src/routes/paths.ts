@@ -23,7 +23,7 @@ export const PATHS = {
   STUDENT_HOME: '/student/home',
   STUDENT_GAME: '/student/game', // ?subject=&chapter=
   STUDENT_RESULT: '/student/result', // ?subject=
-  STUDENT_DAILY_QUIZ: '/student/daily-quiz',
+  STUDENT_DAILY_QUIZ: '/student/daily-quiz', // 은퇴(Q 통합 0719) — 문제은행으로 리다이렉트만 남음
   STUDENT_LECTURES: '/student/lectures', // ?subject= — 과목별 강의 카탈로그(개념 설명 톤)
   STUDENT_LECTURE: '/student/lecture', // ?id= — 강의실(플레이어 + 시청 검증)
   STUDENT_ALL_LEARNING: '/student/all-learning',
@@ -75,7 +75,7 @@ export const HANDOFF_ROUTE_MAP: Record<string, string> = {
   'CatChap 학습 홈.dc.html': PATHS.STUDENT_HOME,
   'CatChap 게임화면.dc.html': PATHS.STUDENT_GAME,
   'CatChap 학습결과.dc.html': PATHS.STUDENT_RESULT,
-  'CatChap 오늘의퀴즈.dc.html': PATHS.STUDENT_DAILY_QUIZ,
+  'CatChap 오늘의퀴즈.dc.html': PATHS.STUDENT_ALL_LEARNING, // 퀴즈 은퇴 → 문제은행(오늘의 Q)
   'CatChap 전체학습.dc.html': PATHS.STUDENT_ALL_LEARNING,
   'CatChap 개념설명.dc.html': PATHS.STUDENT_CONCEPTS,
   'CatChap 나의기록.dc.html': PATHS.STUDENT_RECORDS,

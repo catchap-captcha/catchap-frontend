@@ -688,11 +688,10 @@ export default function GameResult() {
               <i className="ph-fill ph-arrow-counter-clockwise" />
               다시 하기
             </Link>
-            {/* 이 분기는 비챕터(오늘의 퀴즈 축) — 다른 과목은 오늘의 퀴즈 화면에서 고른다.
-                전체 학습(챕터) 세션의 '문제은행으로'는 위 sess.chapter 분기가 담당. */}
-            <Link to={PATHS.STUDENT_DAILY_QUIZ} className="gr-btn-secondary">
-              <i className="ph-fill ph-lightning" />
-              다른 과목 풀기
+            {/* 오늘의퀴즈 은퇴(Q 통합 2단계) — 다른 과목 선택은 문제은행(오늘의 Q)에서 */}
+            <Link to={PATHS.STUDENT_ALL_LEARNING} className="gr-btn-secondary">
+              <i className="ph-fill ph-stack" />
+              문제은행으로
             </Link>
             <Link to={primaryHref} className="gr-btn-primary">
               <i className={allDoneToday ? 'ph-fill ph-house' : 'ph-fill ph-arrow-right'} />

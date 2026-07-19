@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
 import ProtectedRoute from './ProtectedRoute';
 import { PATHS } from './paths';
 
@@ -22,7 +22,7 @@ const InvitePage = lazy(() => import('../pages/auth/InvitePage'));
 const StudentHome = lazy(() => import('../pages/student/StudentHome'));
 const GameScreen = lazy(() => import('../pages/student/GameScreen'));
 const GameResult = lazy(() => import('../pages/student/GameResult'));
-const DailyQuiz = lazy(() => import('../pages/student/DailyQuiz'));
+// 오늘의퀴즈 페이지는 Q 통합(0719 결정)으로 은퇴 — 옛 경로는 문제은행으로 보낸다(아래 라우트)
 const LectureList = lazy(() => import('../pages/student/LectureList'));
 const LecturePlayer = lazy(() => import('../pages/student/LecturePlayer'));
 const AllLearning = lazy(() => import('../pages/student/AllLearning'));
@@ -80,7 +80,11 @@ export default function AppRoutes() {
           <Route path={PATHS.STUDENT_HOME} element={<StudentHome />} />
           <Route path={PATHS.STUDENT_GAME} element={<GameScreen />} />
           <Route path={PATHS.STUDENT_RESULT} element={<GameResult />} />
-          <Route path={PATHS.STUDENT_DAILY_QUIZ} element={<DailyQuiz />} />
+          {/* 오늘의퀴즈 은퇴(Q 통합 2단계) — 북마크·옛 링크는 문제은행(오늘의 Q)으로 */}
+          <Route
+            path={PATHS.STUDENT_DAILY_QUIZ}
+            element={<Navigate to={PATHS.STUDENT_ALL_LEARNING} replace />}
+          />
           <Route path={PATHS.STUDENT_LECTURES} element={<LectureList />} />
           <Route path={PATHS.STUDENT_LECTURE} element={<LecturePlayer />} />
           <Route path={PATHS.STUDENT_ALL_LEARNING} element={<AllLearning />} />
