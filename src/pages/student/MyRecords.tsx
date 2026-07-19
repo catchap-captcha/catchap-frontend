@@ -4,7 +4,7 @@ import StudentLayout from '../../layouts/StudentLayout';
 import DemoBadge from '../../components/common/DemoBadge';
 import { useAuth } from '../../hooks/useAuth';
 import { studentApi } from '../../api/students';
-import { lectureApi, type CourseCompletionItem } from '../../api/lectures';
+import { lectureApi, type StudentCourse } from '../../api/lectures';
 import { PATHS } from '../../routes/paths';
 import ChapterAccuracyChart, { type SubjectStat } from '../../components/student/ChapterAccuracyChart';
 import HabitTrendLine, { type HabitDay } from '../../components/student/HabitTrendLine';
@@ -245,8 +245,8 @@ export default function MyRecords() {
   const [subject, setSubject] = useState('전체');
   const [chapStats, setChapStats] = useState<SubjectStat[]>([]);
   const [habit, setHabit] = useState<{ days: HabitDay[]; streak: number } | null>(null);
-  // 수료한 코스(성취) — null=조회 전, []=수료 없음(정직한 빈 상태). 재중심화 핵심 섹션.
-  const [completions, setCompletions] = useState<CourseCompletionItem[] | null>(null);
+  // 수료 시험이 있는 코스 — null=조회 전. 수료 완료/진행 중/잠김으로 나눠 보여준다(재중심화 핵심).
+  const [examCourses, setExamCourses] = useState<StudentCourse[] | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -267,16 +267,20 @@ export default function MyRecords() {
     studentApi.habitStats(4)
       .then((d: any) => { if (mounted && Array.isArray(d?.days)) setHabit({ days: d.days, streak: d.streak ?? 0 }); })
       .catch(() => {});
-    lectureApi.courseCompletions()
-      .then((rows) => { if (mounted) setCompletions(rows); })
-      .catch(() => { if (mounted) setCompletions([]); });
+    lectureApi.courses()
+      .then((rows) => { if (mounted) setExamCourses(rows.filter((c) => c.exam?.has_exam)); })
+      .catch(() => { if (mounted) setExamCourses([]); });
     return () => {
       mounted = false;
     };
   }, []);
 
   const name = (me?.name ?? '하은').trim() || '하은';
-  const perfectCount = (completions ?? []).filter((c) => c.perfect).length;
+  // 수료 시험 코스를 상태별로 나눈다 — 수료 완료 / 진행 중(응시 가능) / 잠김(강의 미완주)
+  const passedCourses = (examCourses ?? []).filter((c) => c.exam?.passed);
+  const inProgressCourses = (examCourses ?? []).filter((c) => !c.exam?.passed && c.exam?.available);
+  const lockedCourses = (examCourses ?? []).filter((c) => !c.exam?.passed && !c.exam?.available);
+  const perfectCount = passedCourses.filter((c) => c.exam?.perfect).length;
 
   const learned = new Set(data.calendar.learned);
   const today = data.calendar.today;
@@ -374,7 +378,7 @@ export default function MyRecords() {
               <i className="ph-fill ph-seal-check" />
             </span>
             <div className="mr-statval">
-              {completions?.length ?? 0}
+              {passedCourses.length}
               <span className="mr-statunit">개</span>
             </div>
             <div className="mr-statlabel">
@@ -404,48 +408,119 @@ export default function MyRecords() {
         </div>
       </section>
 
-      {/* 수료한 코스(성취) + 학습 달력 ROW — 재중심화: 워치볼륨 막대 대신 수료증 진열장 */}
+      {/* 코스 수료 현황 + 학습 달력 ROW — 재중심화: 워치볼륨 막대 대신 '해낸 것 + 남은 것'을
+          수료 완료/진행 중/잠김 칸으로 나눠 한눈에(사용자 결정 0719) */}
       <section className="mr-section mr-row2">
-        {/* 수료한 코스 — 배움→연습→증명의 결과물(완벽 통과/수료 배지). 코스 시험으로 이동 */}
         <div className="mr-card">
           <div className="mr-weekhead">
-            <h3 className="mr-h3">수료한 코스</h3>
-            {completions && completions.length > 0 && (
-              <span className="mr-weekchip">{completions.length}개 수료 🎓</span>
+            <h3 className="mr-h3">코스 수료 현황</h3>
+            {examCourses && examCourses.length > 0 && (
+              <span className="mr-weekchip">{passedCourses.length}/{examCourses.length} 수료 🎓</span>
             )}
           </div>
-          {completions === null ? (
+          {examCourses === null ? (
             <div className="mr-comp-empty">불러오는 중…</div>
-          ) : completions.length === 0 ? (
+          ) : examCourses.length === 0 ? (
             <div className="mr-comp-empty">
               <i className="ph-fill ph-seal-check" />
-              <p>아직 수료한 코스가 없어요.<br />강의를 완주하고 수료 시험에 도전해 보세요!</p>
+              <p>아직 수료 시험이 있는 코스가 없어요.<br />강의를 완주하고 수료 시험에 도전해 보세요!</p>
               <button className="mr-comp-cta" onClick={() => navigate(PATHS.STUDENT_LECTURES)}>
                 <i className="ph-fill ph-television" /> 강의 보러 가기
               </button>
             </div>
           ) : (
-            <div className="mr-complist">
-              {completions.map((c) => (
-                <button
-                  key={c.course_id}
-                  className={`mr-comp${c.perfect ? ' mr-comp--perfect' : ''}`}
-                  onClick={() => navigate(`${PATHS.STUDENT_COURSE_EXAM}?course=${c.course_id}`)}
-                >
-                  <span className={`mr-compicon${c.perfect ? ' mr-compicon--perfect' : ''}`}>
-                    <i className={c.perfect ? 'ph-fill ph-crown' : 'ph-fill ph-seal-check'} />
-                  </span>
-                  <span className="mr-compbody">
-                    <span className="mr-comptitle">{c.title}</span>
-                    <span className="mr-compmeta">
-                      {c.subject} · 문항 {c.question_count}개 · {fmtPassedAt(c.passed_at)}
-                    </span>
-                  </span>
-                  <span className={`mr-compbadge${c.perfect ? ' mr-compbadge--perfect' : ''}`}>
-                    {c.perfect ? '완벽 통과' : '수료'}
-                  </span>
-                </button>
-              ))}
+            <div className="mr-compgroups">
+              {/* 수료 완료 칸 — 완벽 통과(왕관)/수료(seal) 배지 */}
+              {passedCourses.length > 0 && (
+                <div className="mr-compgroup">
+                  <div className="mr-compgrouphead">
+                    <i className="ph-fill ph-seal-check" /> 수료 완료
+                    <span className="mr-compgroupn">{passedCourses.length}</span>
+                  </div>
+                  {passedCourses.map((c) => {
+                    const perfect = !!c.exam?.perfect;
+                    return (
+                      <button
+                        key={c.id}
+                        className={`mr-comp${perfect ? ' mr-comp--perfect' : ''}`}
+                        onClick={() => navigate(`${PATHS.STUDENT_COURSE_EXAM}?course=${c.id}`)}
+                      >
+                        <span className={`mr-compicon${perfect ? ' mr-compicon--perfect' : ''}`}>
+                          <i className={perfect ? 'ph-fill ph-crown' : 'ph-fill ph-seal-check'} />
+                        </span>
+                        <span className="mr-compbody">
+                          <span className="mr-comptitle">{c.title}</span>
+                          <span className="mr-compmeta">
+                            {c.subject} · 문항 {c.exam?.question_count ?? 0}개
+                            {fmtPassedAt(c.exam?.passed_at ?? null) && ` · ${fmtPassedAt(c.exam?.passed_at ?? null)}`}
+                          </span>
+                        </span>
+                        <span className={`mr-compbadge${perfect ? ' mr-compbadge--perfect' : ''}`}>
+                          {perfect ? '완벽 통과' : '수료'}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+              {/* 진행 중 칸 — 응시 가능, 정복 진행률 */}
+              {inProgressCourses.length > 0 && (
+                <div className="mr-compgroup">
+                  <div className="mr-compgrouphead">
+                    <i className="ph-fill ph-hourglass-medium" /> 진행 중
+                    <span className="mr-compgroupn">{inProgressCourses.length}</span>
+                  </div>
+                  {inProgressCourses.map((c) => {
+                    const q = c.exam?.question_count ?? 0;
+                    const m = c.exam?.mastered_count ?? 0;
+                    return (
+                      <button
+                        key={c.id}
+                        className="mr-comp mr-comp--progress"
+                        onClick={() => navigate(`${PATHS.STUDENT_COURSE_EXAM}?course=${c.id}`)}
+                      >
+                        <span className="mr-compicon mr-compicon--progress">
+                          <i className="ph-fill ph-exam" />
+                        </span>
+                        <span className="mr-compbody">
+                          <span className="mr-comptitle">{c.title}</span>
+                          <span className="mr-compmeta">
+                            {c.subject} · 수료까지 {Math.max(0, q - m)}문항 ({m}/{q} 정복)
+                          </span>
+                        </span>
+                        <span className="mr-compbadge mr-compbadge--progress">응시 가능</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+              {/* 잠김 칸 — 강의 완주가 남음 */}
+              {lockedCourses.length > 0 && (
+                <div className="mr-compgroup">
+                  <div className="mr-compgrouphead">
+                    <i className="ph-fill ph-lock-simple" /> 잠김
+                    <span className="mr-compgroupn">{lockedCourses.length}</span>
+                  </div>
+                  {lockedCourses.map((c) => (
+                    <button
+                      key={c.id}
+                      className="mr-comp mr-comp--locked"
+                      onClick={() => navigate(`${PATHS.STUDENT_COURSE_EXAM}?course=${c.id}`)}
+                    >
+                      <span className="mr-compicon mr-compicon--locked">
+                        <i className="ph-fill ph-lock-simple" />
+                      </span>
+                      <span className="mr-compbody">
+                        <span className="mr-comptitle">{c.title}</span>
+                        <span className="mr-compmeta">
+                          {c.subject} · 강의 {c.exam?.lectures_done ?? 0}/{c.exam?.lectures_total ?? 0} 완주 시 열려요
+                        </span>
+                      </span>
+                      <span className="mr-compbadge mr-compbadge--locked">잠김</span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>

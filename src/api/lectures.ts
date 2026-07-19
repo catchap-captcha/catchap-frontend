@@ -47,7 +47,8 @@ export interface StudentCourse {
   /** 그중 이 학생이 완주한 강의의 문항 수 — >0이면 '이 코스 문제 풀기' 버튼,
    *  0인데 총>0이면 "강의 완주 시 열려요" 잠금 안내(배움→연습 순서를 화면이 말해준다) */
   unlocked_question_count?: number;
-  /** 수료 시험 요약(#28) — 없음/잠김/응시가능(진행)/수료 카드 렌더의 원천 */
+  /** 수료 시험 요약(#28) — 없음/잠김/응시가능(진행)/수료 카드 렌더의 원천.
+   *  '나의 기록' 수료 현황(수료 완료/진행 중/잠김 칸)도 이 요약 하나로 그린다. */
   exam?: {
     has_exam: boolean; // 활성 시험 문항 0개면 false(시험 카드 숨김)
     question_count: number;
@@ -57,6 +58,7 @@ export interface StudentCourse {
     lectures_total: number;
     passed: boolean;
     perfect: boolean;
+    passed_at: string | null; // 수료일(미수료면 null)
   };
 }
 
@@ -221,16 +223,6 @@ export interface ExamSubmitResult {
   progress: { mastered: number; total: number };
   passed: boolean;
   perfect: boolean;
-}
-
-/** 내가 수료한 코스 1건 — 나의 기록 성취 섹션. GET /courses/completions. */
-export interface CourseCompletionItem {
-  course_id: string;
-  title: string;
-  subject: string;
-  perfect: boolean; // 완벽 통과(전 문항 한 판) 여부
-  question_count: number; // 수료 시점 문항 수 스냅샷
-  passed_at: string | null;
 }
 
 export interface OpsLectureQuestion {
@@ -420,10 +412,6 @@ export const lectureApi = {
   /** 회차 제출 → 결과지(문항별 정오·해설·출처) + 진행 + 수료 여부 */
   examSubmit: (courseId: string, body: ExamSubmitInput) =>
     client.post<ExamSubmitResult>(`/courses/${courseId}/exam/submit`, body).then((r) => r.data),
-
-  /** 내가 수료한 코스 목록 — '나의 기록' 성취(수료·완벽 통과) 섹션. 삭제된 코스는 제외. */
-  courseCompletions: () =>
-    client.get<CourseCompletionItem[]>('/courses/completions').then((r) => r.data),
 
   /** 운영자 미리보기 스트림 발급 — 문항 시점을 눈으로 찾고 강의 화면을 따오기 위한 재생.
    *  학생 세션을 만들지 않는다(같은 계정 학생 세션을 걷어차지 않음). stream_url은 서명 토큰이
