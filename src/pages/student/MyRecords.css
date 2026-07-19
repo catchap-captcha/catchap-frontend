@@ -140,6 +140,11 @@
   color: #17b08c;
 }
 
+.mr-staticon-seal {
+  background: #dff6ee;
+  color: #17b08c;
+}
+
 .mr-statval {
   font-family: 'Jua', sans-serif;
   font-size: 32px;
@@ -738,3 +743,120 @@
 /* 두 축 — 습관 추세 + 숙련(주차별 정답률) */
 .mr-twoaxis { display: grid; grid-template-columns: 1fr; gap: 16px; }
 @media (min-width: 900px) { .mr-twoaxis { grid-template-columns: 1fr 1fr; align-items: start; } }
+
+/* ===== 수료한 코스(성취) — 재중심화 0719, 워치볼륨 막대 대체 ===== */
+.mr-comp-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 10px;
+  padding: 28px 16px;
+  color: #9b9086;
+}
+.mr-comp-empty i {
+  font-size: 34px;
+  color: #cdbfae;
+}
+.mr-comp-empty p {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+.mr-comp-cta {
+  margin-top: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  border-radius: 12px;
+  background: #ff922e;
+  color: #fff;
+  font-family: 'Jua', sans-serif;
+  font-size: 13.5px;
+  padding: 9px 16px;
+  cursor: pointer;
+}
+.mr-comp-cta:hover {
+  filter: brightness(1.05);
+}
+
+.mr-complist {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+.mr-comp {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  text-align: left;
+  border: 2px solid #eef2f8;
+  border-radius: 14px;
+  background: #fff;
+  padding: 11px 13px;
+  cursor: pointer;
+  transition: transform 0.14s, box-shadow 0.14s;
+}
+.mr-comp:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 22px -16px rgba(60, 90, 140, 0.4);
+}
+.mr-comp--perfect {
+  border-color: #ffe4b8;
+  background: linear-gradient(120deg, #fffaf0, #fff5e3);
+}
+.mr-compicon {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  background: #dff6ee;
+  color: #17b08c;
+}
+.mr-compicon--perfect {
+  background: #fff3d6;
+  color: #e08a00;
+}
+.mr-compbody {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.mr-comptitle {
+  font-weight: 800;
+  font-size: 14px;
+  color: #3a3340;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mr-compmeta {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #9b9086;
+}
+.mr-compbadge {
+  flex-shrink: 0;
+  font-weight: 800;
+  font-size: 10.5px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #dff6ee;
+  color: #17b08c;
+}
+.mr-compbadge--perfect {
+  background: #fff3d6;
+  color: #e08a00;
+}

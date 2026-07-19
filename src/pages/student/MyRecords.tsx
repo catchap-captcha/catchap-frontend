@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import StudentLayout from '../../layouts/StudentLayout';
 import DemoBadge from '../../components/common/DemoBadge';
 import { useAuth } from '../../hooks/useAuth';
 import { studentApi } from '../../api/students';
+import { lectureApi, type CourseCompletionItem } from '../../api/lectures';
+import { PATHS } from '../../routes/paths';
 import ChapterAccuracyChart, { type SubjectStat } from '../../components/student/ChapterAccuracyChart';
 import HabitTrendLine, { type HabitDay } from '../../components/student/HabitTrendLine';
 import './MyRecords.css';
@@ -86,11 +89,11 @@ const FALLBACK: RecordsData = {
   },
   stats: { streakDays: 12, totalHours: 8, totalMinutes: 20, totalSolved: 342, avgAccuracy: 89 },
   mastery: [
-    { name: '끌어놓기 놀이', icon: 'ph-fill ph-hand-grabbing', color: '#17B08C', bg: '#DFF6ED', pct: 95, solved: 40, delta: 3 },
-    { name: '한글 낱말 찾기', icon: 'ph-fill ph-text-aa', color: '#FF5A6E', bg: '#FFE3E9', pct: 88, solved: 50, delta: 2 },
-    { name: '숫자 놀이터', icon: 'ph-fill ph-plus-minus', color: '#FF922E', bg: '#FFEDE0', pct: 76, solved: 45, delta: -4 },
-    { name: '그림 찾기 퀴즈', icon: 'ph-fill ph-image', color: '#2E7BFF', bg: '#E6F0FF', pct: 64, solved: 38, delta: 6 },
-    { name: '안전 지킴이', icon: 'ph-fill ph-shield-check', color: '#8B6BFF', bg: '#EDE6FF', pct: 32, solved: 25, delta: 12 },
+    { name: '국어', icon: 'ph-fill ph-text-aa', color: '#FF5A6E', bg: '#FFE3E9', pct: 88, solved: 50, delta: 2 },
+    { name: '수학', icon: 'ph-fill ph-plus-minus', color: '#FF922E', bg: '#FFEDE0', pct: 76, solved: 45, delta: -4 },
+    { name: '과학', icon: 'ph-fill ph-flask', color: '#2E7BFF', bg: '#E6F0FF', pct: 64, solved: 38, delta: 6 },
+    { name: '영어', icon: 'ph-fill ph-translate', color: '#17B08C', bg: '#DFF6ED', pct: 95, solved: 40, delta: 3 },
+    { name: '생활', icon: 'ph-fill ph-shield-check', color: '#8B6BFF', bg: '#EDE6FF', pct: 32, solved: 25, delta: 12 },
   ],
   subjects: [
     { key: '전체', color: '#17B08C', data: [72, 78, 75, 84, 88, 92] },
@@ -102,15 +105,22 @@ const FALLBACK: RecordsData = {
     { key: '생활', color: '#FF6DA6', data: [78, 80, 79, 85, 88, 91] },
   ],
   activities: [
-    { title: '그림 찾기 퀴즈', sub: '고양이만 골라요 · 8문제', icon: 'ph-fill ph-image', color: '#2E7BFF', bg: '#E6F0FF', result: '정답률 86%', grade: 'ok', time: '방금 전' },
-    { title: '끌어놓기 놀이', sub: '카드 옮기기 · 6문제', icon: 'ph-fill ph-hand-grabbing', color: '#17B08C', bg: '#DFF6ED', result: '정답률 100%', grade: 'ok', time: '오늘 오후 3:10' },
-    { title: '숫자 놀이터', sub: '더하기·빼기 · 10문제', icon: 'ph-fill ph-plus-minus', color: '#FF922E', bg: '#FFEDE0', result: '정답률 72%', grade: 'mid', time: '어제' },
-    { title: '한글 낱말 찾기', sub: '받침 완성 · 10문제', icon: 'ph-fill ph-text-aa', color: '#FF5A6E', bg: '#FFE3E9', result: '정답률 90%', grade: 'ok', time: '2일 전' },
+    { title: '과학 학습', sub: '과학 · 8문제', icon: 'ph-fill ph-flask', color: '#2E7BFF', bg: '#E6F0FF', result: '정답률 86%', grade: 'ok', time: '방금 전' },
+    { title: '영어 학습', sub: '영어 · 6문제', icon: 'ph-fill ph-translate', color: '#17B08C', bg: '#DFF6ED', result: '정답률 100%', grade: 'ok', time: '오늘 오후 3:10' },
+    { title: '수학 학습', sub: '수학 · 10문제', icon: 'ph-fill ph-plus-minus', color: '#FF922E', bg: '#FFEDE0', result: '정답률 72%', grade: 'mid', time: '어제' },
+    { title: '국어 학습', sub: '국어 · 10문제', icon: 'ph-fill ph-text-aa', color: '#FF5A6E', bg: '#FFE3E9', result: '정답률 90%', grade: 'ok', time: '2일 전' },
   ],
   accLabels: ['6회 전', '5회 전', '4회 전', '3회 전', '2회 전', '최근'],
 };
 
 const GRID_LINES = [50, 60, 70, 80, 90, 100];
+
+/** 수료일 표기 — 'YYYY-MM-DD…' ISO → 'M월 D일'(파싱 실패 시 빈 문자열) */
+function fmtPassedAt(iso: string | null): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime()) ? '' : `${d.getMonth() + 1}월 ${d.getDate()}일 수료`;
+}
 
 /** 정답률 흐름 탭 순서 — 디자인 순서(전체 → 과목들) 유지용 */
 const SUBJECT_ORDER = ['전체', '국어', '영어', '수학', '과학', '사회', '생활'];
@@ -229,11 +239,14 @@ function mapRecords(d: any, prev: RecordsData): Partial<RecordsData> {
 
 export default function MyRecords() {
   const { me } = useAuth();
+  const navigate = useNavigate();
   const [data, setData] = useState<RecordsData>(FALLBACK);
   const [demo, setDemo] = useState(false); // 시도 기록이 없어 전부 데모값이면 true
   const [subject, setSubject] = useState('전체');
   const [chapStats, setChapStats] = useState<SubjectStat[]>([]);
   const [habit, setHabit] = useState<{ days: HabitDay[]; streak: number } | null>(null);
+  // 수료한 코스(성취) — null=조회 전, []=수료 없음(정직한 빈 상태). 재중심화 핵심 섹션.
+  const [completions, setCompletions] = useState<CourseCompletionItem[] | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -254,12 +267,16 @@ export default function MyRecords() {
     studentApi.habitStats(4)
       .then((d: any) => { if (mounted && Array.isArray(d?.days)) setHabit({ days: d.days, streak: d.streak ?? 0 }); })
       .catch(() => {});
+    lectureApi.courseCompletions()
+      .then((rows) => { if (mounted) setCompletions(rows); })
+      .catch(() => { if (mounted) setCompletions([]); });
     return () => {
       mounted = false;
     };
   }, []);
 
   const name = (me?.name ?? '하은').trim() || '하은';
+  const perfectCount = (completions ?? []).filter((c) => c.perfect).length;
 
   const learned = new Set(data.calendar.learned);
   const today = data.calendar.today;
@@ -327,7 +344,7 @@ export default function MyRecords() {
             </span>
             <div>
               <h1 className="mr-title">{name}이의 성장 기록</h1>
-              <p className="mr-subtitle">지금까지 얼마나 자랐는지 한눈에 볼 수 있어요</p>
+              <p className="mr-subtitle">배운 강의·풀어 온 문제·수료한 코스를 한눈에 볼 수 있어요</p>
             </div>
           </div>
           <button className="mr-reportbtn">
@@ -353,14 +370,16 @@ export default function MyRecords() {
             </div>
           </div>
           <div className="mr-stat">
-            <span className="mr-staticon mr-staticon-clock">
-              <i className="ph-fill ph-clock-countdown" />
+            <span className="mr-staticon mr-staticon-seal">
+              <i className="ph-fill ph-seal-check" />
             </span>
             <div className="mr-statval">
-              {data.stats.totalHours}
-              <span className="mr-statunit">시간 {data.stats.totalMinutes}분</span>
+              {completions?.length ?? 0}
+              <span className="mr-statunit">개</span>
             </div>
-            <div className="mr-statlabel">총 학습 시간</div>
+            <div className="mr-statlabel">
+              수료한 코스{perfectCount > 0 && <span className="mr-stathl"> · 완벽 {perfectCount}</span>}
+            </div>
           </div>
           <div className="mr-stat">
             <span className="mr-staticon mr-staticon-puzzle">
@@ -385,26 +404,50 @@ export default function MyRecords() {
         </div>
       </section>
 
-      {/* CHART + CALENDAR ROW */}
+      {/* 수료한 코스(성취) + 학습 달력 ROW — 재중심화: 워치볼륨 막대 대신 수료증 진열장 */}
       <section className="mr-section mr-row2">
-        {/* monthly bars */}
+        {/* 수료한 코스 — 배움→연습→증명의 결과물(완벽 통과/수료 배지). 코스 시험으로 이동 */}
         <div className="mr-card">
           <div className="mr-weekhead">
-            <h3 className="mr-h3">최근 4주 학습량</h3>
-            <span className="mr-weekchip">꾸준히 오르는 중 📈</span>
+            <h3 className="mr-h3">수료한 코스</h3>
+            {completions && completions.length > 0 && (
+              <span className="mr-weekchip">{completions.length}개 수료 🎓</span>
+            )}
           </div>
-          <div className="mr-bars">
-            {data.weeks.map((w, i) => (
-              <div key={w.label} className="mr-barcol">
-                <span className="mr-barval">{w.minutes}분</span>
-                <div
-                  className={`mr-bar${i === data.weeks.length - 1 ? ' mr-bar-now' : ''}`}
-                  style={{ height: w.v + '%' }}
-                />
-                <span className="mr-barlabel">{w.label}</span>
-              </div>
-            ))}
-          </div>
+          {completions === null ? (
+            <div className="mr-comp-empty">불러오는 중…</div>
+          ) : completions.length === 0 ? (
+            <div className="mr-comp-empty">
+              <i className="ph-fill ph-seal-check" />
+              <p>아직 수료한 코스가 없어요.<br />강의를 완주하고 수료 시험에 도전해 보세요!</p>
+              <button className="mr-comp-cta" onClick={() => navigate(PATHS.STUDENT_LECTURES)}>
+                <i className="ph-fill ph-television" /> 강의 보러 가기
+              </button>
+            </div>
+          ) : (
+            <div className="mr-complist">
+              {completions.map((c) => (
+                <button
+                  key={c.course_id}
+                  className={`mr-comp${c.perfect ? ' mr-comp--perfect' : ''}`}
+                  onClick={() => navigate(`${PATHS.STUDENT_COURSE_EXAM}?course=${c.course_id}`)}
+                >
+                  <span className={`mr-compicon${c.perfect ? ' mr-compicon--perfect' : ''}`}>
+                    <i className={c.perfect ? 'ph-fill ph-crown' : 'ph-fill ph-seal-check'} />
+                  </span>
+                  <span className="mr-compbody">
+                    <span className="mr-comptitle">{c.title}</span>
+                    <span className="mr-compmeta">
+                      {c.subject} · 문항 {c.question_count}개 · {fmtPassedAt(c.passed_at)}
+                    </span>
+                  </span>
+                  <span className={`mr-compbadge${c.perfect ? ' mr-compbadge--perfect' : ''}`}>
+                    {c.perfect ? '완벽 통과' : '수료'}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
         {/* streak calendar */}
         <div className="mr-card">
@@ -452,7 +495,7 @@ export default function MyRecords() {
       <section className="mr-section mr-row2">
         <div className="mr-card">
           <div className="mr-mhead">
-            <h3 className="mr-h3">놀이별 실력</h3>
+            <h3 className="mr-h3">과목별 실력</h3>
             <span className="mr-goal">
               <span className="mr-goaltick" />
               목표 80%
@@ -603,7 +646,7 @@ export default function MyRecords() {
         <section className="mr-section mr-twoaxis">
           {habit?.days.some((d) => d.accuracy != null) && (
             <div className="mr-card">
-              <h3 className="mr-h3">오늘의 퀴즈 · 습관 추세</h3>
+              <h3 className="mr-h3">오늘의 Q · 학습 추세</h3>
               <HabitTrendLine days={habit.days} streak={habit.streak} />
             </div>
           )}

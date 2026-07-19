@@ -223,6 +223,16 @@ export interface ExamSubmitResult {
   perfect: boolean;
 }
 
+/** 내가 수료한 코스 1건 — 나의 기록 성취 섹션. GET /courses/completions. */
+export interface CourseCompletionItem {
+  course_id: string;
+  title: string;
+  subject: string;
+  perfect: boolean; // 완벽 통과(전 문항 한 판) 여부
+  question_count: number; // 수료 시점 문항 수 스냅샷
+  passed_at: string | null;
+}
+
 export interface OpsLectureQuestion {
   id: string;
   lecture_id: string;
@@ -410,6 +420,10 @@ export const lectureApi = {
   /** 회차 제출 → 결과지(문항별 정오·해설·출처) + 진행 + 수료 여부 */
   examSubmit: (courseId: string, body: ExamSubmitInput) =>
     client.post<ExamSubmitResult>(`/courses/${courseId}/exam/submit`, body).then((r) => r.data),
+
+  /** 내가 수료한 코스 목록 — '나의 기록' 성취(수료·완벽 통과) 섹션. 삭제된 코스는 제외. */
+  courseCompletions: () =>
+    client.get<CourseCompletionItem[]>('/courses/completions').then((r) => r.data),
 
   /** 운영자 미리보기 스트림 발급 — 문항 시점을 눈으로 찾고 강의 화면을 따오기 위한 재생.
    *  학생 세션을 만들지 않는다(같은 계정 학생 세션을 걷어차지 않음). stream_url은 서명 토큰이
