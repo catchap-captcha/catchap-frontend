@@ -518,7 +518,7 @@ const _GUIDE_STEPS: { icon: string; title: string; body: string }[] = [
   {
     icon: 'ph-closed-captioning',
     title: '2. (선택) 자막 넣기',
-    body: "강의 행의 '문항'을 열면 위쪽에 '자막' 바가 있어요. 이미 자막(SRT/VTT)이 있으면 올리거나 붙여넣으세요 — AI가 그 자막으로 더 정확한 문항을 만들어요. 없으면 자동 음성 전사(STT)를 쓰니 건너뛰어도 돼요.",
+    body: "강의 행의 '문항'을 열면 위쪽에 '자막' 바가 있어요. 이미 자막(SRT/VTT)이 있으면 올리거나 붙여넣으세요 — AI가 그 자막으로 더 정확한 문항을 만들어요. 없으면 강의 소리를 자막으로 자동 변환하니 건너뛰어도 돼요.",
   },
   {
     icon: 'ph-sparkle',
@@ -1727,7 +1727,7 @@ const emptyQ = (): QForm => ({
 /* 강사 제공 자막(전사) 바 — 확인 문항 모달 안. 자막이 있으면 AI 생성이 자동 STT 대신
    이 자막을 쓴다(품질↑·비용↓·OpenAI 키·25MB 한계 우회). SRT/VTT 업로드 + 붙여넣기. */
 const _TR_SRC_LABEL: Record<string, string> = {
-  srt: '강사 제공 SRT', vtt: '강사 제공 VTT', paste: '강사 붙여넣기', stt: '자동 STT',
+  srt: '강사 제공 SRT', vtt: '강사 제공 VTT', paste: '강사 붙여넣기', stt: '소리 자동 변환',
 };
 function TranscriptBar({
   lectureId,
@@ -1779,12 +1779,12 @@ function TranscriptBar({
   };
 
   const clear = async () => {
-    if (!window.confirm('저장된 자막을 삭제할까요? 다음 AI 생성부터 자동 STT로 돌아가요.')) return;
+    if (!window.confirm('저장된 자막을 삭제할까요? 다음 AI 생성부터 소리 자동 변환으로 돌아가요.')) return;
     setBusy(true);
     try {
       await lectureApi.opsTranscriptDelete(lectureId);
       setSt({ has_transcript: false, source: null, segment_count: 0, preview: [], updated_at: null });
-      note(true, '자막을 삭제했어요 — 다음 생성은 자동 STT를 써요.');
+      note(true, '자막을 삭제했어요 — 다음 생성은 소리 자동 변환을 써요.');
     } catch (e) {
       note(false, errorDetail(e, '자막 삭제에 실패했어요.'));
     } finally {
@@ -1800,11 +1800,11 @@ function TranscriptBar({
           {st?.has_transcript ? (
             <span>
               <b>자막 있음</b> · {_TR_SRC_LABEL[st.source ?? ''] ?? st.source} · {st.segment_count}개 구간
-              {' '}— AI 생성이 이 자막을 써요(자동 STT 안 돎).
+              {' '}— AI 생성이 이 자막을 써요(소리 자동 변환 안 함).
             </span>
           ) : (
             <span>
-              자막 없음 — AI 생성 시 <b>자동 STT</b>로 전사해요. 강사 자막이 있으면 올리면
+              자막 없음 — AI 생성 시 강의 소리를 <b>자막으로 자동 변환</b>해요. 강사 자막을 올리면
               품질↑·비용↓(25MB 한계도 우회).
             </span>
           )}
@@ -2224,7 +2224,7 @@ function QuestionsModal({
       // 전사 출처를 정직하게 앞에 밝힌다 — 강사 자막 / 자동 STT / 자막 없음(메타)
       const trNote = res.transcript_source
         ? res.transcript_source === 'stt'
-          ? '자동 STT 자막 기반'
+          ? '소리 자동 변환 자막 기반'
           : '강사 제공 자막 기반'
         : '자막 없이 제목·설명 기반';
       if (res.self_verified) {
@@ -2274,6 +2274,12 @@ function QuestionsModal({
           </button>
         </div>
 
+        {/* 처음 보는 강사를 위한 한 줄 정의 — '확인 문항'이 무엇인지 여기서 바로 알려준다. */}
+        <p className="op-lect-whatis">
+          영상 시청 중간에 뜨는 질문이에요 — 학생이 그 대목을 실제로 보고 이해했는지 확인해요(못
+          맞히면 그 대목을 다시 보고 재도전). 확인 문항이 없으면 시청 검증이 걸리지 않아요.
+        </p>
+
         {/* 문항·자막 저작은 강사 전용 — 운영자는 문항 조회(검수)만(ops 권한 B) */}
         {isOps ? (
           <div className="op-lect-qtools">
@@ -2289,13 +2295,40 @@ function QuestionsModal({
                 문항 추가
               </button>
               <div className="op-lect-gen">
-                <input value={genN} onChange={(e) => setGenN(e.target.value)} className="op-lect-gen-n" aria-label="생성 개수" />
-                <button className="op-btn op-btn--reject" disabled={generating} onClick={generate}>
+                <label className="op-lect-gen-lb">
+                  문항
+                  <input
+                    type="number"
+                    min={1}
+                    max={10}
+                    value={genN}
+                    onChange={(e) => setGenN(e.target.value)}
+                    className="op-lect-gen-n"
+                    aria-label="AI로 만들 문항 개수 (1~10)"
+                  />
+                  개
+                </label>
+                <button
+                  className="op-btn op-btn--reject"
+                  disabled={generating}
+                  onClick={generate}
+                  title="자막(없으면 강의 소리를 자막으로 자동 변환)을 바탕으로 확인 문항 초안을 AI가 만들어요"
+                >
                   <i className="ph-bold ph-sparkle" />
                   {generating ? '생성 중…' : 'AI 문항 생성'}
                 </button>
               </div>
             </div>
+            {/* 사용 시점 안내 — 왼쪽 숫자(개수)와 'AI 문항 생성'이 무엇을 하는지 강사에게 명시.
+                온보딩 모달에도 있지만, 실제 누르는 자리에서 한 번 더 알려줘야 처음 강사도 헤매지 않는다. */}
+            <p className="op-lect-genhint">
+              <i className="ph-bold ph-info" />
+              <span>
+                정한 <b>문항 수</b>만큼 AI가 <b>확인 문항 초안</b>을 만들어요 — 강의 소리를 자막으로
+                자동 변환해 그 내용으로(강사 자막을 올리면 더 정확해요). 만든 문항은 <b>검수 후
+                ‘공개’</b>해야 학생에게 출제돼요. (운영 콘솔 설정의 생성 모델 사용)
+              </span>
+            </p>
             {/* 강사 제공 자막 — 있으면 위 'AI 문항 생성'이 자동 STT 대신 이 자막을 쓴다 */}
             <TranscriptBar lectureId={lec.id} note={(ok, msg) => { setBannerOk(ok); setBanner(msg); }} />
           </>
