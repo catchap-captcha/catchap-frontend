@@ -20,7 +20,6 @@ const SOURCES = [
   { v: 'edu-api', label: '교육형 위젯' },
   { v: 'game', label: '인앱 게임' },
   { v: 'forest', label: '메인 캡차' },
-  { v: 'scratchpad', label: '연습장' },
 ];
 const DATASETS = [
   { v: 'included', label: '학습셋 포함(큐레이션됨)' },

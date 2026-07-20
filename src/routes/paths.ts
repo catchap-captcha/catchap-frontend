@@ -50,7 +50,6 @@ export const PATHS = {
   OPS_INQUIRIES: '/ops/inquiries',
   OPS_BEHAVIOR: '/ops/behavior',
   OPS_BEHAVIOR_EXPORT: '/ops/behavior/export', // 외부 업체 제공용 익명 내보내기
-  OPS_SCRATCH: '/ops/scratch', // 연습장 필기 익명 집계(원본 미열람)
   OPS_LOGS: '/ops/logs',
   OPS_OPERATORS: '/ops/operators', // 운영자 계정 관리
   OPS_SYSTEM: '/ops/system', // 시스템 상태 (실측 헬스체크)

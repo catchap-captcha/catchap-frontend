@@ -31,7 +31,6 @@ const GROUPS: { label: string; items: { to: string; icon: string; label: string 
     label: '데이터',
     items: [
       { to: PATHS.OPS_BEHAVIOR, icon: 'ph-fingerprint', label: '행동 데이터' },
-      { to: PATHS.OPS_SCRATCH, icon: 'ph-pencil-line', label: '필기 집계' },
       { to: PATHS.OPS_BEHAVIOR_EXPORT, icon: 'ph-export', label: '외부 내보내기' },
       { to: PATHS.OPS_LOGS, icon: 'ph-scroll', label: '감사 로그' },
     ],

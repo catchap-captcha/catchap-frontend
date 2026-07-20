@@ -44,13 +44,6 @@ export const studentApi = {
 
   wrongNotes: () => client.get<any>('/students/me/wrong-notes').then((r) => r.data),
 
-  /** 연습장 필기 목록(과목별) — {subjects:[{subject,count,strokes}], items:[meta]} */
-  scratchList: (subject?: string) =>
-    client.get<any>('/students/me/scratch', { params: { subject } }).then((r) => r.data),
-  /** 연습장 필기 재생(본인) — strokes 포함(파기됐으면 빈 배열 + purged=true) */
-  scratchDetail: (recordId: string) =>
-    client.get<any>(`/students/me/scratch/${recordId}`).then((r) => r.data),
-
   badges: () => client.get<any>('/students/me/badges').then((r) => r.data),
 
   recommendations: () => client.get<any>('/students/me/recommendations').then((r) => r.data),
