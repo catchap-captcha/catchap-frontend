@@ -600,6 +600,44 @@
 .op-exam-pass--low { background: #ffe2df; color: #d23f34; }
 .op-exam-qstat-b { background: #f1eee8; color: #7a7060; }
 
+/* 오답 선택지 분석(distractor analysis) — 틀린 학생이 고른 보기 */
+.op-exam-distractors {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #9b8f80;
+}
+.op-exam-distractors > i { font-size: 12px; color: #c08a3a; }
+.op-exam-distr {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 8px;
+  border-radius: 8px;
+  background: #fdeee0;
+  color: #b06a1e;
+  font-weight: 700;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.op-exam-distr b { font-weight: 900; }
+/* 정답 보기가 (부분정답 등으로) 오답 시도에 섞인 경우 — 다른 색으로 구분 */
+.op-exam-distr--ans { background: #e6f0ff; color: #2e6fd6; }
+.op-exam-distr-tag {
+  font-size: 9.5px;
+  font-weight: 800;
+  background: #2e6fd6;
+  color: #fff;
+  border-radius: 5px;
+  padding: 0 4px;
+}
+
 /* ===== 이미지 문항 ===== */
 /* 문항 행의 이미지 썸네일(가져온/첨부된 이미지 미리보기) */
 .op-exam-qthumbs { display: flex; gap: 6px; flex-wrap: wrap; margin: 4px 0 2px; }

@@ -168,6 +168,13 @@ export interface ExamQuestionInput {
 }
 
 /** 코스 시험 통계(강사·운영자 대시보드) — 문항별 통과율·오답·근사 소요시간 + 코스 수료율. */
+/** 보기별 통계 — 오답 선택지 분석(어느 보기가 오답을 낚나) */
+export interface ExamOptionStat {
+  index: number;
+  text: string;
+  is_answer: boolean;
+  wrong_picks: number; // 이 보기를 고른 오답 시도 수
+}
 export interface ExamQuestionStat {
   id: string;
   prompt: string;
@@ -176,9 +183,13 @@ export interface ExamQuestionStat {
   students_mastered: number;
   /** 통과율 = 정복 학생/시도 학생. 아무도 안 풀었으면 null(0%로 오해 방지) */
   pass_rate: number | null;
+  /** 첫 시도 정답률 = 첫 시도에 맞힌 학생/시도 학생. 난이도·변별의 실제 신호(null=미응시) */
+  first_try_correct: number;
+  first_try_rate: number | null;
   total_attempts: number;
   wrong_attempts: number; // 재시도 부담(어려움 신호)
   avg_solve_ms: number; // 근사값(회차 시간/문항 수)
+  options: ExamOptionStat[]; // 오답 선택지 분석
 }
 export interface ExamStats {
   course_id: string;

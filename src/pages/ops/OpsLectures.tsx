@@ -1605,28 +1605,58 @@ function ExamQuestionsModal({
                 </small>
                 {(() => {
                   // 문항별 지표 — 시도 학생이 있을 때만. 통과율 낮음=약한 문항(강의 부족/오출제),
-                  // 오답 재시도 많음=어려운 대목. 근사 소요시간은 secondary(회차 시간/문항 수).
+                  // 첫 시도 정답률 낮음=어려운 문항(최종 통과율은 완전학습이라 ~100% 수렴),
+                  // 오답 재시도 많음=재시도 부담, 오답 선택지 분석=어느 보기가 학생을 낚나.
                   const s = statByQ.get(q.id);
                   if (!s || s.students_attempted === 0) return null;
                   const pr = s.pass_rate ?? 0;
                   const tone = pr >= 0.85 ? 'ok' : pr >= 0.6 ? 'mid' : 'low';
+                  const ftr = s.first_try_rate;
+                  const ftTone = ftr == null ? 'mid' : ftr >= 0.7 ? 'ok' : ftr >= 0.4 ? 'mid' : 'low';
+                  // 낚인 오답 보기 — wrong_picks 많은 순(정답 보기가 부분정답으로 섞여도 표시)
+                  const distractors = (s.options ?? [])
+                    .filter((o) => o.wrong_picks > 0)
+                    .sort((a, b) => b.wrong_picks - a.wrong_picks);
                   return (
-                    <small className="op-exam-qstat">
-                      <span className={`op-exam-pass op-exam-pass--${tone}`} title="정복 학생 / 시도 학생">
-                        <i className="ph-fill ph-target" /> 통과율 {Math.round(pr * 100)}%
-                        <span className="op-exam-pass-sub"> ({s.students_mastered}/{s.students_attempted})</span>
-                      </span>
-                      {s.wrong_attempts > 0 && (
-                        <span className="op-exam-qstat-b" title="누적 오답 시도 수(재시도 부담)">
-                          <i className="ph-fill ph-x-circle" /> 오답 {s.wrong_attempts}
+                    <>
+                      <small className="op-exam-qstat">
+                        <span className={`op-exam-pass op-exam-pass--${tone}`} title="정복 학생 / 시도 학생(최종)">
+                          <i className="ph-fill ph-target" /> 통과율 {Math.round(pr * 100)}%
+                          <span className="op-exam-pass-sub"> ({s.students_mastered}/{s.students_attempted})</span>
                         </span>
+                        {ftr != null && (
+                          <span className={`op-exam-pass op-exam-pass--${ftTone}`} title="첫 시도에 맞힌 학생 / 시도 학생 — 실제 난이도·변별 신호">
+                            <i className="ph-fill ph-flag-checkered" /> 첫시도 {Math.round(ftr * 100)}%
+                            <span className="op-exam-pass-sub"> ({s.first_try_correct}/{s.students_attempted})</span>
+                          </span>
+                        )}
+                        {s.wrong_attempts > 0 && (
+                          <span className="op-exam-qstat-b" title="누적 오답 시도 수(재시도 부담)">
+                            <i className="ph-fill ph-x-circle" /> 오답 {s.wrong_attempts}
+                          </span>
+                        )}
+                        {s.avg_solve_ms > 0 && (
+                          <span className="op-exam-qstat-b" title="평균 소요(근사: 회차 시간/문항 수)">
+                            <i className="ph-fill ph-clock" /> ~{Math.round(s.avg_solve_ms / 1000)}초
+                          </span>
+                        )}
+                      </small>
+                      {distractors.length > 0 && (
+                        <small className="op-exam-distractors" title="틀린 학생이 고른 보기 — 자주 낚이면 헷갈리는 보기(검토 대상)">
+                          <i className="ph-fill ph-magnet" /> 낚인 보기:
+                          {distractors.map((o) => (
+                            <span
+                              key={o.index}
+                              className={`op-exam-distr${o.is_answer ? ' op-exam-distr--ans' : ''}`}
+                            >
+                              {o.text || `보기 ${o.index + 1}`}
+                              <b> ×{o.wrong_picks}</b>
+                              {o.is_answer && <span className="op-exam-distr-tag">정답</span>}
+                            </span>
+                          ))}
+                        </small>
                       )}
-                      {s.avg_solve_ms > 0 && (
-                        <span className="op-exam-qstat-b" title="평균 소요(근사: 회차 시간/문항 수)">
-                          <i className="ph-fill ph-clock" /> ~{Math.round(s.avg_solve_ms / 1000)}초
-                        </span>
-                      )}
-                    </small>
+                    </>
                   );
                 })()}
               </span>
