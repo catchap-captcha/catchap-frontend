@@ -190,29 +190,46 @@ export default function OpsLectures() {
   /* 드래그 중인 강의(id·소속 그룹) — 같은 그룹 안에서만 드롭을 허용한다 */
   const [drag, setDrag] = useState<{ id: string; group: string } | null>(null);
 
-  /* 검색·필터 — 강의가 많아질 때 관리 가능하게(상용 콘솔 기본). 검색은 제목·설명,
-     과목 필터는 드롭다운. 필터는 목록 표시에만 영향(원본 rows는 그대로 — 드래그 정렬 등 무관). */
+  /* 검색·필터 — 강의·코스가 많아질 때 관리 가능하게(상용 콘솔 기본). 검색은 제목·설명,
+     과목·코스 필터는 드롭다운, 코스별 접기로 긴 스크롤을 줄인다. 필터·접기는 목록 표시에만
+     영향(원본 rows는 그대로 — 드래그 정렬 등 무관). */
   const [search, setSearch] = useState('');
   const [subjFilter, setSubjFilter] = useState(''); // '' = 전체 과목
+  const [courseFilter, setCourseFilter] = useState(''); // '' = 전체 코스
+  const [collapsed, setCollapsed] = useState<Set<string>>(new Set()); // 접힌 그룹 key 집합
   // 드롭다운 후보 — 실제 강의·코스에 쓰인 과목만(빈 과목 노이즈 방지)
   const subjectOptions = SUBJECTS.filter(
     (s) => rows.some((l) => l.subject === s) || courses.some((c) => c.subject === s),
   );
+  // 코스 후보 — 강의가 실제 담긴 코스만(현재 과목 필터도 반영)
+  const courseOptions = courses.filter(
+    (c) =>
+      (subjFilter === '' || c.subject === subjFilter) && rows.some((l) => l.course_id === c.id),
+  );
   const q = search.trim().toLowerCase();
-  const filteredRows =
-    q === '' && subjFilter === ''
-      ? rows
-      : rows.filter(
-          (l) =>
-            (subjFilter === '' || l.subject === subjFilter) &&
-            (q === '' ||
-              l.title.toLowerCase().includes(q) ||
-              (l.description ?? '').toLowerCase().includes(q) ||
-              l.subject.toLowerCase().includes(q)),
-        );
-  const isFiltering = q !== '' || subjFilter !== '';
+  const filteredRows = rows.filter(
+    (l) =>
+      (subjFilter === '' || l.subject === subjFilter) &&
+      (courseFilter === '' || l.course_id === courseFilter) &&
+      (q === '' ||
+        l.title.toLowerCase().includes(q) ||
+        (l.description ?? '').toLowerCase().includes(q) ||
+        l.subject.toLowerCase().includes(q)),
+  );
+  const isFiltering = q !== '' || subjFilter !== '' || courseFilter !== '';
 
   const groups = state === 'ready' ? buildLectureGroups(filteredRows, courses) : [];
+  // 검색·필터 중엔 결과가 안 숨겨지게 강제 펼침. 그 외엔 collapsed 집합을 따른다.
+  const isCollapsed = (key: string) => !isFiltering && collapsed.has(key);
+  const toggleCollapse = (key: string) =>
+    setCollapsed((prev) => {
+      const next = new Set(prev);
+      next.has(key) ? next.delete(key) : next.add(key);
+      return next;
+    });
+  const allCollapsed = groups.length > 0 && groups.every((g) => collapsed.has(g.key));
+  const setAllCollapsed = (collapse: boolean) =>
+    setCollapsed(collapse ? new Set(groups.map((g) => g.key)) : new Set());
 
   /** 재배열 결과(그룹 강의 전체의 새 순서)를 서버에 저장하고 목록을 다시 읽는다.
    *  성공은 재조회로 확인 — 응답만 믿고 낙관적으로 바꾸지 않는다(순서가 어긋나면 혼란). */
@@ -346,7 +363,10 @@ export default function OpsLectures() {
             <select
               className="op-lect-subjfilter"
               value={subjFilter}
-              onChange={(e) => setSubjFilter(e.target.value)}
+              onChange={(e) => {
+                setSubjFilter(e.target.value);
+                setCourseFilter(''); // 과목이 바뀌면 코스 선택은 안 맞을 수 있어 초기화
+              }}
               aria-label="과목 필터"
             >
               <option value="">전체 과목</option>
@@ -356,6 +376,30 @@ export default function OpsLectures() {
                 </option>
               ))}
             </select>
+            {courseOptions.length > 0 && (
+              <select
+                className="op-lect-subjfilter"
+                value={courseFilter}
+                onChange={(e) => setCourseFilter(e.target.value)}
+                aria-label="코스 필터"
+              >
+                <option value="">전체 코스</option>
+                {courseOptions.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.subject} · {c.title}
+                  </option>
+                ))}
+              </select>
+            )}
+            {/* 코스가 많을 때 긴 스크롤을 줄이는 모두 접기/펼치기(검색 중엔 결과가 늘 보이게 비활성) */}
+            {groups.length > 1 && !isFiltering && (
+              <button
+                className="op-lect-filterclear"
+                onClick={() => setAllCollapsed(!allCollapsed)}
+              >
+                {allCollapsed ? '모두 펼치기' : '모두 접기'}
+              </button>
+            )}
             {isFiltering && (
               <span className="op-lect-filtercount">
                 {filteredRows.length}개 강의
@@ -364,6 +408,7 @@ export default function OpsLectures() {
                   onClick={() => {
                     setSearch('');
                     setSubjFilter('');
+                    setCourseFilter('');
                   }}
                 >
                   필터 해제
@@ -402,6 +447,16 @@ export default function OpsLectures() {
               <div key={g.key} className="op-lect-group">
                 {/* 섹션 머리 — 과목 · 코스(또는 미분류). 이 안에서만 순서를 바꾼다 */}
                 <div className="op-lect-grouphead">
+                  {/* 코스별 접기 — 코스가 많으면 안 쓰는 코스를 접어 긴 스크롤을 줄인다 */}
+                  <button
+                    type="button"
+                    className="op-lect-groupcaret"
+                    onClick={() => toggleCollapse(g.key)}
+                    aria-expanded={!isCollapsed(g.key)}
+                    title={isCollapsed(g.key) ? '펼치기' : '접기'}
+                  >
+                    <i className={`ph-bold ${isCollapsed(g.key) ? 'ph-caret-right' : 'ph-caret-down'}`} />
+                  </button>
                   <span className="op-lect-groupsubj">{g.subject}</span>
                   {g.courseId ? (
                     <span className="op-lect-grouptitle">
@@ -411,13 +466,14 @@ export default function OpsLectures() {
                     <span className="op-lect-grouptitle op-lect-grouptitle--none">미분류</span>
                   )}
                   <span className="op-lect-groupcount">{g.lectures.length}강</span>
-                  {g.lectures.length > 1 && (
+                  {g.lectures.length > 1 && !isCollapsed(g.key) && (
                     <span className="op-lect-grouphint">
                       <i className="ph-bold ph-arrows-down-up" /> 끌어서 순서 변경
                     </span>
                   )}
                 </div>
-                {g.lectures.map((lec, idx) => (
+                {!isCollapsed(g.key) &&
+                  g.lectures.map((lec, idx) => (
                   <div
                     key={lec.id}
                     className={`op-logrow op-lect-grid${g.lectures.length > 1 ? ' op-lect-draggable' : ''}${
