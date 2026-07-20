@@ -1,0 +1,237 @@
+/* 서버 모니터링 — op-* 콘솔 톤(디자인 토큰) */
+
+/* LLM 사용량 패널 */
+.mon-llm {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  padding: 20px 22px;
+  box-shadow: var(--shadow-md);
+  margin-bottom: 20px;
+}
+.mon-llm-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+.mon-llm-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Jua', sans-serif;
+  font-size: 19px;
+  color: var(--ink);
+  margin: 0;
+}
+.mon-llm-title i {
+  color: var(--info);
+}
+.mon-llm-note {
+  font-size: 12px;
+  color: var(--ink-3);
+  font-weight: 600;
+}
+.mon-llm-kpis {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.mon-llm-kpi {
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.mon-llm-num {
+  font-family: 'Jua', sans-serif;
+  font-size: 24px;
+  color: var(--ink);
+  line-height: 1;
+}
+.mon-llm-lb {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-2);
+}
+.mon-prov {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.mon-prov-row {
+  display: grid;
+  grid-template-columns: 92px 1fr auto;
+  align-items: center;
+  gap: 12px;
+}
+.mon-prov-name {
+  font-weight: 800;
+  font-size: 13px;
+  color: var(--ink);
+}
+.mon-prov-cost {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+.mon-prov-bar {
+  height: 10px;
+}
+
+/* 서버 카드 그리드 */
+.mon-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+  padding-bottom: 40px;
+}
+.mon-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  padding: 18px 20px;
+  box-shadow: var(--shadow-md);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.mon-card--empty {
+  opacity: 0.85;
+}
+.mon-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+.mon-card-title {
+  font-family: 'Jua', sans-serif;
+  font-size: 17px;
+  color: var(--ink);
+  margin: 0;
+}
+.mon-card-host {
+  font-size: 11.5px;
+  color: var(--ink-3);
+  font-weight: 600;
+  font-family: ui-monospace, monospace;
+}
+.mon-fresh {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 9px;
+  border-radius: var(--r-pill);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.mon-fresh--ok {
+  background: var(--ok-soft);
+  color: var(--ok-ink);
+}
+.mon-fresh--stale {
+  background: var(--warn-soft);
+  color: var(--warn-ink);
+}
+.mon-fresh--none {
+  background: var(--surface-3);
+  color: var(--ink-3);
+}
+.mon-nodata {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ink-2);
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+/* 지표 바 */
+.mon-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.mon-metric-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+.mon-metric-lb {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--ink-2);
+}
+.mon-metric-val {
+  font-family: 'Jua', sans-serif;
+  font-size: 15px;
+}
+.mon-metric-sub {
+  font-size: 11.5px;
+  color: var(--ink-3);
+  font-weight: 600;
+}
+.mon-bar {
+  height: 8px;
+  background: var(--surface-3);
+  border-radius: var(--r-pill);
+  overflow: hidden;
+}
+.mon-bar-fill {
+  height: 100%;
+  border-radius: var(--r-pill);
+  transition: width 0.4s ease;
+}
+.mon-ok {
+  color: var(--ok-ink);
+}
+.mon-ok.mon-bar-fill,
+.mon-bar-fill.mon-ok {
+  background: var(--ok);
+}
+.mon-warn {
+  color: var(--warn-ink);
+}
+.mon-bar-fill.mon-warn {
+  background: var(--warn);
+}
+.mon-bad {
+  color: var(--danger-ink);
+}
+.mon-bar-fill.mon-bad {
+  background: var(--danger);
+}
+
+/* GPU 블록 */
+.mon-gpu {
+  border-top: 1px dashed var(--line);
+  padding-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.mon-gpu-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 800;
+  font-size: 12.5px;
+  color: var(--info-ink);
+}
+.mon-gpu--none {
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  color: var(--ink-3);
+  font-weight: 700;
+  font-size: 12px;
+}

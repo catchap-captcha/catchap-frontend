@@ -41,6 +41,7 @@ const GROUPS: { label: string; items: { to: string; icon: string; label: string 
     items: [
       { to: PATHS.OPS_API_KEYS, icon: 'ph-key', label: 'API 발급' },
       { to: PATHS.OPS_AI_MODELS, icon: 'ph-cpu', label: 'AI 모델' },
+      { to: PATHS.OPS_MONITORING, icon: 'ph-gauge', label: '모니터링' },
       { to: PATHS.OPS_SYSTEM, icon: 'ph-heartbeat', label: '시스템 상태' },
       { to: PATHS.OPS_SETTINGS, icon: 'ph-gear-six', label: '설정' },
     ],
