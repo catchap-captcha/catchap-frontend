@@ -508,8 +508,15 @@
   font-weight: 800;
 }
 .op-exam-qrow {
+  /* op-logrow의 감사로그용 4열 그리드(2fr 1.2fr 1.4fr 1.2fr) 상속을 끊는다 —
+     그대로 두면 26px 번호에 2fr이 낭비되고 문항 본문이 1.2fr(~24%)로 짜부라져
+     3~4줄로 접힌다. flex로 바꿔 번호는 고정폭, 본문이 남는 폭을 채운다. */
+  display: flex;
   align-items: flex-start;
-  gap: 10px;
+  gap: 12px;
+}
+.op-exam-qrow > .op-lect-actions {
+  flex-shrink: 0; /* 수정·삭제 버튼은 고정폭 — 본문이 폭을 가져가게 */
 }
 .op-exam-qnum {
   flex-shrink: 0;
@@ -592,3 +599,41 @@
 .op-exam-pass--mid { background: #fff3d9; color: #b9791a; }
 .op-exam-pass--low { background: #ffe2df; color: #d23f34; }
 .op-exam-qstat-b { background: #f1eee8; color: #7a7060; }
+
+/* ===== 이미지 문항 ===== */
+/* 문항 행의 이미지 썸네일(가져온/첨부된 이미지 미리보기) */
+.op-exam-qthumbs { display: flex; gap: 6px; flex-wrap: wrap; margin: 4px 0 2px; }
+.op-exam-qthumb {
+  max-width: 120px;
+  max-height: 72px;
+  border-radius: 8px;
+  border: 1px solid #eee4d3;
+  object-fit: cover;
+}
+.op-exam-qthumb--opt { max-width: 56px; max-height: 40px; }
+/* 편집 폼의 프롬프트 이미지 컨트롤 */
+.op-exam-imgrow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 8px 0;
+}
+.op-exam-imglabel { font-size: 13px; font-weight: 800; color: #6e6558; display: inline-flex; align-items: center; gap: 5px; }
+.op-exam-imgthumb {
+  max-width: 160px;
+  max-height: 96px;
+  border-radius: 10px;
+  border: 1px solid #eee4d3;
+  object-fit: cover;
+}
+.op-exam-imghint { font-size: 12.5px; color: #9b9086; display: inline-flex; align-items: center; gap: 5px; margin: 0; }
+/* 보기 행의 이미지 썸네일(편집 폼) */
+.op-exam-optthumb {
+  max-width: 44px;
+  max-height: 34px;
+  border-radius: 6px;
+  border: 1px solid #eee4d3;
+  object-fit: cover;
+  flex-shrink: 0;
+}

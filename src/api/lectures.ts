@@ -151,6 +151,9 @@ export interface OpsExamQuestion {
   source: string | null;
   order_no: number;
   status: string; // draft | active
+  /** 이미지 문항 — 내부 경로 대신 서빙 URL. 보기와 같은 길이(이미지 없는 보기는 null) */
+  prompt_image_url: string | null;
+  option_image_urls: (string | null)[];
   created_at: string | null;
 }
 export interface ExamQuestionInput {
@@ -208,6 +211,9 @@ export interface ExamSessionQuestion {
   question_id: string;
   prompt: string;
   options: string[]; // 표시 순서(셔플됨)
+  /** 이미지도 보기와 같은 셔플 순서로 재정렬됨(표시-순서 계약) */
+  prompt_image_url: string | null;
+  option_image_urls: (string | null)[];
   multi: boolean; // 다답(복수 선택) 여부
   origin: ExamOrigin;
   source: string | null;
@@ -231,6 +237,8 @@ export interface ExamResultItem {
   question_id: string;
   prompt: string;
   options: string[];
+  prompt_image_url: string | null;
+  option_image_urls: (string | null)[];
   picked: number[];
   answer: number[]; // 정답의 표시 위치
   correct: boolean;
@@ -430,6 +438,39 @@ export const lectureApi = {
   /** 코스 시험 통계 — 문항별 통과율·오답·근사 소요시간 + 코스 수료율(강사·운영자 대시보드). */
   opsExamStats: (courseId: string) =>
     client.get<ExamStats>(`/ops/courses/${courseId}/exam-stats`).then((r) => r.data),
+
+  /** 시험 문항 이미지 첨부(multipart) — 강의 문항과 동일 패턴. 같은 슬롯에 있으면 교체. */
+  opsExamImageAttach: (
+    courseId: string,
+    questionId: string,
+    args: { slot: 'prompt' | 'option'; optionIndex?: number; file: File },
+  ) => {
+    const fd = new FormData();
+    fd.append('slot', args.slot);
+    if (args.slot === 'option' && args.optionIndex != null)
+      fd.append('option_index', String(args.optionIndex));
+    fd.append('file', args.file);
+    return client
+      .post<OpsExamQuestion>(`/ops/courses/${courseId}/exam-questions/${questionId}/images`, fd)
+      .then((r) => r.data);
+  },
+
+  /** 시험 문항 이미지 제거 — 슬롯의 이미지 참조 삭제 + 파일 물리 삭제. */
+  opsExamImageDelete: (
+    courseId: string,
+    questionId: string,
+    args: { slot: 'prompt' | 'option'; optionIndex?: number },
+  ) =>
+    client
+      .delete<OpsExamQuestion>(`/ops/courses/${courseId}/exam-questions/${questionId}/images`, {
+        params: {
+          slot: args.slot,
+          ...(args.slot === 'option' && args.optionIndex != null
+            ? { option_index: args.optionIndex }
+            : {}),
+        },
+      })
+      .then((r) => r.data),
 
   opsExamQuestionCreate: (courseId: string, body: ExamQuestionInput) =>
     client

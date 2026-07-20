@@ -289,6 +289,23 @@
   margin: 0 0 14px;
   line-height: 1.5;
 }
+/* 이미지 문항 — 프롬프트 이미지(문제 그림)·보기 이미지(그림 보기) */
+.ce-qimg {
+  display: block;
+  max-width: 100%;
+  max-height: 320px;
+  border-radius: 12px;
+  border: 1px solid #eef2f8;
+  margin: 0 0 14px;
+}
+.ce-optimg {
+  flex-shrink: 0;
+  max-width: 84px;
+  max-height: 64px;
+  border-radius: 8px;
+  border: 1px solid #eef2f8;
+  object-fit: cover;
+}
 .ce-opts {
   display: flex;
   flex-direction: column;

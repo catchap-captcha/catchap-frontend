@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
 import {
+  API_ORIGIN,
   lectureApi,
   type ExamResultItem,
   type ExamSession,
@@ -208,6 +209,9 @@ export default function CourseExam() {
                       </div>
                     </div>
                     <p className="ce-prompt">{q.prompt}</p>
+                    {q.prompt_image_url && (
+                      <img className="ce-qimg" src={API_ORIGIN + q.prompt_image_url} alt="문제 이미지" />
+                    )}
                     <div className="ce-opts">
                       {q.options.map((opt, oi) => (
                         <button
@@ -220,7 +224,10 @@ export default function CourseExam() {
                               ? (q.multi ? 'ph-fill ph-check-square' : 'ph-fill ph-check-circle')
                               : (q.multi ? 'ph-bold ph-square' : 'ph-bold ph-circle')} />
                           </span>
-                          <span className="ce-opttext">{opt}</span>
+                          {q.option_image_urls?.[oi] && (
+                            <img className="ce-optimg" src={API_ORIGIN + q.option_image_urls[oi]!} alt="" />
+                          )}
+                          <span className="ce-opttext">{opt || (q.option_image_urls?.[oi] ? '(그림 보기)' : '')}</span>
                         </button>
                       ))}
                     </div>
@@ -261,6 +268,9 @@ export default function CourseExam() {
                     )}
                   </div>
                   <p className="ce-prompt">{r.prompt}</p>
+                  {r.prompt_image_url && (
+                    <img className="ce-qimg" src={API_ORIGIN + r.prompt_image_url} alt="문제 이미지" />
+                  )}
                   <div className="ce-ropts">
                     {r.options.map((opt, oi) => {
                       const isAnswer = r.answer.includes(oi);
@@ -275,7 +285,10 @@ export default function CourseExam() {
                               : isPicked ? <i className="ph-fill ph-x-circle" />
                               : <i className="ph-bold ph-circle" />}
                           </span>
-                          <span className="ce-opttext">{opt}</span>
+                          {r.option_image_urls?.[oi] && (
+                            <img className="ce-optimg" src={API_ORIGIN + r.option_image_urls[oi]!} alt="" />
+                          )}
+                          <span className="ce-opttext">{opt || (r.option_image_urls?.[oi] ? '(그림 보기)' : '')}</span>
                           {isAnswer && <span className="ce-answertag">정답</span>}
                           {isPicked && !isAnswer && <span className="ce-picktag">내 선택</span>}
                         </div>

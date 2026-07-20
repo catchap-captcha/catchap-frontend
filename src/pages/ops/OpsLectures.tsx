@@ -1107,6 +1107,11 @@ function ExamQuestionsModal({
   // 시험 통계(문항별 통과율·오답·근사 시간 + 수료율) — 강사가 어느 문항에서 학생이 막히나
   // 보고 문항을 고치게. 로드 실패는 조용히 미표시(가짜 데이터 대신 부재 — 관리 화면 부가 정보).
   const [stats, setStats] = useState<ExamStats | null>(null);
+  // 편집 중 문항의 현재 이미지 URL(프롬프트·보기별) — 이미지는 저장된 문항에 즉시 첨부/삭제되므로
+  // API 응답(갱신된 문항)으로 이 뷰를 갱신한다. 새 문항(id 없음)은 저장 후에야 첨부 가능.
+  const [editImages, setEditImages] = useState<{ prompt: string | null; options: (string | null)[] }>(
+    { prompt: null, options: [] },
+  );
 
   const load = () => {
     lectureApi
@@ -1192,6 +1197,28 @@ function ExamQuestionsModal({
     }
   };
 
+  // 이미지 첨부/삭제 — 저장된 문항(form.id)에만. 응답(갱신된 문항)으로 이미지 뷰·목록을 갱신한다.
+  const attachImg = async (slot: 'prompt' | 'option', optionIndex: number | undefined, file: File) => {
+    if (!form?.id) return;
+    try {
+      const updated = await lectureApi.opsExamImageAttach(course.id, form.id, { slot, optionIndex, file });
+      setEditImages({ prompt: updated.prompt_image_url, options: updated.option_image_urls });
+      load();
+    } catch (e) {
+      setErr(errorDetail(e, '이미지 업로드에 실패했어요(png/jpg/gif/webp).'));
+    }
+  };
+  const deleteImg = async (slot: 'prompt' | 'option', optionIndex?: number) => {
+    if (!form?.id) return;
+    try {
+      const updated = await lectureApi.opsExamImageDelete(course.id, form.id, { slot, optionIndex });
+      setEditImages({ prompt: updated.prompt_image_url, options: updated.option_image_urls });
+      load();
+    } catch (e) {
+      setErr(errorDetail(e, '이미지 삭제에 실패했어요.'));
+    }
+  };
+
   const remove = async (q: OpsExamQuestion) => {
     if (!window.confirm('이 시험 문항을 삭제할까요? 학생 응답 기록은 보존돼요.')) return;
     try {
@@ -1259,7 +1286,7 @@ function ExamQuestionsModal({
           <div className="op-lect-qbtns">
             <button
               className="op-btn op-btn--approve"
-              onClick={() => { setErr(''); setForm(newForm()); }}
+              onClick={() => { setErr(''); setForm(newForm()); setEditImages({ prompt: null, options: [] }); }}
               disabled={bulkBusy !== null}
             >
               <i className="ph-bold ph-plus" /> 문항 추가
@@ -1327,6 +1354,34 @@ function ExamQuestionsModal({
               />
             </label>
 
+            {/* 이미지 문항 — 저장된 문항에만 붙는다(이미지는 문항 id에 즉시 첨부). 새 문항은 저장 후. */}
+            {form.id ? (
+              <div className="op-exam-imgrow op-form-span2">
+                <span className="op-exam-imglabel"><i className="ph-bold ph-image" /> 문제 이미지</span>
+                {editImages.prompt && (
+                  <img className="op-exam-imgthumb" src={API_ORIGIN + editImages.prompt} alt="문제 이미지" />
+                )}
+                <label className="op-btn op-btn--soft">
+                  <i className="ph-bold ph-upload-simple" /> {editImages.prompt ? '교체' : '이미지 추가'}
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg,image/gif,image/webp"
+                    hidden
+                    onChange={(e) => { const f = e.target.files?.[0]; if (f) attachImg('prompt', undefined, f); e.target.value = ''; }}
+                  />
+                </label>
+                {editImages.prompt && (
+                  <button className="op-btn op-btn--reject op-lect-danger" onClick={() => deleteImg('prompt')}>
+                    <i className="ph-bold ph-trash" /> 제거
+                  </button>
+                )}
+              </div>
+            ) : (
+              <p className="op-exam-imghint op-form-span2">
+                <i className="ph-bold ph-info" /> 문항을 먼저 저장하면 문제·보기에 이미지를 붙일 수 있어요.
+              </p>
+            )}
+
             <div className="op-exam-opts">
               <div className="op-exam-opts-head">
                 <span>보기 · 정답 체크(복수 가능)</span>
@@ -1350,6 +1405,29 @@ function ExamQuestionsModal({
                     onChange={(e) => setOpt(i, e.target.value)}
                     placeholder={`보기 ${i + 1}`}
                   />
+                  {form.id && (editImages.options[i]
+                    ? (
+                      <>
+                        <img className="op-exam-optthumb" src={API_ORIGIN + editImages.options[i]!} alt="" />
+                        <button
+                          className="op-btn op-btn--reject op-lect-danger"
+                          title="보기 이미지 제거"
+                          onClick={() => deleteImg('option', i)}
+                        >
+                          <i className="ph-bold ph-image-broken" />
+                        </button>
+                      </>
+                    ) : (
+                      <label className="op-btn op-btn--reject" title="보기 이미지 추가">
+                        <i className="ph-bold ph-image" />
+                        <input
+                          type="file"
+                          accept="image/png,image/jpeg,image/gif,image/webp"
+                          hidden
+                          onChange={(e) => { const f = e.target.files?.[0]; if (f) attachImg('option', i, f); e.target.value = ''; }}
+                        />
+                      </label>
+                    ))}
                   {form.options.length > 2 && (
                     <button className="op-btn op-btn--reject op-lect-danger" onClick={() => removeOpt(i)}>
                       <i className="ph-bold ph-x" />
@@ -1428,6 +1506,16 @@ function ExamQuestionsModal({
               <span className="op-exam-qnum">{i + 1}</span>
               <span className="op-exam-qbody">
                 <b>{q.prompt}</b>
+                {(q.prompt_image_url || (q.option_image_urls ?? []).some(Boolean)) && (
+                  <span className="op-exam-qthumbs">
+                    {q.prompt_image_url && (
+                      <img className="op-exam-qthumb" src={API_ORIGIN + q.prompt_image_url} alt="문제 이미지" />
+                    )}
+                    {(q.option_image_urls ?? []).map((u, i) =>
+                      u ? <img key={i} className="op-exam-qthumb op-exam-qthumb--opt" src={API_ORIGIN + u} alt="" /> : null,
+                    )}
+                  </span>
+                )}
                 <small className="op-aimodel-desc">
                   <span className={`op-exam-tag op-exam-tag--${q.origin}`}>{EXAM_ORIGIN_LABEL[q.origin]}</span>
                   {q.status !== 'active' && <span className="op-exam-tag op-exam-tag--draft">임시</span>}
@@ -1462,7 +1550,14 @@ function ExamQuestionsModal({
                 })()}
               </span>
               <span className="op-col-right op-lect-actions">
-                <button className="op-btn op-btn--reject" onClick={() => { setErr(''); setForm(editForm(q)); }}>
+                <button
+                  className="op-btn op-btn--reject"
+                  onClick={() => {
+                    setErr('');
+                    setForm(editForm(q));
+                    setEditImages({ prompt: q.prompt_image_url, options: q.option_image_urls ?? [] });
+                  }}
+                >
                   <i className="ph-bold ph-pencil-simple" /> 수정
                 </button>
                 <button className="op-btn op-btn--reject op-lect-danger" onClick={() => remove(q)}>
