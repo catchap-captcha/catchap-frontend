@@ -1414,3 +1414,65 @@
 }
 .sh-qrow-item b { color: #3a3340; }
 .sh-qrow-go { margin-left: auto; color: #b9ad9b; }
+
+/* ===== 성인 인강 홈 재편(2026-07-20) — 담백한 학습 대시보드. 옛 sh-* 아동 스타일 대체 ===== */
+.sh2-hero { max-width: 960px; margin: 0 auto; padding: 24px 20px 0; }
+.sh2-hero-head { margin-bottom: 16px; }
+.sh2-greet { font-family: 'Jua', sans-serif; font-size: 28px; color: #2e2833; margin: 0; letter-spacing: -0.5px; }
+.sh2-sub { margin: 6px 0 0; color: #8a8072; font-weight: 600; font-size: 14px; }
+.sh2-continue {
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  background: linear-gradient(120deg, #fff, #fff6f1);
+  border: 1.5px solid #f0e4d6; border-radius: 20px; padding: 20px 24px;
+  box-shadow: 0 1px 2px rgba(58,51,64,0.04), 0 18px 36px -26px rgba(90,60,55,0.28);
+}
+.sh2-continue--empty { background: #fff; }
+.sh2-continue-info { flex: 1; min-width: 220px; display: flex; flex-direction: column; gap: 4px; }
+.sh2-continue-tag { display: inline-flex; align-items: center; gap: 6px; font-weight: 800; font-size: 12px; color: #e5473b; }
+.sh2-continue-title { font-family: 'Jua', sans-serif; font-size: 21px; color: #2e2833; margin: 0; }
+.sh2-continue-meta { font-weight: 600; font-size: 13px; color: #8a8072; }
+.sh2-continue-btn {
+  display: inline-flex; align-items: center; gap: 7px; flex-shrink: 0;
+  border: none; background: #ff5a4d; color: #fff; font-weight: 800; font-size: 15px; font-family: inherit;
+  padding: 13px 22px; border-radius: 14px; cursor: pointer;
+  box-shadow: 0 10px 22px -8px rgba(255,90,77,0.6); transition: transform 0.12s, background 0.15s;
+}
+.sh2-continue-btn:hover { background: #f0463a; transform: translateY(-1px); }
+
+.sh2-kpis { max-width: 960px; margin: 18px auto 0; padding: 0 20px; display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; }
+.sh2-kpi { background: #fff; border: 1.5px solid #f0e4d6; border-radius: 16px; padding: 16px 20px; display: flex; flex-direction: column; gap: 4px; box-shadow: 0 1px 2px rgba(58,51,64,0.04), 0 14px 30px -26px rgba(90,60,55,0.22); }
+.sh2-kpi-num { font-family: 'Jua', sans-serif; font-size: 26px; color: #2e2833; line-height: 1; }
+.sh2-kpi-lb { font-weight: 700; font-size: 12.5px; color: #8a8072; }
+
+.sh2-courses { max-width: 960px; margin: 26px auto 0; padding: 0 20px 40px; }
+.sh2-sec-head { margin-bottom: 14px; }
+.sh2-sec-title { display: flex; align-items: center; gap: 8px; font-family: 'Jua', sans-serif; font-size: 20px; color: #2e2833; margin: 0; }
+.sh2-sec-title i { color: #e5473b; }
+.sh2-empty { background: #fff; border: 1.5px solid #f0e4d6; border-radius: 16px; padding: 22px; color: #9a9182; font-weight: 600; }
+.sh2-course-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+.sh2-course {
+  background: #fff; border: 1.5px solid #f0e4d6; border-radius: 18px; padding: 18px 20px;
+  display: flex; flex-direction: column; gap: 8px;
+  box-shadow: 0 1px 2px rgba(58,51,64,0.04), 0 16px 32px -26px rgba(90,60,55,0.24);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.sh2-course:hover { transform: translateY(-2px); box-shadow: 0 1px 2px rgba(58,51,64,0.05), 0 20px 36px -24px rgba(90,60,55,0.3); }
+.sh2-course-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.sh2-course-subj { background: #fff3e0; color: #b45309; font-weight: 800; font-size: 11.5px; padding: 3px 10px; border-radius: 999px; }
+.sh2-course-done { background: #e1f5ec; color: #17a884; font-weight: 800; font-size: 11.5px; padding: 3px 10px; border-radius: 999px; }
+.sh2-course-title { font-family: 'Jua', sans-serif; font-size: 17px; color: #2e2833; margin: 2px 0 0; }
+.sh2-course-inst { font-weight: 700; font-size: 12px; color: #9a9182; }
+.sh2-course-progress { margin: 6px 0 4px; display: flex; flex-direction: column; gap: 5px; }
+.sh2-course-bar { height: 8px; background: #f1e7df; border-radius: 999px; overflow: hidden; }
+.sh2-course-bar-fill { height: 100%; background: linear-gradient(90deg, #ffb03d, #17a884); border-radius: 999px; }
+.sh2-course-frac { font-weight: 700; font-size: 11.5px; color: #8a8072; }
+.sh2-course-btn {
+  margin-top: 4px; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  border: none; background: #ff5a4d; color: #fff; font-weight: 800; font-size: 13.5px; font-family: inherit;
+  padding: 11px 14px; border-radius: 12px; cursor: pointer; transition: background 0.15s;
+}
+.sh2-course-btn:hover:not(:disabled) { background: #f0463a; }
+.sh2-course-btn--exam { background: #7c5cff; box-shadow: 0 8px 18px -8px rgba(124,92,255,0.5); }
+.sh2-course-btn--exam:hover:not(:disabled) { background: #6b4cf0; }
+.sh2-course-btn--ghost { background: #f6efe3; color: #8a7f6d; cursor: default; }
+@media (max-width: 640px) { .sh2-kpis { grid-template-columns: repeat(3,1fr); } }
