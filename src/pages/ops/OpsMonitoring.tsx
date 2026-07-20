@@ -83,14 +83,23 @@ function ServerCard({ s }: { s: ServerMetric }) {
     s.stale
       ? { cls: 'mon-fresh--stale', txt: `${s.age_sec}s 전 · 오래됨` }
       : { cls: 'mon-fresh--ok', txt: `${s.age_sec ?? 0}s 전` };
+  const alerts = s.alerts ?? [];
+  const resAlerts = alerts.filter((a) => a.metric !== '수집'); // 자원 초과(오래됨 제외)
   return (
-    <article className="mon-card">
+    <article className={`mon-card${alerts.length > 0 ? ' mon-card--alert' : ''}`}>
       <div className="mon-card-head">
         <div>
           <h3 className="mon-card-title">{s.label}</h3>
           {s.host && <span className="mon-card-host">{s.host}</span>}
         </div>
-        <span className={`mon-fresh ${fresh.cls}`}>{fresh.txt}</span>
+        <div className="mon-card-badges">
+          {resAlerts.length > 0 && (
+            <span className="mon-alert-badge" title={resAlerts.map((a) => `${a.metric} ${a.value}%`).join(', ')}>
+              <i className="ph-fill ph-warning" /> 경보 {resAlerts.length}
+            </span>
+          )}
+          <span className={`mon-fresh ${fresh.cls}`}>{fresh.txt}</span>
+        </div>
       </div>
       <Bar
         label="CPU"
@@ -180,6 +189,26 @@ export default function OpsMonitoring() {
           <div className="op-empty">
             <i className="ph-duotone ph-warning-circle" />
             <p>모니터링 데이터를 불러오지 못했어요.</p>
+          </div>
+        )}
+
+        {/* 임계 경보 배너 — 하나라도 임계 초과면 상단에 요약(운영 개입 신호) */}
+        {data && data.alert_count > 0 && (
+          <div className="mon-alertbar">
+            <i className="ph-fill ph-warning" />
+            <b>경보 {data.alert_count}건</b>
+            <div className="mon-alertbar-list">
+              {data.servers
+                .filter((s) => (s.alerts?.length ?? 0) > 0)
+                .map((s) => (
+                  <span key={s.server_key} className="mon-alertbar-item">
+                    <b>{s.label}</b>{' '}
+                    {s.alerts!
+                      .map((a) => (a.metric === '수집' ? '오래됨(수집 중단?)' : `${a.metric} ${a.value}%`))
+                      .join(' · ')}
+                  </span>
+                ))}
+            </div>
           </div>
         )}
 

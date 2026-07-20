@@ -22,6 +22,8 @@ export interface ServerMetric {
   gpu_mem_total_mb?: number | null;
   age_sec?: number | null;
   stale?: boolean;
+  /** 임계 초과 경보 — metric='수집'은 오래됨(값 없음). value/threshold는 %. */
+  alerts?: { metric: string; value: number | null; threshold: number | null }[];
   /** 추이 그래프용 최근 표본(데이터 있는 서버만). gpu는 GPU 없는 서버면 null 배열. */
   history?: { t: string[]; cpu: number[]; mem: number[]; gpu: (number | null)[] };
 }
@@ -35,6 +37,8 @@ export interface LlmUsage {
 
 export interface MonitoringData {
   servers: ServerMetric[];
+  alert_count: number;
+  thresholds: Record<string, number>;
   llm: LlmUsage;
   as_of: string;
   stale_after_sec: number;
