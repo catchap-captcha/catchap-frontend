@@ -494,14 +494,14 @@ export default function LoginPage() {
               </div>
             </div>
             <h1 className="lg-hero-title">
-              아이의 배움을
+              끝까지 본 학습을
               <br />
-              안전하게 지켜요
+              증명해요
             </h1>
             <p className="lg-hero-sub">
-              교육기관이 믿고 도입하는 어린이 학습 인증 서비스.
+              시청 검증형 온라인 강의 — 정말 보고 이해했는지 확인해요.
               <br />
-              검증된 보안 기술로 아이들의 정보를 안전하게 지킵니다.
+              검증된 기술로 학습자의 배움과 정보를 안전하게 지킵니다.
             </p>
           </div>
           <div className="lg-badges">

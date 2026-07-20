@@ -1856,6 +1856,8 @@ function QuestionsModal({
   onClose: () => void;
   onChanged: () => void;
 }) {
+  const { me } = useAuth();
+  const isOps = me?.role === 'ops'; // 운영자는 문항 조회(검수)만, 저작(추가·AI·자막·수정/삭제) 숨김
   const [items, setItems] = useState<OpsLectureQuestion[] | null>(null);
   const [loadErr, setLoadErr] = useState('');
   const [form, setForm] = useState<QForm | null>(null); // null = 편집 폼 닫힘
@@ -2272,21 +2274,32 @@ function QuestionsModal({
           </button>
         </div>
 
-        <div className="op-lect-qtools">
-          <button className="op-btn op-btn--approve" onClick={() => { setErr(''); setForm(emptyQ()); }}>
-            <i className="ph-bold ph-plus" />
-            문항 추가
-          </button>
-          <div className="op-lect-gen">
-            <input value={genN} onChange={(e) => setGenN(e.target.value)} className="op-lect-gen-n" aria-label="생성 개수" />
-            <button className="op-btn op-btn--reject" disabled={generating} onClick={generate}>
-              <i className="ph-bold ph-sparkle" />
-              {generating ? '생성 중…' : 'AI 문항 생성'}
-            </button>
+        {/* 문항·자막 저작은 강사 전용 — 운영자는 문항 조회(검수)만(ops 권한 B) */}
+        {isOps ? (
+          <div className="op-lect-qtools">
+            <span className="lu-help">
+              <i className="ph-fill ph-shield-check" /> 운영자는 확인 문항을 검수(조회)만 해요 — 문항·자막 저작은 강사가 합니다.
+            </span>
           </div>
-        </div>
-        {/* 강사 제공 자막 — 있으면 위 'AI 문항 생성'이 자동 STT 대신 이 자막을 쓴다 */}
-        <TranscriptBar lectureId={lec.id} note={(ok, msg) => { setBannerOk(ok); setBanner(msg); }} />
+        ) : (
+          <>
+            <div className="op-lect-qtools">
+              <button className="op-btn op-btn--approve" onClick={() => { setErr(''); setForm(emptyQ()); }}>
+                <i className="ph-bold ph-plus" />
+                문항 추가
+              </button>
+              <div className="op-lect-gen">
+                <input value={genN} onChange={(e) => setGenN(e.target.value)} className="op-lect-gen-n" aria-label="생성 개수" />
+                <button className="op-btn op-btn--reject" disabled={generating} onClick={generate}>
+                  <i className="ph-bold ph-sparkle" />
+                  {generating ? '생성 중…' : 'AI 문항 생성'}
+                </button>
+              </div>
+            </div>
+            {/* 강사 제공 자막 — 있으면 위 'AI 문항 생성'이 자동 STT 대신 이 자막을 쓴다 */}
+            <TranscriptBar lectureId={lec.id} note={(ok, msg) => { setBannerOk(ok); setBanner(msg); }} />
+          </>
+        )}
         {banner && (
           <div className={`op-lect-banner ${bannerOk ? 'op-lect-banner-ok' : 'op-form-err'}`}>
             <i className={bannerOk ? 'ph-fill ph-check-circle' : 'ph-fill ph-info'} /> {banner}
@@ -2706,6 +2719,7 @@ function QuestionsModal({
                 </div>
                 {q.explain && <small className="op-aimodel-desc">해설: {q.explain}</small>}
               </div>
+              {!isOps && (
               <div className="op-lect-actions">
                 {q.status === 'draft' && (
                   <button className="op-btn op-btn--approve" onClick={() => approve(q)}>
@@ -2737,6 +2751,7 @@ function QuestionsModal({
                   삭제
                 </button>
               </div>
+              )}
             </div>
           ))}
         </div>
@@ -3091,6 +3106,8 @@ function FrameCaptureModal({
 
 /* ================= 자료실 모달 ================= */
 function MaterialsModal({ lec, onClose }: { lec: OpsLecture; onClose: () => void }) {
+  const { me } = useAuth();
+  const isOps = me?.role === 'ops'; // 운영자는 자료 조회·다운로드(검수)만, 추가·삭제 숨김
   const [items, setItems] = useState<OpsLectureMaterial[] | null>(null);
   const [banner, setBanner] = useState('');
   const [mode, setMode] = useState<'link' | 'file'>('link');
@@ -3175,6 +3192,15 @@ function MaterialsModal({ lec, onClose }: { lec: OpsLecture; onClose: () => void
           </button>
         </div>
 
+        {/* 자료 추가는 강사 전용 — 운영자는 자료 조회·다운로드(검수)만(ops 권한 B) */}
+        {isOps && (
+          <div className="op-lect-qtools">
+            <span className="lu-help">
+              <i className="ph-fill ph-shield-check" /> 운영자는 자료를 검수(조회·다운로드)만 해요 — 추가·수정은 강사가 합니다.
+            </span>
+          </div>
+        )}
+        {!isOps && (
         <div className="op-lect-matform">
           <div className="op-lect-matmode">
             <button className={`op-btn ${mode === 'link' ? 'op-btn--approve' : 'op-btn--reject'}`} onClick={() => setMode('link')}>
@@ -3216,6 +3242,7 @@ function MaterialsModal({ lec, onClose }: { lec: OpsLecture; onClose: () => void
             </button>
           </div>
         </div>
+        )}
 
         {banner && (
           <div className="op-form-err op-lect-banner">
@@ -3237,14 +3264,16 @@ function MaterialsModal({ lec, onClose }: { lec: OpsLecture; onClose: () => void
                   {m.kind === 'link' ? m.url : `${m.file_ext ?? ''} · ${fmtBytes(m.file_bytes)}`}
                 </small>
               </div>
-              <div className="op-lect-actions">
-                <button className="op-btn op-btn--reject" onClick={() => rename(m)}>
-                  수정
-                </button>
-                <button className="op-btn op-btn--reject op-lect-danger" onClick={() => remove(m)}>
-                  삭제
-                </button>
-              </div>
+              {!isOps && (
+                <div className="op-lect-actions">
+                  <button className="op-btn op-btn--reject" onClick={() => rename(m)}>
+                    수정
+                  </button>
+                  <button className="op-btn op-btn--reject op-lect-danger" onClick={() => remove(m)}>
+                    삭제
+                  </button>
+                </div>
+              )}
             </div>
           ))}
         </div>
