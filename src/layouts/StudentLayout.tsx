@@ -5,14 +5,14 @@ import { useAuth } from '../hooks/useAuth';
 import { useUnreadNotifications } from '../hooks/useUnreadNotifications';
 import ScreenTimeReminder from '../components/motion/ScreenTimeReminder';
 import ThemeToggle from '../components/common/ThemeToggle';
-import mascot from '../assets/characters/catchap-logo.png';
 import './StudentLayout.css';
 
 /**
- * 학생 화면 공통 풀 NAV 레이아웃 — handoff `CatChap 학습 홈.dc.html`의 NAV 원본 그대로.
- * 활성 메뉴는 현재 route 기준(필요 시 `active` prop으로 재정의 — 학습 홈의 스크롤 연동용).
+ * 학생 화면 공통 상단 NAV 레이아웃.
+ * 성인 인강(이수·수료 검증형)으로 재편(2026-07-20): 옛 아동 마스코트·'개념 설명'(초등 커리큘럼)을
+ * 걷어내고, 시청→연습→복습→수료 흐름에 맞춰 홈·강의·문제은행·나의 기록으로 구성한다.
  */
-export type StudentNavKey = 'home' | 'all' | 'concepts' | 'ai' | 'records';
+export type StudentNavKey = 'home' | 'lectures' | 'all' | 'records';
 
 interface AvatarState {
   bgCss: string;
@@ -43,11 +43,11 @@ function readAvatar(userId: string | undefined | null): AvatarState {
   };
 }
 
-// 게임화 잔재 정리(2026-07-18): AI선생님·필기 다시보기 메뉴 제거
+// 성인화(2026-07-20): '개념 설명'(초등 커리큘럼) 은퇴, '강의' 추가
 const ROUTE_ACTIVE: Record<string, StudentNavKey> = {
   [PATHS.STUDENT_HOME]: 'home',
+  [PATHS.STUDENT_LECTURES]: 'lectures',
   [PATHS.STUDENT_ALL_LEARNING]: 'all',
-  [PATHS.STUDENT_CONCEPTS]: 'concepts',
   [PATHS.STUDENT_RECORDS]: 'records',
 };
 
@@ -79,7 +79,7 @@ export function StudentNav({
   };
 
   const current = active === undefined ? (ROUTE_ACTIVE[location.pathname] ?? null) : active;
-  const name = (me?.name ?? '하은').trim() || '하은';
+  const name = (me?.name ?? '').trim() || '학습자';
 
   const cls = (key: StudentNavKey) => `sl-navlink${current === key ? ' sl-active' : ''}`;
   const closeMenu = () => setMenuOpen(false);
@@ -88,7 +88,7 @@ export function StudentNav({
     <div className="sl-navbar">
       <div className="sl-navinner">
         <Link to={PATHS.STUDENT_HOME} className="sl-logo" style={{ textDecoration: 'none', color: 'inherit' }}>
-          <img src={mascot} alt="CatChap" className="sl-logoimg" />
+          <span className="sl-logobadge">C</span>
           <div className="sl-logotext">
             <span className="sl-logotitle">CatChap</span>
             <span className="sl-logosub">시청을 검증하는 강의 학습</span>
@@ -104,11 +104,11 @@ export function StudentNav({
               홈
             </Link>
           )}
+          <Link to={PATHS.STUDENT_LECTURES} className={cls('lectures')} onClick={closeMenu}>
+            강의
+          </Link>
           <Link to={PATHS.STUDENT_ALL_LEARNING} className={cls('all')} onClick={closeMenu}>
             문제은행
-          </Link>
-          <Link to={PATHS.STUDENT_CONCEPTS} className={cls('concepts')} onClick={closeMenu}>
-            개념 설명
           </Link>
           <Link to={PATHS.STUDENT_RECORDS} className={cls('records')} onClick={closeMenu}>
             나의 기록
@@ -143,10 +143,7 @@ export function StudentNav({
           >
             <Link to={PATHS.STUDENT_SETTINGS} title="설정" className="sl-profile">
               <div className="sl-avatar" style={{ background: avatar.bgCss }}>
-                <img src={mascot} alt="" className="sl-avatarimg" />
-                {avatar.hasHat && (
-                  <i className={`${avatar.hatIcon} sl-hat`} style={{ color: avatar.hatColor }} />
-                )}
+                <span className="sl-avatarinitial">{name.charAt(0)}</span>
               </div>
               <span className="sl-profilename">{name}</span>
             </Link>

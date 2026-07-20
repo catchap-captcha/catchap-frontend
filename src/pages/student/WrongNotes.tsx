@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
 import { studentApi } from '../../api/students';
-import mascot from '../../assets/characters/catchap-logo.png';
 import './WrongNotes.css';
 import { StudentNav } from '../../layouts/StudentLayout';
 
@@ -211,18 +210,20 @@ export default function WrongNotes() {
         })}
       </section>
 
-      {/* ENCOURAGING FOOTER */}
-      <section className="wn-footwrap">
-        <div className="wn-foot">
-          <div className="wn-footimg">
-            <img src={mascot} alt="" />
+      {/* FOOTER — 복습 원리 안내(성인 톤, 마스코트 제거) */}
+      {visible.length > 0 && (
+        <section className="wn-footwrap">
+          <div className="wn-foot">
+            <div className="wn-footicon">
+              <i className="ph-fill ph-arrows-clockwise" />
+            </div>
+            <div className="wn-foottext">
+              <h3>틀린 문제는 복습으로 사라집니다</h3>
+              <p>오늘의 Q가 틀린 문제를 우선 출제해요. 다시 맞히면 이 목록에서 자동으로 빠집니다.</p>
+            </div>
           </div>
-          <div className="wn-foottext">
-            <h3>틀려도 괜찮아요!</h3>
-            <p>오답은 실력이 자라는 씨앗이에요. 다시 풀어보면 어느새 완벽하게 알게 될 거예요. 🌱</p>
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
     </div>
   );
 }

@@ -5,7 +5,6 @@ import { useStudentSettings } from '../../stores/studentSettingsStore';
 import { notifyNotificationsUpdated } from '../../hooks/useUnreadNotifications';
 import { notificationApi, type Notification } from '../../api/notifications';
 import { kstDateString, parseServerDate } from '../../utils/format';
-import mascot from '../../assets/characters/catchap-logo.png';
 import './StudentNotifications.css';
 import { StudentNav } from '../../layouts/StudentLayout';
 
@@ -31,38 +30,26 @@ interface NtItem {
   cat: NtCat;
 }
 
-/** 원본 tagMap 그대로 */
+/** 알림 태그 라벨 — 성인화(0720): 'AI 냥냥이'→'AI 도우미' */
 const TAG_MAP: Record<string, string> = {
   진도: '진도',
   배지: '배지',
   추천문제: '추천문제',
-  AI: 'AI 냥냥이',
+  AI: 'AI 도우미',
 };
 
-/** 원본 CATS 그대로 */
 const CATS: { key: NtCat; label: string; icon: string }[] = [
   { key: 'all', label: '전체', icon: 'ph-fill ph-squares-four' },
   { key: '진도', label: '학습 진도', icon: 'ph-fill ph-chart-line-up' },
   { key: '배지', label: '배지', icon: 'ph-fill ph-medal' },
   { key: '추천문제', label: '추천 문제', icon: 'ph-fill ph-lightbulb' },
-  { key: 'AI', label: 'AI 냥냥이', icon: 'ph-fill ph-robot' },
+  { key: 'AI', label: 'AI 도우미', icon: 'ph-fill ph-robot' },
 ];
 
-// TODO(api): notificationApi.list() 실패 시 원본 하드코딩 알림 목록 유지
-const FALLBACK_TODAY: NtItem[] = [
-  { id: 't1', title: '퀴즈 완료!', body: '그림 찾기 퀴즈를 정답률 86%로 끝냈어요. 참 잘했어요!', time: '방금 전', icon: 'ph-fill ph-check-circle', color: '#17B08C', bg: '#DFF6ED', unread: true, cat: '진도' },
-  { id: 't2', title: '새 배지 획득 🏅', body: '"매의 눈" 배지를 얻었어요. 배지함에서 확인해 보세요.', time: '10분 전', icon: 'ph-fill ph-medal', color: '#F0A400', bg: '#FFF3D6', unread: true, cat: '배지' },
-  { id: 't3', title: '오늘의 추천 문제', body: '하은이에게 딱 맞는 숫자 놀이터 5문제를 준비했어요! 지금 도전해 볼까요?', time: '30분 전', icon: 'ph-fill ph-lightbulb', color: '#FF5A4D', bg: '#FFE7E2', unread: true, cat: '추천문제' },
-  { id: 't4', title: 'AI 선생님 냥냥이', body: '"오늘 숫자 놀이터도 같이 해볼까? 5문제만 도전!"', time: '1시간 전', icon: 'ph-fill ph-robot', color: '#2E7BFF', bg: '#E6F0FF', unread: true, cat: 'AI' },
-];
-
-const FALLBACK_EARLIER: NtItem[] = [
-  { id: 'e1', title: '연속 학습 리마인드 🔥', body: '오늘 학습하면 12일 연속 기록을 이어갈 수 있어요!', time: '어제', icon: 'ph-fill ph-fire', color: '#FF922E', bg: '#FFEDE0', unread: false, cat: '진도' },
-  { id: 'e2', title: '끌어놓기 놀이 완료', body: '정답률 100%! 드래그 마스터 배지에 한 걸음 가까워졌어요.', time: '어제', icon: 'ph-fill ph-hand-grabbing', color: '#17B08C', bg: '#DFF6ED', unread: false, cat: '진도' },
-  { id: 'e3', title: '새 추천 문제 도착', body: '받침이 조금 헷갈렸죠? 한글 낱말 3문제를 추천해 드려요.', time: '어제', icon: 'ph-fill ph-lightbulb', color: '#FF5A4D', bg: '#FFE7E2', unread: false, cat: '추천문제' },
-  { id: 'e4', title: 'AI 선생님 냥냥이', body: '"받침이 조금 헷갈렸구나. 천천히 소리 내어 읽어보자!"', time: '2일 전', icon: 'ph-fill ph-robot', color: '#2E7BFF', bg: '#E6F0FF', unread: false, cat: 'AI' },
-  { id: 'e5', title: '주간 리포트가 도착했어요', body: '이번 주 학습 요약을 나의 기록에서 확인할 수 있어요.', time: '3일 전', icon: 'ph-fill ph-chart-line-up', color: '#8B6BFF', bg: '#EDE6FF', unread: false, cat: '진도' },
-];
+// 알림은 서버(notificationApi.list())가 정본 — 로딩 전 데모(옛 아동/퀴즈 문구)를 보여주지
+// 않도록 폴백은 비워 둔다(성인화 0720). 실패 시에도 빈 목록(정직).
+const FALLBACK_TODAY: NtItem[] = [];
+const FALLBACK_EARLIER: NtItem[] = [];
 
 /** API 알림 type → 원본 디자인의 아이콘/색 (type이 category보다 세분화됨: progress/report 등) */
 const TYPE_STYLE: Record<string, { icon: string; color: string; bg: string }> = {
@@ -268,20 +255,19 @@ export default function StudentNotifications() {
         {view === 'empty' && (
           <div className="nt-empty">
             <div className="nt-emptyart">
-              <img src={mascot} alt="마스코트" className="nt-emptyimg" />
-              <span className="nt-emptybadge">
+              <span className="nt-emptyicon">
                 <i className="ph-fill ph-bell-slash" />
               </span>
             </div>
             <h2 className="nt-emptytitle">아직 알림이 없어요</h2>
             <p className="nt-emptytext">
-              학습을 완료하거나 배지를 얻으면
+              강의 수강·수료 소식이 생기면
               <br />
-              여기에서 소식을 알려드릴게요!
+              여기에서 알려드릴게요.
             </p>
-            <Link to={PATHS.STUDENT_ALL_LEARNING} className="nt-emptycta">
+            <Link to={PATHS.STUDENT_LECTURES} className="nt-emptycta">
               <i className="ph-fill ph-play-circle" />
-              학습하러 가기
+              강의 보러 가기
             </Link>
           </div>
         )}

@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { HANDOFF_ROUTE_MAP, PATHS } from '../../routes/paths';
 import { studentApi } from '../../api/students';
-import mascot from '../../assets/characters/catchap-logo.png';
 import './SearchPage.css';
 import { StudentNav } from '../../layouts/StudentLayout';
 
@@ -19,42 +18,25 @@ interface SearchItem {
   kw: string;
 }
 
-// TODO(api): 백엔드 미구현 — studentApi.searchContent 실패/무응답 시 원본 DCLogic ITEMS 그대로 로컬 필터링
+// 성인화(0720): 옛 아동 게임/놀이/배지/냥코인 카탈로그·죽은 .dc.html 링크를 걷어내고
+// 앱의 실제 성인 인강 섹션으로 교체(모두 실제 route). searchContent(강의 검색) 무응답 시
+// 이 목록을 로컬 필터링해 '섹션 바로가기'로 쓴다.
 const FALLBACK: SearchItem[] = [
-  { title: '국어', tag: '과목', desc: '낱말·문장·글의 속뜻을 익히는 국어 한 판', icon: 'ph-fill ph-book-open', bg: '#FFE7E2', color: '#FF5A4D', href: 'CatChap 한글낱말.dc.html', kw: '국어 한글 낱말 글자 읽기 kor' },
-  { title: '영어', tag: '과목', desc: '단어·문장·문법으로 배우는 영어 한 판', icon: 'ph-fill ph-translate', bg: '#FFEDE0', color: '#FF922E', href: 'CatChap 숫자놀이터.dc.html', kw: '영어 알파벳 단어 eng english' },
-  { title: '수학', tag: '과목', desc: '수·연산·도형·측정을 배우는 수학 한 판', icon: 'ph-fill ph-plus-minus', bg: '#E1F5EC', color: '#17B08C', href: 'CatChap 끌어놓기.dc.html', kw: '수학 숫자 셈 덧셈 뺄셈 연산 math' },
-  { title: '과학', tag: '과목', desc: '관찰하고 탐구하는 과학 한 판', icon: 'ph-fill ph-flask', bg: '#E6F0FF', color: '#2E7BFF', href: 'CatChap 그림찾기.dc.html', kw: '과학 관찰 탐구 실험 sci' },
-  { title: '사회', tag: '과목', desc: '지도·지역·공공기관을 알아가는 사회 한 판', icon: 'ph-fill ph-scroll', bg: '#EDE6FF', color: '#8B6BFF', href: 'CatChap 안전지킴이.dc.html', kw: '사회 이야기 옛날 soc' },
-  { title: '생활', tag: '과목', desc: '생활 속 안전과 지혜를 배우는 생활 한 판', icon: 'ph-fill ph-house-line', bg: '#FFE9F1', color: '#FF6DA6', href: 'CatChap 미로탐험.dc.html', kw: '생활 안전 지혜 life' },
-  { title: '한글 낱말 찾기', tag: '놀이', desc: '그림을 보고 알맞은 낱말 고르기', icon: 'ph-fill ph-text-aa', bg: '#FFE7E2', color: '#FF5A4D', href: 'CatChap 한글낱말.dc.html', kw: '한글 낱말 찾기 글자 단어' },
-  { title: '숫자 놀이터', tag: '놀이', desc: '더하기·빼기 답을 상자에 담기', icon: 'ph-fill ph-calculator', bg: '#FFEDE0', color: '#FF922E', href: 'CatChap 숫자놀이터.dc.html', kw: '숫자 놀이터 더하기 빼기 계산' },
-  { title: '끌어놓기 놀이', tag: '놀이', desc: '정답 카드를 목표 칸으로 드래그', icon: 'ph-fill ph-hand-grabbing', bg: '#E1F5EC', color: '#17B08C', href: 'CatChap 끌어놓기.dc.html', kw: '끌어놓기 드래그 카드 분류' },
-  { title: '그림 찾기 퀴즈', tag: '놀이', desc: '조건에 맞는 그림을 골라요', icon: 'ph-fill ph-image', bg: '#E6F0FF', color: '#2E7BFF', href: 'CatChap 그림찾기.dc.html', kw: '그림 찾기 퀴즈 이미지 사진' },
-  { title: '안전 지킴이', tag: '놀이', desc: '안전한 행동과 위험한 것 구분', icon: 'ph-fill ph-shield-check', bg: '#EDE6FF', color: '#8B6BFF', href: 'CatChap 안전지킴이.dc.html', kw: '안전 지킴이 위험 생활안전' },
-  { title: '냥이 미로 탐험', tag: '놀이', desc: '고양이를 생선가게까지 데려가기', icon: 'ph-fill ph-path', bg: '#FFE9F1', color: '#FF6DA6', href: 'CatChap 미로탐험.dc.html', kw: '미로 탐험 냥이 길찾기 경로' },
-  { title: '오늘의 퀴즈', tag: '바로가기', desc: '오늘 할당된 퀴즈 풀기', icon: 'ph-fill ph-lightning', bg: '#FFF3D6', color: '#F0A400', href: 'CatChap 오늘의퀴즈.dc.html', kw: '오늘 퀴즈 할당 데일리' },
-  { title: '배지', tag: '바로가기', desc: '모은 배지와 보상 확인', icon: 'ph-fill ph-medal', bg: '#FFF3D6', color: '#F0A400', href: 'CatChap 배지.dc.html', kw: '배지 보상 상장 트로피' },
-  { title: '마이페이지', tag: '바로가기', desc: '내 프로필 꾸미기와 정보', icon: 'ph-fill ph-cat', bg: '#FFE9F1', color: '#FF6DA6', href: 'CatChap 프로필 꾸미기.dc.html', kw: '마이페이지 프로필 꾸미기 냥코인' },
+  { title: '강의', tag: '바로가기', desc: '수강 중인 강의를 이어 보거나 새 강의를 찾아요', icon: 'ph-fill ph-monitor-play', bg: 'var(--brand-soft)', color: 'var(--brand-ink)', href: PATHS.STUDENT_LECTURES, kw: '강의 영상 수강 lecture 시청' },
+  { title: '문제은행', tag: '바로가기', desc: '코스 문항을 연습하고 오늘의 Q로 복습해요', icon: 'ph-fill ph-squares-four', bg: 'var(--ok-soft)', color: 'var(--ok-ink)', href: PATHS.STUDENT_ALL_LEARNING, kw: '문제은행 연습 오늘의 Q 복습 bank' },
+  { title: '틀린 문제', tag: '바로가기', desc: '틀린 문항을 다시 풀어 복습해요', icon: 'ph-fill ph-notebook', bg: 'var(--danger-soft)', color: 'var(--danger-ink)', href: PATHS.STUDENT_WRONG_NOTES, kw: '틀린 문제 오답 복습 wrong' },
+  { title: '나의 기록', tag: '바로가기', desc: '수강·완주·수료와 학습 통계를 확인해요', icon: 'ph-fill ph-chart-line-up', bg: 'var(--info-soft)', color: 'var(--info-ink)', href: PATHS.STUDENT_RECORDS, kw: '나의 기록 통계 수료 진도 records' },
+  { title: '알림', tag: '바로가기', desc: '학습·수료 소식을 확인해요', icon: 'ph-fill ph-bell', bg: 'var(--warn-soft)', color: 'var(--warn-ink)', href: PATHS.STUDENT_NOTIFICATIONS, kw: '알림 소식 notification' },
+  { title: '설정', tag: '바로가기', desc: '화면·알림·계정을 설정해요', icon: 'ph-fill ph-gear', bg: 'var(--surface-2)', color: 'var(--ink-2)', href: PATHS.STUDENT_SETTINGS, kw: '설정 계정 다크 모드 settings' },
 ];
 
 const POPULAR = [
-  { label: '오늘의 퀴즈', icon: 'ph-fill ph-lightning', color: '#F0A400', bg: '#FFF3D6', href: 'CatChap 오늘의퀴즈.dc.html' },
-  { label: '문제은행', icon: 'ph-fill ph-squares-four', color: '#17B08C', bg: '#E1F5EC', href: 'CatChap 전체학습.dc.html' },
-  { label: '한글 낱말', icon: 'ph-fill ph-text-aa', color: '#FF5A4D', bg: '#FFE7E2', href: 'CatChap 한글낱말.dc.html' },
-  { label: '숫자 놀이터', icon: 'ph-fill ph-calculator', color: '#FF922E', bg: '#FFEDE0', href: 'CatChap 숫자놀이터.dc.html' },
-  { label: '끌어놓기 놀이', icon: 'ph-fill ph-hand-grabbing', color: '#17B08C', bg: '#E1F5EC', href: 'CatChap 끌어놓기.dc.html' },
-  { label: '그림 찾기', icon: 'ph-fill ph-image', color: '#2E7BFF', bg: '#E6F0FF', href: 'CatChap 그림찾기.dc.html' },
-  { label: '미로 탐험', icon: 'ph-fill ph-path', color: '#FF6DA6', bg: '#FFE9F1', href: 'CatChap 미로탐험.dc.html' },
-  { label: '안전 지킴이', icon: 'ph-fill ph-shield-check', color: '#8B6BFF', bg: '#EDE6FF', href: 'CatChap 안전지킴이.dc.html' },
-  { label: '배지', icon: 'ph-fill ph-medal', color: '#F0A400', bg: '#FFF3D6', href: 'CatChap 배지.dc.html' },
-  { label: '나의 기록', icon: 'ph-fill ph-chart-line-up', color: '#8B6BFF', bg: '#EDE6FF', href: 'CatChap 나의기록.dc.html' },
-  { label: 'AI 선생님', icon: 'ph-fill ph-robot', color: '#2E7BFF', bg: '#E6F0FF', href: 'CatChap AI선생님.dc.html' },
-  { label: '오답 노트', icon: 'ph-fill ph-note-pencil', color: '#FF5A4D', bg: '#FFE7E2', href: 'CatChap 오답노트.dc.html' },
-  { label: '다시 풀 문제', icon: 'ph-fill ph-target', color: '#FF6DA6', bg: '#FFE9F1', href: 'CatChap 취약문제추천.dc.html' },
-  { label: '마이페이지', icon: 'ph-fill ph-cat', color: '#FF922E', bg: '#FFEDE0', href: 'CatChap 프로필 꾸미기.dc.html' },
-  { label: '알림', icon: 'ph-fill ph-bell', color: '#F0A400', bg: '#FFF3D6', href: 'CatChap 알림.dc.html' },
-  { label: '설정', icon: 'ph-fill ph-gear', color: '#8B6BFF', bg: '#EDE6FF', href: 'CatChap 설정.dc.html' },
+  { label: '강의', icon: 'ph-fill ph-monitor-play', color: 'var(--brand-ink)', bg: 'var(--brand-soft)', href: PATHS.STUDENT_LECTURES },
+  { label: '문제은행', icon: 'ph-fill ph-squares-four', color: 'var(--ok-ink)', bg: 'var(--ok-soft)', href: PATHS.STUDENT_ALL_LEARNING },
+  { label: '틀린 문제', icon: 'ph-fill ph-notebook', color: 'var(--danger-ink)', bg: 'var(--danger-soft)', href: PATHS.STUDENT_WRONG_NOTES },
+  { label: '나의 기록', icon: 'ph-fill ph-chart-line-up', color: 'var(--info-ink)', bg: 'var(--info-soft)', href: PATHS.STUDENT_RECORDS },
+  { label: '알림', icon: 'ph-fill ph-bell', color: 'var(--warn-ink)', bg: 'var(--warn-soft)', href: PATHS.STUDENT_NOTIFICATIONS },
+  { label: '설정', icon: 'ph-fill ph-gear', color: 'var(--ink-2)', bg: 'var(--surface-2)', href: PATHS.STUDENT_SETTINGS },
 ];
 
 /**
@@ -238,7 +220,7 @@ export default function SearchPage() {
               if (e.key === 'Enter') addRecent(query);
             }}
             autoFocus
-            placeholder="무엇을 배우고 싶어요? 눌러서 골라도 돼요!"
+            placeholder="강의·문제·기록 검색 — 원하는 항목을 눌러도 돼요"
             className="sp-input"
           />
           <div className="sp-inputbtns">
@@ -259,7 +241,7 @@ export default function SearchPage() {
                 <span className="sp-cardicon">
                   <i className="ph-fill ph-fire" />
                 </span>
-                <h2 className="sp-cardtitle">인기 검색어 · 자주 찾는 놀이</h2>
+                <h2 className="sp-cardtitle">바로가기</h2>
               </div>
               <div className="sp-popchips">
                 {POPULAR.map((c) => (
@@ -333,10 +315,12 @@ export default function SearchPage() {
         {noResults && (
           <div className="sp-noresults">
             <div className="sp-nofloat">
-              <img src={mascot} alt="마스코트" className="sp-noimg" />
+              <span className="sp-noicon">
+                <i className="ph-fill ph-magnifying-glass" />
+              </span>
             </div>
-            <h2 className="sp-notitle">찾는 놀이가 없어요</h2>
-            <p className="sp-notext">다른 낱말로 검색해 보거나, 위 추천에서 골라봐요!</p>
+            <h2 className="sp-notitle">검색 결과가 없어요</h2>
+            <p className="sp-notext">다른 검색어로 찾아보거나, 위 바로가기에서 골라 보세요.</p>
           </div>
         )}
       </div>

@@ -78,10 +78,10 @@ export const HANDOFF_ROUTE_MAP: Record<string, string> = {
   'CatChap 학습결과.dc.html': PATHS.STUDENT_RESULT,
   'CatChap 오늘의퀴즈.dc.html': PATHS.STUDENT_ALL_LEARNING, // 퀴즈 은퇴 → 문제은행(오늘의 Q)
   'CatChap 전체학습.dc.html': PATHS.STUDENT_ALL_LEARNING,
-  'CatChap 개념설명.dc.html': PATHS.STUDENT_CONCEPTS,
+  'CatChap 개념설명.dc.html': PATHS.STUDENT_ALL_LEARNING, // 개념 설명 은퇴(성인화) → 문제은행
   'CatChap 나의기록.dc.html': PATHS.STUDENT_RECORDS,
   'CatChap 오답노트.dc.html': PATHS.STUDENT_WRONG_NOTES,
-  'CatChap 취약문제추천.dc.html': PATHS.STUDENT_RECOMMENDED,
+  'CatChap 취약문제추천.dc.html': PATHS.STUDENT_ALL_LEARNING, // 추천 은퇴(성인화) → 문제은행
   'CatChap 검색.dc.html': PATHS.STUDENT_SEARCH,
   'CatChap 알림.dc.html': PATHS.STUDENT_NOTIFICATIONS,
   'CatChap 설정.dc.html': PATHS.STUDENT_SETTINGS,

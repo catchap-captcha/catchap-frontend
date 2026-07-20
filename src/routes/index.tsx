@@ -27,10 +27,8 @@ const LectureList = lazy(() => import('../pages/student/LectureList'));
 const LecturePlayer = lazy(() => import('../pages/student/LecturePlayer'));
 const CourseExam = lazy(() => import('../pages/student/CourseExam'));
 const AllLearning = lazy(() => import('../pages/student/AllLearning'));
-const Concepts = lazy(() => import('../pages/student/Concepts'));
 const MyRecords = lazy(() => import('../pages/student/MyRecords'));
 const WrongNotes = lazy(() => import('../pages/student/WrongNotes'));
-const Recommended = lazy(() => import('../pages/student/Recommended'));
 const SearchPage = lazy(() => import('../pages/student/SearchPage'));
 const StudentNotifications = lazy(() => import('../pages/student/StudentNotifications'));
 const StudentSettings = lazy(() => import('../pages/student/StudentSettings'));
@@ -90,10 +88,17 @@ export default function AppRoutes() {
           <Route path={PATHS.STUDENT_LECTURE} element={<LecturePlayer />} />
           <Route path={PATHS.STUDENT_COURSE_EXAM} element={<CourseExam />} />
           <Route path={PATHS.STUDENT_ALL_LEARNING} element={<AllLearning />} />
-          <Route path={PATHS.STUDENT_CONCEPTS} element={<Concepts />} />
+          {/* 개념 설명·취약문제추천 은퇴(성인화 0720, 초등 커리큘럼) — 옛 링크는 문제은행으로 */}
+          <Route
+            path={PATHS.STUDENT_CONCEPTS}
+            element={<Navigate to={PATHS.STUDENT_ALL_LEARNING} replace />}
+          />
+          <Route
+            path={PATHS.STUDENT_RECOMMENDED}
+            element={<Navigate to={PATHS.STUDENT_ALL_LEARNING} replace />}
+          />
           <Route path={PATHS.STUDENT_RECORDS} element={<MyRecords />} />
           <Route path={PATHS.STUDENT_WRONG_NOTES} element={<WrongNotes />} />
-          <Route path={PATHS.STUDENT_RECOMMENDED} element={<Recommended />} />
           <Route path={PATHS.STUDENT_SEARCH} element={<SearchPage />} />
           <Route path={PATHS.STUDENT_NOTIFICATIONS} element={<StudentNotifications />} />
           <Route path={PATHS.STUDENT_SETTINGS} element={<StudentSettings />} />

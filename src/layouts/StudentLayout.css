@@ -24,11 +24,20 @@
   gap: 11px;
 }
 
-.sl-logoimg {
-  width: 46px;
-  height: 46px;
-  border-radius: 50%;
-  /* 로고 주변 빨간 번짐(red glow shadow) 제거 */
+/* 성인화(0720): 고양이 마스코트 로고 → 깔끔한 코랄 워드마크 배지 */
+.sl-logobadge {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--brand);
+  color: var(--on-brand);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Jua', sans-serif;
+  font-size: 22px;
+  line-height: 1;
+  flex-shrink: 0;
 }
 
 .sl-logotext {
@@ -153,10 +162,11 @@
   justify-content: center;
 }
 
-.sl-avatarimg {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
+.sl-avatarinitial {
+  color: var(--on-brand);
+  font-weight: 800;
+  font-size: 15px;
+  line-height: 1;
 }
 
 .sl-hat {
