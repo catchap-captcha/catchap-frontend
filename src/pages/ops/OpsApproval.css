@@ -734,22 +734,32 @@
 .op-bh-tracebtn:hover { background: #ece4ff; border-color: #c9b8ff; }
 .op-bh-overlay {
   position: fixed; inset: 0; z-index: 90; display: flex; align-items: center; justify-content: center;
-  background: rgba(58, 51, 64, 0.45); padding: 20px;
+  background: rgba(46, 40, 51, 0.5); padding: 20px;
+  backdrop-filter: blur(3px); /* 뒤 배경을 살짝 흐려 모달에 집중되게(현대적 느낌) */
+  animation: op-modal-fade 0.16s ease-out;
 }
+@keyframes op-modal-fade { from { opacity: 0; } to { opacity: 1; } }
 .op-bh-modal {
-  background: #fff; border-radius: 20px; padding: 20px 22px; width: 100%; max-width: 520px;
-  box-shadow: 0 30px 60px -20px rgba(58, 51, 64, 0.45);
+  background: #fff; border-radius: 22px; padding: 22px 24px; width: 100%; max-width: 520px;
+  box-shadow: 0 32px 64px -24px rgba(46, 40, 51, 0.5);
+  animation: op-modal-pop 0.18s cubic-bezier(0.2, 0.9, 0.3, 1.1);
 }
+@keyframes op-modal-pop { from { opacity: 0; transform: translateY(10px) scale(0.985); } to { opacity: 1; transform: none; } }
+/* 모달 헤더 — 본문과 구분선으로 나눠 위계를 준다(전엔 제목과 본문이 붙어 아마추어 느낌) */
 .op-bh-modal-h {
-  display: flex; align-items: center; justify-content: space-between;
-  font-weight: 800; font-size: 15px; color: #3a3340;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  font-weight: 800; font-size: 16.5px; color: #2e2833;
+  padding-bottom: 14px; margin-bottom: 4px; border-bottom: 1.5px solid #f4ece1;
 }
-.op-bh-modal-h i { color: #7a5bd6; }
+.op-bh-modal-h > span { display: inline-flex; align-items: center; gap: 8px; }
+.op-bh-modal-h i { color: #e5473b; font-size: 19px; }
 .op-bh-modal-x {
-  border: none; background: #f4f0ec; border-radius: 9px; width: 30px; height: 30px;
-  display: inline-flex; align-items: center; justify-content: center; cursor: pointer; color: #6e6558;
+  flex-shrink: 0;
+  border: none; background: #f6f0ea; border-radius: 10px; width: 32px; height: 32px;
+  display: inline-flex; align-items: center; justify-content: center; cursor: pointer; color: #8a7f6d;
+  transition: background 0.15s, color 0.15s;
 }
-.op-bh-modal-x:hover { background: #ffe0db; color: #ff5a4d; }
+.op-bh-modal-x:hover { background: #ffe7e2; color: #e5473b; }
 .op-bh-modal-meta { font-weight: 700; font-size: 12.5px; color: #9b9086; margin: 8px 0 12px; }
 .op-bh-svg {
   width: 100%; height: auto; display: block;
@@ -786,9 +796,10 @@
 
 /* 폼 모달 */
 .op-formmodal {
-  background: #fff; border-radius: 20px; padding: 20px 22px; width: 100%; max-width: 560px;
+  background: #fff; border-radius: 22px; padding: 22px 24px; width: 100%; max-width: 560px;
   max-height: calc(100vh - 40px); overflow-y: auto;
-  box-shadow: 0 30px 60px -20px rgba(58, 51, 64, 0.45);
+  box-shadow: 0 32px 64px -24px rgba(46, 40, 51, 0.5);
+  animation: op-modal-pop 0.18s cubic-bezier(0.2, 0.9, 0.3, 1.1);
 }
 .op-form { display: flex; flex-direction: column; gap: 12px; margin-top: 14px; }
 .op-form-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
