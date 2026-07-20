@@ -689,6 +689,7 @@ export const lectureApi = {
       .get<{
         job_id: string;
         status: 'pending' | 'running' | 'done' | 'error';
+        phase: 'transcribing' | 'generating' | 'verifying' | null;
         n: number;
         created: number;
         transcript_used: boolean;

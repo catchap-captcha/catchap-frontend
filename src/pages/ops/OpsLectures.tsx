@@ -1867,6 +1867,7 @@ function QuestionsModal({
   const [saving, setSaving] = useState(false);
   const [genN, setGenN] = useState('3');
   const [generating, setGenerating] = useState(false);
+  const [genPhase, setGenPhase] = useState<string | null>(null); // 생성 중 세부 단계 라벨용
   const changedRef = useRef(false);
   // 생성 폴링 활성 플래그 — 모달이 닫히면(unmount) false로 만들어 폴링 루프를 멈춘다
   // (잡은 서버에서 계속되고, 다시 열면 초안이 보인다). setState-after-unmount 방지.
@@ -2220,6 +2221,7 @@ function QuestionsModal({
       return;
     }
     setGenerating(true);
+    setGenPhase(null);
     setBanner('');
     genPollRef.current = true;
     try {
@@ -2230,6 +2232,7 @@ function QuestionsModal({
         await new Promise((r) => setTimeout(r, 2000));
         if (!genPollRef.current) return; // 모달 닫힘 — 폴링 중단(잡은 서버서 계속)
         const job = await lectureApi.opsQuestionGenJob(lec.id, started.job_id);
+        setGenPhase(job.phase); // 세부 단계 표시(자막 변환/문항 생성/검증)
         if (job.status === 'done') {
           changedRef.current = true;
           setBannerOk(true);
@@ -2356,13 +2359,19 @@ function QuestionsModal({
                 ‘공개’</b>해야 학생에게 출제돼요. (운영 콘솔 설정의 생성 모델 사용)
               </span>
             </p>
-            {/* 생성 중 안내 — 이제 백그라운드(비동기)라 강사가 기다리지 않아도 된다. 긴 영상은
-                자막 변환에 시간이 걸리므로, 창을 닫아도 계속됨을 알려 대기 이탈을 없앤다. */}
+            {/* 생성 중 안내 — 백그라운드(비동기)라 강사가 기다리지 않아도 된다. 실시간 %는 없지만
+                지금 무슨 단계인지(자막 변환/문항 생성/검증)를 보여줘 '멈춘 것처럼' 보이지 않게 한다. */}
             {generating && (
               <p className="op-lect-genwait">
                 <i className="ph-bold ph-spinner-gap" />
-                AI가 문항을 만드는 중이에요 — 긴 영상은 자막 변환 때문에 몇 분 걸릴 수 있어요.
-                창을 닫아도 백그라운드에서 계속돼요(끝나면 목록에 초안이 떠요).
+                {genPhase === 'transcribing'
+                  ? '① 강의 소리를 자막으로 변환하는 중… (가장 오래 걸려요)'
+                  : genPhase === 'generating'
+                    ? '② 자막을 읽고 문항을 만드는 중…'
+                    : genPhase === 'verifying'
+                      ? '③ 봇 저항(자기검증)을 확인하는 중…'
+                      : 'AI가 문항을 만드는 중이에요 — 긴 영상은 몇 분 걸릴 수 있어요.'}
+                {' '}창을 닫아도 백그라운드에서 계속돼요(끝나면 목록에 초안이 떠요).
               </p>
             )}
             {/* 강사 제공 자막 — 있으면 위 'AI 문항 생성'이 자동 STT 대신 이 자막을 쓴다 */}
