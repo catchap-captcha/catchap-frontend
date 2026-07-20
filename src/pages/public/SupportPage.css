@@ -3,9 +3,9 @@
 .sp-page {
   min-height: 100vh;
   background:
-    radial-gradient(1200px 600px at 82% -8%, #ffe9d6 0%, rgba(255, 233, 214, 0) 60%),
-    radial-gradient(900px 500px at 5% 10%, #e6f0ff 0%, rgba(230, 240, 255, 0) 55%),
-    #fff6ec;
+    radial-gradient(1200px 600px at 82% -8%, var(--brand-soft) 0%, rgba(255, 233, 214, 0) 60%),
+    radial-gradient(900px 500px at 5% 10%, var(--info-soft) 0%, rgba(230, 240, 255, 0) 55%),
+    var(--bg);
   padding-bottom: 60px;
 }
 
@@ -16,7 +16,7 @@
   z-index: 60;
   background: rgba(255, 255, 255, 0.88);
   backdrop-filter: blur(12px);
-  border-bottom: 2px solid #ffe7dc;
+  border-bottom: 2px solid var(--line);
 }
 .sp-nav-inner {
   max-width: 1120px;
@@ -46,12 +46,12 @@
 .sp-brand-name {
   font-family: 'Jua', sans-serif;
   font-size: 25px;
-  color: #ff5a4d;
+  color: var(--brand);
   letter-spacing: -0.5px;
 }
 .sp-brand-tagline {
   font-size: 11px;
-  color: #b7ada2;
+  color: var(--ink-3);
   font-weight: 600;
   margin-top: 3px;
 }
@@ -65,20 +65,20 @@
   text-decoration: none;
   font-weight: 700;
   font-size: 15.5px;
-  color: #6e6558;
+  color: var(--ink-2);
   padding: 9px 16px;
   border-radius: 12px;
 }
 .sp-nav-link:hover {
-  background: #fff0e6;
-  color: #3a3340;
+  background: var(--brand-soft);
+  color: var(--ink);
 }
 .sp-nav-link--active {
   text-decoration: none;
   font-weight: 800;
   font-size: 15.5px;
-  color: #ff5a4d;
-  background: #ffe7e2;
+  color: var(--brand);
+  background: var(--brand-soft);
   padding: 9px 16px;
   border-radius: 12px;
 }
@@ -93,8 +93,8 @@
   height: 42px;
   border: none;
   border-radius: 14px;
-  background: #fff1e9;
-  color: #8a8072;
+  background: var(--brand-soft);
+  color: var(--ink-2);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -102,8 +102,8 @@
   text-decoration: none;
 }
 .sp-icon-btn:hover {
-  background: #ffe3d6;
-  color: #ff5a4d;
+  background: var(--brand-soft);
+  color: var(--brand);
 }
 .sp-icon-btn i {
   font-size: 20px;
@@ -114,16 +114,16 @@
   height: 42px;
   border: none;
   border-radius: 14px;
-  background: #fff1e9;
-  color: #8a8072;
+  background: var(--brand-soft);
+  color: var(--ink-2);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 .sp-bell-btn:hover {
-  background: #ffe3d6;
-  color: #ff5a4d;
+  background: var(--brand-soft);
+  color: var(--brand);
 }
 .sp-bell-btn i {
   font-size: 20px;
@@ -134,41 +134,41 @@
   right: 7px;
   width: 9px;
   height: 9px;
-  background: #ff5a4d;
+  background: var(--brand);
   border-radius: 50%;
-  border: 2px solid #fff1e9;
+  border: 2px solid var(--brand-soft);
 }
 .sp-profile {
   text-decoration: none;
   display: flex;
   align-items: center;
   gap: 9px;
-  background: #fff;
-  border: 2px solid #ffe7dc;
+  background: var(--surface);
+  border: 2px solid var(--line);
   padding: 5px 12px 5px 6px;
   border-radius: 40px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
   cursor: pointer;
 }
 .sp-profile:hover {
-  border-color: #ffb59e;
+  border-color: var(--line);
 }
 .sp-profile-avatar {
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #ffc24b, #ff8a5b);
+  background: linear-gradient(135deg, var(--warn), var(--brand));
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: 'Jua', sans-serif;
-  color: #fff;
+  color: var(--on-brand);
   font-size: 16px;
 }
 .sp-profile-name {
   font-weight: 800;
   font-size: 14px;
-  color: #3a3340;
+  color: var(--ink);
 }
 
 /* HERO */
@@ -181,7 +181,7 @@
   position: relative;
   overflow: hidden;
   border-radius: 30px;
-  background: linear-gradient(120deg, #ffe6be 0%, #ffcfc9 46%, #e4d8ff 100%);
+  background: linear-gradient(120deg, var(--warn-soft) 0%, var(--brand-soft) 46%, var(--info-soft) 100%);
   padding: 44px 46px;
   box-shadow: 0 26px 50px -30px rgba(255, 120, 110, 0.55);
   text-align: center;
@@ -213,7 +213,7 @@
   align-items: center;
   gap: 6px;
   background: rgba(255, 255, 255, 0.7);
-  color: #e0574b;
+  color: var(--brand-ink);
   font-weight: 800;
   font-size: 13px;
   padding: 7px 15px;
@@ -225,14 +225,14 @@
 .sp-hero-title {
   font-family: 'Jua', sans-serif;
   font-size: 38px;
-  color: #4a2e2a;
+  color: var(--brand-ink);
   margin: 16px 0 8px;
   letter-spacing: -1px;
 }
 .sp-hero-sub {
   margin: 0 0 24px;
   font-size: 16px;
-  color: #6e4f4a;
+  color: var(--brand-ink);
   font-weight: 600;
 }
 .sp-search-box {
@@ -245,18 +245,18 @@
   left: 20px;
   top: 50%;
   transform: translateY(-50%);
-  color: #c0966a;
+  color: var(--brand-ink);
   font-size: 22px;
 }
 .sp-search-input {
   width: 100%;
   border: none;
-  background: #fff;
+  background: var(--surface);
   border-radius: 18px;
   padding: 18px 20px 18px 54px;
   font-size: 15.5px;
   font-weight: 600;
-  color: #3a3340;
+  color: var(--ink);
   font-family: 'Pretendard', sans-serif;
   box-shadow: 0 14px 30px -16px rgba(180, 90, 70, 0.4);
 }
@@ -272,7 +272,7 @@
 }
 .sp-hero-chip {
   background: rgba(255, 255, 255, 0.6);
-  color: #8a5a48;
+  color: var(--brand-ink);
   font-weight: 700;
   font-size: 12.5px;
   padding: 7px 14px;
@@ -291,8 +291,8 @@
   gap: 16px;
 }
 .sp-cat-card {
-  background: #fff;
-  border: 2px solid #ffede4;
+  background: var(--surface);
+  border: 2px solid var(--line);
   border-radius: 22px;
   padding: 22px;
   text-align: center;
@@ -315,30 +315,30 @@
   font-size: 28px;
 }
 .sp-cat-icon--account {
-  background: #ffe3e9;
-  color: #ff5a6e;
+  background: var(--danger-soft);
+  color: var(--brand-ink);
 }
 .sp-cat-icon--learn {
-  background: #e6f0ff;
-  color: #2e7bff;
+  background: var(--info-soft);
+  color: var(--info);
 }
 .sp-cat-icon--pay {
-  background: #dff6ed;
-  color: #17b08c;
+  background: var(--ok-soft);
+  color: var(--ok);
 }
 .sp-cat-icon--tech {
-  background: #ede6ff;
-  color: #8b6bff;
+  background: var(--info-soft);
+  color: var(--info);
 }
 .sp-cat-name {
   font-family: 'Jua', sans-serif;
   font-size: 16px;
-  color: #3a3340;
+  color: var(--ink);
 }
 .sp-cat-desc {
   margin: 5px 0 0;
   font-size: 12px;
-  color: #9b9086;
+  color: var(--ink-3);
   font-weight: 600;
 }
 
@@ -355,7 +355,7 @@
 .sp-faq-title {
   font-family: 'Jua', sans-serif;
   font-size: 24px;
-  color: #3a3340;
+  color: var(--ink);
   margin: 0 0 16px;
   letter-spacing: -0.5px;
 }
@@ -365,8 +365,8 @@
   gap: 12px;
 }
 .sp-faq-item {
-  background: #fff;
-  border: 2px solid #ffede4;
+  background: var(--surface);
+  border: 2px solid var(--line);
   border-radius: 20px;
   overflow: hidden;
   box-shadow: 0 12px 26px -24px rgba(180, 120, 90, 0.5);
@@ -391,40 +391,40 @@
   border-radius: 20px;
 }
 .sp-faq-tag--account {
-  background: #ffe3e9;
-  color: #ff5a6e;
+  background: var(--danger-soft);
+  color: var(--brand-ink);
 }
 .sp-faq-tag--learn {
-  background: #e6f0ff;
-  color: #2e7bff;
+  background: var(--info-soft);
+  color: var(--info);
 }
 .sp-faq-tag--pay {
-  background: #dff6ed;
-  color: #17b08c;
+  background: var(--ok-soft);
+  color: var(--ok);
 }
 .sp-faq-tag--tech {
-  background: #ede6ff;
-  color: #8b6bff;
+  background: var(--info-soft);
+  color: var(--info);
 }
 .sp-faq-q {
   flex: 1;
   font-weight: 800;
   font-size: 15px;
-  color: #3a3340;
+  color: var(--ink);
 }
 .sp-faq-caret {
   font-size: 18px;
-  color: #c0b6a9;
+  color: var(--ink-3);
 }
 .sp-faq-a-wrap {
   padding: 0 20px 20px 20px;
 }
 .sp-faq-a {
-  border-top: 1px solid #f4eee6;
+  border-top: 1px solid var(--line);
   padding-top: 14px;
   font-size: 14px;
   line-height: 1.7;
-  color: #6e655a;
+  color: var(--brand-ink);
   font-weight: 600;
 }
 
@@ -437,8 +437,8 @@
   top: 88px;
 }
 .sp-contact-card {
-  background: #fff;
-  border: 2px solid #ffede4;
+  background: var(--surface);
+  border: 2px solid var(--line);
   border-radius: 24px;
   padding: 24px;
   box-shadow: 0 14px 30px -24px rgba(180, 120, 90, 0.5);
@@ -453,8 +453,8 @@
   width: 40px;
   height: 40px;
   border-radius: 13px;
-  background: #ffe0db;
-  color: #ff5a4d;
+  background: var(--brand-soft);
+  color: var(--brand);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -465,30 +465,30 @@
 .sp-contact-title {
   font-family: 'Jua', sans-serif;
   font-size: 19px;
-  color: #3a3340;
+  color: var(--ink);
   margin: 0;
 }
 .sp-label {
   display: block;
   font-weight: 800;
   font-size: 12.5px;
-  color: #4a4438;
+  color: var(--ink-2);
   margin-bottom: 6px;
 }
 .sp-input {
   width: 100%;
-  border: 2px solid #ffe0d6;
-  background: #fffbf6;
+  border: 2px solid var(--brand-soft);
+  background: var(--surface-2);
   border-radius: 13px;
   padding: 12px 14px;
   font-size: 14px;
   font-weight: 600;
-  color: #3a3340;
+  color: var(--ink);
   font-family: 'Pretendard', sans-serif;
   margin-bottom: 13px;
 }
 .sp-input:focus {
-  border-color: #ff5a4d;
+  border-color: var(--brand);
   outline: none;
 }
 .sp-select-wrap {
@@ -498,13 +498,13 @@
 .sp-select {
   width: 100%;
   appearance: none;
-  border: 2px solid #ffe0d6;
-  background: #fffbf6;
+  border: 2px solid var(--brand-soft);
+  background: var(--surface-2);
   border-radius: 13px;
   padding: 12px 40px 12px 14px;
   font-size: 14px;
   font-weight: 700;
-  color: #3a3340;
+  color: var(--ink);
   font-family: 'Pretendard', sans-serif;
   cursor: pointer;
 }
@@ -513,33 +513,33 @@
   right: 15px;
   top: 50%;
   transform: translateY(-50%);
-  color: #c0b6a9;
+  color: var(--ink-3);
   font-size: 15px;
   pointer-events: none;
 }
 .sp-textarea {
   width: 100%;
-  border: 2px solid #ffe0d6;
-  background: #fffbf6;
+  border: 2px solid var(--brand-soft);
+  background: var(--surface-2);
   border-radius: 13px;
   padding: 12px 14px;
   font-size: 14px;
   font-weight: 600;
-  color: #3a3340;
+  color: var(--ink);
   font-family: 'Pretendard', sans-serif;
   resize: vertical;
   margin-bottom: 16px;
 }
 .sp-textarea:focus {
-  border-color: #ff5a4d;
+  border-color: var(--brand);
   outline: none;
 }
 .sp-submit-btn {
   width: 100%;
   border: none;
   cursor: pointer;
-  background: #ff5a4d;
-  color: #fff;
+  background: var(--brand);
+  color: var(--on-brand);
   font-family: 'Jua', sans-serif;
   font-size: 16px;
   padding: 14px;
@@ -551,15 +551,15 @@
   gap: 8px;
 }
 .sp-submit-btn:hover {
-  background: #f5493c;
+  background: var(--brand-strong);
 }
 .sp-submit-btn i {
   font-size: 19px;
 }
 
 .sp-hours-card {
-  background: linear-gradient(150deg, #e7f0ff, #ede6ff);
-  border: 2px solid #dce4ff;
+  background: linear-gradient(150deg, var(--surface), var(--info-soft));
+  border: 2px solid var(--line);
   border-radius: 24px;
   padding: 22px 24px;
   box-shadow: 0 12px 26px -24px rgba(120, 120, 220, 0.4);
@@ -574,8 +574,8 @@
   width: 38px;
   height: 38px;
   border-radius: 12px;
-  background: #fff;
-  color: #2e7bff;
+  background: var(--surface);
+  color: var(--info);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -586,7 +586,7 @@
 .sp-hours-title {
   font-family: 'Jua', sans-serif;
   font-size: 18px;
-  color: #3b4a7a;
+  color: var(--info-ink);
   margin: 0;
 }
 .sp-hours-list {
@@ -605,20 +605,20 @@
 .sp-hours-day {
   font-weight: 800;
   font-size: 13.5px;
-  color: #3a3340;
+  color: var(--ink);
 }
 .sp-hours-time {
   font-weight: 700;
   font-size: 13.5px;
-  color: #2e7bff;
+  color: var(--info);
 }
 .sp-hours-time--off {
-  color: #9b9086;
+  color: var(--ink-3);
 }
 .sp-hours-note {
   margin: 13px 0 0;
   font-size: 12px;
-  color: #6b6588;
+  color: var(--info-ink);
   font-weight: 600;
   line-height: 1.55;
 }
@@ -630,7 +630,7 @@
   padding: 0 24px;
 }
 .sp-footer-inner {
-  border-top: 2px solid #ffe7dc;
+  border-top: 2px solid var(--line);
   padding-top: 26px;
   display: flex;
   justify-content: space-between;
@@ -651,11 +651,11 @@
 .sp-footer-name {
   font-family: 'Jua', sans-serif;
   font-size: 18px;
-  color: #ff5a4d;
+  color: var(--brand);
 }
 .sp-footer-tagline {
   font-size: 12px;
-  color: #b0a79b;
+  color: var(--ink-3);
   font-weight: 600;
 }
 .sp-footer-links {
@@ -665,17 +665,17 @@
 }
 .sp-footer-link {
   text-decoration: none;
-  color: #8a8072;
+  color: var(--ink-2);
   font-weight: 700;
   font-size: 13.5px;
 }
 .sp-footer-link:hover {
-  color: #ff5a4d;
+  color: var(--brand);
 }
 .sp-footer-copy {
   margin: 16px 0 0;
   font-size: 11.5px;
-  color: #c2b9ad;
+  color: var(--ink-3);
   font-weight: 500;
 }
 

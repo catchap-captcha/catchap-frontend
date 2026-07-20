@@ -6,6 +6,7 @@ import mascot from '../../assets/characters/catchap-logo.png';
 import './OpsLogin.css';
 import PasswordInput from '../../components/common/PasswordInput';
 import ForestCaptcha from '../../components/captcha/ForestCaptcha';
+import ThemeToggle from '../../components/common/ThemeToggle';
 
 /**
  * 운영자(ops)·강사(instructor) 전용 로그인.
@@ -87,6 +88,7 @@ export default function OpsLogin() {
 
   return (
     <div className="opl-root">
+      <ThemeToggle className="theme-toggle--fixed" />
       <form className="opl-card" onSubmit={submit}>
         <div className="opl-brand">
           <img src={mascot} alt="CatChap" className="opl-logo" />

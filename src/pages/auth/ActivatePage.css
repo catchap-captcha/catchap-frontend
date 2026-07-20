@@ -16,7 +16,7 @@
   padding: 24px;
   position: relative;
   overflow: hidden;
-  background: linear-gradient(160deg, #ff7a5b 0%, #ff5a4d 55%, #ff4d77 100%);
+  background: linear-gradient(160deg, var(--brand) 0%, var(--brand) 55%, #ff4d77 100%);
   font-family: 'Pretendard', system-ui, sans-serif;
 }
 .ac-blob { position: absolute; border-radius: 50%; background: rgba(255, 255, 255, 0.12); pointer-events: none; }
@@ -28,7 +28,7 @@
   z-index: 2;
   width: 100%;
   max-width: 440px;
-  background: #fff;
+  background: var(--surface);
   border-radius: 34px;
   padding: 40px 36px 32px;
   box-shadow: 0 40px 80px -30px rgba(120, 30, 30, 0.5);
@@ -38,7 +38,7 @@
 .ac-mascot-row { display: flex; justify-content: center; margin-bottom: 8px; }
 .ac-mascot {
   width: 130px; height: 130px; border-radius: 50%;
-  background: #fff; padding: 6px;
+  background: var(--surface); padding: 6px;
   animation: acFloat 4.5s ease-in-out infinite;
 }
 .ac-mascot img { width: 100%; height: 100%; border-radius: 50%; display: block; }
@@ -48,45 +48,45 @@
   width: 30px; height: 30px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
   font-family: 'Jua', sans-serif; font-size: 15px;
-  background: #ffe0d6; color: #ffab98; transition: all 0.3s;
+  background: var(--brand-soft); color: #ffab98; transition: all 0.3s;
 }
-.ac-stepdot--on { background: #ff5a4d; color: #fff; box-shadow: 0 6px 14px -6px rgba(255, 90, 77, 0.7); }
-.ac-stepline { width: 44px; height: 3px; border-radius: 3px; background: #ffe0d6; }
+.ac-stepdot--on { background: var(--brand); color: var(--on-brand); box-shadow: 0 6px 14px -6px rgba(255, 90, 77, 0.7); }
+.ac-stepline { width: 44px; height: 3px; border-radius: 3px; background: var(--brand-soft); }
 
 .ac-title {
-  font-family: 'Jua', sans-serif; font-size: 28px; color: #3a3340;
+  font-family: 'Jua', sans-serif; font-size: 28px; color: var(--ink);
   text-align: center; margin: 0 0 8px; letter-spacing: -0.5px;
 }
-.ac-sub { text-align: center; color: #8a8072; font-weight: 600; font-size: 14px; margin: 0 0 24px; line-height: 1.6; }
-.ac-sub b { color: #ff5a4d; }
+.ac-sub { text-align: center; color: var(--ink-2); font-weight: 600; font-size: 14px; margin: 0 0 24px; line-height: 1.6; }
+.ac-sub b { color: var(--brand); }
 
-.ac-lbl { display: block; font-weight: 800; font-size: 13px; color: #4a4438; margin: 14px 0 7px; }
+.ac-lbl { display: block; font-weight: 800; font-size: 13px; color: var(--ink-2); margin: 14px 0 7px; }
 .ac-input, .ac-code-input {
-  width: 100%; border: 2px solid #ffe0d6; background: #fffbf6;
+  width: 100%; border: 2px solid var(--brand-soft); background: var(--surface-2);
   border-radius: 14px; padding: 14px 16px; font-size: 15px; font-weight: 700;
-  color: #3a3340; font-family: 'Pretendard', sans-serif;
+  color: var(--ink); font-family: 'Pretendard', sans-serif;
   transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
 }
 .ac-input:focus, .ac-code-input:focus {
-  outline: none; border-color: #ff5a4d; background: #fff;
+  outline: none; border-color: var(--brand); background: var(--surface);
   box-shadow: 0 0 0 4px rgba(255, 90, 77, 0.1);
 }
 .ac-code-input {
   text-align: center; font-family: 'JetBrains Mono', 'Consolas', monospace;
-  font-size: 22px; letter-spacing: 2px; color: #ff5a4d; padding: 18px 16px;
+  font-size: 22px; letter-spacing: 2px; color: var(--brand); padding: 18px 16px;
 }
 .ac-code-input::placeholder { color: #ffc4b4; letter-spacing: 2px; }
 
 .ac-err {
   display: flex; align-items: center; gap: 7px; margin-top: 12px;
-  background: #fff2f2; color: #e23d3d; font-weight: 700; font-size: 13px;
+  background: var(--surface); color: var(--danger); font-weight: 700; font-size: 13px;
   padding: 10px 14px; border-radius: 12px;
 }
 
 .ac-primary {
   width: 100%; margin-top: 22px;
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-  background: linear-gradient(180deg, #ff6459, #ff5346); color: #fff;
+  background: linear-gradient(180deg, #ff6459, #ff5346); color: var(--on-brand);
   font-family: 'Jua', sans-serif; font-size: 18px; letter-spacing: 0.3px;
   padding: 15px; border-radius: 16px; border: none; cursor: pointer;
   box-shadow: 0 12px 24px -10px rgba(255, 90, 77, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.25);
@@ -100,13 +100,13 @@
 .ac-row .ac-primary { margin-top: 0; }
 .ac-primary--grow { flex: 1; }
 .ac-ghost {
-  background: #fff; border: 2px solid #ffe0d6; color: #8a8072;
+  background: var(--surface); border: 2px solid var(--brand-soft); color: var(--ink-2);
   font-weight: 800; font-size: 14px; padding: 0 22px; border-radius: 16px; cursor: pointer;
 }
-.ac-ghost:hover { background: #fff7f3; color: #ff5a4d; border-color: #ffc9b8; }
+.ac-ghost:hover { background: var(--surface-2); color: var(--brand); border-color: var(--brand-soft); }
 
-.ac-foot { text-align: center; margin: 18px 0 0; color: #9b9086; font-weight: 600; font-size: 13.5px; }
-.ac-link { color: #ff5a4d; font-weight: 800; text-decoration: none; }
+.ac-foot { text-align: center; margin: 18px 0 0; color: var(--ink-3); font-weight: 600; font-size: 13.5px; }
+.ac-link { color: var(--brand); font-weight: 800; text-decoration: none; }
 .ac-link:hover { text-decoration: underline; }
 
 /* 아이디 입력 + 중복 확인 (학생이 직접 아이디를 정함) */
@@ -114,29 +114,29 @@
 /* min-width:0 이 없으면 좁은 폰에서 입력칸이 안 줄어 '중복 확인' 버튼이 화면 밖으로 밀린다 */
 .ac-input--grow { flex: 1; width: auto; min-width: 0; }
 .ac-idbtn {
-  flex-shrink: 0; border: 2px solid #ffd0c4; background: #fff2ee; color: #ff5a4d;
+  flex-shrink: 0; border: 2px solid var(--line); background: var(--surface); color: var(--brand);
   border-radius: 14px; padding: 0 16px; font-weight: 800; font-size: 13.5px;
   cursor: pointer; white-space: nowrap; transition: background 0.15s, border-color 0.15s, color 0.15s;
 }
 .ac-idbtn:hover:not(:disabled) { background: #ffe4dc; }
 .ac-idbtn:disabled { opacity: 0.6; cursor: default; }
-.ac-idbtn--ok { background: #e1f5ec; border-color: #b6e6d1; color: #17916f; }
+.ac-idbtn--ok { background: var(--ok-soft); border-color: var(--line); color: var(--ok); }
 .ac-idmsg { display: flex; align-items: center; gap: 6px; margin: 8px 0 0; font-weight: 700; font-size: 12.5px; }
-.ac-idmsg--ok { color: #17916f; }
-.ac-idmsg--bad { color: #e23d3d; }
+.ac-idmsg--ok { color: var(--ok); }
+.ac-idmsg--bad { color: var(--danger); }
 
 /* 중복 아이디일 때 추천 아이디 칩 (아이가 계속 막히지 않도록) */
 .ac-suggests { margin-top: 10px; }
 .ac-suggests-lb {
   display: inline-flex; align-items: center; gap: 5px;
-  font-weight: 800; font-size: 12.5px; color: #b0791d; margin-bottom: 7px;
+  font-weight: 800; font-size: 12.5px; color: var(--warn-ink); margin-bottom: 7px;
 }
 .ac-suggests-lb i { color: #f0a92a; }
 .ac-suggests-row { display: flex; flex-wrap: wrap; gap: 8px; }
 .ac-suggest {
-  border: 2px solid #ffe0b8; background: #fff8ec; color: #b0791d;
+  border: 2px solid var(--line); background: var(--surface); color: var(--warn-ink);
   border-radius: 999px; padding: 7px 14px; font-weight: 800; font-size: 13.5px;
   cursor: pointer; transition: background 0.15s, border-color 0.15s, transform 0.1s;
 }
-.ac-suggest:hover { background: #ffefcf; border-color: #ffd08a; transform: translateY(-1px); }
+.ac-suggest:hover { background: #ffefcf; border-color: var(--line); transform: translateY(-1px); }
 .ac-suggest:active { transform: translateY(0); }

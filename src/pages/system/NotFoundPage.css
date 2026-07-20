@@ -33,7 +33,7 @@
 
 .nf-page {
   min-height: 100vh;
-  background: radial-gradient(1100px 560px at 82% -10%, #FFE0E4 0%, rgba(255, 224, 228, 0) 60%), radial-gradient(900px 520px at 6% 100%, #FFEFD6 0%, rgba(255, 239, 214, 0) 55%), #FFF6EC;
+  background: radial-gradient(1100px 560px at 82% -10%, var(--brand-soft) 0%, rgba(255, 224, 228, 0) 60%), radial-gradient(900px 520px at 6% 100%, var(--warn-soft) 0%, rgba(255, 239, 214, 0) 55%), var(--bg);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -69,7 +69,7 @@
   top: 20%;
   right: 22%;
   font-size: 26px;
-  color: #FFC24B;
+  color: var(--warn);
   animation: nfTwinkle 2.6s ease-in-out infinite;
 }
 .nf-star-2 {
@@ -102,7 +102,7 @@
   font-family: 'Jua', sans-serif;
   font-size: 120px;
   line-height: 1;
-  color: #FF5A4D;
+  color: var(--brand);
   text-shadow: 0 12px 0 rgba(255, 90, 77, 0.15);
 }
 .nf-mascot-wrap {
@@ -122,7 +122,7 @@
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: #fff;
+  background: var(--surface);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -130,15 +130,15 @@
 }
 .nf-mascot-badge-icon {
   font-size: 24px;
-  color: #FF922E;
+  color: var(--warn);
 }
 
 .nf-pill {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  background: #FFE7E2;
-  color: #C0402E;
+  background: var(--brand-soft);
+  color: var(--brand-ink);
   font-weight: 800;
   font-size: 12.5px;
   padding: 8px 15px;
@@ -152,7 +152,7 @@
 .nf-title {
   font-family: 'Jua', sans-serif;
   font-size: 32px;
-  color: #3A3340;
+  color: var(--ink);
   margin: 0 0 10px;
   letter-spacing: -.5px;
 }
@@ -160,7 +160,7 @@
   margin: 0 auto 30px;
   max-width: 400px;
   font-size: 15.5px;
-  color: #8A8072;
+  color: var(--ink-2);
   font-weight: 600;
   line-height: 1.65;
 }
@@ -178,8 +178,8 @@
   gap: 8px;
   cursor: pointer;
   border: none;
-  background: #FF5A4D;
-  color: #fff;
+  background: var(--brand);
+  color: var(--on-brand);
   font-family: 'Jua', sans-serif;
   font-size: 17px;
   padding: 15px 30px;
@@ -187,7 +187,7 @@
   box-shadow: 0 14px 28px -10px rgba(255, 90, 77, 0.6);
 }
 .nf-btn-back:hover {
-  background: #F5493C;
+  background: var(--brand-strong);
 }
 .nf-btn-back-icon {
   font-size: 20px;
@@ -197,17 +197,17 @@
   align-items: center;
   gap: 8px;
   text-decoration: none;
-  border: 2px solid #FFE0D6;
-  background: #fff;
-  color: #8A8072;
+  border: 2px solid var(--brand-soft);
+  background: var(--surface);
+  color: var(--ink-2);
   font-family: 'Jua', sans-serif;
   font-size: 17px;
   padding: 13px 26px;
   border-radius: 16px;
 }
 .nf-link-search:hover {
-  background: #FFF6EE;
-  color: #FF5A4D;
+  background: var(--surface-2);
+  color: var(--brand);
 }
 .nf-link-search-icon {
   font-size: 19px;
@@ -222,12 +222,12 @@
 }
 .nf-error-icon {
   font-size: 15px;
-  color: #B0A79B;
+  color: var(--ink-3);
 }
 .nf-error-text {
   font-size: 12px;
   font-weight: 700;
-  color: #B0A79B;
+  color: var(--ink-3);
 }
 
 /* ===== 정제(polish): 액션 버튼 hover 부상 + 탄력 눌림 (배경색 불변, 그림자/모션만) ===== */

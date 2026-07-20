@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import { useTheme } from '../../hooks/useTheme';
 import { settingsApi } from '../../api/settings';
 import { PATHS } from '../../routes/paths';
 import mascot from '../../assets/characters/catchap-logo.png';
@@ -59,6 +60,7 @@ const INSTRUCTOR_GROUPS: typeof GROUPS = [
 export default function OpsNav() {
   const { pathname } = useLocation();
   const { me, logout } = useAuth();
+  const { theme, toggle: toggleTheme } = useTheme();
   const navigate = useNavigate();
   const isInstructor = me?.role === 'instructor';
   const groups = isInstructor ? INSTRUCTOR_GROUPS : GROUPS;
@@ -150,6 +152,15 @@ export default function OpsNav() {
             <span className="op-side-mename">{me?.name ?? '운영자'}</span>
           </Link>
         )}
+        <button
+          type="button"
+          className="op-side-logout op-side-theme"
+          onClick={toggleTheme}
+          title={theme === 'dark' ? '라이트 모드로 전환' : '다크 모드로 전환'}
+        >
+          <i className={theme === 'dark' ? 'ph-fill ph-sun' : 'ph-fill ph-moon'} />
+          <span>{theme === 'dark' ? '라이트 모드' : '다크 모드'}</span>
+        </button>
         <button type="button" className="op-side-logout" onClick={onLogout} title="로그아웃">
           <i className="ph-fill ph-sign-out" />
           <span>로그아웃</span>

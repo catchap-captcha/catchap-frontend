@@ -4,6 +4,7 @@ import { PATHS } from '../routes/paths';
 import { useAuth } from '../hooks/useAuth';
 import { useUnreadNotifications } from '../hooks/useUnreadNotifications';
 import ScreenTimeReminder from '../components/motion/ScreenTimeReminder';
+import ThemeToggle from '../components/common/ThemeToggle';
 import mascot from '../assets/characters/catchap-logo.png';
 import './StudentLayout.css';
 
@@ -125,6 +126,7 @@ export function StudentNav({
           <span />
         </button>
         <div className="sl-right">
+          <ThemeToggle className="sl-iconbtn sl-theme" />
           <Link to={PATHS.STUDENT_SEARCH} title="검색" className="sl-iconbtn">
             <i className="ph-bold ph-magnifying-glass" />
           </Link>

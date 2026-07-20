@@ -65,7 +65,6 @@ function applyToDocument(s: StudentSettingsData, active: boolean) {
   const root = document.documentElement;
   if (!active) {
     delete root.dataset.ccEye;
-    delete root.dataset.ccDark;
     delete root.dataset.ccReduce;
     delete root.dataset.ccColor;
     const app = document.getElementById('root');
@@ -73,7 +72,7 @@ function applyToDocument(s: StudentSettingsData, active: boolean) {
     return;
   }
   root.dataset.ccEye = s.toggles.eye ? '1' : '0';
-  root.dataset.ccDark = s.toggles.dark ? '1' : '0';
+  // 다크는 이제 전역 테마(useTheme, html[data-theme])가 담당 — 여기서 ccDark를 다루지 않는다.
   root.dataset.ccReduce = s.toggles.reduce ? '1' : '0';
   root.dataset.ccColor = s.toggles.color ? '1' : '0';
   const app = document.getElementById('root');

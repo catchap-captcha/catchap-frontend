@@ -5,6 +5,7 @@ import ForcePasswordGate from './components/auth/ForcePasswordGate';
 import './styles/page-enter.css';
 import { AuthProvider } from './stores/authStore';
 import { StudentSettingsProvider } from './stores/studentSettingsStore';
+import { ThemeProvider } from './hooks/useTheme';
 
 /** 라우트 전환 시 항상 맨 위에서 시작 (설정 등 페이지가 중간부터 보이는 문제 방지) */
 function ScrollToTop() {
@@ -32,13 +33,15 @@ function AnimatedRoutes() {
 export default function App() {
   return (
     <BrowserRouter>
-      <AuthProvider>
-        <StudentSettingsProvider>
-          <ScrollToTop />
-          <AnimatedRoutes />
-          <ForcePasswordGate />
-        </StudentSettingsProvider>
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <StudentSettingsProvider>
+            <ScrollToTop />
+            <AnimatedRoutes />
+            <ForcePasswordGate />
+          </StudentSettingsProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </BrowserRouter>
   );
 }

@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
 import { useAuth } from '../../hooks/useAuth';
 import { useStudentSettings } from '../../stores/studentSettingsStore';
+import { useTheme } from '../../hooks/useTheme';
 import { playSfx } from '../../utils/feedback';
 import './StudentSettings.css';
 import { StudentNav } from '../../layouts/StudentLayout';
@@ -72,6 +73,8 @@ export default function StudentSettings() {
   const navigate = useNavigate();
   // 전역 설정 스토어 — 변경 즉시 화면 효과 적용(눈보호/다크/모션/색약/글자크기) + 서버 저장
   const { settings, update } = useStudentSettings();
+  // '어두운 화면'은 이제 전역 다크 모드(상단바 토글과 동일 상태)를 켠다.
+  const { theme, setTheme } = useTheme();
   const [logoutOpen, setLogoutOpen] = useState(false);
 
   const name = (me?.name ?? '하은').trim() || '하은';
@@ -91,23 +94,31 @@ export default function StudentSettings() {
     navigate('/');
   };
 
-  const renderToggleRow = (row: ToggleRow) => (
-    <div key={row.key} className="st-row">
-      <span className="st-rowicon" style={{ '--bg': row.bg, '--c': row.color } as CSSProperties}>
-        <i className={row.icon} />
-      </span>
-      <div className="st-rowinfo">
-        <div className="st-rowtitle">{row.title}</div>
-        <div className="st-rowsub">{row.sub}</div>
+  const renderToggleRow = (row: ToggleRow) => {
+    // 다크 모드 행은 전역 테마 상태를 읽고 쓴다(다른 행은 학생 설정 스토어).
+    const isDark = row.key === 'dark';
+    const on = isDark ? theme === 'dark' : settings.toggles[row.key];
+    const onClick = isDark
+      ? () => {
+          playSfx('click');
+          setTheme(theme === 'dark' ? 'light' : 'dark');
+        }
+      : () => tog(row.key);
+    return (
+      <div key={row.key} className="st-row">
+        <span className="st-rowicon" style={{ '--bg': row.bg, '--c': row.color } as CSSProperties}>
+          <i className={row.icon} />
+        </span>
+        <div className="st-rowinfo">
+          <div className="st-rowtitle">{row.title}</div>
+          <div className="st-rowsub">{row.sub}</div>
+        </div>
+        <button className={`st-toggle${on ? ' st-toggle--on' : ''}`} onClick={onClick}>
+          <span className="st-knob" />
+        </button>
       </div>
-      <button
-        className={`st-toggle${settings.toggles[row.key] ? ' st-toggle--on' : ''}`}
-        onClick={() => tog(row.key)}
-      >
-        <span className="st-knob" />
-      </button>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="st-root">

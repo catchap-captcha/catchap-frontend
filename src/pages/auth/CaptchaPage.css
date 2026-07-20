@@ -78,7 +78,7 @@
   background:
     radial-gradient(1100px 560px at 80% -10%, #ffe4d0 0%, rgba(255, 228, 208, 0) 60%),
     radial-gradient(900px 500px at 8% 100%, #ffe0ea 0%, rgba(255, 224, 234, 0) 55%),
-    #fff6ec;
+    var(--bg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -156,13 +156,13 @@
   height: 84px;
   border-radius: 50%;
   /* 떠다니는 마스코트 그림자 제거 */
-  border: 4px solid #fff;
+  border: 4px solid var(--surface);
 }
 
 /* SHELL */
 .cp-shell {
-  background: #fff;
-  border: 3px solid #ffede4;
+  background: var(--surface);
+  border: 3px solid var(--line);
   border-radius: 30px;
   overflow: hidden;
   box-shadow: 0 30px 60px -24px rgba(180, 120, 90, 0.55);
@@ -192,17 +192,17 @@
 }
 .cp-guard-icon {
   font-size: 14px;
-  color: #fff;
+  color: var(--on-brand);
 }
 .cp-guard-text {
   font-size: 10.5px;
   font-weight: 800;
-  color: #fff;
+  color: var(--on-brand);
 }
 .cp-h-title {
   font-family: 'Jua', sans-serif;
   font-size: 21px;
-  color: #fff;
+  color: var(--on-brand);
   line-height: 1.25;
 }
 .cp-h-sub {
@@ -222,8 +222,8 @@
   display: flex;
   align-items: center;
   gap: 11px;
-  background: #fff6ed;
-  border: 2px solid #ffe1b8;
+  background: var(--surface);
+  border: 2px solid var(--line);
   border-radius: 16px;
   padding: 13px 15px;
   margin-bottom: 18px;
@@ -233,8 +233,8 @@
   width: 34px;
   height: 34px;
   border-radius: 11px;
-  background: #ffedd6;
-  color: #ff922e;
+  background: var(--brand-soft);
+  color: var(--warn);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -245,7 +245,7 @@
 .cp-why-text {
   font-size: 12.5px;
   font-weight: 700;
-  color: #9b7a2e;
+  color: var(--warn-ink);
   line-height: 1.55;
 }
 
@@ -259,12 +259,12 @@
 .cp-prompt {
   font-family: 'Jua', sans-serif;
   font-size: 16px;
-  color: #3a3340;
+  color: var(--ink);
 }
 .cp-shuffle {
   border: none;
-  background: #fff1e9;
-  color: #b0a79b;
+  background: var(--brand-soft);
+  color: var(--ink-3);
   width: 36px;
   height: 36px;
   border-radius: 12px;
@@ -274,8 +274,8 @@
   justify-content: center;
 }
 .cp-shuffle:hover {
-  background: #ffe3d6;
-  color: #ff5a4d;
+  background: var(--brand-soft);
+  color: var(--brand);
 }
 .cp-shuffle-icon {
   font-size: 17px;
@@ -283,9 +283,9 @@
 
 /* CAPTCHA API MOUNT SLOT */
 .cp-slot {
-  border: 2px dashed #ffd6c4;
+  border: 2px dashed var(--line);
   border-radius: 20px;
-  background: #fffbf6;
+  background: var(--surface-2);
   min-height: 150px;
   display: flex;
   align-items: center;
@@ -302,14 +302,14 @@
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  border: 4px solid #ffe7dc;
-  border-top-color: #ff5a4d;
+  border: 4px solid var(--line);
+  border-top-color: var(--brand);
   animation: ccSpin 0.8s linear infinite; /* 공용 ccSpin과 값 동일 → 재사용 */
 }
 .cp-loading-text {
   font-size: 13px;
   font-weight: 800;
-  color: #8a8072;
+  color: var(--ink-2);
 }
 .cp-loading-api {
   font-size: 11px;
@@ -329,8 +329,8 @@
   width: 56px;
   height: 56px;
   border-radius: 18px;
-  background: #ffe0db;
-  color: #ff5a6e;
+  background: var(--brand-soft);
+  color: var(--brand-ink);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -342,18 +342,18 @@
 .cp-ready-title {
   font-family: 'Jua', sans-serif;
   font-size: 15px;
-  color: #5a5248;
+  color: var(--ink-2);
 }
 .cp-ready-desc {
   font-size: 11.5px;
   font-weight: 600;
-  color: #a79e92;
+  color: var(--ink-3);
   line-height: 1.55;
   max-width: 280px;
 }
 .cp-ready-code {
   font-family: monospace;
-  color: #ff5a4d;
+  color: var(--brand);
 }
 
 /* ERROR */
@@ -361,20 +361,20 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background: #fff0ec;
+  background: var(--brand-soft);
   border-radius: 12px;
   padding: 10px 13px;
   margin-top: 12px;
 }
 .cp-error-icon {
   font-size: 16px;
-  color: #ff5a4d;
+  color: var(--brand);
   flex-shrink: 0;
 }
 .cp-error-text {
   font-size: 12px;
   font-weight: 700;
-  color: #c0402e;
+  color: var(--brand-ink);
 }
 
 /* TIMER */
@@ -387,11 +387,11 @@
 .cp-timer {
   font-size: 11.5px;
   font-weight: 700;
-  color: #b0a79b;
+  color: var(--ink-3);
 }
 .cp-timer-icon {
   font-size: 13px;
-  color: #ff922e;
+  color: var(--warn);
   margin-right: 3px;
 }
 
@@ -399,10 +399,10 @@
 .cp-retry {
   width: 100%;
   margin-top: 16px;
-  border: 2px solid #ffd6c4;
+  border: 2px solid var(--line);
   cursor: pointer;
-  background: #fff;
-  color: #ff5a4d;
+  background: var(--surface);
+  color: var(--brand);
   font-family: 'Jua', sans-serif;
   font-size: 17px;
   padding: 14px;
@@ -417,8 +417,8 @@
   margin-top: 16px;
   border: none;
   cursor: pointer;
-  background: #ff5a4d;
-  color: #fff;
+  background: var(--brand);
+  color: var(--on-brand);
   font-family: 'Jua', sans-serif;
   font-size: 17px;
   padding: 15px;
@@ -458,7 +458,7 @@
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: #fff;
+  background: var(--surface);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -467,18 +467,18 @@
 }
 .cp-success-seal-icon {
   font-size: 25px;
-  color: #17b08c;
+  color: var(--ok);
 }
 .cp-success-title {
   font-family: 'Jua', sans-serif;
   font-size: 26px;
-  color: #3a3340;
+  color: var(--ink);
   margin: 0 0 6px;
 }
 .cp-success-sub {
   margin: 0 0 22px;
   font-size: 14px;
-  color: #8a8072;
+  color: var(--ink-2);
   font-weight: 600;
   line-height: 1.6;
 }
@@ -487,8 +487,8 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: #17b08c;
-  color: #fff;
+  background: var(--ok);
+  color: var(--on-brand);
   font-family: 'Jua', sans-serif;
   font-size: 16px;
   padding: 14px 28px;
@@ -527,7 +527,7 @@
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: #fff;
+  background: var(--surface);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -535,26 +535,26 @@
 }
 .cp-locked-badge-icon {
   font-size: 24px;
-  color: #ff922e;
+  color: var(--warn);
 }
 .cp-locked-title {
   font-family: 'Jua', sans-serif;
   font-size: 23px;
-  color: #3a3340;
+  color: var(--ink);
   margin: 0 0 6px;
 }
 .cp-locked-sub {
   margin: 0 0 22px;
   font-size: 13.5px;
-  color: #8a8072;
+  color: var(--ink-2);
   font-weight: 600;
   line-height: 1.6;
 }
 .cp-locked-btn {
   border: none;
   cursor: pointer;
-  background: #ff5a4d;
-  color: #fff;
+  background: var(--brand);
+  color: var(--on-brand);
   font-family: 'Jua', sans-serif;
   font-size: 15px;
   padding: 14px 26px;
@@ -565,7 +565,7 @@
   gap: 7px;
 }
 .cp-locked-btn:hover {
-  background: #f5493c;
+  background: var(--brand-strong);
 }
 .cp-locked-btn-icon {
   font-size: 17px;
@@ -573,7 +573,7 @@
 
 /* FOOTER */
 .cp-footer {
-  border-top: 2px solid #fff1e9;
+  border-top: 2px solid var(--brand-soft);
   padding: 13px 22px;
   display: flex;
   align-items: center;
@@ -585,11 +585,11 @@
   gap: 5px;
   font-size: 10.5px;
   font-weight: 800;
-  color: #c0b6a9;
+  color: var(--ink-3);
 }
 .cp-foot-shield {
   font-size: 13px;
-  color: #ffb43c;
+  color: var(--warn);
 }
 .cp-foot-links {
   display: flex;
@@ -600,10 +600,10 @@
   text-decoration: none;
   font-size: 10.5px;
   font-weight: 700;
-  color: #b0a79b;
+  color: var(--ink-3);
 }
 .cp-foot-link:hover {
-  color: #ff5a4d;
+  color: var(--brand);
 }
 .cp-foot-dot {
   color: #efe3d8;
@@ -621,16 +621,16 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #ffb43c;
+  background: var(--warn);
   animation: cpPulse 1.6s ease-in-out infinite;
 }
 .cp-risk-text {
   font-size: 11.5px;
   font-weight: 700;
-  color: #9b9086;
+  color: var(--ink-3);
 }
 .cp-risk-b {
-  color: #c98a00;
+  color: var(--warn-ink);
 }
 
 /* ===== 정제(polish): 액션 버튼 hover 부상 + 탄력 눌림 (배경색 불변, 그림자/모션만) ===== */

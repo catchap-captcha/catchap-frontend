@@ -26,7 +26,7 @@
   background:
     radial-gradient(1100px 560px at 80% -10%, #ffe4d0 0%, rgba(255, 228, 208, 0) 60%),
     radial-gradient(900px 500px at 8% 8%, #ffe0e4 0%, rgba(255, 224, 228, 0) 55%),
-    #fff6ec;
+    var(--bg);
   display: flex;
   flex-direction: column;
   font-family: 'Pretendard', system-ui, sans-serif;
@@ -40,7 +40,7 @@
   z-index: 60;
   background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(12px);
-  border-bottom: 2px solid #ffe7dc;
+  border-bottom: 2px solid var(--line);
 }
 
 .gs-topbar-inner {
@@ -57,17 +57,17 @@
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  color: #8a8072;
+  color: var(--ink-2);
   font-weight: 800;
   font-size: 14px;
   padding: 9px 15px;
   border-radius: 13px;
-  background: #fff1e9;
+  background: var(--brand-soft);
 }
 
 .gs-quit:hover {
-  background: #ffe3d6;
-  color: #ff5a4d;
+  background: var(--brand-soft);
+  color: var(--brand);
 }
 
 .gs-quit i {
@@ -102,12 +102,12 @@
 .gs-gametitle {
   font-family: 'Jua', sans-serif;
   font-size: 18px;
-  color: #3a3340;
+  color: var(--ink);
 }
 
 .gs-gamesub {
   font-size: 11.5px;
-  color: #b0a79b;
+  color: var(--ink-3);
   font-weight: 700;
 }
 
@@ -122,7 +122,7 @@
   justify-content: space-between;
   font-size: 11.5px;
   font-weight: 800;
-  color: #9b9086;
+  color: var(--ink-3);
   margin-bottom: 6px;
 }
 
@@ -132,7 +132,7 @@
 
 .gs-progress-track {
   height: 11px;
-  background: #ffe7dc;
+  background: var(--line);
   border-radius: 20px;
   overflow: hidden;
 }
@@ -149,20 +149,20 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  background: #fff3d6;
+  background: var(--warn-soft);
   padding: 7px 13px;
   border-radius: 20px;
 }
 
 .gs-scorechip i {
   font-size: 16px;
-  color: #f0a400;
+  color: var(--warn);
 }
 
 .gs-scorechip span {
   font-family: 'Jua', sans-serif;
   font-size: 16px;
-  color: #b07e1e;
+  color: var(--warn-ink);
 }
 
 /* SUBJECT SWITCHER */
@@ -194,13 +194,13 @@
 /* 활성 탭 background/box-shadow는 과목 solid 색 → inline style */
 .gs-tab-active {
   border: 2px solid transparent;
-  color: #fff;
+  color: var(--on-brand);
 }
 
 .gs-tab-inactive {
-  border: 2px solid #f0e6dc;
-  background: #fff;
-  color: #9b9086;
+  border: 2px solid var(--line);
+  background: var(--surface);
+  color: var(--ink-3);
 }
 
 /* PLAY AREA */
@@ -218,8 +218,8 @@
 }
 
 .gs-main {
-  background: #fff;
-  border: 2px solid #ffede4;
+  background: var(--surface);
+  border: 2px solid var(--line);
   border-radius: 30px;
   padding: 26px 28px;
   box-shadow: 0 22px 46px -28px rgba(180, 120, 90, 0.5);
@@ -254,8 +254,8 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: #f1fbf6;
-  border: 1.5px solid #c8eedd;
+  background: var(--surface);
+  border: 1.5px solid var(--line);
   padding: 6px 12px;
   border-radius: 20px;
 }
@@ -271,20 +271,20 @@
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  background: #17b08c;
+  background: var(--ok);
   animation: ccPulse 1.6s ease-in-out infinite;
 }
 
 .gs-guard-label {
   font-size: 11px;
   font-weight: 800;
-  color: #0e8f6e;
+  color: var(--ok-ink);
 }
 
 .gs-question {
   font-family: 'Jua', sans-serif;
   font-size: 28px;
-  color: #3a3340;
+  color: var(--ink);
   margin: 0 0 4px;
   letter-spacing: -0.5px;
 }
@@ -292,7 +292,7 @@
 .gs-subline {
   margin: 0 0 20px;
   font-size: 14.5px;
-  color: #9b9086;
+  color: var(--ink-3);
   font-weight: 600;
 }
 
@@ -321,7 +321,7 @@
   left: 16px;
   font-size: 10.5px;
   font-weight: 800;
-  color: #c0b6a9;
+  color: var(--ink-3);
   background: rgba(255, 255, 255, 0.7);
   padding: 4px 9px;
   border-radius: 8px;
@@ -367,20 +367,20 @@
 .gs-mount-title {
   font-family: 'Jua', sans-serif;
   font-size: 20px;
-  color: #3a3340;
+  color: var(--ink);
 }
 
 .gs-mount-desc {
   font-size: 13.5px;
   font-weight: 600;
-  color: #a79e92;
+  color: var(--ink-3);
   line-height: 1.65;
   max-width: 400px;
 }
 
 .gs-mount-desc code {
   font-family: monospace;
-  color: #ff5a4d;
+  color: var(--brand);
 }
 
 /* SIDE PANEL */
@@ -413,13 +413,13 @@
 .gs-cheer {
   font-family: 'Jua', sans-serif;
   font-size: 15px;
-  color: #4a2e2a;
+  color: var(--brand-ink);
   line-height: 1.45;
 }
 
 .gs-card {
-  background: #fff;
-  border: 2px solid #ffede4;
+  background: var(--surface);
+  border: 2px solid var(--line);
   border-radius: 24px;
   padding: 18px 20px;
   box-shadow: 0 12px 26px -22px rgba(180, 120, 90, 0.5);
@@ -428,7 +428,7 @@
 .gs-card-title {
   font-weight: 800;
   font-size: 13px;
-  color: #8a8072;
+  color: var(--ink-2);
   margin-bottom: 12px;
 }
 
@@ -444,7 +444,7 @@
   gap: 10px;
   font-size: 13px;
   font-weight: 700;
-  color: #5a5248;
+  color: var(--ink-2);
 }
 
 .gs-staticon {
@@ -461,18 +461,18 @@
 }
 
 .gs-staticon-ok {
-  background: #dff6ed;
-  color: #17b08c;
+  background: var(--ok-soft);
+  color: var(--ok);
 }
 
 .gs-staticon-no {
-  background: #ffe3e9;
-  color: #ff5a6e;
+  background: var(--danger-soft);
+  color: var(--brand-ink);
 }
 
 .gs-staticon-streak {
-  background: #fff3d6;
-  color: #f0a400;
+  background: var(--warn-soft);
+  color: var(--warn);
 }
 
 .gs-statval {
@@ -481,15 +481,15 @@
 }
 
 .gs-statval-ok {
-  color: #17b08c;
+  color: var(--ok);
 }
 
 .gs-statval-no {
-  color: #ff5a6e;
+  color: var(--brand-ink);
 }
 
 .gs-statval-streak {
-  color: #f0a400;
+  color: var(--warn);
 }
 
 .gs-reward-head {
@@ -502,7 +502,7 @@
 .gs-reward-title {
   font-weight: 800;
   font-size: 13px;
-  color: #8a8072;
+  color: var(--ink-2);
 }
 
 .gs-reward-sticker {
@@ -543,14 +543,14 @@
 }
 
 .gs-reward-slot-off {
-  background: #f5efe8;
+  background: var(--surface);
   color: #ded4c7;
 }
 
 .gs-reward-msg {
   font-size: 12.5px;
   font-weight: 700;
-  color: #7a7266;
+  color: var(--ink-2);
   line-height: 1.5;
   text-align: center;
 }
@@ -562,7 +562,7 @@
   z-index: 50;
   background: rgba(255, 255, 255, 0.94);
   backdrop-filter: blur(12px);
-  border-top: 2px solid #ffe7dc;
+  border-top: 2px solid var(--line);
 }
 
 .gs-bottombar-inner {
@@ -577,7 +577,7 @@
 .gs-status {
   font-size: 13.5px;
   font-weight: 700;
-  color: #9b9086;
+  color: var(--ink-3);
 }
 
 .gs-actions {
@@ -589,7 +589,7 @@
 .gs-confirm {
   border: none;
   background: var(--gs-solid);
-  color: #fff;
+  color: var(--on-brand);
   font-family: 'Jua', sans-serif;
   font-size: 17px;
   padding: 13px 34px;
@@ -651,15 +651,15 @@
   margin-bottom: 14px;
   padding: 10px 15px;
   border-radius: 12px;
-  background: #FFF3D6;
-  color: #B07E1E;
+  background: var(--warn-soft);
+  color: var(--warn-ink);
   font-size: 13.5px;
   font-weight: 800;
 }
 .gs-authwarn i { font-size: 17px; }
 .gs-authwarn-link {
   margin-left: 4px;
-  color: #B03A2E;
+  color: var(--brand-ink);
   text-decoration: underline;
   font-weight: 800;
 }
@@ -669,10 +669,10 @@
   display: inline-flex; align-items: center; gap: 7px;
   margin-bottom: 16px; padding: 8px 15px; border-radius: 20px;
   font-size: 13.5px; font-weight: 800;
-  background: #FFE3EF; color: #D14584;
+  background: var(--brand-soft); color: var(--brand-ink);
 }
 .gs-live-daybar i { font-size: 15px; }
-.gs-live-daybar--replay { background: #EDE6FF; color: #6A4FCC; }
+.gs-live-daybar--replay { background: var(--info-soft); color: var(--info-ink); }
 
 /* ── 모바일 (≤768px): 사이드 패널을 본문 아래로 스택, 상단바 줄바꿈 ── */
 @media (max-width: 768px) {
@@ -768,13 +768,13 @@
   justify-content: center;
   font-size: 12.5px;
   font-weight: 800;
-  background: #fff;
-  color: #b7ab9d;
+  background: var(--surface);
+  color: var(--brand-ink);
   border: 2px solid transparent;
 }
 .gs-stageseg-done {
   background: var(--gs-solid);
-  color: #fff;
+  color: var(--on-brand);
 }
 .gs-stageseg-cur {
   border-color: var(--gs-solid);
@@ -784,8 +784,8 @@
   margin-left: 4px;
   font-size: 12px;
   font-weight: 800;
-  color: #6a4fcc;
-  background: #ede6ff;
+  color: var(--info-ink);
+  background: var(--info-soft);
   padding: 4px 10px;
   border-radius: 14px;
 }
@@ -799,7 +799,7 @@
   z-index: 5;
   pointer-events: none;
   background: rgba(58, 50, 38, 0.88);
-  color: #fff;
+  color: var(--on-brand);
   font-weight: 800;
   font-size: 14.5px;
   padding: 11px 20px;
@@ -829,7 +829,7 @@
   padding: 20px;
 }
 .gs-quitpop {
-  background: #fff;
+  background: var(--surface);
   border-radius: 22px;
   padding: 26px 24px 20px;
   max-width: 340px;
@@ -844,13 +844,13 @@
 .gs-quitpop-title {
   font-family: 'Jua', sans-serif;
   font-size: 20px;
-  color: #3a3340;
+  color: var(--ink);
   margin-bottom: 6px;
 }
 .gs-quitpop-msg {
   font-size: 13.5px;
   font-weight: 600;
-  color: #8a8072;
+  color: var(--ink-2);
   line-height: 1.6;
   margin-bottom: 18px;
 }
@@ -861,10 +861,10 @@
 .gs-quitpop-stay {
   flex: 1;
   padding: 12px;
-  border: 2px solid #f0e4d8;
+  border: 2px solid var(--line);
   border-radius: 13px;
-  background: #fff;
-  color: #8a8072;
+  background: var(--surface);
+  color: var(--ink-2);
   font-weight: 800;
   font-size: 14px;
   cursor: pointer;
@@ -875,8 +875,8 @@
   padding: 12px;
   border: none;
   border-radius: 13px;
-  background: var(--gs-solid, #ff5a4d);
-  color: #fff;
+  background: var(--gs-solid, var(--brand));
+  color: var(--on-brand);
   font-weight: 800;
   font-size: 14px;
   cursor: pointer;
@@ -896,7 +896,7 @@
 }
 .gs-bankcard {
   width: min(360px, 100%);
-  background: #fff;
+  background: var(--surface);
   border-radius: 22px;
   padding: 26px 22px 20px;
   text-align: center;
@@ -907,8 +907,8 @@
   align-items: center;
 }
 .gs-bankcard-emoji { font-size: 40px; line-height: 1; }
-.gs-bankcard-title { font-size: 19px; font-weight: 800; color: #3a3340; }
-.gs-bankcard-desc { margin: 0; font-size: 13.5px; font-weight: 600; color: #6e6558; line-height: 1.55; }
+.gs-bankcard-title { font-size: 19px; font-weight: 800; color: var(--ink); }
+.gs-bankcard-desc { margin: 0; font-size: 13.5px; font-weight: 600; color: var(--ink-2); line-height: 1.55; }
 .gs-bankcard-actions { display: flex; gap: 8px; width: 100%; margin-top: 10px; }
 .gs-bankcard-btn {
   flex: 1;
@@ -919,14 +919,14 @@
   padding: 12px 10px;
   border: none;
   border-radius: 13px;
-  background: var(--gs-solid, #ff5a4d);
-  color: #fff;
+  background: var(--gs-solid, var(--brand));
+  color: var(--on-brand);
   font-weight: 800;
   font-size: 13.5px;
   cursor: pointer;
   font-family: inherit;
 }
-.gs-bankcard-btn--sub { background: #f4efe6; color: #6e6558; }
+.gs-bankcard-btn--sub { background: #f4efe6; color: var(--ink-2); }
 .gs-bankcard-btn:hover { filter: brightness(1.04); }
 
 /* 오늘의 Q 일일 목표 표시(표시줄 우측) */

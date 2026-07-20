@@ -1,0 +1,106 @@
+/* =============================================================================
+ * CatChap 디자인 토큰 — 라이트 / 다크 단일 소스
+ *
+ * 왜 이렇게: 색·여백·그림자·폰트를 화면마다 하드코딩하면 (1) 톤이 제각각이 되고
+ * (2) 다크 모드를 붙일 수 없다. 애플(HIG)의 "의미 기반 시맨틱 컬러"와
+ * 메타(Astryx)의 "토큰 = 단일 소스" 원칙을 융합해, 모든 화면이 이 변수만 참조하게 한다.
+ *   - :root            = 라이트 팔레트(기본)
+ *   - :root[data-theme=dark] = 다크 팔레트
+ * 테마 전환 = document.documentElement 의 data-theme 속성만 바꾸면 전 페이지가 함께 바뀐다.
+ *
+ * 새 페이지를 만들 때: 색은 반드시 var(--토큰)으로 쓴다(생 hex 금지). 그러면
+ * 라이트/다크가 자동 적용되고 톤이 통일된다. 공부 키워드: "semantic design tokens",
+ * "theme switching via data-attribute", "Apple semantic colors", "Meta Astryx tokens".
+ * ========================================================================== */
+
+:root {
+  /* ---- 배경 / 표면 ---- */
+  --bg: #faf7f2;            /* 페이지 바탕(따뜻한 크림) */
+  --bg-tint: #fff6f1;       /* 헤더 등 아주 옅은 코랄 틴트 */
+  --surface: #ffffff;       /* 카드·패널 */
+  --surface-2: #faf6f2;     /* 카드 안 삽입 행(inset) */
+  --surface-3: #f4ece1;     /* 한 단계 더 진한 삽입 */
+  --overlay: rgba(43, 37, 48, 0.42); /* 모달 뒤 배경 */
+
+  /* ---- 경계선 ---- */
+  --line: #efe7dc;
+  --line-strong: #e6dccf;
+
+  /* ---- 글자 ---- */
+  --ink: #2b2530;           /* 본문·제목 */
+  --ink-2: #8b8378;         /* 보조 설명 */
+  --ink-3: #b0a89c;         /* 아주 흐린 라벨 */
+  --on-brand: #ffffff;      /* 코랄 버튼 위 글자 */
+
+  /* ---- 브랜드(코랄) ---- */
+  --brand: #ff5a4d;
+  --brand-strong: #e5473b;
+  --brand-ink: #d1573f;     /* 라이트 배경 위 코랄 글자(대비 확보) */
+  --brand-soft: #fff2ec;    /* 코랄 옅은 배경(선택/틴트) */
+  --brand-soft-line: #ffd9cc;
+
+  /* ---- 상태색(성공/경고/위험/정보) ---- */
+  --ok: #17a884;   --ok-soft: #ddf3ea;   --ok-ink: #158a5b;
+  --warn: #d99a1a; --warn-soft: #fff3d6; --warn-ink: #b9791a;
+  --danger: #e5473b; --danger-soft: #ffe3e3; --danger-ink: #d64545;
+  --info: #6c4cff; --info-soft: #ece7ff; --info-ink: #5a3ee0;
+
+  /* ---- 그림자 ---- */
+  --shadow-sm: 0 1px 2px rgba(58, 51, 64, 0.04);
+  --shadow-md: 0 1px 2px rgba(58, 51, 64, 0.04), 0 14px 30px -26px rgba(90, 60, 55, 0.22);
+  --shadow-lg: 0 1px 2px rgba(58, 51, 64, 0.05), 0 20px 46px -24px rgba(90, 60, 55, 0.30);
+
+  /* ---- 형태 ---- */
+  --r-sm: 10px;
+  --r: 16px;
+  --r-lg: 20px;
+  --r-pill: 999px;
+
+  /* ---- 타이포 ---- */
+  --font: 'Pretendard', 'Noto Sans KR', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Pretendard', 'Noto Sans KR', system-ui, sans-serif; /* 제목·숫자(굵게) */
+
+  color-scheme: light;
+}
+
+/* =============================== 다크 팔레트 =============================== */
+:root[data-theme='dark'] {
+  --bg: #15171e;
+  --bg-tint: #1b1d26;
+  --surface: #1f232e;
+  --surface-2: #262b37;
+  --surface-3: #2c313d;
+  --overlay: rgba(0, 0, 0, 0.58);
+
+  --line: #2a2e3a;
+  --line-strong: #363b49;
+
+  --ink: #f1f3f8;
+  --ink-2: #9098aa;
+  --ink-3: #6b7284;
+  --on-brand: #ffffff;
+
+  --brand: #ff7a5c;
+  --brand-strong: #ff6b4d;
+  --brand-ink: #ff8a6b;      /* 다크 배경 위 코랄 글자(밝게) */
+  --brand-soft: #33241f;     /* 다크 코랄 틴트 */
+  --brand-soft-line: #4a3128;
+
+  --ok: #2fd0a0;   --ok-soft: #16302a;   --ok-ink: #4fe0b6;
+  --warn: #e6b85c; --warn-soft: #352c18; --warn-ink: #e6b85c;
+  --danger: #ff6b5c; --danger-soft: #3a2020; --danger-ink: #ff8f82;
+  --info: #9a86ff; --info-soft: #241f3a; --info-ink: #b3a4ff;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.35), 0 16px 34px -26px rgba(0, 0, 0, 0.7);
+  --shadow-lg: 0 2px 8px rgba(0, 0, 0, 0.45), 0 24px 50px -24px rgba(0, 0, 0, 0.8);
+
+  color-scheme: dark;
+}
+
+/* 테마 전환 시 색이 튀지 않게 부드럽게(모션 민감 사용자는 제외) */
+@media (prefers-reduced-motion: no-preference) {
+  :root {
+    --theme-tween: background-color 0.25s ease, border-color 0.25s ease, color 0.2s ease;
+  }
+}
