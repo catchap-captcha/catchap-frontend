@@ -29,7 +29,7 @@ function markCheck(el: HTMLElement, bad: boolean) {
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { studentLogin, opsLogin, me: authMe, loading: authLoading } = useAuth();
+  const { publicLogin, me: authMe, loading: authLoading } = useAuth();
 
   // 이미 로그인한 사용자가 /login에 오면(주소창 직접 입력 등) 자기 역할 홈으로 보냄.
   // replace: 뒤로가기로 로그인 폼에 다시 안 걸리게.
@@ -350,7 +350,7 @@ export default function LoginPage() {
       const orgId = orgOverride ?? rememberedOrg(id);
       lastOrgRef.current = orgId; // 캡차 재시도가 같은 기관으로 가게 기억
       try {
-        const me = await studentLogin({
+        const me = await publicLogin({
           organization_id: orgId,
           student_login_id: id,
           password: pw,
@@ -365,7 +365,7 @@ export default function LoginPage() {
         // 기억해 둔 기관이 더 이상 맞지 않으면(전학 등) 잊고 전체에서 한 번 더
         if (resp?.status === 401 && orgId && !orgOverride) {
           forgetOrg(id);
-          const me = await studentLogin({
+          const me = await publicLogin({
             student_login_id: id,
             password: pw,
             captcha_token: captchaToken,
@@ -401,20 +401,10 @@ export default function LoginPage() {
         return;
       }
 
-      // ★통합 로그인(0720) — 학생 로그인이 실패했고 이메일 형태면 강사·운영자(ops-login)로
-      // 폴백해 역할 홈으로 보낸다. 강사는 숨겨진 /ops/login을 몰라도 여기서 로그인된다.
-      // (ops-login도 실패하면 강사·운영자가 아니란 뜻 — 아래 학생 오류 문구로 이어진다.)
-      if (/@/.test(id) && !detailObj?.captcha_required) {
-        try {
-          const opsMe = await opsLogin(id, pw);
-          setLoginError('');
-          setCaptchaNeeded(false);
-          navigate(ROLE_HOME[opsMe.role], { replace: true });
-          return;
-        } catch {
-          // 강사·운영자도 아님 — 아래 학생 로그인 실패 처리로 이어진다.
-        }
-      }
+      // 통합 로그인(0720) — 학생·강사 판별은 서버(/auth/public-login)가 한다. 강사는 숨겨진
+      // /ops/login을 몰라도 여기서 로그인된다. 운영자(ops)는 서버가 이 경로에서 제외하므로
+      // 전용 /ops/login으로만 로그인한다(고권한 내부 계정을 공개 로그인에 노출 안 함).
+      // 실패하면 아래 공통 오류 처리로 이어진다.
 
       // 서버가 5회 이상 실패를 알리면 캡차 요구. 단, 방금 캡차를 통과한 시도(captchaToken
       // 있음)가 '비밀번호 오류'로 실패한 경우엔 팝업을 즉시 다시 열지 않는다 — 재오픈하면

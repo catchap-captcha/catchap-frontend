@@ -16,6 +16,8 @@ interface AuthContextValue {
   login: (req: LoginRequest) => Promise<MeResponse>;
   opsLogin: (email: string, password: string, captchaToken?: string) => Promise<MeResponse>;
   studentLogin: (req: StudentLoginRequest) => Promise<MeResponse>;
+  // 공개 로그인 폼(/login) 단일 진입 — 서버가 학생·강사를 판별(운영자 제외).
+  publicLogin: (req: StudentLoginRequest) => Promise<MeResponse>;
   logout: () => Promise<void>;
   reloadMe: () => Promise<MeResponse | null>;
 }
@@ -65,6 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const opsLogin = useCallback(
     async (email: string, password: string, captchaToken?: string) => {
+      // 운영자 전용 /ops/login 진입. 공개 로그인 폼(학생·강사)은 publicLogin이 전담한다.
       const res = await client.post<TokenPair>('/auth/ops-login', {
         email,
         password,
@@ -91,6 +94,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [reloadMe],
   );
 
+  const publicLogin = useCallback(
+    async (req: StudentLoginRequest) => {
+      // 서버가 학생·강사를 판별하는 단일 진입(운영자 제외). 프론트 try-then-fallback 대체.
+      const res = await client.post<TokenPair>('/auth/public-login', req);
+      setTokens(res.data.access_token, res.data.refresh_token);
+      localStorage.setItem('catchap_login_ts', String(Date.now()));
+      const loaded = await reloadMe();
+      if (!loaded) throw new Error('로그인 정보를 불러오지 못했어요.');
+      return loaded;
+    },
+    [reloadMe],
+  );
+
   const logout = useCallback(async () => {
     try {
       await client.post('/auth/logout');
@@ -104,8 +120,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo(
-    () => ({ me, loading, login, opsLogin, studentLogin, logout, reloadMe }),
-    [me, loading, login, opsLogin, studentLogin, logout, reloadMe],
+    () => ({ me, loading, login, opsLogin, studentLogin, publicLogin, logout, reloadMe }),
+    [me, loading, login, opsLogin, studentLogin, publicLogin, logout, reloadMe],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -205,8 +205,9 @@ export default function OpsInstructors() {
             </div>
             <div className="op-form">
               <p className="op-form-hint">
-                로그인은 숨겨진 콘솔 경로(/ops/login)에서만 됩니다. 임시 비밀번호가 만들어져
-                이메일로 발송되고, 저장 직후 한 번만 표시돼요.
+                강사는 일반 로그인 화면에서 이메일·비밀번호로 로그인합니다(운영자 전용
+                /ops/login도 가능). 임시 비밀번호가 만들어져 이메일로 발송되고, 저장 직후 한 번만
+                표시돼요.
               </p>
               <label className="op-form-row">
                 <span className="op-form-lb">이름 <b>*</b></span>
