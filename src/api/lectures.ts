@@ -338,6 +338,9 @@ export interface OpsLectureQuestion {
   /** 되감기 지점(이 문항이 다루는 내용의 시작, 초) — null = 미지정(서버 폴백: 출제 시점-30초).
    *  오답 3회 시 서버가 watched_max를 여기로 되감아 그 대목부터 다시 보게 한다. */
   content_start_sec: number | null;
+  /** AI가 시점을 제안했고 강사가 아직 확정 안 함 — 'AI 제안' 배지 근거(수정/승인 시 서버가 지움) */
+  position_suggested?: boolean;
+  content_start_suggested?: boolean;
   prompt: string | null;
   options: string[];
   explain: string | null;

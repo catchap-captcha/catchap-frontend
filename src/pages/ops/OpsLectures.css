@@ -802,3 +802,11 @@
 }
 .op-lect-qcheck { display: inline-flex; align-items: center; margin-right: 2px; }
 .op-lect-qcheck input { width: 16px; height: 16px; accent-color: var(--brand); cursor: pointer; }
+
+/* AI 제안 시점 배지(가) — 강사가 확인·확정하도록 유도. 목록 배지 + 폼 인라인 */
+.lu-aisug { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+.lu-aisug--inline {
+  margin-left: 8px; font-size: 11.5px; font-weight: 800;
+  color: var(--warn-ink); background: var(--warn-soft);
+  padding: 2px 8px; border-radius: var(--r-pill);
+}

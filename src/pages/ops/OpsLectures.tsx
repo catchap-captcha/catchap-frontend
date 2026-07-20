@@ -1847,6 +1847,8 @@ interface QForm {
   position_sec: string;
   /** 내용 시작(되감기 지점) 입력 — '' = 미지정(서버 폴백: 출제 시점-30초) */
   content_start_sec: string;
+  /** AI가 제안한 시점(강사 미확정) — 편집 시작 시 서버값, 강사가 시점을 바꾸면 false로(확정) */
+  positionSuggested: boolean;
   prompt: string;
   /* 보기를 줄바꿈 textarea가 아니라 행 배열로 다룬다 — 이미지가 붙은 보기는 텍스트를
      비울 수 있는데(그림 전용 보기), textarea는 빈 줄을 표현·보존할 수 없고 빈 줄을
@@ -1869,6 +1871,7 @@ const emptyQ = (): QForm => ({
   id: null,
   position_sec: '',
   content_start_sec: '',
+  positionSuggested: false,
   prompt: '',
   options: ['', ''],
   answer_indexes: [0],
@@ -2069,6 +2072,7 @@ function QuestionsModal({
       id: q.id,
       position_sec: String(q.position_sec),
       content_start_sec: q.content_start_sec != null ? fmtMMSS(q.content_start_sec) : '',
+      positionSuggested: !!q.position_suggested,
       prompt: q.prompt ?? '',
       options: [...q.options],
       // 구버전 서버는 answer_indexes를 안 준다 — [answer_index]로 본다(하위호환)
@@ -2640,6 +2644,11 @@ function QuestionsModal({
                   구간(무작위 초) 모드는 제거 — 되감기 기준과 내용 시점이 어긋난다. */}
               <label className="ox-field">
                 출제 시점
+                {form.positionSuggested && (
+                  <span className="lu-aisug lu-aisug--inline" title="AI가 자막 기준으로 제안한 시점이에요 — 영상에서 확인하세요. 시점을 바꾸거나 저장하면 확정됩니다.">
+                    <i className="ph-bold ph-sparkle" /> AI 제안 · 확인하세요
+                  </span>
+                )}
                 <span
                   className={`lu-help${
                     posPreview != null &&
@@ -2659,7 +2668,7 @@ function QuestionsModal({
                 </span>
                 <input
                   value={form.position_sec}
-                  onChange={(e) => setForm({ ...form, position_sec: e.target.value })}
+                  onChange={(e) => setForm({ ...form, position_sec: e.target.value, positionSuggested: false })}
                   placeholder="예: 3:20 또는 200"
                 />
                 <button
@@ -2995,6 +3004,15 @@ function QuestionsModal({
                     <i className="ph-fill ph-push-pin" /> {fmtMMSS(q.position_sec)} 고정
                   </span>
                 )}
+                {/* AI가 제안한 시점(강사 미확정) — 수정/승인하면 사라진다. 확인을 유도하는 표식 */}
+                {q.position_suggested && (
+                  <span
+                    className="op-sys-status op-sys-status--warn lu-aisug"
+                    title="AI가 자막 기준으로 제안한 출제 시점이에요 — 영상에서 확인하고 수정/승인하면 확정됩니다."
+                  >
+                    <i className="ph-bold ph-sparkle" /> AI 제안 시점
+                  </span>
+                )}
                 {q.content_start_sec != null && (
                   <span
                     className="op-mono"
@@ -3122,7 +3140,7 @@ function QuestionsModal({
               setBannerOk(true);
               setBanner('강의 화면에서 따온 이미지를 첨부했어요 — 서버 저장까지 확인됐어요.');
             }}
-            onUsePosition={(sec) => setForm((f) => (f ? { ...f, position_sec: fmtMMSS(sec) } : f))}
+            onUsePosition={(sec) => setForm((f) => (f ? { ...f, position_sec: fmtMMSS(sec), positionSuggested: false } : f))}
             onUseContentStart={(sec) =>
               setForm((f) => (f ? { ...f, content_start_sec: fmtMMSS(sec) } : f))
             }
