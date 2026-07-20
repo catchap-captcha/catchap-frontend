@@ -13,6 +13,7 @@ import {
   type TranscriptStatus,
 } from '../../api/lectures';
 import OpsNav from '../../components/ops/OpsNav';
+import { useAuth } from '../../hooks/useAuth';
 import './OpsApproval.css';
 import './OpsLectures.css';
 
@@ -134,6 +135,10 @@ function parseSecInput(raw: string): number | null {
 }
 
 export default function OpsLectures() {
+  // 운영자(ops)는 감독·검수만(ops 권한 B) — 저작 컨트롤을 숨기고 조회+공개/숨김만 남긴다.
+  // 백엔드가 이미 저작을 403으로 막으므로 이건 UX(운영자가 눌러도 안 되는 버튼을 안 보이게).
+  const { me } = useAuth();
+  const isOps = me?.role === 'ops';
   const [rows, setRows] = useState<OpsLecture[]>([]);
   const [courses, setCourses] = useState<OpsCourse[]>([]);
   const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading');
@@ -230,6 +235,17 @@ export default function OpsLectures() {
     }
   };
 
+  // 운영자 모더레이션 — 공개/숨김(status)만. 내용 편집은 서버가 403(감독·검수만).
+  const setLecStatus = async (lec: OpsLecture, status: 'active' | 'hidden') => {
+    try {
+      await lectureApi.opsUpdate(lec.id, { status });
+      say(status === 'hidden' ? '강의를 숨겼어요(학생 화면에서 내려감).' : '강의를 공개했어요.');
+      load();
+    } catch (e) {
+      say(errorDetail(e, '상태 변경에 실패했어요.'));
+    }
+  };
+
   return (
     <div className="op-root">
       <OpsNav />
@@ -252,12 +268,25 @@ export default function OpsLectures() {
               <i className="ph-bold ph-stack" />
               코스 관리
             </button>
-            <button className="op-refresh" onClick={() => setModal({ mode: 'create' })}>
-              <i className="ph-bold ph-upload-simple" />
-              강의 업로드
-            </button>
+            {!isOps && (
+              <button className="op-refresh" onClick={() => setModal({ mode: 'create' })}>
+                <i className="ph-bold ph-upload-simple" />
+                강의 업로드
+              </button>
+            )}
           </div>
         </div>
+
+        {/* 운영자는 감독·검수 전용 — 저작(업로드·편집·문항)은 강사가 한다(ops 권한 B) */}
+        {isOps && (
+          <div className="op-lect-hint op-lect-modnote">
+            <i className="ph-fill ph-shield-check" />
+            <span>
+              운영자는 <b>감독·검수 전용</b>이에요 — 강의·문항 <b>저작은 강사</b>가 하고,
+              운영자는 조회와 <b>공개/숨김</b>(모더레이션)만 할 수 있어요.
+            </span>
+          </div>
+        )}
 
         {/* 첫 방문 강사용 힌트 — 이용 안내를 열면 접힌다 */}
         {!guideSeen && (
@@ -368,8 +397,9 @@ export default function OpsLectures() {
                       </span>
                     </span>
                     <span className="op-col-right op-lect-actions">
-                      {/* ▲▼ — 드래그의 클릭·키보드 대체(접근성). 그룹 경계에서 비활성 */}
-                      {g.lectures.length > 1 && (
+                      {/* ▲▼ — 드래그의 클릭·키보드 대체(접근성). 그룹 경계에서 비활성.
+                          재정렬은 저작이라 운영자에겐 숨긴다(ops 권한 B). */}
+                      {!isOps && g.lectures.length > 1 && (
                         <span className="op-lect-movebtns">
                           <button
                             className="op-btn op-btn--reject op-lect-movebtn"
@@ -403,14 +433,28 @@ export default function OpsLectures() {
                         <i className="ph-bold ph-folder-open" />
                         자료
                       </button>
-                      <button className="op-btn op-btn--reject" onClick={() => setModal({ mode: 'edit', lec })}>
-                        <i className="ph-bold ph-pencil-simple" />
-                        수정
-                      </button>
-                      <button className="op-btn op-btn--reject op-lect-danger" onClick={() => remove(lec)}>
-                        <i className="ph-bold ph-trash" />
-                        삭제
-                      </button>
+                      {isOps ? (
+                        // 운영자 모더레이션 — 공개/숨김만(수정·삭제는 저작이라 숨김)
+                        <button
+                          className="op-btn op-btn--reject"
+                          onClick={() => setLecStatus(lec, lec.status === 'active' ? 'hidden' : 'active')}
+                          title="학생 화면에서 공개/숨김 전환(모더레이션)"
+                        >
+                          <i className={`ph-bold ${lec.status === 'active' ? 'ph-eye-slash' : 'ph-eye'}`} />
+                          {lec.status === 'active' ? '숨기기' : '공개'}
+                        </button>
+                      ) : (
+                        <>
+                          <button className="op-btn op-btn--reject" onClick={() => setModal({ mode: 'edit', lec })}>
+                            <i className="ph-bold ph-pencil-simple" />
+                            수정
+                          </button>
+                          <button className="op-btn op-btn--reject op-lect-danger" onClick={() => remove(lec)}>
+                            <i className="ph-bold ph-trash" />
+                            삭제
+                          </button>
+                        </>
+                      )}
                     </span>
                   </div>
                 ))}
@@ -850,11 +894,24 @@ function CoursesModal({
   onChanged: () => void;
   say: (m: string) => void;
 }) {
+  const { me } = useAuth();
+  const isOps = me?.role === 'ops'; // 운영자는 저작 숨김 + 공개/숨김만(ops 권한 B)
   const [form, setForm] = useState<CourseForm | null>(null); // null = 편집 폼 닫힘
   const [err, setErr] = useState('');
   const [saving, setSaving] = useState(false);
   const [examCourse, setExamCourse] = useState<OpsCourse | null>(null); // 시험 문항 모달 대상
   const editing = form?.id != null;
+
+  // 운영자 모더레이션 — 코스 공개/숨김만
+  const setCourseStatus = async (c: OpsCourse, status: 'active' | 'hidden') => {
+    try {
+      await lectureApi.opsCourseUpdate(c.id, { status });
+      say(status === 'hidden' ? '코스를 숨겼어요.' : '코스를 공개했어요.');
+      onChanged();
+    } catch (e) {
+      say(errorDetail(e, '상태 변경에 실패했어요.'));
+    }
+  };
 
   const save = async () => {
     if (!form) return;
@@ -922,17 +979,21 @@ function CoursesModal({
         </div>
 
         <div className="op-lect-qtools">
-          <button
-            className="op-btn op-btn--approve"
-            onClick={() => {
-              setErr('');
-              setForm({ id: null, title: '', subject: '국어', description: '', status: 'active' });
-            }}
-          >
-            <i className="ph-bold ph-plus" /> 코스 만들기
-          </button>
+          {!isOps && (
+            <button
+              className="op-btn op-btn--approve"
+              onClick={() => {
+                setErr('');
+                setForm({ id: null, title: '', subject: '국어', description: '', status: 'active' });
+              }}
+            >
+              <i className="ph-bold ph-plus" /> 코스 만들기
+            </button>
+          )}
           <span className="lu-help">
-            코스는 <b>한 과목</b>으로 고정돼요 — 만든 뒤엔 과목을 못 바꿔요(새 코스를 만드세요).
+            {isOps
+              ? '운영자는 코스 저작을 하지 않아요 — 조회와 공개/숨김만 가능해요(저작은 강사).'
+              : '코스는 한 과목으로 고정돼요 — 만든 뒤엔 과목을 못 바꿔요(새 코스를 만드세요).'}
           </span>
         </div>
 
@@ -1033,24 +1094,37 @@ function CoursesModal({
                 >
                   <i className="ph-fill ph-exam" /> 시험 문항
                 </button>
-                <button
-                  className="op-btn op-btn--reject"
-                  onClick={() => {
-                    setErr('');
-                    setForm({
-                      id: c.id,
-                      title: c.title,
-                      subject: c.subject,
-                      description: c.description ?? '',
-                      status: c.status,
-                    });
-                  }}
-                >
-                  <i className="ph-bold ph-pencil-simple" /> 수정
-                </button>
-                <button className="op-btn op-btn--reject op-lect-danger" onClick={() => remove(c)}>
-                  <i className="ph-bold ph-trash" /> 삭제
-                </button>
+                {isOps ? (
+                  <button
+                    className="op-btn op-btn--reject"
+                    onClick={() => setCourseStatus(c, c.status === 'active' ? 'hidden' : 'active')}
+                    title="코스 공개/숨김 전환(모더레이션)"
+                  >
+                    <i className={`ph-bold ${c.status === 'active' ? 'ph-eye-slash' : 'ph-eye'}`} />
+                    {c.status === 'active' ? '숨기기' : '공개'}
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      className="op-btn op-btn--reject"
+                      onClick={() => {
+                        setErr('');
+                        setForm({
+                          id: c.id,
+                          title: c.title,
+                          subject: c.subject,
+                          description: c.description ?? '',
+                          status: c.status,
+                        });
+                      }}
+                    >
+                      <i className="ph-bold ph-pencil-simple" /> 수정
+                    </button>
+                    <button className="op-btn op-btn--reject op-lect-danger" onClick={() => remove(c)}>
+                      <i className="ph-bold ph-trash" /> 삭제
+                    </button>
+                  </>
+                )}
               </span>
             </div>
           ))}
@@ -1099,6 +1173,8 @@ function ExamQuestionsModal({
   onClose: () => void;
   say: (m: string) => void;
 }) {
+  const { me } = useAuth();
+  const isOps = me?.role === 'ops'; // 운영자는 통계·문항 조회만, 저작(추가·AI·수정·삭제)은 숨김
   const [rows, setRows] = useState<OpsExamQuestion[] | null>(null);
   const [loadErr, setLoadErr] = useState('');
   const [form, setForm] = useState<ExamQForm | null>(null);
@@ -1283,35 +1359,40 @@ function ExamQuestionsModal({
         </div>
 
         <div className="op-lect-qtools">
-          <div className="op-lect-qbtns">
-            <button
-              className="op-btn op-btn--approve"
-              onClick={() => { setErr(''); setForm(newForm()); setEditImages({ prompt: null, options: [] }); }}
-              disabled={bulkBusy !== null}
-            >
-              <i className="ph-bold ph-plus" /> 문항 추가
-            </button>
-            <button
-              className="op-btn op-btn--soft"
-              onClick={importFromLectures}
-              disabled={bulkBusy !== null}
-              title="이 코스 강의의 확인 문항을 시험 문항 초안으로 가져와요(이미 가져온 건 건너뜀)"
-            >
-              <i className="ph-bold ph-download-simple" />{' '}
-              {bulkBusy === 'import' ? '가져오는 중…' : '강의 문항 가져오기'}
-            </button>
-            <button
-              className="op-btn op-btn--soft"
-              onClick={generateLlm}
-              disabled={bulkBusy !== null}
-              title="AI가 코스 강의 구성으로 시험 문항 초안을 만들어요(운영 콘솔 설정의 생성 모델 사용)"
-            >
-              <i className="ph-bold ph-magic-wand" />{' '}
-              {bulkBusy === 'gen' ? '생성 중…' : 'AI로 생성'}
-            </button>
-          </div>
+          {/* 문항 저작(추가·가져오기·AI)은 강사 전용 — 운영자는 통계·문항 조회만(ops 권한 B) */}
+          {!isOps && (
+            <div className="op-lect-qbtns">
+              <button
+                className="op-btn op-btn--approve"
+                onClick={() => { setErr(''); setForm(newForm()); setEditImages({ prompt: null, options: [] }); }}
+                disabled={bulkBusy !== null}
+              >
+                <i className="ph-bold ph-plus" /> 문항 추가
+              </button>
+              <button
+                className="op-btn op-btn--soft"
+                onClick={importFromLectures}
+                disabled={bulkBusy !== null}
+                title="이 코스 강의의 확인 문항을 시험 문항 초안으로 가져와요(이미 가져온 건 건너뜀)"
+              >
+                <i className="ph-bold ph-download-simple" />{' '}
+                {bulkBusy === 'import' ? '가져오는 중…' : '강의 문항 가져오기'}
+              </button>
+              <button
+                className="op-btn op-btn--soft"
+                onClick={generateLlm}
+                disabled={bulkBusy !== null}
+                title="AI가 코스 강의 구성으로 시험 문항 초안을 만들어요(운영 콘솔 설정의 생성 모델 사용)"
+              >
+                <i className="ph-bold ph-magic-wand" />{' '}
+                {bulkBusy === 'gen' ? '생성 중…' : 'AI로 생성'}
+              </button>
+            </div>
+          )}
           <span className="lu-help">
-            {activeCount > 0
+            {isOps
+              ? `공개 문항 ${activeCount}개 — 운영자는 통과율·수료율 통계와 문항을 검수만 해요(저작은 강사).`
+              : activeCount > 0
               ? `공개 문항 ${activeCount}개 — 학생이 강의를 전부 완주하면 이 문항들을 다 맞혀야 수료해요(틀린 건 다시).`
               : '공개 문항이 없어요 — 활성 문항이 0개면 학생에게 수료 시험이 보이지 않아요. (가져오기·AI 생성 문항은 초안이라 검수 후 공개하세요.)'}
           </span>
@@ -1549,21 +1630,23 @@ function ExamQuestionsModal({
                   );
                 })()}
               </span>
-              <span className="op-col-right op-lect-actions">
-                <button
-                  className="op-btn op-btn--reject"
-                  onClick={() => {
-                    setErr('');
-                    setForm(editForm(q));
-                    setEditImages({ prompt: q.prompt_image_url, options: q.option_image_urls ?? [] });
-                  }}
-                >
-                  <i className="ph-bold ph-pencil-simple" /> 수정
-                </button>
-                <button className="op-btn op-btn--reject op-lect-danger" onClick={() => remove(q)}>
-                  <i className="ph-bold ph-trash" />
-                </button>
-              </span>
+              {!isOps && (
+                <span className="op-col-right op-lect-actions">
+                  <button
+                    className="op-btn op-btn--reject"
+                    onClick={() => {
+                      setErr('');
+                      setForm(editForm(q));
+                      setEditImages({ prompt: q.prompt_image_url, options: q.option_image_urls ?? [] });
+                    }}
+                  >
+                    <i className="ph-bold ph-pencil-simple" /> 수정
+                  </button>
+                  <button className="op-btn op-btn--reject op-lect-danger" onClick={() => remove(q)}>
+                    <i className="ph-bold ph-trash" />
+                  </button>
+                </span>
+              )}
             </div>
           ))}
         </div>
