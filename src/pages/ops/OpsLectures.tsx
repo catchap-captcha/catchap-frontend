@@ -189,7 +189,29 @@ export default function OpsLectures() {
   /* 드래그 중인 강의(id·소속 그룹) — 같은 그룹 안에서만 드롭을 허용한다 */
   const [drag, setDrag] = useState<{ id: string; group: string } | null>(null);
 
-  const groups = state === 'ready' ? buildLectureGroups(rows, courses) : [];
+  /* 검색·필터 — 강의가 많아질 때 관리 가능하게(상용 콘솔 기본). 검색은 제목·설명,
+     과목 필터는 드롭다운. 필터는 목록 표시에만 영향(원본 rows는 그대로 — 드래그 정렬 등 무관). */
+  const [search, setSearch] = useState('');
+  const [subjFilter, setSubjFilter] = useState(''); // '' = 전체 과목
+  // 드롭다운 후보 — 실제 강의·코스에 쓰인 과목만(빈 과목 노이즈 방지)
+  const subjectOptions = SUBJECTS.filter(
+    (s) => rows.some((l) => l.subject === s) || courses.some((c) => c.subject === s),
+  );
+  const q = search.trim().toLowerCase();
+  const filteredRows =
+    q === '' && subjFilter === ''
+      ? rows
+      : rows.filter(
+          (l) =>
+            (subjFilter === '' || l.subject === subjFilter) &&
+            (q === '' ||
+              l.title.toLowerCase().includes(q) ||
+              (l.description ?? '').toLowerCase().includes(q) ||
+              l.subject.toLowerCase().includes(q)),
+        );
+  const isFiltering = q !== '' || subjFilter !== '';
+
+  const groups = state === 'ready' ? buildLectureGroups(filteredRows, courses) : [];
 
   /** 재배열 결과(그룹 강의 전체의 새 순서)를 서버에 저장하고 목록을 다시 읽는다.
    *  성공은 재조회로 확인 — 응답만 믿고 낙관적으로 바꾸지 않는다(순서가 어긋나면 혼란). */
@@ -304,6 +326,52 @@ export default function OpsLectures() {
           </div>
         )}
 
+        {state === 'ready' && rows.length > 0 && (
+          <div className="op-lect-filterbar">
+            <div className="op-lect-search">
+              <i className="ph-bold ph-magnifying-glass" />
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="강의 제목·설명 검색"
+                aria-label="강의 검색"
+              />
+              {search && (
+                <button className="op-lect-search-x" onClick={() => setSearch('')} title="지우기">
+                  <i className="ph-bold ph-x" />
+                </button>
+              )}
+            </div>
+            <select
+              className="op-lect-subjfilter"
+              value={subjFilter}
+              onChange={(e) => setSubjFilter(e.target.value)}
+              aria-label="과목 필터"
+            >
+              <option value="">전체 과목</option>
+              {subjectOptions.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+            {isFiltering && (
+              <span className="op-lect-filtercount">
+                {filteredRows.length}개 강의
+                <button
+                  className="op-lect-filterclear"
+                  onClick={() => {
+                    setSearch('');
+                    setSubjFilter('');
+                  }}
+                >
+                  필터 해제
+                </button>
+              </span>
+            )}
+          </div>
+        )}
+
         <div className="op-logcard">
           <div className="op-loghead op-lect-grid">
             <span>강의</span>
@@ -324,6 +392,9 @@ export default function OpsLectures() {
           )}
           {state === 'ready' && rows.length === 0 && (
             <div className="op-logrow">등록된 강의가 없어요. 우측 상단에서 영상을 업로드해 보세요.</div>
+          )}
+          {state === 'ready' && rows.length > 0 && isFiltering && groups.length === 0 && (
+            <div className="op-logrow">검색 결과가 없어요. 다른 검색어나 과목을 시도해 보세요.</div>
           )}
           {state === 'ready' &&
             groups.map((g) => (
