@@ -2360,6 +2360,41 @@ function QuestionsModal({
     }
   };
 
+  // 은행 적합 문항 일괄 승격 — '검수해 공개(active)한 verdict=bank' 문항만(사람 검토 유지).
+  // 한 개씩 '은행 배치'를 누르던 걸 한 번에. draft·verdict!=bank·이미 배치는 제외(서버가 최종 판정).
+  const bankCandidates = (items ?? []).filter(
+    (q) => q.status === 'active' && q.suggested_placement === 'bank' && !q.bank_placed,
+  );
+  const [promoting, setPromoting] = useState(false);
+  const promoteBank = async () => {
+    if (
+      !window.confirm(
+        `검수해 공개한 '은행 적합' 문항 ${bankCandidates.length}개를 전체학습 은행으로 한 번에 보낼까요?\n(상식으로 풀려 시청 검증엔 부적합한 문항 — 연습 문제로 재활용. 공개 문항만 대상이라 검토는 유지돼요)`,
+      )
+    )
+      return;
+    setPromoting(true);
+    try {
+      const res = await lectureApi.opsPromoteBankCandidates(lec.id);
+      setBannerOk(res.placed > 0);
+      const skips = Object.entries(res.skipped || {})
+        .map(([k, n]) => `${k === 'multi_answer' ? '다답형' : k === 'image' ? '이미지' : k} ${n}개`)
+        .join(', ');
+      setBanner(
+        `은행에 ${res.placed}개 배치했어요` +
+          (skips ? ` (형식 미지원 건너뜀: ${skips})` : '') +
+          (res.placed > 0 ? ' — 배치된 문항은 캡차 출제에서 빠집니다.' : '') +
+          (res.placed > 0 && !res.runtime_visible ? ' 즉시 반영 실패(재기동 필요).' : ''),
+      );
+      load();
+    } catch (e) {
+      setBannerOk(false);
+      setBanner(errorDetail(e, '일괄 승격에 실패했어요.'));
+    } finally {
+      setPromoting(false);
+    }
+  };
+
   const remove = async (q: OpsLectureQuestion) => {
     if (!window.confirm('이 문항을 삭제할까요?')) return;
     try {
@@ -2515,6 +2550,17 @@ function QuestionsModal({
                   {generating ? '생성 중…' : 'AI 문항 생성'}
                 </button>
               </div>
+              {bankCandidates.length > 0 && (
+                <button
+                  className="op-btn op-btn--soft"
+                  disabled={promoting}
+                  onClick={promoteBank}
+                  title="검수해 공개한 '은행 적합'(봇이 상식으로 푸는) 문항을 한 번에 전체학습 은행으로. 공개 문항만 대상이라 검토는 유지돼요."
+                >
+                  <i className="ph-bold ph-tray-arrow-up" />
+                  {promoting ? '보내는 중…' : `은행 적합 ${bankCandidates.length}개 일괄 추가`}
+                </button>
+              )}
             </div>
             {/* 사용 시점 안내 — 왼쪽 숫자(개수)와 'AI 문항 생성'이 무엇을 하는지 강사에게 명시.
                 온보딩 모달에도 있지만, 실제 누르는 자리에서 한 번 더 알려줘야 처음 강사도 헤매지 않는다. */}

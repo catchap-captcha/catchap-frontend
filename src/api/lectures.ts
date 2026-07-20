@@ -651,6 +651,15 @@ export const lectureApi = {
       )
       .then((r) => r.data),
 
+  /** 은행 적합 문항 일괄 승격 — '강사가 검수(공개/active)한 verdict=bank' 문항만 한 번에 은행으로.
+   *  ★사람 검토를 건너뛰지 않음(draft/미검수·verdict=captcha 제외). 다답형·이미지는 skipped로 보고. */
+  opsPromoteBankCandidates: (lectureId: string) =>
+    client
+      .post<{ placed: number; skipped: Record<string, number>; candidates: number; runtime_visible: boolean }>(
+        `/ops/lectures/${lectureId}/questions/promote-bank-candidates`,
+      )
+      .then((r) => r.data),
+
   /** 문항 이미지 첨부(multipart) — slot=prompt는 문제, slot=option은 optionIndex 보기(0부터).
    *  같은 슬롯에 다시 올리면 교체. png/jpg/jpeg/gif/webp만, 5MB 상한(초과·svg는 서버 400 detail).
    *  갱신된 문항 행을 돌려주지만, 성공 표기는 호출자가 재조회로 실재 확인 후에만 한다. */
