@@ -1868,6 +1868,10 @@ function QuestionsModal({
   const [genN, setGenN] = useState('3');
   const [generating, setGenerating] = useState(false);
   const changedRef = useRef(false);
+  // 생성 폴링 활성 플래그 — 모달이 닫히면(unmount) false로 만들어 폴링 루프를 멈춘다
+  // (잡은 서버에서 계속되고, 다시 열면 초안이 보인다). setState-after-unmount 방지.
+  const genPollRef = useRef(false);
+  useEffect(() => () => { genPollRef.current = false; }, []);
   /* 이미지 업로드/삭제 in-flight 슬롯('prompt' | 'opt-{i}') — 동시에 하나만 */
   const [imgBusy, setImgBusy] = useState<string | null>(null);
   const [imgProgress, setImgProgress] = useState<number | null>(null);
@@ -2217,37 +2221,60 @@ function QuestionsModal({
     }
     setGenerating(true);
     setBanner('');
+    genPollRef.current = true;
     try {
-      const res = await lectureApi.opsQuestionGenerate(lec.id, n);
-      changedRef.current = true;
-      setBannerOk(true);
-      // 전사 출처를 정직하게 앞에 밝힌다 — 강사 자막 / 자동 STT / 자막 없음(메타)
-      const trNote = res.transcript_source
-        ? res.transcript_source === 'stt'
-          ? '소리 자동 변환 자막 기반'
-          : '강사 제공 자막 기반'
-        : '자막 없이 제목·설명 기반';
-      if (res.self_verified) {
-        // 자기검증(2번째 LLM) 요약 — 3분류: 캡차 적합(강의 의존)/은행(상식)/불량 의심
-        const discardNote = res.discard_candidates
-          ? ` · 불량 의심 ${res.discard_candidates}개(자막을 줘도 안 풀림 — 폐기 검토)`
-          : '';
-        setBanner(
-          `${trNote}로 AI가 ${res.created}개 생성 → 캡차 적합 ${res.captcha_candidates}개(강의를 봐야 풀림)·` +
-            `은행 적합 ${res.bank_candidates}개(상식으로 풀림)${discardNote}. 각 문항 배지를 보고 검수·배치하세요.`,
-        );
-      } else {
-        setBanner(
-          `${trNote}로 AI가 ${res.created}개 문항을 생성했어요(draft) — 검수 후 승인하세요.` +
-            (res.verify_error ? ` (자기검증 미수행: ${res.verify_error})` : ''),
-        );
+      // 비동기: 서버가 잡을 만들고 즉시 반환 → done/error까지 폴링한다(2초 간격, 최대 5분).
+      // 키 미설정이면 여기서 바로 503이 throw돼 catch로 간다(stub 생성/성공 위장 없음).
+      const started = await lectureApi.opsQuestionGenerate(lec.id, n);
+      for (let i = 0; i < 150 && genPollRef.current; i++) {
+        await new Promise((r) => setTimeout(r, 2000));
+        if (!genPollRef.current) return; // 모달 닫힘 — 폴링 중단(잡은 서버서 계속)
+        const job = await lectureApi.opsQuestionGenJob(lec.id, started.job_id);
+        if (job.status === 'done') {
+          changedRef.current = true;
+          setBannerOk(true);
+          // 전사 출처를 정직하게 앞에 밝힌다 — 강사 자막 / 소리 자동 변환 / 자막 없음(메타)
+          const trNote = job.transcript_source
+            ? job.transcript_source === 'stt'
+              ? '소리 자동 변환 자막 기반'
+              : '강사 제공 자막 기반'
+            : '자막 없이 제목·설명 기반';
+          if (job.self_verified) {
+            const discardNote = job.discard_candidates
+              ? ` · 불량 의심 ${job.discard_candidates}개(자막을 줘도 안 풀림 — 폐기 검토)`
+              : '';
+            setBanner(
+              `${trNote}로 AI가 ${job.created}개 생성 → 캡차 적합 ${job.captcha_candidates}개(강의를 봐야 풀림)·` +
+                `은행 적합 ${job.bank_candidates}개(상식으로 풀림)${discardNote}. 각 문항 배지를 보고 검수·배치하세요.`,
+            );
+          } else {
+            setBanner(
+              `${trNote}로 AI가 ${job.created}개 문항을 생성했어요(draft) — 검수 후 승인하세요.` +
+                (job.verify_error ? ` (자기검증 미수행: ${job.verify_error})` : ''),
+            );
+          }
+          load();
+          setGenerating(false);
+          return;
+        }
+        if (job.status === 'error') {
+          // 러너가 남긴 실패 원인을 그대로 노출(STT·생성 실패 등) — 조용한 실패 없음
+          setBannerOk(false);
+          setBanner(job.error || 'AI 문항 생성에 실패했어요.');
+          setGenerating(false);
+          return;
+        }
+        // pending|running → 계속 폴링
       }
-      load();
+      if (genPollRef.current) {
+        // 5분 초과 — 잡은 계속 돌 수 있으니 이탈 안내(창을 닫아도 됨)
+        setBannerOk(true);
+        setBanner('생성이 오래 걸리고 있어요 — 창을 닫아도 백그라운드에서 계속돼요. 잠시 후 새로고침하면 초안이 보여요.');
+        setGenerating(false);
+      }
     } catch (e) {
-      // 503(키 미설정)·502(생성 실패)를 그대로 정직하게 노출 — stub 생성/성공 위장 없음
       setBannerOk(false);
       setBanner(errorDetail(e, 'AI 문항 생성에 실패했어요.'));
-    } finally {
       setGenerating(false);
     }
   };
@@ -2329,13 +2356,13 @@ function QuestionsModal({
                 ‘공개’</b>해야 학생에게 출제돼요. (운영 콘솔 설정의 생성 모델 사용)
               </span>
             </p>
-            {/* 생성 중 안내 — STT/생성은 서버 단일 요청이라 실시간 %는 없다. 긴 영상은 자막 변환에
-                시간이 걸려 '멈춘 것처럼' 보일 수 있어, 시간이 걸릴 수 있음을 명시해 이탈을 막는다. */}
+            {/* 생성 중 안내 — 이제 백그라운드(비동기)라 강사가 기다리지 않아도 된다. 긴 영상은
+                자막 변환에 시간이 걸리므로, 창을 닫아도 계속됨을 알려 대기 이탈을 없앤다. */}
             {generating && (
               <p className="op-lect-genwait">
                 <i className="ph-bold ph-spinner-gap" />
                 AI가 문항을 만드는 중이에요 — 긴 영상은 자막 변환 때문에 몇 분 걸릴 수 있어요.
-                이 창을 닫지 말고 기다려 주세요.
+                창을 닫아도 백그라운드에서 계속돼요(끝나면 목록에 초안이 떠요).
               </p>
             )}
             {/* 강사 제공 자막 — 있으면 위 'AI 문항 생성'이 자동 STT 대신 이 자막을 쓴다 */}

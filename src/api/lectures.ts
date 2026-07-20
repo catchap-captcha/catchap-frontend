@@ -672,11 +672,24 @@ export const lectureApi = {
       })
       .then((r) => r.data),
 
-  /** LLM 문항 자동 생성 — 키 미설정이면 503(정직한 에러, stub 생성 없음).
-   *  self_verified: 2번째 LLM이 봇 저항성을 판정했는지. bank/captcha_candidates=후보 수. */
+  /** LLM 문항 자동 생성 '시작'(비동기) — 잡을 만들고 즉시 job_id 반환(202). 키 미설정이면
+   *  503(정직한 에러, stub 생성 없음). 실제 STT+생성은 백그라운드가 하고, gen-job으로 폴링한다. */
   opsQuestionGenerate: (lectureId: string, n: number) =>
     client
-      .post<{
+      .post<{ job_id: string; status: string; n: number }>(
+        `/ops/lectures/${lectureId}/questions/generate`,
+        { n },
+      )
+      .then((r) => r.data),
+
+  /** 생성 잡 상태 폴링 — status: pending|running|done|error. done이면 요약(created·transcript_source·
+   *  self_verified·bank/captcha_candidates)을, error면 원인(error)을 담는다. */
+  opsQuestionGenJob: (lectureId: string, jobId: string) =>
+    client
+      .get<{
+        job_id: string;
+        status: 'pending' | 'running' | 'done' | 'error';
+        n: number;
         created: number;
         transcript_used: boolean;
         transcript_source: 'srt' | 'vtt' | 'paste' | 'stt' | null;
@@ -685,8 +698,9 @@ export const lectureApi = {
         captcha_candidates: number | null;
         discard_candidates: number | null;
         verify_error: string | null;
-        questions: OpsLectureQuestion[];
-      }>(`/ops/lectures/${lectureId}/questions/generate`, { n })
+        error: string | null;
+        finished_at: string | null;
+      }>(`/ops/lectures/${lectureId}/questions/gen-jobs/${jobId}`)
       .then((r) => r.data),
 
   /* ---- 강사 제공 자막(전사) — 자동 STT 대체·캐시 ---- */
