@@ -31,6 +31,40 @@ function Bar({ label, pct, sub }: { label: string; pct: number; sub: string }) {
   );
 }
 
+/** 서버 자원 추이(최근 구간) — CPU/메모리/GPU 라인. y=0~100%, 외부 의존 없는 SVG. */
+function Trend({ h }: { h: NonNullable<ServerMetric['history']> }) {
+  const n = h.cpu.length;
+  if (n < 2) {
+    return <div className="mon-trend-empty">추이를 모으는 중… (10초마다 갱신)</div>;
+  }
+  const poly = (vals: (number | null)[]) =>
+    vals
+      .map((v, i) =>
+        v == null ? null : `${(i / (n - 1)) * 100},${100 - Math.max(0, Math.min(100, v))}`,
+      )
+      .filter(Boolean)
+      .join(' ');
+  const hasGpu = h.gpu.some((g) => g != null);
+  return (
+    <div className="mon-trend">
+      <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="mon-trend-svg" aria-hidden="true">
+        {[25, 50, 75].map((y) => (
+          <line key={y} x1={0} x2={100} y1={100 - y} y2={100 - y} className="mon-trend-grid" />
+        ))}
+        <polyline className="mon-line mon-line--mem" points={poly(h.mem)} />
+        {hasGpu && <polyline className="mon-line mon-line--gpu" points={poly(h.gpu)} />}
+        <polyline className="mon-line mon-line--cpu" points={poly(h.cpu)} />
+      </svg>
+      <div className="mon-trend-legend">
+        <span className="mon-lg mon-lg--cpu">CPU</span>
+        <span className="mon-lg mon-lg--mem">메모리</span>
+        {hasGpu && <span className="mon-lg mon-lg--gpu">GPU</span>}
+        <span className="mon-trend-span">최근 {n}점</span>
+      </div>
+    </div>
+  );
+}
+
 function ServerCard({ s }: { s: ServerMetric }) {
   if (s.no_data) {
     return (
@@ -94,6 +128,7 @@ function ServerCard({ s }: { s: ServerMetric }) {
           <i className="ph-bold ph-minus-circle" /> GPU 없음
         </div>
       )}
+      {s.history && <Trend h={s.history} />}
     </article>
   );
 }

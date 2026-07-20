@@ -22,6 +22,8 @@ export interface ServerMetric {
   gpu_mem_total_mb?: number | null;
   age_sec?: number | null;
   stale?: boolean;
+  /** 추이 그래프용 최근 표본(데이터 있는 서버만). gpu는 GPU 없는 서버면 null 배열. */
+  history?: { t: string[]; cpu: number[]; mem: number[]; gpu: (number | null)[] };
 }
 
 export interface LlmUsage {
