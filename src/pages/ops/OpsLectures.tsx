@@ -1939,6 +1939,8 @@ function QuestionsModal({
   const [genN, setGenN] = useState('3');
   const [generating, setGenerating] = useState(false);
   const [genPhase, setGenPhase] = useState<string | null>(null); // 생성 중 세부 단계 라벨용
+  // 고급 설정(되감기 지점) 펼침 여부 — 대개 자동이라 기본 접어 폼을 단순하게(초심자 부담↓).
+  const [showAdvanced, setShowAdvanced] = useState(false);
   const changedRef = useRef(false);
   // 생성 폴링 활성 플래그 — 모달이 닫히면(unmount) false로 만들어 폴링 루프를 멈춘다
   // (잡은 서버에서 계속되고, 다시 열면 초안이 보인다). setState-after-unmount 방지.
@@ -1977,6 +1979,7 @@ function QuestionsModal({
 
   const openEdit = (q: OpsLectureQuestion) => {
     setErr('');
+    setShowAdvanced(q.content_start_sec != null); // 되감기 값이 있으면 고급 자동 펼침
     setForm({
       id: q.id,
       position_sec: String(q.position_sec),
@@ -2391,7 +2394,7 @@ function QuestionsModal({
         ) : (
           <>
             <div className="op-lect-qtools">
-              <button className="op-btn op-btn--approve" onClick={() => { setErr(''); setForm(emptyQ()); }}>
+              <button className="op-btn op-btn--approve" onClick={() => { setErr(''); setShowAdvanced(false); setForm(emptyQ()); }}>
                 <i className="ph-bold ph-plus" />
                 문항 추가
               </button>
@@ -2505,9 +2508,24 @@ function QuestionsModal({
                   <i className="ph-bold ph-monitor-play" /> 영상 보면서 시점 고르기
                 </button>
               </label>
+              {/* 고급 설정 토글 — '되감기 지점'은 대개 자동(출제 시점 30초 전)이라 기본 접어
+                  폼을 단순하게 한다(초심자 부담↓). 기존 값이 있으면 openEdit에서 자동 펼침. */}
+              <div className="ox-field op-form-span2 op-lect-advrow">
+                <button
+                  type="button"
+                  className="op-lect-advtoggle"
+                  onClick={() => setShowAdvanced((v) => !v)}
+                  aria-expanded={showAdvanced}
+                >
+                  <i className={`ph-bold ${showAdvanced ? 'ph-caret-up' : 'ph-caret-down'}`} />
+                  고급: 되감기 지점 {showAdvanced ? '접기' : '설정 (선택)'}
+                </button>
+                <span className="op-lect-advhint">비우면 오답 3회 시 출제 시점 30초 전으로 자동 되감아요</span>
+              </div>
               {/* 되감기 지점 — 오답 3회 시 학생이 여기부터 다시 본다. 대목 길이는 문항마다
                   달라(풀이 2~3분 vs 단어 10초) 상수가 아니라 강사가 아는 사실을 기록한다. */}
-              <label className="ox-field">
+              {showAdvanced && (
+              <label className="ox-field op-form-span2">
                 내용 시작 (되감기 지점)
                 <span
                   className={`lu-help${
@@ -2543,6 +2561,7 @@ function QuestionsModal({
                   <i className="ph-bold ph-monitor-play" /> 영상 보면서 시점 고르기
                 </button>
               </label>
+              )}
               <label className="ox-field">
                 상태
                 <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>

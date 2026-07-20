@@ -149,6 +149,15 @@
   border: 2px solid #f1e7df; border-radius: 13px; padding: 9px 12px; font-family: inherit;
   font-weight: 700; font-size: 13.5px; color: #6e6558; background: #fff; cursor: pointer;
 }
+/* 고급 설정 토글(되감기 지점 접기) — 폼 단순화용 */
+.op-lect-advrow { flex-direction: row !important; align-items: center; gap: 10px; flex-wrap: wrap; }
+.op-lect-advtoggle {
+  display: inline-flex; align-items: center; gap: 6px; border: 1.5px dashed #e0d3c4;
+  background: #faf6f2; color: #8a7a66; font-weight: 800; font-size: 12.5px; font-family: inherit;
+  padding: 7px 12px; border-radius: 10px; cursor: pointer;
+}
+.op-lect-advtoggle:hover { background: #f3ece3; border-color: #d0b9a2; color: #6e6558; }
+.op-lect-advhint { font-weight: 600; font-size: 11.5px; color: #a89a88; }
 .op-lect-filtercount { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; font-size: 12.5px; color: #8a8072; }
 .op-lect-filterclear { border: none; background: transparent; color: #e5473b; font-weight: 800; font-size: 12.5px; cursor: pointer; text-decoration: underline; }
 .op-lect-gen { display: flex; align-items: center; gap: 6px; }
