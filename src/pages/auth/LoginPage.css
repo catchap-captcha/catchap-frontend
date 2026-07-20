@@ -676,6 +676,23 @@
   line-height: 1.5;
 }
 
+/* 통합 로그인 — 강사·운영자 안내(학생 안내보다 옅게, 부가 정보) */
+.lg-roles-hint {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 10px 2px 0;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #9aa0b0;
+  line-height: 1.5;
+}
+.lg-roles-hint i {
+  font-size: 15px;
+  color: #b7c2d4;
+  flex-shrink: 0;
+}
+
 .lg-back {
   border: none;
   background: none;

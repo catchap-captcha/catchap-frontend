@@ -29,7 +29,7 @@ function markCheck(el: HTMLElement, bad: boolean) {
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { studentLogin, me: authMe, loading: authLoading } = useAuth();
+  const { studentLogin, opsLogin, me: authMe, loading: authLoading } = useAuth();
 
   // 이미 로그인한 사용자가 /login에 오면(주소창 직접 입력 등) 자기 역할 홈으로 보냄.
   // replace: 뒤로가기로 로그인 폼에 다시 안 걸리게.
@@ -401,6 +401,21 @@ export default function LoginPage() {
         return;
       }
 
+      // ★통합 로그인(0720) — 학생 로그인이 실패했고 이메일 형태면 강사·운영자(ops-login)로
+      // 폴백해 역할 홈으로 보낸다. 강사는 숨겨진 /ops/login을 몰라도 여기서 로그인된다.
+      // (ops-login도 실패하면 강사·운영자가 아니란 뜻 — 아래 학생 오류 문구로 이어진다.)
+      if (/@/.test(id) && !detailObj?.captcha_required) {
+        try {
+          const opsMe = await opsLogin(id, pw);
+          setLoginError('');
+          setCaptchaNeeded(false);
+          navigate(ROLE_HOME[opsMe.role], { replace: true });
+          return;
+        } catch {
+          // 강사·운영자도 아님 — 아래 학생 로그인 실패 처리로 이어진다.
+        }
+      }
+
       // 서버가 5회 이상 실패를 알리면 캡차 요구. 단, 방금 캡차를 통과한 시도(captchaToken
       // 있음)가 '비밀번호 오류'로 실패한 경우엔 팝업을 즉시 다시 열지 않는다 — 재오픈하면
       // "캡차 정답을 맞혀도 계속 뜨는" 루프로 보인다(사용자 제보 0714). 오류 문구를 보여주고,
@@ -595,6 +610,11 @@ export default function LoginPage() {
               <i className="ph-fill ph-info" />
               <p>{notice}</p>
             </div>
+            {/* 통합 로그인 — 강사·운영자도 같은 폼에서 로그인(입력 계정으로 자동 판별·역할별 콘솔로 이동) */}
+            <p className="lg-roles-hint">
+              <i className="ph-fill ph-chalkboard-teacher" /> 강사·운영자 계정도 여기서 로그인하면
+              각자 콘솔로 이동해요.
+            </p>
           </div>
         )}
 
