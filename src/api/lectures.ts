@@ -221,6 +221,14 @@ export interface InstructorDashboard {
     pass_rate: number; // 정복 학생/시도 학생 (낮을수록 어려운 대목)
     attempted_students: number;
   }[];
+  // 강의별 확인문항 통과율 — 학생이 어려워하는 '강의'(각 강의마다). 낮을수록 어려운 강의.
+  weak_lectures: {
+    lecture_id: string;
+    title: string;
+    pass_rate: number; // passed / (passed+failed) 체크포인트 시도
+    attempts: number;
+    learners: number;
+  }[];
 }
 
 /** 코스 수료 시험 상태(학생) — 시험 카드가 읽는 단일 원천. */

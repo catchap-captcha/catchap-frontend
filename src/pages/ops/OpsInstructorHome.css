@@ -214,6 +214,14 @@
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
 }
+/* 강의 제목(약한 강의 행) — 한 줄 말줄임, 통과율 옆에 나란히 */
+.ih-weak-prompt--title {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  white-space: nowrap;
+  -webkit-line-clamp: 1;
+}
 .ih-weak-bar {
   height: 8px;
   background: #f1e7df;

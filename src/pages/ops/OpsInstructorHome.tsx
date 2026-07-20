@@ -120,36 +120,37 @@ export default function OpsInstructorHome() {
                 </Link>
               </section>
 
-              {/* 이해도 — 약한 문항 */}
+              {/* 이해도 — 강의별 확인문항 통과율(각 강의마다). 강의마다 문항이 다르므로 강의 단위. */}
               <section className="ih-card">
                 <div className="ih-card-head">
                   <i className="ph-bold ph-chart-bar" />
-                  <h2 className="ih-card-title">학생이 어려워하는 시험 문항</h2>
+                  <h2 className="ih-card-title">학생이 어려워하는 강의</h2>
                 </div>
-                <p className="ih-card-sub">통과율이 낮을수록 강의가 부족하거나 어려운 대목입니다.</p>
+                <p className="ih-card-sub">
+                  강의 중간 확인문항 통과율이 낮을수록 학생이 그 강의를 어려워해요(강의 보강 대상).
+                </p>
 
-                {data.weak_questions.length > 0 ? (
+                {data.weak_lectures.length > 0 ? (
                   <ul className="ih-weak-list">
-                    {data.weak_questions.map((q) => (
-                      <li key={q.question_id} className="ih-weak-row">
+                    {data.weak_lectures.map((l) => (
+                      <li key={l.lecture_id} className="ih-weak-row">
                         <div className="ih-weak-top">
-                          <span className="ih-weak-course">{q.course_title}</span>
-                          <span className="ih-weak-rate">{pct(q.pass_rate)}</span>
+                          <span className="ih-weak-prompt ih-weak-prompt--title">{l.title}</span>
+                          <span className="ih-weak-rate">{pct(l.pass_rate)}</span>
                         </div>
-                        <p className="ih-weak-prompt">{q.prompt}</p>
                         <div className="ih-weak-bar">
-                          <div
-                            className="ih-weak-bar-fill"
-                            style={{ width: pct(q.pass_rate) }}
-                          />
+                          <div className="ih-weak-bar-fill" style={{ width: pct(l.pass_rate) }} />
                         </div>
-                        <span className="ih-weak-meta">응시 {q.attempted_students}명</span>
+                        <span className="ih-weak-meta">
+                          확인문항 통과율 · 학생 {l.learners}명 · 시도 {l.attempts}회
+                        </span>
                       </li>
                     ))}
                   </ul>
                 ) : (
                   <p className="ih-none">
-                    아직 시험 응시 데이터가 없어요. 학생이 시험을 보면 여기에 약한 문항이 뜹니다.
+                    아직 확인문항 응시 데이터가 없어요. 학생이 강의를 보며 확인문항을 풀면 여기에
+                    강의별 통과율이 떠요.
                   </p>
                 )}
               </section>
