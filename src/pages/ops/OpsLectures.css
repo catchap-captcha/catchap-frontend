@@ -258,7 +258,24 @@
   font-size: 13px;
 }
 .op-lect-banner-warn i { margin-top: 2px; }
-.op-lect-qform { border: 1.5px solid #f0e7da; border-radius: 14px; padding: 14px; margin-bottom: 12px; background: #fffdf8; }
+.op-lect-qform { border: 1.5px solid #f0e7da; border-radius: 16px; padding: 18px; margin-bottom: 12px; background: #fffdf8; }
+/* 문항 폼 필드 통일 — 라벨/입력 위계·포커스 링으로 전문화(스코프: 강의 모달 폼). 종전엔
+   op-form-grid 미정의로 스택되고 input 스타일이 없어 제각각이었다. */
+.op-lect-qform .ox-field { gap: 7px; font-size: 11.5px; font-weight: 800; color: #8a7f6d; }
+.op-lect-qform .ox-field > input,
+.op-lect-qform .ox-field > textarea {
+  width: 100%; box-sizing: border-box;
+  border: 1.5px solid #eadfce; border-radius: 11px; background: #fffbf6;
+  padding: 10px 13px; font: inherit; font-size: 13.5px; font-weight: 600; color: #3a3340;
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+}
+.op-lect-qform .ox-field > input::placeholder,
+.op-lect-qform .ox-field > textarea::placeholder { color: #c2b4a2; font-weight: 500; }
+.op-lect-qform .ox-field > input:focus,
+.op-lect-qform .ox-field > textarea:focus {
+  outline: none; border-color: #ff8a7d; background: #fff; box-shadow: 0 0 0 3px #ffe7e2;
+}
+.op-lect-qform .ox-field select:focus { box-shadow: 0 0 0 3px #ffe7e2; }
 .op-lect-textarea { border: 1.5px solid #eadfce; border-radius: 10px; padding: 10px; font-family: inherit; font-weight: 600; font-size: 13.5px; resize: vertical; }
 .op-lect-qlist { display: flex; flex-direction: column; gap: 10px; }
 .op-lect-qrow {

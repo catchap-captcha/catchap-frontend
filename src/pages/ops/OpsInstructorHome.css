@@ -14,16 +14,27 @@
 .ih-kpi {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 5px;
   background: #fff;
-  border: 2px solid #f1e7df;
+  border: 1.5px solid #f0e4d6;
   border-radius: 16px;
   padding: 18px 20px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(58, 51, 64, 0.04), 0 14px 30px -26px rgba(90, 60, 55, 0.22);
+  transition: transform 0.15s, box-shadow 0.15s;
 }
+.ih-kpi:hover { transform: translateY(-2px); box-shadow: 0 1px 2px rgba(58, 51, 64, 0.05), 0 18px 34px -24px rgba(90, 60, 55, 0.28); }
+/* 좌측 색 액센트 바 — KPI마다 다른 색으로 시각적 구분·활기 */
+.ih-kpi::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: #ffcdb0; }
+.ih-kpi:nth-child(1)::before { background: linear-gradient(#ff8a6b, #ff6b4d); }
+.ih-kpi:nth-child(2)::before { background: linear-gradient(#8a6bff, #6c4cff); }
+.ih-kpi:nth-child(3)::before { background: linear-gradient(#28c39a, #17a884); }
+.ih-kpi:nth-child(4)::before { background: linear-gradient(#ffbe3d, #f0a400); }
 .ih-kpi-num {
   font-family: 'Jua', sans-serif;
   font-size: 30px;
-  color: #3a3340;
+  color: #2e2833;
   line-height: 1;
 }
 .ih-kpi-lb {
@@ -46,9 +57,10 @@
 
 .ih-card {
   background: #fff;
-  border: 2px solid #f1e7df;
+  border: 1.5px solid #f0e4d6;
   border-radius: 18px;
-  padding: 20px 22px;
+  padding: 22px 24px;
+  box-shadow: 0 1px 2px rgba(58, 51, 64, 0.04), 0 16px 32px -24px rgba(90, 60, 55, 0.22);
 }
 .ih-card-head {
   display: flex;
