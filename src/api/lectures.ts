@@ -651,12 +651,14 @@ export const lectureApi = {
       )
       .then((r) => r.data),
 
-  /** 은행 적합 문항 일괄 승격 — '강사가 검수(공개/active)한 verdict=bank' 문항만 한 번에 은행으로.
-   *  ★사람 검토를 건너뛰지 않음(draft/미검수·verdict=captcha 제외). 다답형·이미지는 skipped로 보고. */
-  opsPromoteBankCandidates: (lectureId: string) =>
+  /** 은행 적합 문항 대량 승격 — 강사가 **다중 선택한** 문항(questionIds)을 한 번에 은행으로.
+   *  ★선택 자체가 검토(자동 무검토 아님). 미지정이면 서버가 '은행 적합 후보 전체'를 대상으로 함.
+   *  다답형·이미지는 skipped로 보고. */
+  opsPromoteBankCandidates: (lectureId: string, questionIds?: string[]) =>
     client
       .post<{ placed: number; skipped: Record<string, number>; candidates: number; runtime_visible: boolean }>(
         `/ops/lectures/${lectureId}/questions/promote-bank-candidates`,
+        questionIds ? { question_ids: questionIds } : {},
       )
       .then((r) => r.data),
 
