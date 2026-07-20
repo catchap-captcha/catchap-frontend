@@ -152,6 +152,22 @@
 }
 .op-lect-genhint i { color: #7c5cff; margin-top: 1px; flex-shrink: 0; }
 .op-lect-genhint b { color: #3a3340; }
+.op-lect-genwait {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  background: #fff3d6;
+  border: 1.5px solid #ffe1a6;
+  border-radius: 12px;
+  color: #a86c12;
+  font-weight: 700;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+.op-lect-genwait i { flex-shrink: 0; animation: op-spin 1s linear infinite; }
+@keyframes op-spin { to { transform: rotate(360deg); } }
 .op-lect-banner { margin-bottom: 10px; }
 .op-lect-banner-ok {
   display: flex;

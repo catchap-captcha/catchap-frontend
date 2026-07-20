@@ -1590,10 +1590,10 @@ function ExamQuestionsModal({
                 {(q.prompt_image_url || (q.option_image_urls ?? []).some(Boolean)) && (
                   <span className="op-exam-qthumbs">
                     {q.prompt_image_url && (
-                      <img className="op-exam-qthumb" src={API_ORIGIN + q.prompt_image_url} alt="문제 이미지" />
+                      <img className="op-exam-qthumb" src={API_ORIGIN + q.prompt_image_url} alt="문제 이미지" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                     )}
                     {(q.option_image_urls ?? []).map((u, i) =>
-                      u ? <img key={i} className="op-exam-qthumb op-exam-qthumb--opt" src={API_ORIGIN + u} alt="" /> : null,
+                      u ? <img key={i} className="op-exam-qthumb op-exam-qthumb--opt" src={API_ORIGIN + u} alt="" onError={(e) => { e.currentTarget.style.display = 'none'; }} /> : null,
                     )}
                   </span>
                 )}
@@ -2329,6 +2329,15 @@ function QuestionsModal({
                 ‘공개’</b>해야 학생에게 출제돼요. (운영 콘솔 설정의 생성 모델 사용)
               </span>
             </p>
+            {/* 생성 중 안내 — STT/생성은 서버 단일 요청이라 실시간 %는 없다. 긴 영상은 자막 변환에
+                시간이 걸려 '멈춘 것처럼' 보일 수 있어, 시간이 걸릴 수 있음을 명시해 이탈을 막는다. */}
+            {generating && (
+              <p className="op-lect-genwait">
+                <i className="ph-bold ph-spinner-gap" />
+                AI가 문항을 만드는 중이에요 — 긴 영상은 자막 변환 때문에 몇 분 걸릴 수 있어요.
+                이 창을 닫지 말고 기다려 주세요.
+              </p>
+            )}
             {/* 강사 제공 자막 — 있으면 위 'AI 문항 생성'이 자동 STT 대신 이 자막을 쓴다 */}
             <TranscriptBar lectureId={lec.id} note={(ok, msg) => { setBannerOk(ok); setBanner(msg); }} />
           </>
@@ -2730,7 +2739,12 @@ function QuestionsModal({
               <div className="op-lect-qbody">
                 <b>{q.prompt}</b>
                 {q.prompt_image_url && (
-                  <img className="lu-qthumb" src={API_ORIGIN + q.prompt_image_url} alt="문제 이미지" />
+                  <img
+                    className="lu-qthumb"
+                    src={API_ORIGIN + q.prompt_image_url}
+                    alt="문제 이미지"
+                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                  />
                 )}
                 <div className="op-lect-qopts">
                   {q.options.map((o, i) => (
@@ -2744,6 +2758,7 @@ function QuestionsModal({
                           className="lu-optchip-img"
                           src={API_ORIGIN + q.option_image_urls[i]!}
                           alt={`${i + 1}번 보기 이미지`}
+                          onError={(e) => { e.currentTarget.style.display = 'none'; }}
                         />
                       )}
                       {o || (q.option_image_urls?.[i] ? '(그림 보기)' : '')}
