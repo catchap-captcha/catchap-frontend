@@ -1,0 +1,162 @@
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { lectureApi, type InstructorDashboard } from '../../api/lectures';
+import OpsNav from '../../components/ops/OpsNav';
+import { PATHS } from '../../routes/paths';
+import './OpsApproval.css';
+import './OpsInstructorHome.css';
+
+/**
+ * 강사 홈 대시보드 — 강의 목록에 바로 떨구는 대신, 로그인하면 '지금 할 일(검수 대기)'과
+ * '학생이 어디서 막히나(약한 문항)'를 먼저 보여준다. 강의가 여러 개인 강사도 검수 대기 문항을
+ * 한 화면에서(강의별 목록) 파악하게 한다. 데이터는 GET /ops/instructor/dashboard(강사 스코프).
+ * 되감기 히트맵·확인문항 문항별 이해도는 계측이 없어 제외(P1).
+ */
+export default function OpsInstructorHome() {
+  const [data, setData] = useState<InstructorDashboard | null>(null);
+  const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading');
+
+  const load = () => {
+    setState('loading');
+    lectureApi
+      .opsInstructorDashboard()
+      .then((d) => {
+        setData(d);
+        setState('ready');
+      })
+      .catch(() => setState('error'));
+  };
+  useEffect(load, []);
+
+  const pct = (r: number) => `${Math.round(r * 100)}%`;
+
+  return (
+    <div className="op-root">
+      <OpsNav />
+      <main className="op-main">
+        <div className="op-head">
+          <div>
+            <h1 className="op-title">강사 홈</h1>
+            <p className="op-sub">검수할 문항과 학생이 막히는 지점을 한눈에 봅니다.</p>
+          </div>
+          <button className="op-refresh" onClick={load} disabled={state === 'loading'}>
+            새로고침
+          </button>
+        </div>
+
+        {state === 'loading' && (
+          <div className="op-empty">
+            <i className="ph-duotone ph-spinner-gap" />
+            <p>불러오는 중…</p>
+          </div>
+        )}
+        {state === 'error' && (
+          <div className="op-empty">
+            <i className="ph-duotone ph-warning-circle" />
+            <p>대시보드를 불러오지 못했어요.</p>
+          </div>
+        )}
+
+        {state === 'ready' && data && (
+          <>
+            {/* KPI 요약 */}
+            <div className="ih-kpis">
+              <div className="ih-kpi">
+                <span className="ih-kpi-num">{data.lecture_count}</span>
+                <span className="ih-kpi-lb">내 강의</span>
+              </div>
+              <div className="ih-kpi">
+                <span className="ih-kpi-num">{data.course_count}</span>
+                <span className="ih-kpi-lb">내 코스</span>
+              </div>
+              <div className="ih-kpi">
+                <span className="ih-kpi-num">{data.active_learners}</span>
+                <span className="ih-kpi-lb">학습 학생</span>
+              </div>
+              <div className="ih-kpi">
+                <span className="ih-kpi-num">{data.course_completions}</span>
+                <span className="ih-kpi-lb">코스 수료</span>
+              </div>
+            </div>
+
+            <div className="ih-cols">
+              {/* 할 일 — 검수 대기 */}
+              <section className="ih-card">
+                <div className="ih-card-head">
+                  <i className="ph-bold ph-checks" />
+                  <h2 className="ih-card-title">검수 대기</h2>
+                </div>
+                <div className="ih-todo">
+                  <span className="ih-todo-big">{data.draft_question_count}</span>
+                  <span className="ih-todo-unit">건</span>
+                  <span className="ih-todo-break">
+                    확인문항 {data.draft_lecture_questions} · 시험문항 {data.draft_exam_questions}
+                  </span>
+                </div>
+
+                {data.lectures_without_checkpoint > 0 && (
+                  <div className="ih-warn">
+                    <i className="ph-bold ph-warning" />
+                    확인문항이 없는 강의 {data.lectures_without_checkpoint}개 — 시청 검증이 걸리지
+                    않습니다.
+                  </div>
+                )}
+
+                {data.draft_by_lecture.length > 0 ? (
+                  <ul className="ih-lec-list">
+                    {data.draft_by_lecture.map((l) => (
+                      <li key={l.lecture_id} className="ih-lec-row">
+                        <span className="ih-lec-title">{l.title}</span>
+                        <span className="ih-lec-badge">{l.draft_count}건 검수 대기</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="ih-none">강의 확인문항은 모두 검수됐어요.</p>
+                )}
+
+                <Link className="ih-cta" to={PATHS.OPS_LECTURES}>
+                  강의 관리로 이동 <i className="ph-bold ph-arrow-right" />
+                </Link>
+              </section>
+
+              {/* 이해도 — 약한 문항 */}
+              <section className="ih-card">
+                <div className="ih-card-head">
+                  <i className="ph-bold ph-chart-bar" />
+                  <h2 className="ih-card-title">학생이 어려워하는 시험 문항</h2>
+                </div>
+                <p className="ih-card-sub">통과율이 낮을수록 강의가 부족하거나 어려운 대목입니다.</p>
+
+                {data.weak_questions.length > 0 ? (
+                  <ul className="ih-weak-list">
+                    {data.weak_questions.map((q) => (
+                      <li key={q.question_id} className="ih-weak-row">
+                        <div className="ih-weak-top">
+                          <span className="ih-weak-course">{q.course_title}</span>
+                          <span className="ih-weak-rate">{pct(q.pass_rate)}</span>
+                        </div>
+                        <p className="ih-weak-prompt">{q.prompt}</p>
+                        <div className="ih-weak-bar">
+                          <div
+                            className="ih-weak-bar-fill"
+                            style={{ width: pct(q.pass_rate) }}
+                          />
+                        </div>
+                        <span className="ih-weak-meta">응시 {q.attempted_students}명</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="ih-none">
+                    아직 시험 응시 데이터가 없어요. 학생이 시험을 보면 여기에 약한 문항이 뜹니다.
+                  </p>
+                )}
+              </section>
+            </div>
+          </>
+        )}
+      </main>
+    </div>
+  );
+}

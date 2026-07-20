@@ -53,6 +53,7 @@ const OpsSystem = lazy(() => import('../pages/ops/OpsSystem'));
 const OpsAiModels = lazy(() => import('../pages/ops/OpsAiModels'));
 const OpsSettings = lazy(() => import('../pages/ops/OpsSettings'));
 const OpsLectures = lazy(() => import('../pages/ops/OpsLectures'));
+const OpsInstructorHome = lazy(() => import('../pages/ops/OpsInstructorHome'));
 const OpsOperators = lazy(() => import('../pages/ops/OpsOperators'));
 const OpsInstructors = lazy(() => import('../pages/ops/OpsInstructors'));
 
@@ -123,6 +124,7 @@ export default function AppRoutes() {
 
         {/* 강의 제작 콘솔 — 운영자(전체) + 강사(자기 강의만, 스코프는 서버가 강제) */}
         <Route element={<ProtectedRoute roles={['ops', 'instructor']} />}>
+          <Route path={PATHS.OPS_INSTRUCTOR_HOME} element={<OpsInstructorHome />} />
           <Route path={PATHS.OPS_LECTURES} element={<OpsLectures />} />
         </Route>
 

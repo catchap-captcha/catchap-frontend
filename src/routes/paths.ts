@@ -55,6 +55,7 @@ export const PATHS = {
   OPS_SYSTEM: '/ops/system', // 시스템 상태 (실측 헬스체크)
   OPS_AI_MODELS: '/ops/ai-models', // 모델 레지스트리 관리(기관 콘솔 노출 콘텐츠)
   OPS_SETTINGS: '/ops/settings', // 서비스 설정 (AI API 키 — STT·LLM)
+  OPS_INSTRUCTOR_HOME: '/ops/home', // 강사 홈 대시보드 (검수 대기·학생 참여·약한 문항) — 강사 착지
   OPS_LECTURES: '/ops/lectures', // 강의 관리 (영상 업로드·확인 문항·자료실) — 운영자·강사 공용
   OPS_INSTRUCTORS: '/ops/instructors', // 강사 계정 관리 (운영자 초대 발급)
 

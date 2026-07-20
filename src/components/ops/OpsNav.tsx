@@ -48,8 +48,11 @@ const GROUPS: { label: string; items: { to: string; icon: string; label: string 
 
 const INSTRUCTOR_GROUPS: typeof GROUPS = [
   {
-    label: '강의',
-    items: [{ to: PATHS.OPS_LECTURES, icon: 'ph-video-camera', label: '내 강의' }],
+    label: '강사',
+    items: [
+      { to: PATHS.OPS_INSTRUCTOR_HOME, icon: 'ph-squares-four', label: '홈' },
+      { to: PATHS.OPS_LECTURES, icon: 'ph-video-camera', label: '내 강의' },
+    ],
   },
 ];
 
@@ -59,7 +62,7 @@ export default function OpsNav() {
   const navigate = useNavigate();
   const isInstructor = me?.role === 'instructor';
   const groups = isInstructor ? INSTRUCTOR_GROUPS : GROUPS;
-  const home = isInstructor ? PATHS.OPS_LECTURES : PATHS.OPS_APPROVAL;
+  const home = isInstructor ? PATHS.OPS_INSTRUCTOR_HOME : PATHS.OPS_APPROVAL;
 
   // 강사 본인 비밀번호 변경 — 운영자는 운영자 계정 페이지에 같은 기능이 있지만,
   // 강사는 접근 가능한 관리 페이지가 없어 사이드바 푸터에서 직접 연다.

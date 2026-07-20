@@ -10,7 +10,7 @@ export const ROLE_HOME: Record<Role, string> = {
   grade_head: PATHS.SCHOOL_SUNSET,
   org_admin: PATHS.SCHOOL_SUNSET,
   ops: PATHS.OPS_APPROVAL, // 운영자: 기관 가입 승인 콘솔
-  instructor: PATHS.OPS_LECTURES, // 강사: 자기 강의 관리 콘솔 (운영자 초대로만 생성)
+  instructor: PATHS.OPS_INSTRUCTOR_HOME, // 강사: 홈 대시보드(검수 대기·학생 참여·약한 문항)로 착지
 };
 
 /** 경로 prefix → 접근 허용 role */

@@ -201,6 +201,28 @@ export interface ExamStats {
   questions: ExamQuestionStat[];
 }
 
+// 강사 홈 대시보드 — 자기 강의/코스 전반의 '할 일'과 '이해도'
+export interface InstructorDashboard {
+  lecture_count: number;
+  course_count: number;
+  draft_question_count: number; // 검수 대기(확인문항 + 시험문항)
+  draft_lecture_questions: number;
+  draft_exam_questions: number;
+  draft_by_lecture: { lecture_id: string; title: string; draft_count: number }[];
+  lectures_without_checkpoint: number; // 활성 확인문항 0개 = 시청 검증 없는 강의
+  active_learners: number; // 내 강의를 학습한 distinct 학생
+  completed_watches: number; // 강의 완주 건수
+  course_completions: number; // 코스 수료 총합
+  weak_questions: {
+    course_id: string;
+    course_title: string;
+    question_id: string;
+    prompt: string;
+    pass_rate: number; // 정복 학생/시도 학생 (낮을수록 어려운 대목)
+    attempted_students: number;
+  }[];
+}
+
 /** 코스 수료 시험 상태(학생) — 시험 카드가 읽는 단일 원천. */
 export interface ExamState {
   course_id: string;
@@ -449,6 +471,10 @@ export const lectureApi = {
   /** 코스 시험 통계 — 문항별 통과율·오답·근사 소요시간 + 코스 수료율(강사·운영자 대시보드). */
   opsExamStats: (courseId: string) =>
     client.get<ExamStats>(`/ops/courses/${courseId}/exam-stats`).then((r) => r.data),
+
+  /** 강사 홈 대시보드 — 내 강의/코스 전반의 검수 대기·학생 참여·약한 문항(강사 전용). */
+  opsInstructorDashboard: () =>
+    client.get<InstructorDashboard>('/ops/instructor/dashboard').then((r) => r.data),
 
   /** 시험 문항 이미지 첨부(multipart) — 강의 문항과 동일 패턴. 같은 슬롯에 있으면 교체. */
   opsExamImageAttach: (
