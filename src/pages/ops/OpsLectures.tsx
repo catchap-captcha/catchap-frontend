@@ -4,6 +4,7 @@ import {
   errorDetail,
   lectureApi,
   type ExamOrigin,
+  type ExamStats,
   type OpsCourse,
   type OpsExamQuestion,
   type OpsLecture,
@@ -1103,6 +1104,9 @@ function ExamQuestionsModal({
   const [form, setForm] = useState<ExamQForm | null>(null);
   const [err, setErr] = useState('');
   const [saving, setSaving] = useState(false);
+  // 시험 통계(문항별 통과율·오답·근사 시간 + 수료율) — 강사가 어느 문항에서 학생이 막히나
+  // 보고 문항을 고치게. 로드 실패는 조용히 미표시(가짜 데이터 대신 부재 — 관리 화면 부가 정보).
+  const [stats, setStats] = useState<ExamStats | null>(null);
 
   const load = () => {
     lectureApi
@@ -1111,6 +1115,12 @@ function ExamQuestionsModal({
       .catch((e) => setLoadErr(errorDetail(e, '시험 문항을 불러오지 못했어요.')));
   };
   useEffect(load, [course.id]);
+  useEffect(() => {
+    lectureApi.opsExamStats(course.id).then(setStats).catch(() => setStats(null));
+  }, [course.id]);
+
+  // 문항 id → 통계(빠른 조회). 통계 없거나 아무도 안 푼 문항은 배지 미표시.
+  const statByQ = new Map((stats?.questions ?? []).map((s) => [s.id, s]));
 
   const activeCount = (rows ?? []).filter((q) => q.status === 'active').length;
 
@@ -1280,6 +1290,31 @@ function ExamQuestionsModal({
           </span>
         </div>
 
+        {/* 코스 시험 지표 — 응시가 있을 때만(0명이면 의미 없는 0% 밴드 숨김). 운영자=수료율,
+            강사=문항별 통과율(아래 행)로 약한 대목 파악. */}
+        {stats && stats.attempted_students > 0 && (
+          <div className="op-exam-stats" role="group" aria-label="코스 시험 지표">
+            <div className="op-exam-stat">
+              <span className="op-exam-stat-num">{stats.attempted_students}</span>
+              <span className="op-exam-stat-lb">응시 학생</span>
+            </div>
+            <div className="op-exam-stat">
+              <span className="op-exam-stat-num">{stats.completions}</span>
+              <span className="op-exam-stat-lb">수료</span>
+            </div>
+            <div className="op-exam-stat">
+              <span className="op-exam-stat-num">
+                {stats.completion_rate != null ? `${Math.round(stats.completion_rate * 100)}%` : '—'}
+              </span>
+              <span className="op-exam-stat-lb">수료율</span>
+            </div>
+            <div className="op-exam-stat">
+              <span className="op-exam-stat-num">{stats.perfects}</span>
+              <span className="op-exam-stat-lb">완벽 통과</span>
+            </div>
+          </div>
+        )}
+
         {form && (
           <div className="op-lect-qform">
             <label className="ox-field op-form-span2">
@@ -1399,6 +1434,32 @@ function ExamQuestionsModal({
                   정답 {q.answer_indexes.length}개 · 보기 {q.options.length}개
                   {q.source ? ` · 출처: ${q.source}` : ''}
                 </small>
+                {(() => {
+                  // 문항별 지표 — 시도 학생이 있을 때만. 통과율 낮음=약한 문항(강의 부족/오출제),
+                  // 오답 재시도 많음=어려운 대목. 근사 소요시간은 secondary(회차 시간/문항 수).
+                  const s = statByQ.get(q.id);
+                  if (!s || s.students_attempted === 0) return null;
+                  const pr = s.pass_rate ?? 0;
+                  const tone = pr >= 0.85 ? 'ok' : pr >= 0.6 ? 'mid' : 'low';
+                  return (
+                    <small className="op-exam-qstat">
+                      <span className={`op-exam-pass op-exam-pass--${tone}`} title="정복 학생 / 시도 학생">
+                        <i className="ph-fill ph-target" /> 통과율 {Math.round(pr * 100)}%
+                        <span className="op-exam-pass-sub"> ({s.students_mastered}/{s.students_attempted})</span>
+                      </span>
+                      {s.wrong_attempts > 0 && (
+                        <span className="op-exam-qstat-b" title="누적 오답 시도 수(재시도 부담)">
+                          <i className="ph-fill ph-x-circle" /> 오답 {s.wrong_attempts}
+                        </span>
+                      )}
+                      {s.avg_solve_ms > 0 && (
+                        <span className="op-exam-qstat-b" title="평균 소요(근사: 회차 시간/문항 수)">
+                          <i className="ph-fill ph-clock" /> ~{Math.round(s.avg_solve_ms / 1000)}초
+                        </span>
+                      )}
+                    </small>
+                  );
+                })()}
               </span>
               <span className="op-col-right op-lect-actions">
                 <button className="op-btn op-btn--reject" onClick={() => { setErr(''); setForm(editForm(q)); }}>

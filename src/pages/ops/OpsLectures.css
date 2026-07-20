@@ -544,3 +544,51 @@
 .op-exam-tag--lecture { background: #ede6ff; color: #8b6bff; }
 .op-exam-tag--llm { background: #dff6ee; color: #17b08c; }
 .op-exam-tag--draft { background: #f4efe6; color: #9b9086; }
+
+/* ===== 코스 시험 지표(대시보드) ===== */
+/* 요약 KPI 밴드 — 응시·수료·수료율·완벽 통과 */
+.op-exam-stats {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.op-exam-stat {
+  flex: 1 1 0;
+  min-width: 96px;
+  background: #faf7f1;
+  border: 1px solid #eee4d3;
+  border-radius: 12px;
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.op-exam-stat-num { font-size: 20px; font-weight: 900; color: #3a3226; }
+.op-exam-stat-lb { font-size: 11.5px; font-weight: 700; color: #9b9086; }
+
+/* 문항별 지표 — 통과율(색으로 약한 대목 표시)·오답·근사 시간 */
+.op-exam-qstat {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+.op-exam-pass,
+.op-exam-qstat-b {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 8px;
+  border-radius: 8px;
+  font-size: 10.5px;
+  font-weight: 800;
+}
+.op-exam-pass i,
+.op-exam-qstat-b i { font-size: 11px; }
+.op-exam-pass-sub { font-weight: 700; opacity: 0.75; }
+.op-exam-pass--ok { background: #dff6ee; color: #12805f; }
+.op-exam-pass--mid { background: #fff3d9; color: #b9791a; }
+.op-exam-pass--low { background: #ffe2df; color: #d23f34; }
+.op-exam-qstat-b { background: #f1eee8; color: #7a7060; }

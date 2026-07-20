@@ -164,6 +164,29 @@ export interface ExamQuestionInput {
   order_no?: number;
 }
 
+/** 코스 시험 통계(강사·운영자 대시보드) — 문항별 통과율·오답·근사 소요시간 + 코스 수료율. */
+export interface ExamQuestionStat {
+  id: string;
+  prompt: string;
+  origin: ExamOrigin;
+  students_attempted: number;
+  students_mastered: number;
+  /** 통과율 = 정복 학생/시도 학생. 아무도 안 풀었으면 null(0%로 오해 방지) */
+  pass_rate: number | null;
+  total_attempts: number;
+  wrong_attempts: number; // 재시도 부담(어려움 신호)
+  avg_solve_ms: number; // 근사값(회차 시간/문항 수)
+}
+export interface ExamStats {
+  course_id: string;
+  attempted_students: number;
+  completions: number;
+  perfects: number;
+  completion_rate: number | null; // 수료/응시. 응시 0이면 null
+  active_question_count: number;
+  questions: ExamQuestionStat[];
+}
+
 /** 코스 수료 시험 상태(학생) — 시험 카드가 읽는 단일 원천. */
 export interface ExamState {
   course_id: string;
@@ -403,6 +426,10 @@ export const lectureApi = {
    *  기출(past_exam)은 source 필수(서버 400) — 비영리 교육용 이용 전제. */
   opsExamQuestions: (courseId: string) =>
     client.get<OpsExamQuestion[]>(`/ops/courses/${courseId}/exam-questions`).then((r) => r.data),
+
+  /** 코스 시험 통계 — 문항별 통과율·오답·근사 소요시간 + 코스 수료율(강사·운영자 대시보드). */
+  opsExamStats: (courseId: string) =>
+    client.get<ExamStats>(`/ops/courses/${courseId}/exam-stats`).then((r) => r.data),
 
   opsExamQuestionCreate: (courseId: string, body: ExamQuestionInput) =>
     client
