@@ -155,6 +155,35 @@ export default function OpsInstructorHome() {
                 )}
               </section>
             </div>
+
+            {/* 문항별 — 특정 확인문항이 유독 어렵거나 잘못 만들어졌는지(question_id 계측 후 데이터) */}
+            {data.weak_checkpoint_questions.length > 0 && (
+              <section className="ih-card ih-card--wide">
+                <div className="ih-card-head">
+                  <i className="ph-bold ph-warning-diamond" />
+                  <h2 className="ih-card-title">다시 봐야 할 확인문항</h2>
+                </div>
+                <p className="ih-card-sub">
+                  통과율이 낮은 문항이에요 — 너무 어렵거나 잘못 만들어졌을 수 있어요.
+                  <b> 검토 권장</b>은 통과율이 특히 낮아 문항 자체를 살펴볼 것을 권하는 표시예요.
+                </p>
+                <ul className="ih-cq-list">
+                  {data.weak_checkpoint_questions.map((q) => (
+                    <li key={q.question_id} className="ih-cq-row">
+                      <div className="ih-cq-main">
+                        <span className="ih-cq-lec">{q.lecture_title}</span>
+                        <p className="ih-cq-prompt">{q.prompt || '(문항 내용 없음)'}</p>
+                        <span className="ih-weak-meta">학생 {q.learners}명 · 시도 {q.attempts}회</span>
+                      </div>
+                      <div className="ih-cq-right">
+                        <span className="ih-cq-rate">{pct(q.pass_rate)}</span>
+                        {q.review && <span className="ih-cq-flag">검토 권장</span>}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
           </>
         )}
       </main>

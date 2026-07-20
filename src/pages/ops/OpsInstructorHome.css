@@ -238,3 +238,24 @@
   font-size: 11.5px;
   color: #9a9182;
 }
+
+/* 문항별 '다시 봐야 할 확인문항' 카드 */
+.ih-card--wide { margin-bottom: 32px; }
+.ih-cq-list { list-style: none; margin: 6px 0 0; padding: 0; display: flex; flex-direction: column; }
+.ih-cq-row {
+  display: flex; align-items: center; gap: 14px;
+  padding: 13px 0; border-top: 1.5px solid #f4ece1;
+}
+.ih-cq-row:first-child { border-top: none; }
+.ih-cq-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.ih-cq-lec { font-weight: 700; font-size: 11.5px; color: #8a8072; }
+.ih-cq-prompt {
+  margin: 0; font-weight: 700; font-size: 13.5px; color: #3a3340;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.ih-cq-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.ih-cq-rate { font-family: 'Jua', sans-serif; font-size: 18px; color: #e5473b; min-width: 44px; text-align: right; }
+.ih-cq-flag {
+  background: #ffe3e3; color: #d64545; font-weight: 800; font-size: 11px;
+  padding: 4px 9px; border-radius: 999px; white-space: nowrap;
+}

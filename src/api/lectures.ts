@@ -229,6 +229,17 @@ export interface InstructorDashboard {
     attempts: number;
     learners: number;
   }[];
+  // 문항별 확인문항 — 특정 문항이 유독 어렵거나 잘못됐는지. review=검토 권장(매우 낮음+충분 시도).
+  weak_checkpoint_questions: {
+    question_id: string;
+    lecture_id: string;
+    lecture_title: string;
+    prompt: string;
+    pass_rate: number;
+    attempts: number;
+    learners: number;
+    review: boolean;
+  }[];
 }
 
 /** 코스 수료 시험 상태(학생) — 시험 카드가 읽는 단일 원천. */
