@@ -14,6 +14,7 @@ import {
 } from '../../api/lectures';
 import OpsNav from '../../components/ops/OpsNav';
 import { useAuth } from '../../hooks/useAuth';
+import { useModalA11y } from '../../hooks/useModalA11y';
 import './OpsApproval.css';
 import './OpsLectures.css';
 
@@ -780,9 +781,18 @@ function LectureFormModal({
     }
   };
 
+  const mRef = useModalA11y<HTMLDivElement>(() => { if (!saving) onClose(); });
   return (
     <div className="op-bh-overlay" onClick={() => !saving && onClose()}>
-      <div className="op-formmodal" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="op-formmodal"
+        onClick={(e) => e.stopPropagation()}
+        ref={mRef}
+        tabIndex={-1}
+        role="dialog"
+        aria-modal="true"
+        aria-label={editing ? '강의 수정' : '강의 업로드'}
+      >
         <div className="op-bh-modal-h">
           <span>
             <i className="ph-fill ph-video-camera" /> {editing ? '강의 수정' : '강의 업로드'}
@@ -1037,9 +1047,18 @@ function CoursesModal({
     }
   };
 
+  const mRef = useModalA11y<HTMLDivElement>(() => { if (!saving) onClose(); });
   return (
     <div className="op-bh-overlay" onClick={() => !saving && onClose()}>
-      <div className="op-formmodal op-lect-widemodal" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="op-formmodal op-lect-widemodal"
+        onClick={(e) => e.stopPropagation()}
+        ref={mRef}
+        tabIndex={-1}
+        role="dialog"
+        aria-modal="true"
+        aria-label="코스 관리"
+      >
         <div className="op-bh-modal-h">
           <span>
             <i className="ph-fill ph-stack" /> 코스 관리
@@ -1417,9 +1436,18 @@ function ExamQuestionsModal({
     }
   };
 
+  const mRef = useModalA11y<HTMLDivElement>(() => { if (!saving) onClose(); });
   return (
     <div className="op-bh-overlay" onClick={() => !saving && onClose()}>
-      <div className="op-formmodal op-lect-widemodal" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="op-formmodal op-lect-widemodal"
+        onClick={(e) => e.stopPropagation()}
+        ref={mRef}
+        tabIndex={-1}
+        role="dialog"
+        aria-modal="true"
+        aria-label="수료 시험 문항"
+      >
         <div className="op-bh-modal-h">
           <span>
             <i className="ph-fill ph-exam" /> 수료 시험 문항 · {course.title}
@@ -1976,6 +2004,7 @@ function QuestionsModal({
     if (changedRef.current) onChanged(); // 문항 수 변경을 목록에 반영
     onClose();
   };
+  const modalRef = useModalA11y<HTMLDivElement>(close); // ESC 닫기·포커스 트랩·포커스 이동/복원
 
   const openEdit = (q: OpsLectureQuestion) => {
     setErr('');
@@ -2368,9 +2397,17 @@ function QuestionsModal({
 
   return (
     <div className="op-bh-overlay" onClick={close}>
-      <div className="op-formmodal op-lect-widemodal" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="op-formmodal op-lect-widemodal"
+        onClick={(e) => e.stopPropagation()}
+        ref={modalRef}
+        tabIndex={-1}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="qmodal-title"
+      >
         <div className="op-bh-modal-h">
-          <span>
+          <span id="qmodal-title">
             <i className="ph-fill ph-seal-question" /> 확인 문항 — {lec.title}
           </span>
           <button className="op-bh-modal-x" onClick={close}>
@@ -3354,9 +3391,18 @@ function MaterialsModal({ lec, onClose }: { lec: OpsLecture; onClose: () => void
     }
   };
 
+  const mRef = useModalA11y<HTMLDivElement>(onClose);
   return (
     <div className="op-bh-overlay" onClick={onClose}>
-      <div className="op-formmodal op-lect-widemodal" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="op-formmodal op-lect-widemodal"
+        onClick={(e) => e.stopPropagation()}
+        ref={mRef}
+        tabIndex={-1}
+        role="dialog"
+        aria-modal="true"
+        aria-label="강의 자료실"
+      >
         <div className="op-bh-modal-h">
           <span>
             <i className="ph-fill ph-folder-open" /> 자료실 — {lec.title}
