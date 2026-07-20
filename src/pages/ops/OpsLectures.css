@@ -13,19 +13,40 @@
 /* 헤더 우측 버튼 묶음(코스 관리 + 강의 업로드) */
 .op-lect-headbtns { display: inline-flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 
-/* 강의 목록 — 과목·코스 섹션 묶음 + 그 안에서 드래그 재배열 */
-.op-lect-group { margin-top: 6px; }
-.op-lect-group:first-of-type { margin-top: 0; }
+/* 강의 목록 — 코스마다 독립 카드로 확실히 구분(전엔 얇은 선뿐이라 뭉쳐 보였다) */
+.op-lect-listwrap { display: flex; flex-direction: column; }
+/* 컬럼 라벨 줄 — 카드 밖 옅은 안내(카드 배경/테두리 없음) */
+.op-lect-collabel {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 2px 24px 10px !important;
+  color: #b0a79b;
+}
+/* 로딩·빈 상태 등 카드 밖 직속 행도 카드처럼 */
+.op-lect-listwrap > .op-logrow {
+  background: #fff; border: 1.5px solid #f0e4d6; border-radius: 16px;
+  padding: 18px 22px; color: #9b9086; font-weight: 600; margin-bottom: 12px;
+}
+/* ★코스 카드 — 흰 배경·테두리·그림자·간격으로 코스별 확실 분리 */
+.op-lect-group {
+  background: #fff;
+  border: 1.5px solid #f0e4d6;
+  border-radius: 18px;
+  box-shadow: 0 1px 2px rgba(58, 51, 64, 0.04), 0 14px 30px -24px rgba(90, 60, 55, 0.22);
+  margin: 0 0 16px;
+  overflow: hidden;
+}
 .op-lect-grouphead {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 12px 6px 6px;
-  border-top: 1.5px solid #f0e7da;
+  padding: 13px 22px;
+  background: linear-gradient(180deg, #fdf6ef, #fffbf7);
+  border-bottom: 1.5px solid #f4ece1;
 }
-.op-lect-group:first-of-type .op-lect-grouphead { border-top: none; }
 .op-lect-groupsubj {
-  padding: 2px 9px;
+  padding: 3px 10px;
   border-radius: 999px;
   background: #fff3e0;
   color: #b45309;
@@ -35,13 +56,21 @@
 .op-lect-grouptitle {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
   font-weight: 800;
-  font-size: 14px;
-  color: #3a3340;
+  font-size: 15px;
+  color: #2e2833;
 }
-.op-lect-grouptitle--none { color: #a89d8e; font-weight: 700; }
-.op-lect-groupcount { font-weight: 700; font-size: 12px; color: #a89d8e; }
+.op-lect-grouptitle i { color: #e5473b; }
+.op-lect-grouptitle--none { color: #a89d8e; font-weight: 700; font-size: 14px; }
+.op-lect-groupcount {
+  font-weight: 800;
+  font-size: 11.5px;
+  color: #a0895f;
+  background: #f6efe3;
+  padding: 2px 9px;
+  border-radius: 999px;
+}
 .op-lect-grouphint {
   display: inline-flex;
   align-items: center;

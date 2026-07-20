@@ -418,8 +418,8 @@ export default function OpsLectures() {
           </div>
         )}
 
-        <div className="op-logcard">
-          <div className="op-loghead op-lect-grid">
+        <div className="op-lect-listwrap">
+          <div className="op-loghead op-lect-grid op-lect-collabel">
             <span>강의</span>
             <span>과목</span>
             <span>길이</span>
