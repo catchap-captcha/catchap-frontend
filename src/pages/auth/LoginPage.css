@@ -536,7 +536,7 @@
   border: none;
   cursor: pointer;
   background: var(--brand);
-  color: #fff;
+  color: var(--on-brand);
   font-family: var(--font-display); font-weight: 700;
   font-size: 15.5px;
   padding: 14px;
@@ -777,7 +777,9 @@
   border: none;
   cursor: pointer;
   background: var(--ink);
-  color: var(--on-brand);
+  /* 배경이 --ink(라이트=검정, 다크=흰색)라 글자는 그 반대 토큰(--surface)이어야 대비가 산다.
+     --on-brand(항상 흰색)로 두면 다크모드에서 흰 글자가 밝은 버튼에 묻힌다. */
+  color: var(--surface);
   font-family: 'Pretendard', sans-serif;
   font-weight: 800;
   font-size: 13px;
@@ -898,6 +900,32 @@
   font-weight: 600;
   color: var(--brand-ink);
   line-height: 1.45;
+}
+
+/* ===== 보호자(법정대리인) 동의 — 만 14세 미만 가입 시 노출 =====
+   토큰 기반(--warn-soft/--warn-ink)이라 라이트/다크 모두에서 톤이 맞는다. */
+.lg-guardian {
+  background: var(--warn-soft);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+
+.lg-guardian-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--warn-ink);
+}
+
+.lg-guardian-desc {
+  margin: 0 0 10px;
+  font-size: 12.5px;
+  color: var(--ink-2);
+  line-height: 1.5;
 }
 
 /* ===== 약관/동의 ===== */

@@ -17,13 +17,15 @@ function isEmail(v: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 }
 
+// 검증 실패 표시는 디자인 토큰으로 — 하드코딩 hex(라이트 전용)는 다크모드에서 입력칸을
+// 흰 박스로 튀게 한다. 정상(리셋)은 빈 문자열로 되돌려 .lg-input의 CSS 토큰이 다시 적용되게 한다.
 function markField(el: HTMLElement, bad: boolean) {
-  el.style.borderColor = bad ? '#E23D3D' : '#FFE0D6';
-  el.style.background = bad ? '#FFF5F5' : '#FFFBF6';
+  el.style.borderColor = bad ? 'var(--danger)' : '';
+  el.style.background = bad ? 'var(--danger-soft)' : '';
 }
 
 function markCheck(el: HTMLElement, bad: boolean) {
-  el.style.outline = bad ? '2px solid #E23D3D' : '';
+  el.style.outline = bad ? '2px solid var(--danger)' : '';
   el.style.outlineOffset = bad ? '3px' : '';
   el.style.borderRadius = '4px';
 }
@@ -635,11 +637,11 @@ export default function LoginPage() {
                       />
                     </div>
                     {needsGuardian && (
-                      <div className="lg-guardian lg-mb15" style={{ background: '#FFF6EC', border: '1px solid #FFE1BD', borderRadius: 12, padding: '12px 14px' }}>
-                        <p style={{ margin: '0 0 8px', fontSize: 13, color: '#8A5A1C', fontWeight: 700 }}>
+                      <div className="lg-guardian lg-mb15">
+                        <p className="lg-guardian-title">
                           <i className="ph-fill ph-shield-check" /> 만 {signupAge}세는 보호자(법정대리인) 동의가 필요해요
                         </p>
-                        <p style={{ margin: '0 0 10px', fontSize: 12.5, color: '#9B7A4E', lineHeight: 1.5 }}>
+                        <p className="lg-guardian-desc">
                           보호자 이메일로 인증코드를 보내 동의를 확인해요. 동의 기록은 안전하게 보관됩니다.
                         </p>
                         <label className="lg-label">보호자 이메일</label>
