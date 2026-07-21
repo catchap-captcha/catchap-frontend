@@ -2,6 +2,7 @@ import { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
 import { useRevealOnScroll } from '../../hooks/useRevealOnScroll';
+import ThemeToggle from '../../components/common/ThemeToggle';
 import mascot from '../../assets/characters/catchap-logo.png';
 import './MainPage.css';
 
@@ -33,6 +34,7 @@ export default function MainPage() {
             <a href="#how" className="mn-nav-link">이용 방법</a>
           </nav>
           <div className="mn-nav-right">
+            <ThemeToggle />
             <Link to={PATHS.CONTACT} className="mn-contact-link"><i className="ph-fill ph-chat-circle-text" />문의하기</Link>
             <Link to={PATHS.LOGIN} className="mn-login-link">로그인</Link>
           </div>

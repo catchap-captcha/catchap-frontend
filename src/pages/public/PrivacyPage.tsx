@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
+import ThemeToggle from '../../components/common/ThemeToggle';
 import mascot from '../../assets/characters/catchap-logo.png';
 import './PrivacyPage.css';
 
@@ -14,6 +15,7 @@ export default function PrivacyPage() {
             <span className="pv-brand-name">CatChap</span>
           </Link>
           <span className="pv-nav-legal">LEGAL</span>
+          <ThemeToggle />
           <Link to={PATHS.HOME} className="pv-nav-back">
             <i className="ph-bold ph-arrow-left pv-nav-back-icon" />
             메인으로 돌아가기

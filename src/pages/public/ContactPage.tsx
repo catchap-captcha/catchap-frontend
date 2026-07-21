@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
 import { inquiryApi } from '../../api/misc';
+import ThemeToggle from '../../components/common/ThemeToggle';
 import mascot from '../../assets/characters/catchap-logo.png';
 import './ContactPage.css';
 
@@ -79,6 +80,7 @@ export default function ContactPage() {
             <span className="ct-brand-name">CatChap</span>
           </Link>
           <div className="ct-nav-spacer"></div>
+          <ThemeToggle />
           <Link to={PATHS.LOGIN} className="ct-login-link">로그인</Link>
         </div>
       </div>

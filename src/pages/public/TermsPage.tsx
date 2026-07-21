@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
+import ThemeToggle from '../../components/common/ThemeToggle';
 import mascot from '../../assets/characters/catchap-logo.png';
 import './TermsPage.css';
 
@@ -18,6 +19,7 @@ export default function TermsPage() {
             <i className="ph-bold ph-arrow-left tm-nav-back-icon" />
             메인으로 돌아가기
           </Link>
+          <ThemeToggle />
         </div>
       </div>
 
