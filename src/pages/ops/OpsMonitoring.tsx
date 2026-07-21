@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import OpsNav from '../../components/ops/OpsNav';
 import { monitoringApi, type MonitoringData, type ServerMetric } from '../../api/monitoring';
+import { fmtKrw } from '../../utils/currency';
 import './OpsApproval.css';
 import './OpsMonitoring.css';
 
@@ -65,10 +66,24 @@ function Trend({ h }: { h: NonNullable<ServerMetric['history']> }) {
   );
 }
 
-function ServerCard({ s }: { s: ServerMetric }) {
+function ServerCard({
+  s,
+  onDragStart,
+  onDrop,
+}: {
+  s: ServerMetric;
+  onDragStart?: () => void;
+  onDrop?: () => void;
+}) {
   if (s.no_data) {
     return (
-      <article className="mon-card mon-card--empty">
+      <article
+        className="mon-card mon-card--empty mon-card--drag"
+        draggable
+        onDragStart={onDragStart}
+        onDragOver={(e) => e.preventDefault()}
+        onDrop={onDrop}
+      >
         <div className="mon-card-head">
           <h3 className="mon-card-title">{s.label}</h3>
           <span className="mon-fresh mon-fresh--none">미수집</span>
@@ -86,7 +101,13 @@ function ServerCard({ s }: { s: ServerMetric }) {
   const alerts = s.alerts ?? [];
   const resAlerts = alerts.filter((a) => a.metric !== '수집'); // 자원 초과(오래됨 제외)
   return (
-    <article className={`mon-card${alerts.length > 0 ? ' mon-card--alert' : ''}`}>
+    <article
+      className={`mon-card mon-card--drag${alerts.length > 0 ? ' mon-card--alert' : ''}`}
+      draggable
+      onDragStart={onDragStart}
+      onDragOver={(e) => e.preventDefault()}
+      onDrop={onDrop}
+    >
       <div className="mon-card-head">
         <div>
           <h3 className="mon-card-title">{s.label}</h3>
@@ -146,6 +167,17 @@ export default function OpsMonitoring() {
   const [data, setData] = useState<MonitoringData | null>(null);
   const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading');
   const timer = useRef<number | null>(null);
+  // 서버 카드 순서 — 운영자가 드래그로 정한 순서를 브라우저(localStorage)에 저장(server_key 배열).
+  // 서버가 여러 대일 때 관심 있는 서버를 앞으로 끌어다 두게(사용자 요청).
+  const [order, setOrder] = useState<string[]>(() => {
+    try {
+      const v = JSON.parse(localStorage.getItem('catchap-mon-order') || '[]');
+      return Array.isArray(v) ? v : [];
+    } catch {
+      return [];
+    }
+  });
+  const dragKey = useRef<string | null>(null);
 
   const load = () => {
     monitoringApi
@@ -168,6 +200,31 @@ export default function OpsMonitoring() {
 
   const llm = data?.llm;
   const maxCost = Math.max(1e-9, ...(llm?.providers.map((p) => p.cost_usd) ?? [0]));
+
+  // 저장된 순서로 정렬 — order에 없는(새로 등장한) 서버는 뒤에 원래 순서로 둔다.
+  const orderedServers = useMemo(() => {
+    const servers = data?.servers ?? [];
+    const rank = (k: string) => {
+      const i = order.indexOf(k);
+      return i === -1 ? Number.MAX_SAFE_INTEGER : i;
+    };
+    return [...servers].sort((a, b) => rank(a.server_key) - rank(b.server_key));
+  }, [data?.servers, order]);
+
+  const handleDrop = (targetKey: string) => {
+    const from = dragKey.current;
+    dragKey.current = null;
+    if (!from || from === targetKey) return;
+    const keys = orderedServers.map((s) => s.server_key).filter((k) => k !== from);
+    const ti = keys.indexOf(targetKey);
+    keys.splice(ti < 0 ? keys.length : ti, 0, from); // targetKey '앞'에 삽입
+    setOrder(keys);
+    try {
+      localStorage.setItem('catchap-mon-order', JSON.stringify(keys));
+    } catch {
+      /* localStorage 불가(프라이빗 모드 등) — 저장만 생략, 이번 세션 정렬은 유지 */
+    }
+  };
 
   return (
     <div className="op-root">
@@ -221,11 +278,11 @@ export default function OpsMonitoring() {
                   <h2 className="mon-llm-title">
                     <i className="ph-fill ph-brain" /> LLM API 사용량 · 추정 비용
                   </h2>
-                  <span className="mon-llm-note">누적 토큰 × 공시 단가 (실비용 아닌 운영 참고치)</span>
+                  <span className="mon-llm-note">누적 토큰 × 공시 단가 · 환율 1,380원 기준 (실비용 아닌 운영 참고치)</span>
                 </div>
                 <div className="mon-llm-kpis">
                   <div className="mon-llm-kpi">
-                    <span className="mon-llm-num">${llm.est_cost_usd.toLocaleString('ko-KR')}</span>
+                    <span className="mon-llm-num">{fmtKrw(llm.est_cost_usd)}</span>
                     <span className="mon-llm-lb">추정 누적 비용</span>
                   </div>
                   <div className="mon-llm-kpi">
@@ -249,7 +306,7 @@ export default function OpsMonitoring() {
                           />
                         </div>
                         <span className="mon-prov-cost">
-                          ${p.cost_usd.toLocaleString('ko-KR')} ·{' '}
+                          {fmtKrw(p.cost_usd)} ·{' '}
                           {fmtInt(p.tokens_in + p.tokens_out)} tok
                         </span>
                       </li>
@@ -261,10 +318,19 @@ export default function OpsMonitoring() {
               </section>
             )}
 
-            {/* 서버 자원 */}
+            {/* 서버 자원 — 카드를 드래그해 순서를 바꿀 수 있다(순서는 이 브라우저에 저장됨) */}
+            <p className="mon-drag-hint">
+              <i className="ph-bold ph-dots-six-vertical" /> 카드를 끌어다 순서를 바꿀 수 있어요
+              (이 브라우저에 저장돼요).
+            </p>
             <div className="mon-grid">
-              {data.servers.map((s) => (
-                <ServerCard key={s.server_key} s={s} />
+              {orderedServers.map((s) => (
+                <ServerCard
+                  key={s.server_key}
+                  s={s}
+                  onDragStart={() => (dragKey.current = s.server_key)}
+                  onDrop={() => handleDrop(s.server_key)}
+                />
               ))}
             </div>
           </>

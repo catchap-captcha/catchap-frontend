@@ -6,6 +6,7 @@ import {
   type AiRuntimeModelBody,
 } from '../../api/ops';
 import { errorDetail } from '../../api/lectures';
+import { fmtKrw } from '../../utils/currency';
 
 /** 운영자 AI 모델 선택(#26) — 실제 LLM 호출(문항 생성·자기검증)에 쓰는 모델을 고른다.
  *
@@ -67,7 +68,8 @@ function ModelModal({
             <b>회사</b>가 실제 호출 API를 정해요 — Anthropic(Messages) 또는 OpenAI(Chat
             Completions). <b>모델 ID</b>에는 그 회사의 API 모델 문자열을 넣어 주세요(예:{' '}
             <code>claude-opus-4-8</code>, <code>gpt-5</code>). OpenAI 모델은 아래 <b>STT 키
-            (OpenAI)</b>를 함께 써요. 단가는 공시가($/100만 토큰)를 넣으면 추정 비용에 쓰여요(선택).
+            (OpenAI)</b>를 함께 써요. 단가는 공시가($/100만 토큰)를 넣으면 추정 비용(환율 1,380원 기준
+            원화)에 쓰여요(선택).
           </p>
           <label className="op-form-row">
             <span className="op-form-lb">회사 <b>*</b></span>
@@ -317,7 +319,7 @@ export default function OpsAiRuntimeSection() {
                 <th>사용</th>
                 <th>단가 (in/out, $/1M)</th>
                 <th>누적 토큰 (in/out)</th>
-                <th>추정 비용</th>
+                <th>추정 비용 (₩)</th>
                 <th></th>
               </tr>
             </thead>
@@ -355,7 +357,7 @@ export default function OpsAiRuntimeSection() {
                     <td className="ops-air-num">
                       {num(m.tokens_in)} / {num(m.tokens_out)}
                     </td>
-                    <td className="ops-air-num">{usd(m.est_cost_usd)}</td>
+                    <td className="ops-air-num">{fmtKrw(m.est_cost_usd)}</td>
                     <td className="ops-air-actions">
                       <button className="op-iconbtn" title="수정" onClick={() => setModal({ mode: 'edit', m })} disabled={busy}>
                         <i className="ph-bold ph-pencil-simple" />

@@ -106,6 +106,24 @@
   flex-direction: column;
   gap: 12px;
 }
+/* 드래그 정렬 — 카드를 끌어 순서 변경(순서는 localStorage). 토큰만 참조해 라·다 자동. */
+.mon-card--drag {
+  cursor: grab;
+}
+.mon-card--drag:active {
+  cursor: grabbing;
+}
+.mon-card--drag:hover {
+  border-color: var(--brand-soft-line);
+}
+.mon-drag-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 4px 0 12px;
+  font-size: 12.5px;
+  color: var(--ink-3);
+}
 .mon-card--empty {
   opacity: 0.85;
 }
