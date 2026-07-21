@@ -22,6 +22,8 @@ import './OpsLectures.css';
  * 성공 표기는 서버 확정 후에만 한다(업로드는 완료 후 목록 재조회로 실재 확인 — 가짜 성공 금지). */
 
 const SUBJECTS = ['국어', '영어', '수학', '과학', '사회', '생활'];
+// 코스 브라우징용 대분류(학교식 과목 대체) — 이수·수료 검증형 교육 기준. 자유롭게 조정 가능.
+const COURSE_CATEGORIES = ['법정의무교육', '자격증', '어학', '직무/기업교육', 'IT/개발', '기타'];
 
 /* (제거됨 0717) 시청 확인 간격 프리셋 — 출제 시점이 전부 핀(문항의 position_sec 고정)이
    되면서 무작위 간격 설정 자체가 사라졌다. 확인이 뜨는 시점은 문항 등록에서 지정한다.
@@ -635,7 +637,6 @@ export default function OpsLectures() {
       {modal?.mode === 'courses' && (
         <CoursesModal
           courses={courses}
-          subjects={liveSubjects}
           onClose={() => setModal(null)}
           onChanged={() => {
             loadCourses();
@@ -773,7 +774,7 @@ function LectureFormModal({
     setCourseSaving(true);
     setCourseErr('');
     try {
-      const created = await lectureApi.opsCourseCreate({ title, subject: form.subject });
+      const created = await lectureApi.opsCourseCreate({ title }); // 코스 중심: 과목 안 보냄(서버 기본 '일반')
       onCoursesChanged(); // 부모 코스 목록 갱신 → select에 새 코스가 나타난다
       setForm((f) => ({ ...f, course_id: created.id })); // 새 코스로 자동 배정
       setNewCourse(null);
@@ -1042,7 +1043,7 @@ function LectureFormModal({
                   type="button"
                   className="op-btn op-btn--soft op-lect-newcourse-btn"
                   onClick={() => { setCourseErr(''); setNewCourse(''); }}
-                  title={`'${form.subject}' 과목 새 코스를 여기서 바로 만들어요`}
+                  title="새 코스를 여기서 바로 만들어요(분류는 코스 관리에서 지정)"
                 >
                   <i className="ph-bold ph-plus" /> 새 코스
                 </button>
@@ -1057,7 +1058,7 @@ function LectureFormModal({
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') { e.preventDefault(); void addCourse(); }
                   }}
-                  placeholder={`'${form.subject}' 과목 새 코스 이름 (예: 기초반)`}
+                  placeholder="새 코스 이름 (예: 기초반)"
                 />
                 <button type="button" className="op-btn op-btn--approve" disabled={courseSaving} onClick={() => void addCourse()}>
                   {courseSaving ? '만드는 중…' : '만들기'}
@@ -1147,20 +1148,18 @@ function LectureFormModal({
 interface CourseForm {
   id: string | null; // null = 새 코스
   title: string;
-  subject: string; // 새 코스에서만 고를 수 있다(수정 시 읽기 전용)
+  category: string; // 브라우징용 대분류('' = 미분류). 수정 가능(과목과 달리).
   description: string;
   status: string;
 }
 
 function CoursesModal({
   courses,
-  subjects,
   onClose,
   onChanged,
   say,
 }: {
   courses: OpsCourse[];
-  subjects: string[];
   onClose: () => void;
   onChanged: () => void;
   say: (m: string) => void;
@@ -1191,9 +1190,10 @@ function CoursesModal({
     setErr('');
     try {
       if (form.id) {
-        // 수정 — subject는 보내지 않는다(코스=과목 고정). 제목·소개·공개 상태만.
+        // 수정 — subject는 안 바꾼다(레거시 고정). 제목·분류(category)·소개·공개 상태.
         await lectureApi.opsCourseUpdate(form.id, {
           title: form.title.trim(),
+          category: form.category.trim() || null,
           description: form.description,
           status: form.status,
         });
@@ -1201,7 +1201,7 @@ function CoursesModal({
       } else {
         await lectureApi.opsCourseCreate({
           title: form.title.trim(),
-          subject: form.subject,
+          category: form.category.trim() || null,
           description: form.description || null,
         });
         say('코스를 만들었어요.');
@@ -1264,7 +1264,7 @@ function CoursesModal({
               className="op-btn op-btn--approve"
               onClick={() => {
                 setErr('');
-                setForm({ id: null, title: '', subject: subjects[0] ?? '국어', description: '', status: 'active' });
+                setForm({ id: null, title: '', category: '', description: '', status: 'active' });
               }}
             >
               <i className="ph-bold ph-plus" /> 코스 만들기
@@ -1273,7 +1273,7 @@ function CoursesModal({
           <span className="lu-help">
             {isOps
               ? '운영자는 코스 저작을 하지 않아요 — 조회와 공개/숨김만 가능해요(저작은 강사).'
-              : '코스는 한 과목으로 고정돼요 — 만든 뒤엔 과목을 못 바꿔요(새 코스를 만드세요).'}
+              : '코스가 상품 단위예요. 분류(카테고리)는 카탈로그를 훑는 용도라 선택이에요.'}
           </span>
         </div>
 
@@ -1289,15 +1289,15 @@ function CoursesModal({
                 />
               </label>
               <label className="ox-field">
-                과목
-                {editing && <span className="lu-help">코스=과목 고정 — 수정할 수 없어요</span>}
+                분류 (선택)
+                <span className="lu-help">카탈로그 브라우징용 대분류 — 나중에 바꿀 수 있어요</span>
                 <select
-                  value={form.subject}
-                  disabled={editing}
-                  onChange={(e) => setForm({ ...form, subject: e.target.value })}
+                  value={form.category}
+                  onChange={(e) => setForm({ ...form, category: e.target.value })}
                 >
-                  {subjects.map((s) => (
-                    <option key={s} value={s}>{s}</option>
+                  <option value="">미분류</option>
+                  {COURSE_CATEGORIES.map((c) => (
+                    <option key={c} value={c}>{c}</option>
                   ))}
                 </select>
               </label>
@@ -1341,7 +1341,7 @@ function CoursesModal({
         <div className="op-logcard">
           <div className="op-loghead op-course-grid">
             <span>코스</span>
-            <span>과목</span>
+            <span>분류</span>
             <span>강의</span>
             <span>상태</span>
             <span className="op-col-right">관리</span>
@@ -1357,7 +1357,7 @@ function CoursesModal({
                 <b>{c.title}</b>
                 {c.description ? <small className="op-aimodel-desc">{c.description}</small> : null}
               </span>
-              <span>{c.subject}</span>
+              <span>{c.category ?? '—'}</span>
               <span>{c.lecture_count}개</span>
               <span>
                 <span
@@ -1392,7 +1392,7 @@ function CoursesModal({
                         setForm({
                           id: c.id,
                           title: c.title,
-                          subject: c.subject,
+                          category: c.category ?? '',
                           description: c.description ?? '',
                           status: c.status,
                         });

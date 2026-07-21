@@ -128,7 +128,8 @@ export interface OpsLecture {
 export interface OpsCourse {
   id: string;
   title: string;
-  subject: string; // 고정 — 담기는 모든 강의가 이 과목
+  subject: string; // (레거시) 정합용 — 코스 중심 전환 후 '일반' 기본
+  category: string | null; // 브라우징용 대분류(과목 대체)
   description: string | null;
   order_no: number;
   status: string; // active | hidden
@@ -475,13 +476,20 @@ export const lectureApi = {
     client.get<{ subjects: string[] }>('/ops/subjects').then((r) => r.data.subjects),
 
   /** 코스 생성 — subject는 여기서 고정된다(생성 후 못 바꿈). 미지원 과목은 400. */
-  opsCourseCreate: (body: { title: string; subject: string; description?: string | null }) =>
+  /** 코스 생성 — 코스 중심 전환: subject는 안 보냄(서버 기본 '일반'). category로 분류(선택). */
+  opsCourseCreate: (body: { title: string; category?: string | null; description?: string | null }) =>
     client.post<OpsCourse>('/ops/courses', body).then((r) => r.data),
 
-  /** 코스 수정 — subject는 스키마에 없다(코스=과목 고정). 미전송 필드는 변경 없음. */
+  /** 코스 수정 — subject는 못 바꾼다(레거시 고정). category(분류)·제목·소개·순서·상태만. */
   opsCourseUpdate: (
     courseId: string,
-    body: Partial<{ title: string; description: string | null; order_no: number; status: string }>,
+    body: Partial<{
+      title: string;
+      category: string | null;
+      description: string | null;
+      order_no: number;
+      status: string;
+    }>,
   ) => client.put<OpsCourse>(`/ops/courses/${courseId}`, body).then((r) => r.data),
 
   /** 코스 소프트 삭제 — 소속 강의는 미분류(course_id=null)로 풀려날 뿐 삭제되지 않는다.
