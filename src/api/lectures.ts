@@ -434,9 +434,13 @@ export const lectureApi = {
   opsList: () => client.get<OpsLecture[]>('/ops/lectures').then((r) => r.data),
 
   /** 강의 업로드(multipart) — onProgress로 업로드 진행률을 노출한다 */
-  opsCreate: (form: FormData, onProgress?: (e: AxiosProgressEvent) => void) =>
+  opsCreate: (
+    form: FormData,
+    onProgress?: (e: AxiosProgressEvent) => void,
+    signal?: AbortSignal, // 업로드 중 취소(abort)용 — 붙이면 사용자가 진행 중 업로드를 멈출 수 있다
+  ) =>
     client
-      .post<OpsLecture>('/ops/lectures', form, { onUploadProgress: onProgress })
+      .post<OpsLecture>('/ops/lectures', form, { onUploadProgress: onProgress, signal })
       .then((r) => r.data),
 
   opsUpdate: (

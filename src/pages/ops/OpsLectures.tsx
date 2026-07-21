@@ -596,6 +596,7 @@ export default function OpsLectures() {
           modal={modal}
           courses={courses}
           onClose={() => setModal(null)}
+          onCoursesChanged={loadCourses} // 업로드 창에서 코스를 바로 만들면 목록에 반영
           onSaved={(msg) => {
             setModal(null);
             say(msg);
@@ -707,11 +708,13 @@ function LectureFormModal({
   courses,
   onClose,
   onSaved,
+  onCoursesChanged,
 }: {
   modal: { mode: 'create' } | { mode: 'edit'; lec: OpsLecture };
   courses: OpsCourse[];
   onClose: () => void;
   onSaved: (msg: string) => void;
+  onCoursesChanged: () => void;
 }) {
   const editing = modal.mode === 'edit' ? modal.lec : null;
   const [form, setForm] = useState<LectureForm>(
@@ -733,6 +736,29 @@ function LectureFormModal({
   const [progress, setProgress] = useState<number | null>(null);
   const [autoDur, setAutoDur] = useState<'idle' | 'reading' | 'ok' | 'fail'>('idle');
   const [dragOver, setDragOver] = useState(false);
+  const abortRef = useRef<AbortController | null>(null); // 업로드 중 취소용
+  const [newCourse, setNewCourse] = useState<string | null>(null); // null=닫힘, ''~=새 코스 이름 입력 중
+  const [courseErr, setCourseErr] = useState('');
+  const [courseSaving, setCourseSaving] = useState(false);
+
+  // 업로드 창에서 새 코스를 바로 만든다(현재 선택한 과목으로). 만든 뒤 그 코스로 자동 배정 —
+  // '코스 관리'로 나갔다 오지 않아도 되게(발견성 개선). 코스=과목 고정이라 form.subject를 쓴다.
+  const addCourse = async () => {
+    const title = (newCourse || '').trim();
+    if (!title) return setCourseErr('코스 이름을 입력하세요.');
+    setCourseSaving(true);
+    setCourseErr('');
+    try {
+      const created = await lectureApi.opsCourseCreate({ title, subject: form.subject });
+      onCoursesChanged(); // 부모 코스 목록 갱신 → select에 새 코스가 나타난다
+      setForm((f) => ({ ...f, course_id: created.id })); // 새 코스로 자동 배정
+      setNewCourse(null);
+    } catch (e) {
+      setCourseErr(errorDetail(e, '코스를 만들지 못했어요.'));
+    } finally {
+      setCourseSaving(false);
+    }
+  };
   const set = (k: keyof LectureForm) => (v: string) => setForm((f) => ({ ...f, [k]: v }));
 
   /* 이 과목에 담을 수 있는 코스만 노출(코스=과목 고정). 편집 중인 강의가 이미 담긴 코스는
@@ -826,9 +852,14 @@ function LectureFormModal({
         if (form.course_id) fd.append('course_id', form.course_id); // 미지정이면 미분류(서버 기본)
         fd.append('file', file as File);
         setProgress(0);
-        const created = await lectureApi.opsCreate(fd, (e) => {
-          if (e.total) setProgress(Math.round((e.loaded / e.total) * 100));
-        });
+        abortRef.current = new AbortController();
+        const created = await lectureApi.opsCreate(
+          fd,
+          (e) => {
+            if (e.total) setProgress(Math.round((e.loaded / e.total) * 100));
+          },
+          abortRef.current.signal,
+        );
         // 성공 표기는 목록 재조회로 실재 확인 후에만 — 업로드 응답만 믿지 않는다.
         // 재조회 자체가 실패한 경우는 '업로드 실패'로 오표기하지 않는다(재업로드 유도 →
         // 중복 강의 생성 위험) — 완료됐을 수 있음을 정직하게 안내한다.
@@ -848,6 +879,12 @@ function LectureFormModal({
     } catch (e) {
       // '실패 이유가 안 보인다'를 없앤다 — 응답이 없는 끊김/타임아웃도 원인을 짚어 안내한다.
       const err = e as { response?: unknown; code?: string; message?: string };
+      if (err?.code === 'ERR_CANCELED') {
+        // 사용자가 업로드를 직접 취소함 — 실패가 아니므로 조용히 되돌린다.
+        setErr('');
+        setProgress(null);
+        return;
+      }
       let msg: string;
       if (err?.response) {
         msg = errorDetail(e, '저장에 실패했어요.'); // 서버가 사유 제공(413 용량·400 형식 등)
@@ -969,18 +1006,50 @@ function LectureFormModal({
             코스
             <span className="lu-help">
               {subjectCourses.length === 0
-                ? `'${form.subject}' 과목 코스가 없어요 — 미분류로 두거나 '코스 관리'에서 만드세요`
+                ? `'${form.subject}' 과목 코스가 없어요 — 미분류로 두거나 아래에서 새로 만드세요`
                 : '같은 과목 코스에만 담을 수 있어요'}
             </span>
-            <select value={form.course_id} onChange={(e) => set('course_id')(e.target.value)}>
-              <option value="">미분류(코스 없음)</option>
-              {subjectCourses.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.title}
-                  {c.status === 'hidden' ? ' (숨김)' : ''}
-                </option>
-              ))}
-            </select>
+            <div className="op-lect-courserow">
+              <select value={form.course_id} onChange={(e) => set('course_id')(e.target.value)}>
+                <option value="">미분류(코스 없음)</option>
+                {subjectCourses.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.title}
+                    {c.status === 'hidden' ? ' (숨김)' : ''}
+                  </option>
+                ))}
+              </select>
+              {newCourse === null && (
+                <button
+                  type="button"
+                  className="op-btn op-btn--soft op-lect-newcourse-btn"
+                  onClick={() => { setCourseErr(''); setNewCourse(''); }}
+                  title={`'${form.subject}' 과목 새 코스를 여기서 바로 만들어요`}
+                >
+                  <i className="ph-bold ph-plus" /> 새 코스
+                </button>
+              )}
+            </div>
+            {newCourse !== null && (
+              <div className="op-lect-newcourse-form">
+                <input
+                  value={newCourse}
+                  autoFocus
+                  onChange={(e) => setNewCourse(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') { e.preventDefault(); void addCourse(); }
+                  }}
+                  placeholder={`'${form.subject}' 과목 새 코스 이름 (예: 기초반)`}
+                />
+                <button type="button" className="op-btn op-btn--approve" disabled={courseSaving} onClick={() => void addCourse()}>
+                  {courseSaving ? '만드는 중…' : '만들기'}
+                </button>
+                <button type="button" className="op-btn op-btn--reject" disabled={courseSaving} onClick={() => setNewCourse(null)}>
+                  취소
+                </button>
+              </div>
+            )}
+            {courseErr && <div className="op-form-err">{courseErr}</div>}
           </label>
           <label className="ox-field">
             강의 순서
@@ -1018,9 +1087,20 @@ function LectureFormModal({
             <div className="op-lect-progress-track">
               <div className="op-lect-progress-fill" style={{ width: `${progress}%` }} />
             </div>
-            <span>
-              {progress < 100 ? `업로드 중… ${progress}%` : '서버에서 저장 확인 중…'}
-            </span>
+            <div className="op-lect-progress-row">
+              <span>
+                {progress < 100 ? `업로드 중… ${progress}%` : '서버에서 저장 확인 중…'}
+              </span>
+              {progress < 100 && (
+                <button
+                  type="button"
+                  className="op-btn op-btn--reject op-lect-abort"
+                  onClick={() => abortRef.current?.abort()}
+                >
+                  <i className="ph-bold ph-x" /> 업로드 취소
+                </button>
+              )}
+            </div>
           </div>
         )}
         {err && (
