@@ -252,11 +252,27 @@ export default function OpsAiRuntimeSection() {
         </button>
       </div>
       <p className="ops-set-desc">
-        문항 <b>생성</b>과 자기 <b>검증</b>에 쓰는 모델을 각각 골라요. <b>Anthropic(Claude)</b>과{' '}
-        <b>OpenAI(GPT)</b> 둘 다 등록할 수 있고, 회사에 따라 실제 호출 API가 정해져요. 예를 들어
-        생성은 Claude, 검증은 GPT로 두면 서로 다른 회사가 교차로 검증해 더 독립적이에요. 슬롯을
-        비워 두면 안전망 모델(<code>{rt.fallback_model}</code>)로 동작해요.
+        <b>① 아래에서 쓸 모델을 추가</b>하고 <b>② 생성·검증 역할에 배정</b>하면 돼요. 아직 아무것도
+        안 골랐으면 기본 모델(<code>{rt.fallback_model}</code>)로 자동 동작해요.
       </p>
+      <details className="ops-air-help">
+        <summary>
+          <i className="ph-bold ph-info" /> 더 알아보기 — 두 역할·회사·교차 검증
+        </summary>
+        <ul>
+          <li>
+            <b>생성</b>은 문항을 만드는 AI, <b>검증</b>은 그 문항을 봇처럼 풀어보는 AI예요. 생성은
+            Claude, 검증은 GPT처럼 <b>다른 회사</b>를 쓰면 교차로 검증돼 더 독립적이에요.
+          </li>
+          <li>
+            <b>Anthropic(Claude)</b>은 Anthropic 키로, <b>OpenAI(GPT)</b>는 OpenAI 키로 실제
+            호출돼요 — 회사에 따라 API가 갈려요(GPT를 쓰려면 OpenAI 키가 필요해요).
+          </li>
+          <li>
+            역할을 <b>비워 두면</b> 기본 모델(<code>{rt.fallback_model}</code>)이 자동으로 쓰여요.
+          </li>
+        </ul>
+      </details>
 
       {banner && (
         <div className={`ops-set-banner ${banner.ok ? 'ops-set-banner--ok' : 'op-form-err'}`}>
@@ -265,6 +281,10 @@ export default function OpsAiRuntimeSection() {
       )}
 
       {/* 2슬롯 배정 */}
+      <div className="ops-air-steplabel">
+        <span className="ops-air-stepno">②</span> 각 역할에 모델 배정
+        <span className="ops-air-stephint">— 아래 ①에서 등록한 모델을 고르세요</span>
+      </div>
       <div className="ops-air-slots">
         {(['generate', 'verify'] as const).map((slot) => (
           <div key={slot} className="ops-air-slot">
@@ -283,7 +303,7 @@ export default function OpsAiRuntimeSection() {
               onChange={(e) => setSlot(slot, e.target.value)}
               disabled={busy}
             >
-              <option value="">— 미설정 (안전망 모델 사용) —</option>
+              <option value="">기본 모델 사용 ({rt.fallback_model})</option>
               {slotOptions(rt.slots[slot]).map((m) => (
                 <option key={m.id} value={m.id}>
                   {m.name} · {m.model_id}
@@ -299,17 +319,22 @@ export default function OpsAiRuntimeSection() {
       <label className={`ops-air-swap${busy ? ' ops-air-swap--busy' : ''}`}>
         <input type="checkbox" checked={rt.auto_swap} onChange={toggleSwap} disabled={busy} />
         <span>
-          <b>자동 스왑</b> — 슬롯 모델이 꺼졌거나 호출에 실패하면 다른 켜진 모델로 자동
-          대체해요(파이프라인이 통째로 멈추지 않게). 끄면 지정한 슬롯 모델만 써요.
+          <b>자동 스왑</b> <span className="ops-air-reco">권장</span> — 지정한 모델이 꺼지거나
+          실패하면 다른 켜진 모델로 자동 대체해 문항 생성이 멈추지 않아요. 끄면 지정한 모델만 써요.
         </span>
       </label>
 
       {/* 등록 모델 표 */}
+      <div className="ops-air-steplabel">
+        <span className="ops-air-stepno">①</span> 사용할 모델 등록
+        <span className="ops-air-stephint">— 위 ‘모델 추가’ 버튼으로 추가하세요</span>
+      </div>
       <div className="ops-air-tablewrap">
         {models.length === 0 ? (
           <p className="ops-air-empty">
-            아직 등록된 모델이 없어요. <b>모델 추가</b>로 Anthropic 모델을 등록하면 슬롯에 지정할
-            수 있어요. (등록 전에는 안전망 모델 <code>{rt.fallback_model}</code>이 쓰여요.)
+            <i className="ph-bold ph-arrow-up" /> 아직 등록된 모델이 없어요. 위 <b>모델 추가</b>{' '}
+            버튼으로 쓸 모델을 먼저 등록하세요. 등록 전에는 기본 모델(
+            <code>{rt.fallback_model}</code>)이 자동으로 쓰여요.
           </p>
         ) : (
           <table className="ops-air-table">

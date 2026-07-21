@@ -133,7 +133,7 @@
   width: 100%; border: 1px solid var(--line); border-radius: 9px; padding: 9px 10px;
   font-size: 13px; font-weight: 600; color: var(--ink); background: var(--surface); cursor: pointer;
 }
-.ops-air-select:focus { outline: 2px solid #ffd0c8; border-color: #ff8a7d; }
+.ops-air-select:focus { outline: 2px solid var(--brand-soft-line); border-color: var(--brand); }
 
 .ops-air-swap {
   display: flex; gap: 9px; align-items: flex-start;
@@ -158,17 +158,17 @@
 .ops-air-badge {
   font-size: 10.5px; font-weight: 800; border-radius: 5px; padding: 1px 6px; color: var(--on-brand);
 }
-.ops-air-badge--gen { background: #ff7a5c; }
-.ops-air-badge--ver { background: #5aa9e6; }
+.ops-air-badge--gen { background: var(--brand); }
+.ops-air-badge--ver { background: var(--info); }
 
 .ops-air-toggle {
   display: inline-flex; align-items: center; gap: 6px;
   border: 1px solid var(--line); background: var(--surface); color: var(--ink-3);
   border-radius: 999px; padding: 4px 11px 4px 8px; font-size: 12px; font-weight: 800; cursor: pointer;
 }
-.ops-air-toggle--on { background: #e5f6ee; border-color: var(--line); color: var(--ok-ink); }
+.ops-air-toggle--on { background: var(--ok-soft); border-color: var(--line); color: var(--ok-ink); }
 .ops-air-toggle-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--brand-soft); }
-.ops-air-toggle--on .ops-air-toggle-dot { background: #17b877; }
+.ops-air-toggle--on .ops-air-toggle-dot { background: var(--ok); }
 .ops-air-actions { white-space: nowrap; text-align: right; }
 
 .ops-air-empty, .ops-air-warn { font-size: 12.5px; color: var(--brand-ink); font-weight: 600; line-height: 1.6; padding: 6px 2px; }
@@ -178,3 +178,86 @@
 /* 추가/수정 모달의 단가 2열 (op-form 위에 얹음) */
 .op-form-row--split { display: flex; gap: 10px; }
 .op-form-half { flex: 1; display: flex; flex-direction: column; gap: 5px; }
+
+/* ── 실무 정리: 흐름 단계(①모델 등록 → ②역할 배정) ── */
+.ops-air-steplabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 22px 0 10px;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--ink);
+}
+.ops-air-stepno {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--brand);
+  color: var(--on-brand);
+  font-size: 12.5px;
+  font-weight: 800;
+  line-height: 1;
+}
+.ops-air-stephint {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-3);
+}
+/* '더 알아보기' 아코디언 — 긴 설명을 접어 인지 부하를 낮춘다 */
+.ops-air-help {
+  margin: -4px 0 16px;
+}
+.ops-air-help > summary {
+  cursor: pointer;
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--brand-ink);
+  padding: 4px 0;
+  user-select: none;
+}
+.ops-air-help > summary::-webkit-details-marker {
+  display: none;
+}
+.ops-air-help > summary:hover {
+  color: var(--brand-strong);
+}
+.ops-air-help[open] > summary {
+  margin-bottom: 6px;
+}
+.ops-air-help ul {
+  margin: 0;
+  padding: 12px 16px 12px 30px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  font-size: 12.5px;
+  color: var(--ink-2);
+  line-height: 1.7;
+}
+.ops-air-help li {
+  margin: 3px 0;
+}
+.ops-air-help b {
+  color: var(--ink);
+}
+/* '권장' 배지(자동 스왑) */
+.ops-air-reco {
+  display: inline-block;
+  margin-left: 4px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--ok-soft);
+  color: var(--ok-ink);
+  font-size: 10.5px;
+  font-weight: 800;
+  vertical-align: middle;
+}
