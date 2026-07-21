@@ -116,7 +116,8 @@ export default function LoginPage() {
   // 학생 이메일 가입 전환(2026-07-16): 새 계정은 이메일이 아이디 — 기존 아이디도 계속 유효
   const idLabel = '아이디';
   const idPlaceholder = '이메일 또는 아이디를 입력해 주세요';
-  const notice = '회원가입 후 바로 이용할 수 있어요. 만 14세 미만은 가입 시 보호자 동의가 필요해요.';
+  const notice =
+    '강사·기관 담당자 계정도 여기서 로그인하면 각자 콘솔로 이동합니다. 만 14세 미만은 가입 시 보호자 동의가 필요합니다.';
 
   const nameLabel = '이름';
   const namePlaceholder = '이름을 입력해 주세요';
@@ -469,8 +470,6 @@ export default function LoginPage() {
         <div className="lg-left-deco">
           <div className="lg-left-c1" />
           <div className="lg-left-c2" />
-          <div className="lg-left-c3" />
-          <div className="lg-left-c4" />
         </div>
         <div className="lg-left-pin">
           <Link to={PATHS.HOME} className="lg-brand" title="메인으로">
@@ -480,33 +479,27 @@ export default function LoginPage() {
             <span className="lg-brand-name">CatChap</span>
           </Link>
           <div className="lg-hero">
-            <div className="lg-hero-mascot-row">
-              <div className="lg-hero-mascot">
-                <img src={mascot} alt="마스코트" />
-              </div>
-            </div>
             <h1 className="lg-hero-title">
               끝까지 본 학습을
               <br />
-              증명해요
+              증명합니다
             </h1>
             <p className="lg-hero-sub">
-              시청 검증형 온라인 강의 — 정말 보고 이해했는지 확인해요.
-              <br />
-              검증된 기술로 학습자의 배움과 정보를 안전하게 지킵니다.
+              시청 검증형 온라인 강의 — 정말 보고 이해했는지 확인합니다. 검증된 기술로 학습자의
+              배움과 정보를 안전하게 지킵니다.
             </p>
           </div>
           <div className="lg-badges">
             <span className="lg-badge">
-              <i className="ph-fill ph-shield-check" />
-              안전한 데이터 보호
+              <i className="ph ph-shield-check" />
+              데이터 보호
             </span>
             <span className="lg-badge">
-              <i className="ph-fill ph-puzzle-piece" />
-              놀이형 학습
+              <i className="ph ph-seal-question" />
+              시청 검증
             </span>
             <span className="lg-badge">
-              <i className="ph-fill ph-chart-line-up" />
+              <i className="ph ph-chart-line-up" />
               행동 데이터 분석
             </span>
           </div>
@@ -543,7 +536,7 @@ export default function LoginPage() {
 
             <label className="lg-label">{idLabel}</label>
             <div className="lg-field lg-mb16">
-              <i className="ph-fill ph-user-circle lg-field-icon" />
+              <i className="ph ph-user-circle lg-field-icon" />
               <input
                 type="text"
                 ref={loginIdRef}
@@ -556,7 +549,7 @@ export default function LoginPage() {
 
             <label className="lg-label">비밀번호</label>
             <div className="lg-field lg-mb12">
-              <i className="ph-fill ph-lock-key lg-field-icon" />
+              <i className="ph ph-lock-key lg-field-icon" />
               <PasswordInput
                 ref={loginPwRef}
                 placeholder="비밀번호를 입력해 주세요"
@@ -584,7 +577,7 @@ export default function LoginPage() {
             )}
 
             <button type="button" onClick={submitLogin} className="lg-primary">
-              <i className="ph-fill ph-sign-in lg-primary-icon20" />
+              <i className="ph-bold ph-sign-in" />
               로그인
             </button>
 
@@ -594,19 +587,15 @@ export default function LoginPage() {
               <div className="lg-divider-line" />
             </div>
             <button type="button" onClick={goSignup} className="lg-secondary">
-              <i className="ph-fill ph-user-plus" />
+              <i className="ph ph-user-plus" />
               회원가입
             </button>
 
+            {/* 통합 로그인 안내 — 강사·기관 담당자도 이 폼에서 로그인(입력 계정으로 자동 판별·역할별 콘솔로 이동) */}
             <div className="lg-notice">
-              <i className="ph-fill ph-info" />
+              <i className="ph ph-info" />
               <p>{notice}</p>
             </div>
-            {/* 통합 로그인 — 강사·운영자도 같은 폼에서 로그인(입력 계정으로 자동 판별·역할별 콘솔로 이동) */}
-            <p className="lg-roles-hint">
-              <i className="ph-fill ph-chalkboard-teacher" /> 강사·운영자 계정도 여기서 로그인하면
-              각자 콘솔로 이동해요.
-            </p>
           </div>
         )}
 
