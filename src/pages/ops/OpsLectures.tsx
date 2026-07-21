@@ -755,6 +755,22 @@ function LectureFormModal({
      판독 실패 시 입력란은 그대로 열어둬 수동 입력으로 진행할 수 있게 한다
      (ffprobe 등 서버 의존성 없이 처리 — 서버는 양수 검증만). */
   const pickFile = (f: File | null) => {
+    // 서버로 보내기 전에 여기서 먼저 거른다 — 500MB 초과·영상 아님을 즉시 명확히 알려,
+    // 업로드 도중 413/400으로 애매하게 실패하는 걸 막는다(MAX_UPLOAD_BYTES=500_000_000과 맞춤).
+    if (f) {
+      const MAX_UPLOAD_BYTES = 500_000_000; // 백엔드 한도와 동일
+      if (f.size > MAX_UPLOAD_BYTES) {
+        setErr(`영상이 너무 커요(${humanSize(f.size)}) — 최대 500MB까지 올릴 수 있어요. 더 짧게 자르거나 화질(해상도·비트레이트)을 낮춰 다시 올려주세요.`);
+        return;
+      }
+      const okExt = /\.(mp4|webm)$/i.test(f.name);
+      const okType = !f.type || f.type.startsWith('video/') || f.type === 'application/octet-stream';
+      if (!okExt || !okType) {
+        setErr(`이 파일은 올릴 수 없어요(${f.name}). mp4 또는 webm 영상만 업로드할 수 있어요.`);
+        return;
+      }
+      setErr('');
+    }
     setFile(f);
     if (!f) return setAutoDur('idle');
     setAutoDur('reading');
@@ -830,7 +846,25 @@ function LectureFormModal({
         onSaved(`'${created.title}' 업로드 완료 — 목록에서 확인했어요. 이제 확인 문항을 등록하세요.`);
       }
     } catch (e) {
-      setErr(e instanceof Error && !('response' in e) ? e.message : errorDetail(e, '저장에 실패했어요.'));
+      // '실패 이유가 안 보인다'를 없앤다 — 응답이 없는 끊김/타임아웃도 원인을 짚어 안내한다.
+      const err = e as { response?: unknown; code?: string; message?: string };
+      let msg: string;
+      if (err?.response) {
+        msg = errorDetail(e, '저장에 실패했어요.'); // 서버가 사유 제공(413 용량·400 형식 등)
+      } else if (err?.code === 'ERR_NETWORK' || err?.message === 'Network Error') {
+        // 응답 없이 끊김 — 업로드 중이었다면 대개 용량 초과나 네트워크 문제
+        msg =
+          progress != null
+            ? '업로드가 중간에 끊겼어요 — 영상이 너무 크거나(최대 500MB) 네트워크가 불안정할 수 있어요. 파일 크기와 연결을 확인하고 다시 시도하세요.'
+            : '서버에 연결하지 못했어요 — 네트워크를 확인하고 다시 시도하세요.';
+      } else if (err?.code === 'ECONNABORTED') {
+        msg = '업로드 시간이 초과됐어요 — 파일이 크면 오래 걸릴 수 있어요. 연결이 빠른 곳에서 다시 시도하세요.';
+      } else if (e instanceof Error && !('response' in e)) {
+        msg = err.message || '저장에 실패했어요.'; // 커스텀 throw(정보성 메시지) 보존
+      } else {
+        msg = errorDetail(e, '저장에 실패했어요.');
+      }
+      setErr(msg);
       setProgress(null);
     } finally {
       setSaving(false);
