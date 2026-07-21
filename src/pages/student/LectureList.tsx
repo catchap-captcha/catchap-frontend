@@ -144,6 +144,25 @@ export default function LectureList() {
 
   const goWatch = (id: string) => navigate(PATHS.STUDENT_LECTURE, { state: { id } });
 
+  // 수강신청 상태를 바꾸는 중인 코스 id — 연타·중복요청을 막고 버튼에 진행 표시를 준다.
+  const [enrollBusy, setEnrollBusy] = useState<Record<string, boolean>>({});
+
+  /** 무료 자유 신청·취소(Coursera 무료 모델). 서버가 upsert/withdrawn을 처리하고,
+   *  화면은 성공 시에만 낙관적으로 enrolled 플래그를 뒤집는다(실패는 삼키지 않고 원상 유지). */
+  const toggleEnroll = async (courseId: string, next: boolean) => {
+    if (enrollBusy[courseId]) return;
+    setEnrollBusy((m) => ({ ...m, [courseId]: true }));
+    try {
+      if (next) await lectureApi.enrollCourse(courseId);
+      else await lectureApi.unenrollCourse(courseId);
+      setCourses((cs) => cs.map((c) => (c.id === courseId ? { ...c, enrolled: next } : c)));
+    } catch {
+      // 실패 시 플래그를 건드리지 않는다 — 가짜 성공을 만들지 않는다.
+    } finally {
+      setEnrollBusy((m) => ({ ...m, [courseId]: false }));
+    }
+  };
+
   /** 강의 카드 — 코스 그룹 안에서 반복 렌더한다(과목 테마 s, 그룹 내 순번 i). */
   const renderCard = (l: LectureItem, i: number, s: (typeof LECTURE_SUBJECTS)[string], sub: string) => {
     const st = watchState(l);
@@ -353,6 +372,28 @@ export default function LectureList() {
                                 <h3 className="ll-coursetitle ll-coursetitle--none">기타 강의</h3>
                               )}
                               <span className="ll-coursecount">{g.lectures.length}강</span>
+                              {/* 수강신청/취소 — 무료 자유 신청(진행 이력은 취소해도 보존).
+                                  실제 코스(g.course)가 있는 그룹에만 노출한다(미분류 '기타 강의' 제외). */}
+                              {g.course &&
+                                (g.course.enrolled ? (
+                                  <button
+                                    className="ll-enroll ll-enroll--on"
+                                    disabled={!!enrollBusy[g.course.id]}
+                                    onClick={() => toggleEnroll(g.course!.id, false)}
+                                    title="수강 취소(진행 이력은 보존됩니다)"
+                                  >
+                                    <i className="ph-fill ph-check-circle" /> 수강 중
+                                  </button>
+                                ) : (
+                                  <button
+                                    className="ll-enroll"
+                                    style={{ background: s.color }}
+                                    disabled={!!enrollBusy[g.course.id]}
+                                    onClick={() => toggleEnroll(g.course!.id, true)}
+                                  >
+                                    <i className="ph-bold ph-plus-circle" /> 수강신청
+                                  </button>
+                                ))}
                               {/* 코스 Q(3단계-b) — 완주로 열린 문항이 있으면 연습 버튼, 문항은
                                   있는데 전부 잠겨 있으면 '완주하면 열려요'(배움→연습 순서 안내).
                                   은행 배치 문항이 0개면 아무것도 안 보인다(빈 약속 금지). */}

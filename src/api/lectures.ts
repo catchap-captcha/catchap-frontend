@@ -42,6 +42,8 @@ export interface StudentCourse {
   order_no: number;
   instructor_name: string | null;
   lecture_count: number;
+  /** 수강신청 여부 — true면 '내 코스'(수강 중, '수강 취소' 노출), false면 '수강신청' 버튼 */
+  enrolled?: boolean;
   /** 코스 Q(3단계-b) — 이 코스 강의에서 은행에 배치된 문항 수(총). 0이면 배지 숨김 */
   bank_question_count?: number;
   /** 그중 이 학생이 완주한 강의의 문항 수 — >0이면 '이 코스 문제 풀기' 버튼,
@@ -405,6 +407,16 @@ export const lectureApi = {
    *  강사별 코스 → 강의로 묶을 때 상위 그룹 메타로 쓴다(활성 강의 0개 코스는 서버가 제외). */
   courses: (subject?: string) =>
     client.get<StudentCourse[]>('/courses', { params: { subject } }).then((r) => r.data),
+  /** 코스 수강신청 — 무료 자유 신청. 재신청이면 이전 진도 이어감. 활성 코스만. */
+  enrollCourse: (courseId: string) =>
+    client
+      .post<{ ok: boolean; enrolled: boolean }>(`/courses/${courseId}/enroll`)
+      .then((r) => r.data),
+  /** 수강 취소 — 내 코스에서 빠짐(진행 이력은 보존, 재신청 시 이어감). */
+  unenrollCourse: (courseId: string) =>
+    client
+      .delete<{ ok: boolean; enrolled: boolean }>(`/courses/${courseId}/enroll`)
+      .then((r) => r.data),
 
   detail: (lectureId: string) =>
     client.get<LectureDetail>(`/lectures/${lectureId}`).then((r) => r.data),
