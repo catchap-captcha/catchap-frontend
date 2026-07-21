@@ -62,11 +62,18 @@ interface LectureGroup {
 /** rows(백엔드 목차순: 과목·order_no·created_at)를 과목별로 코스 그룹 + 미분류 그룹으로 나눈다.
  *  courses는 (과목·order_no)순이라 그 순서대로 코스 섹션이 놓인다. 강의 0개 코스는 목록에선
  *  숨긴다(코스 관리에서 보임) — 여기선 순서를 바꿀 게 없다. */
-function buildLectureGroups(rows: OpsLecture[], courses: OpsCourse[]): LectureGroup[] {
+function buildLectureGroups(
+  rows: OpsLecture[],
+  courses: OpsCourse[],
+  subjects: string[],
+): LectureGroup[] {
   const groups: LectureGroup[] = [];
-  const subjectsInUse = SUBJECTS.filter(
-    (s) => rows.some((l) => l.subject === s) || courses.some((c) => c.subject === s),
-  );
+  // 서버 과목(subjects) 순서를 따르되, 데이터에만 있는 과목도 빠뜨리지 않는다(과목 재편 지연 대비).
+  const dataSubjects = [...new Set([...rows.map((l) => l.subject), ...courses.map((c) => c.subject)])];
+  const subjectsInUse = [
+    ...subjects.filter((s) => dataSubjects.includes(s)),
+    ...dataSubjects.filter((s) => !subjects.includes(s)),
+  ];
   for (const subj of subjectsInUse) {
     for (const c of courses.filter((c) => c.subject === subj)) {
       const lects = rows.filter((l) => l.course_id === c.id);
@@ -142,6 +149,7 @@ export default function OpsLectures() {
   const isOps = me?.role === 'ops';
   const [rows, setRows] = useState<OpsLecture[]>([]);
   const [courses, setCourses] = useState<OpsCourse[]>([]);
+  const [liveSubjects, setLiveSubjects] = useState<string[]>(SUBJECTS); // 폴백 → 마운트 시 서버 과목으로 교체
   const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading');
   const [modal, setModal] = useState<Modal>(null);
   const [toast, setToast] = useState('');
@@ -182,9 +190,21 @@ export default function OpsLectures() {
       .then((d) => setCourses(Array.isArray(d) ? d : []))
       .catch(() => setCourses([]));
   };
+  // 과목 목록 — 서버(런타임 은행)에서. 하드코딩(옛 6과목) 대신 동적. 실패하면 폴백 유지.
+  const loadSubjects = () => {
+    lectureApi
+      .opsSubjects()
+      .then((d) => {
+        if (Array.isArray(d) && d.length) setLiveSubjects(d);
+      })
+      .catch(() => {
+        /* 폴백(SUBJECTS) 유지 */
+      });
+  };
   useEffect(() => {
     load();
     loadCourses();
+    loadSubjects();
   }, []);
 
   /* 드래그 중인 강의(id·소속 그룹) — 같은 그룹 안에서만 드롭을 허용한다 */
@@ -198,7 +218,7 @@ export default function OpsLectures() {
   const [courseFilter, setCourseFilter] = useState(''); // '' = 전체 코스
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set()); // 접힌 그룹 key 집합
   // 드롭다운 후보 — 실제 강의·코스에 쓰인 과목만(빈 과목 노이즈 방지)
-  const subjectOptions = SUBJECTS.filter(
+  const subjectOptions = liveSubjects.filter(
     (s) => rows.some((l) => l.subject === s) || courses.some((c) => c.subject === s),
   );
   // 코스 후보 — 강의가 실제 담긴 코스만(현재 과목 필터도 반영)
@@ -218,7 +238,7 @@ export default function OpsLectures() {
   );
   const isFiltering = q !== '' || subjFilter !== '' || courseFilter !== '';
 
-  const groups = state === 'ready' ? buildLectureGroups(filteredRows, courses) : [];
+  const groups = state === 'ready' ? buildLectureGroups(filteredRows, courses, liveSubjects) : [];
   // 검색·필터 중엔 결과가 안 숨겨지게 강제 펼침. 그 외엔 collapsed 집합을 따른다.
   const isCollapsed = (key: string) => !isFiltering && collapsed.has(key);
   const toggleCollapse = (key: string) =>
@@ -595,6 +615,7 @@ export default function OpsLectures() {
         <LectureFormModal
           modal={modal}
           courses={courses}
+          subjects={liveSubjects}
           onClose={() => setModal(null)}
           onCoursesChanged={loadCourses} // 업로드 창에서 코스를 바로 만들면 목록에 반영
           onSaved={(msg) => {
@@ -614,6 +635,7 @@ export default function OpsLectures() {
       {modal?.mode === 'courses' && (
         <CoursesModal
           courses={courses}
+          subjects={liveSubjects}
           onClose={() => setModal(null)}
           onChanged={() => {
             loadCourses();
@@ -706,12 +728,14 @@ function LectureGuideModal({ onClose }: { onClose: () => void }) {
 function LectureFormModal({
   modal,
   courses,
+  subjects,
   onClose,
   onSaved,
   onCoursesChanged,
 }: {
   modal: { mode: 'create' } | { mode: 'edit'; lec: OpsLecture };
   courses: OpsCourse[];
+  subjects: string[];
   onClose: () => void;
   onSaved: (msg: string) => void;
   onCoursesChanged: () => void;
@@ -995,7 +1019,7 @@ function LectureFormModal({
           <label className="ox-field">
             과목
             <select value={form.subject} onChange={(e) => changeSubject(e.target.value)}>
-              {SUBJECTS.map((s) => (
+              {subjects.map((s) => (
                 <option key={s} value={s}>{s}</option>
               ))}
             </select>
@@ -1136,11 +1160,13 @@ interface CourseForm {
 
 function CoursesModal({
   courses,
+  subjects,
   onClose,
   onChanged,
   say,
 }: {
   courses: OpsCourse[];
+  subjects: string[];
   onClose: () => void;
   onChanged: () => void;
   say: (m: string) => void;
@@ -1244,7 +1270,7 @@ function CoursesModal({
               className="op-btn op-btn--approve"
               onClick={() => {
                 setErr('');
-                setForm({ id: null, title: '', subject: '국어', description: '', status: 'active' });
+                setForm({ id: null, title: '', subject: subjects[0] ?? '국어', description: '', status: 'active' });
               }}
             >
               <i className="ph-bold ph-plus" /> 코스 만들기
@@ -1276,7 +1302,7 @@ function CoursesModal({
                   disabled={editing}
                   onChange={(e) => setForm({ ...form, subject: e.target.value })}
                 >
-                  {SUBJECTS.map((s) => (
+                  {subjects.map((s) => (
                     <option key={s} value={s}>{s}</option>
                   ))}
                 </select>

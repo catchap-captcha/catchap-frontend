@@ -470,6 +470,9 @@ export const lectureApi = {
 
   /* ---- 강사 코스 ---- (코스=과목 고정. 강사는 자기 코스만, 운영자는 전체 — 서버 스코프) */
   opsCourses: () => client.get<OpsCourse[]>('/ops/courses').then((r) => r.data),
+  // 강의·코스 폼 과목 목록 — 하드코딩 대신 런타임 은행에서(과목 재편 반영). 강사 콘솔 과목 연동.
+  opsSubjects: () =>
+    client.get<{ subjects: string[] }>('/ops/subjects').then((r) => r.data.subjects),
 
   /** 코스 생성 — subject는 여기서 고정된다(생성 후 못 바꿈). 미지원 과목은 400. */
   opsCourseCreate: (body: { title: string; subject: string; description?: string | null }) =>
