@@ -53,8 +53,12 @@ export const PATHS = {
   OPS_LOGS: '/ops/logs',
   OPS_OPERATORS: '/ops/operators', // 운영자 계정 관리
   OPS_MONITORING: '/ops/monitoring', // 서버 자원 모니터링 (CPU/메모리/디스크/GPU + LLM 사용량)
-  OPS_AI_MODELS: '/ops/ai-models', // 모델 레지스트리 관리(기관 콘솔 노출 콘텐츠)
-  OPS_SETTINGS: '/ops/settings', // 서비스 설정 (AI API 키 — STT·LLM)
+  OPS_AI_MODELS: '/ops/ai-models', // 모델 레지스트리 관리(기관 콘솔 노출 콘텐츠 — 실 LLM 호출과 무관)
+  // LLM 설정 — 종전 '설정' 한 페이지에 뭉쳐 있던 것을 전용 메뉴 3개로 분리(찾기 쉽게).
+  OPS_LLM_MODELS: '/ops/llm/models', // 실 호출 모델(생성/검증 슬롯) 선택·자동 스왑·사용량
+  OPS_LLM_KEYS: '/ops/llm/keys', // API 키(Anthropic·OpenAI) 관리
+  OPS_LLM_PROMPTS: '/ops/llm/prompts', // 생성·검증 프롬프트(규칙) 편집
+  OPS_SETTINGS: '/ops/settings', // (레거시) → OPS_LLM_KEYS로 리다이렉트(북마크 보호)
   OPS_INSTRUCTOR_HOME: '/ops/home', // 강사 홈 대시보드 (검수 대기·학생 참여·약한 문항) — 강사 착지
   OPS_LECTURES: '/ops/lectures', // 강의 관리 (영상 업로드·확인 문항·자료실) — 운영자·강사 공용
   OPS_INSTRUCTORS: '/ops/instructors', // 강사 계정 관리 (운영자 초대 발급)

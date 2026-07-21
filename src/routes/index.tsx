@@ -49,7 +49,9 @@ const OpsBehaviorExport = lazy(() => import('../pages/ops/OpsBehaviorExport'));
 const OpsAuditLog = lazy(() => import('../pages/ops/OpsAuditLog'));
 const OpsMonitoring = lazy(() => import('../pages/ops/OpsMonitoring'));
 const OpsAiModels = lazy(() => import('../pages/ops/OpsAiModels'));
-const OpsSettings = lazy(() => import('../pages/ops/OpsSettings'));
+const OpsLlmModels = lazy(() => import('../pages/ops/OpsLlmModels'));
+const OpsLlmKeys = lazy(() => import('../pages/ops/OpsLlmKeys'));
+const OpsLlmPrompts = lazy(() => import('../pages/ops/OpsLlmPrompts'));
 const OpsLectures = lazy(() => import('../pages/ops/OpsLectures'));
 const OpsInstructorHome = lazy(() => import('../pages/ops/OpsInstructorHome'));
 const OpsOperators = lazy(() => import('../pages/ops/OpsOperators'));
@@ -122,7 +124,11 @@ export default function AppRoutes() {
           <Route path={PATHS.OPS_LOGS} element={<OpsAuditLog />} />
           <Route path={PATHS.OPS_MONITORING} element={<OpsMonitoring />} />
           <Route path={PATHS.OPS_AI_MODELS} element={<OpsAiModels />} />
-          <Route path={PATHS.OPS_SETTINGS} element={<OpsSettings />} />
+          <Route path={PATHS.OPS_LLM_MODELS} element={<OpsLlmModels />} />
+          <Route path={PATHS.OPS_LLM_KEYS} element={<OpsLlmKeys />} />
+          <Route path={PATHS.OPS_LLM_PROMPTS} element={<OpsLlmPrompts />} />
+          {/* 레거시 '설정' 경로 — LLM 설정 3분할로 대체됨. 북마크 보호용 리다이렉트. */}
+          <Route path={PATHS.OPS_SETTINGS} element={<Navigate to={PATHS.OPS_LLM_KEYS} replace />} />
           <Route path={PATHS.OPS_OPERATORS} element={<OpsOperators />} />
           <Route path={PATHS.OPS_INSTRUCTORS} element={<OpsInstructors />} />
         </Route>

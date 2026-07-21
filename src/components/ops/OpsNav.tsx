@@ -29,6 +29,16 @@ const GROUPS: { label: string; items: { to: string; icon: string; label: string 
     items: [{ to: PATHS.OPS_LECTURES, icon: 'ph-video-camera', label: '강의 관리' }],
   },
   {
+    // LLM 전용 그룹 — 종전엔 실 LLM 설정(모델 선택·API 키·프롬프트)이 범용 '설정' 한 페이지에
+    // 묻혀 찾기 힘들었다. 문항 생성과 밀접하므로 '강의' 다음에 두고 셋으로 나눈다(사용자 요청).
+    label: 'LLM',
+    items: [
+      { to: PATHS.OPS_LLM_MODELS, icon: 'ph-robot', label: '모델' },
+      { to: PATHS.OPS_LLM_KEYS, icon: 'ph-lock-key', label: 'API 키' },
+      { to: PATHS.OPS_LLM_PROMPTS, icon: 'ph-chat-text', label: '프롬프트' },
+    ],
+  },
+  {
     label: '데이터',
     items: [
       { to: PATHS.OPS_BEHAVIOR, icon: 'ph-fingerprint', label: '행동 데이터' },
@@ -40,9 +50,9 @@ const GROUPS: { label: string; items: { to: string; icon: string; label: string 
     label: '시스템',
     items: [
       { to: PATHS.OPS_API_KEYS, icon: 'ph-key', label: 'API 발급' },
-      { to: PATHS.OPS_AI_MODELS, icon: 'ph-cpu', label: 'AI 모델' },
+      // 기관 콘솔 노출용 표시 카탈로그(실 LLM 호출과 무관) — 위 'LLM > 모델'과 구분되게 라벨 명확화
+      { to: PATHS.OPS_AI_MODELS, icon: 'ph-cpu', label: '모델 카탈로그' },
       { to: PATHS.OPS_MONITORING, icon: 'ph-gauge', label: '모니터링' },
-      { to: PATHS.OPS_SETTINGS, icon: 'ph-gear-six', label: '설정' },
     ],
   },
 ];

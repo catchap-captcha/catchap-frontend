@@ -570,6 +570,21 @@ export const opsSettingsApi = {
         { rules },
       )
       .then((r) => r.data),
+  /** 자기검증 '판정 지침'(2번째 LLM 프롬프트) 조회 — 현재 규칙 + 기본값 */
+  getAiVerifyPrompt: () =>
+    client
+      .get<{ rules: string; default_rules: string; is_custom: boolean }>(
+        '/ops/settings/ai/verify-prompt',
+      )
+      .then((r) => r.data),
+  /** 판정 지침 저장(빈 값=기본값 복원). 다음 문항 생성의 자기검증부터 즉시 반영 */
+  putAiVerifyPrompt: (rules: string) =>
+    client
+      .put<{ rules: string; default_rules: string; is_custom: boolean }>(
+        '/ops/settings/ai/verify-prompt',
+        { rules },
+      )
+      .then((r) => r.data),
 };
 
 /** 운영자 AI 모델 선택(#26) — 실제 LLM 호출(문항 생성·자기검증)에 쓰는 모델의 런타임 설정.
