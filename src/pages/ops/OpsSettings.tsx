@@ -20,6 +20,7 @@ function KeyCard({
   title,
   desc,
   status,
+  provider,
   placeholder,
   value,
   onChange,
@@ -30,6 +31,7 @@ function KeyCard({
   title: string;
   desc: string;
   status: AiKeyStatus | null;
+  provider: 'anthropic' | 'openai';
   placeholder: string;
   value: string;
   onChange: (v: string) => void;
@@ -38,6 +40,20 @@ function KeyCard({
   saving: boolean;
 }) {
   const [show, setShow] = useState(false);
+  const [testing, setTesting] = useState(false);
+  const [testRes, setTestRes] = useState<{ ok: boolean; detail: string } | null>(null);
+  // 저장된 키가 실제로 유효한지 즉시 확인(연결 테스트) — 잘못된 키를 문항 생성 때 가서야 알던 문제 해결
+  const runTest = async () => {
+    setTesting(true);
+    setTestRes(null);
+    try {
+      setTestRes(await opsSettingsApi.testAi(provider));
+    } catch (e) {
+      setTestRes({ ok: false, detail: errorDetail(e, '테스트에 실패했어요.') });
+    } finally {
+      setTesting(false);
+    }
+  };
   return (
     <section className="ops-set-card">
       <div className="ops-set-head">
@@ -95,7 +111,24 @@ function KeyCard({
             키 삭제
           </button>
         )}
+        {status?.configured && (
+          <button
+            type="button"
+            className="op-btn op-btn--soft"
+            disabled={testing}
+            onClick={runTest}
+            title="저장된 키로 제공사에 연결해 유효한지 확인해요"
+          >
+            {testing ? '테스트 중…' : '연결 테스트'}
+          </button>
+        )}
       </div>
+      {testRes && (
+        <p className={`ops-set-src${testRes.ok ? ' ops-set-src--ok' : ' ops-set-src--bad'}`}>
+          <i className={`ph-fill ${testRes.ok ? 'ph-check-circle' : 'ph-warning-circle'}`} />{' '}
+          {testRes.detail}
+        </p>
+      )}
     </section>
   );
 }
@@ -190,6 +223,7 @@ export default function OpsSettings() {
           title="LLM — 문항 생성 (Anthropic)"
           desc={`강의 확인 문항을 자동 생성하는 언어 모델이에요. 사용 모델: ${data?.llm_model ?? '—'}`}
           status={data?.llm ?? null}
+          provider="anthropic"
           placeholder="sk-ant-…"
           value={llmKey}
           onChange={setLlmKey}
@@ -201,6 +235,7 @@ export default function OpsSettings() {
           title="OpenAI 키 — 음성 전사(STT) + GPT 모델"
           desc="강의 음성을 타임스탬프 있는 자막으로 바꾸는 Whisper 전사에 써요(25MB 이하). 위 'AI 모델 선택'에서 GPT 모델을 슬롯에 넣으면 이 키로 문항 생성·검증도 호출해요 — OpenAI는 이 키 하나로 둘 다 동작해요."
           status={data?.stt ?? null}
+          provider="openai"
           placeholder="sk-…"
           value={sttKey}
           onChange={setSttKey}
@@ -211,8 +246,8 @@ export default function OpsSettings() {
 
         <p className="ops-set-note">
           <i className="ph-bold ph-shield-check" /> 키는 서버 DB에 암호화(Fernet)로 저장되고,
-          조회 API·감사 로그 어디에도 원문이 남지 않아요. 잘못된 키를 저장하면 AI 문항 생성
-          시 제공사 오류(401 등)가 그대로 표시돼요 — 성공처럼 위장하지 않아요.
+          조회 API·감사 로그 어디에도 원문이 남지 않아요. 저장 후 <b>‘연결 테스트’</b>로 키가
+          유효한지 바로 확인하세요 — 잘못된 키는 인증 실패(401 등)로 정직하게 표시돼요.
         </p>
       </main>
     </div>

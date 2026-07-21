@@ -550,6 +550,11 @@ export const opsSettingsApi = {
   /** 미전송 = 변경 없음, 빈 문자열 = 삭제(미설정 복귀). 저장 즉시 반영(재기동 불필요) */
   putAi: (body: { anthropic_api_key?: string; openai_api_key?: string }) =>
     client.put<AiSettings>('/ops/settings/ai', body).then((r) => r.data),
+  /** 저장된 키의 유효성만 가볍게 확인(연결 테스트) — 원문 키는 서버 밖으로 안 나감 */
+  testAi: (provider: 'anthropic' | 'openai') =>
+    client
+      .post<{ ok: boolean; detail: string }>('/ops/settings/ai/test', { provider })
+      .then((r) => r.data),
 };
 
 /** 운영자 AI 모델 선택(#26) — 실제 LLM 호출(문항 생성·자기검증)에 쓰는 모델의 런타임 설정.
