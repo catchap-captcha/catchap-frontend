@@ -52,7 +52,6 @@ export const PATHS = {
   OPS_BEHAVIOR_EXPORT: '/ops/behavior/export', // 외부 업체 제공용 익명 내보내기
   OPS_LOGS: '/ops/logs',
   OPS_OPERATORS: '/ops/operators', // 운영자 계정 관리
-  OPS_SYSTEM: '/ops/system', // 시스템 상태 (실측 헬스체크)
   OPS_MONITORING: '/ops/monitoring', // 서버 자원 모니터링 (CPU/메모리/디스크/GPU + LLM 사용량)
   OPS_AI_MODELS: '/ops/ai-models', // 모델 레지스트리 관리(기관 콘솔 노출 콘텐츠)
   OPS_SETTINGS: '/ops/settings', // 서비스 설정 (AI API 키 — STT·LLM)
