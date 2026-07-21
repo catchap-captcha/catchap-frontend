@@ -39,7 +39,7 @@ function readAvatar(userId: string | undefined | null): AvatarState {
     bgCss: typeof a.bgCss === 'string' && a.bgCss ? a.bgCss : 'linear-gradient(135deg,#FFC24B,#FF8A5B)',
     hasHat: !!a.hasHat,
     hatIcon: typeof a.hatIcon === 'string' ? a.hatIcon : '',
-    hatColor: typeof a.hatColor === 'string' && a.hatColor ? a.hatColor : '#FF5A4D',
+    hatColor: typeof a.hatColor === 'string' && a.hatColor ? a.hatColor : '#ea5443',
   };
 }
 

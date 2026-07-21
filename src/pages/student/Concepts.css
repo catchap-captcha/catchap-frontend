@@ -120,7 +120,7 @@
 }
 
 .cp-navlogotitle {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 21px;
   color: var(--brand);
 }
@@ -207,7 +207,7 @@
 }
 
 .cp-herotitle {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 34px;
   color: var(--brand-ink);
   margin: 14px 0 8px;
@@ -254,7 +254,7 @@
 }
 
 .cp-heroprognum {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   color: var(--brand);
   font-size: 17px;
 }
@@ -373,7 +373,7 @@ animation: cpFloat 4.5s ease-in-out infinite;
 }
 
 .cp-sectitle {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 23px;
   color: var(--ink);
   margin: 0;
@@ -472,7 +472,7 @@ animation: cpFloat 4.5s ease-in-out infinite;
 }
 
 .cp-cardname {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 18px;
   color: var(--ink);
   line-height: 1.2;
@@ -617,7 +617,7 @@ animation: cpFloat 4.5s ease-in-out infinite;
 }
 
 .cp-sheettitle {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 26px;
   color: var(--ink);
   margin: 0 0 8px;
@@ -742,7 +742,7 @@ animation: cpFloat 4.5s ease-in-out infinite;
   text-align: center;
   border: none;
   color: var(--on-brand);
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 16px;
   padding: 14px;
   border-radius: 15px;

@@ -184,7 +184,7 @@ export default function ScreenTimeReminder() {
         </div>
         <h2
           style={{
-            fontFamily: 'Jua, sans-serif',
+            fontFamily: 'Pretendard, sans-serif', fontWeight: 800,
             fontSize: 21,
             color: '#3A3340',
             margin: '0 0 20px',
@@ -232,9 +232,9 @@ export default function ScreenTimeReminder() {
             width: '100%',
             border: 'none',
             cursor: resting ? 'default' : 'pointer',
-            background: resting ? '#17B08C' : '#FF5A4D',
+            background: resting ? '#1f9d6b' : '#ea5443',
             color: '#fff',
-            fontFamily: 'Jua, sans-serif',
+            fontFamily: 'Pretendard, sans-serif', fontWeight: 800,
             fontSize: 16,
             padding: 14,
             borderRadius: 15,

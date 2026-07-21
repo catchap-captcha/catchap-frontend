@@ -43,8 +43,8 @@ interface SubjectPreset {
 // TODO(api): studentApi.gameState() 실패 시 원본 SUBJECTS 프리셋 그대로 유지
 const FALLBACK: SubjectPreset[] = [
   {
-    key: '국어', solid: '#FF5A4D', soft: '#FFE0DB', slotBg: 'linear-gradient(160deg,#FFFBF6,#FFF1EE)', dash: '#FFD6C4',
-    mascotGrad: 'linear-gradient(160deg,#FFE6BE,#FFCFC9)', progGrad: 'linear-gradient(90deg,#FF8A5B,#FF5A4D)',
+    key: '국어', solid: '#ea5443', soft: '#FFE0DB', slotBg: 'linear-gradient(160deg,#FFFBF6,#FFF1EE)', dash: '#FFD6C4',
+    mascotGrad: 'linear-gradient(160deg,#FFE6BE,#FFCFC9)', progGrad: 'linear-gradient(90deg,#FF8A5B,#ea5443)',
     gameTitle: '한글 낱말 찾기', gameSub: '그림 보고 낱말 고르기', gameIcon: 'ph-fill ph-text-aa',
     catLabel: '낱말·한글', catIcon: 'ph-fill ph-text-aa',
     cheer: '천천히, 잘 하고 있어요! 🐾',

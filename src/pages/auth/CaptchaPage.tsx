@@ -87,7 +87,7 @@ export default function CaptchaPage() {
 
   // warm palette per phase
   let hc1 = '#FF8A5B';
-  let hc2 = '#FF5A4D';
+  let hc2 = '#ea5443';
   let hTitle = '사람인지 확인해요 🐱';
   let hSub = '냥이랑 잠깐 확인하고 이어가요';
   if (isSuccess) {

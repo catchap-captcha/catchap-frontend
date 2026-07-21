@@ -692,18 +692,18 @@ export default function MyRecords() {
                       textAnchor="middle"
                       fontSize={11}
                       fontWeight={800}
-                      fill={last ? '#FF5A4D' : clr}
+                      fill={last ? '#ea5443' : clr}
                     >
                       {v}%
                     </text>
-                    <circle cx={X(i)} cy={Y(v)} r={last ? 6 : 4.5} fill={last ? '#FF5A4D' : clr} stroke="#fff" strokeWidth={2} />
+                    <circle cx={X(i)} cy={Y(v)} r={last ? 6 : 4.5} fill={last ? '#ea5443' : clr} stroke="#fff" strokeWidth={2} />
                     <text
                       x={X(i)}
                       y={CH - 8}
                       textAnchor="middle"
                       fontSize={10.5}
                       fontWeight={700}
-                      fill={last ? '#FF5A4D' : '#B0A79B'}
+                      fill={last ? '#ea5443' : '#B0A79B'}
                     >
                       {ACC_LABELS[i]}
                     </text>
@@ -716,7 +716,7 @@ export default function MyRecords() {
             {acc.map((v, i) => (
               <div key={i} className="mr-sess">
                 <div className="mr-sesslabel">{ACC_LABELS[i]}</div>
-                <div className="mr-sessval" style={{ color: i === lastI ? '#FF5A4D' : clr }}>
+                <div className="mr-sessval" style={{ color: i === lastI ? '#ea5443' : clr }}>
                   {v}%
                 </div>
               </div>

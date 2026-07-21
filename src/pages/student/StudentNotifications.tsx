@@ -55,7 +55,7 @@ const FALLBACK_EARLIER: NtItem[] = [];
 const TYPE_STYLE: Record<string, { icon: string; color: string; bg: string }> = {
   progress: { icon: 'ph-fill ph-check-circle', color: '#17B08C', bg: '#DFF6ED' },
   badge: { icon: 'ph-fill ph-medal', color: '#F0A400', bg: '#FFF3D6' },
-  recommend: { icon: 'ph-fill ph-lightbulb', color: '#FF5A4D', bg: '#FFE7E2' },
+  recommend: { icon: 'ph-fill ph-lightbulb', color: '#ea5443', bg: '#FFE7E2' },
   ai: { icon: 'ph-fill ph-robot', color: '#2E7BFF', bg: '#E6F0FF' },
   report: { icon: 'ph-fill ph-chart-line-up', color: '#8B6BFF', bg: '#EDE6FF' },
 };
@@ -64,7 +64,7 @@ const TYPE_STYLE: Record<string, { icon: string; color: string; bg: string }> = 
 const API_STYLE: Record<string, { icon: string; color: string; bg: string }> = {
   진도: { icon: 'ph-fill ph-chart-line-up', color: '#8B6BFF', bg: '#EDE6FF' },
   배지: { icon: 'ph-fill ph-medal', color: '#F0A400', bg: '#FFF3D6' },
-  추천문제: { icon: 'ph-fill ph-lightbulb', color: '#FF5A4D', bg: '#FFE7E2' },
+  추천문제: { icon: 'ph-fill ph-lightbulb', color: '#ea5443', bg: '#FFE7E2' },
   AI: { icon: 'ph-fill ph-robot', color: '#2E7BFF', bg: '#E6F0FF' },
 };
 const API_STYLE_DEFAULT = { icon: 'ph-fill ph-check-circle', color: '#17B08C', bg: '#DFF6ED' };

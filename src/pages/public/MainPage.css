@@ -53,7 +53,7 @@
   /* 로고 주변 빨간 번짐(red glow shadow) 제거 */
 }
 .mn-brand-name {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 25px;
   color: var(--brand);
   letter-spacing: -0.5px;
@@ -144,7 +144,7 @@
   font-size: 15px;
 }
 .mn-hero-title {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 52px;
   line-height: 1.18;
   color: var(--brand-ink);
@@ -172,7 +172,7 @@
   cursor: pointer;
   background: var(--brand);
   color: var(--on-brand);
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 17px;
   padding: 15px 28px;
   border-radius: 16px;
@@ -193,7 +193,7 @@
   gap: 30px;
 }
 .mn-stat-num {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 28px;
   color: var(--brand);
 }
@@ -306,7 +306,7 @@
   font-size: 14px;
 }
 .mn-about-title {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 34px;
   color: var(--ink);
   margin: 10px 0 0;
@@ -350,7 +350,7 @@
   font-size: 28px;
 }
 .mn-vp-title {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 21px;
   color: var(--ink);
   margin: 0 0 9px;
@@ -379,7 +379,7 @@
   margin-bottom: 32px;
 }
 .mn-games-title {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 34px;
   color: var(--ink);
   margin: 10px 0 8px;
@@ -440,7 +440,7 @@
   background: #ff7eb6;
 }
 .mn-game-name {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 19px;
   color: var(--ink);
 }
@@ -486,7 +486,7 @@
   margin-bottom: 32px;
 }
 .mn-roles-title {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 34px;
   color: var(--ink);
   margin: 10px 0 8px;
@@ -539,7 +539,7 @@
   font-size: 28px;
 }
 .mn-role-title {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 22px;
   margin: 0 0 10px;
 }
@@ -582,7 +582,7 @@
   margin-bottom: 36px;
 }
 .mn-how-title {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 34px;
   color: var(--ink);
   margin: 10px 0 0;
@@ -603,7 +603,7 @@
   text-align: center;
 }
 .mn-step-label {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 15px;
   color: var(--brand);
   margin-bottom: 12px;
@@ -637,7 +637,7 @@
   font-size: 28px;
 }
 .mn-step-title {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 17px;
   color: var(--ink);
   margin: 0 0 7px;
@@ -702,7 +702,7 @@
   font-size: 15px;
 }
 .mn-data-title {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 28px;
   color: var(--info-ink);
   margin: 14px 0 8px;
@@ -765,7 +765,7 @@
   color: var(--ok-ink);
 }
 .mn-data-name {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 17px;
   color: var(--info-ink);
   margin-bottom: 5px;
@@ -827,7 +827,7 @@
   font-size: 15px;
 }
 .mn-partners-title {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 28px;
   color: var(--ink);
   margin: 14px 0 6px;
@@ -953,7 +953,7 @@
   color: var(--warn);
 }
 .mn-partner-name {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 18px;
   color: var(--ink-2);
   white-space: nowrap;
@@ -985,7 +985,7 @@
   border-radius: 50%;
 }
 .mn-footer-name {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 19px;
   color: var(--on-brand);
 }

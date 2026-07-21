@@ -49,7 +49,7 @@
 }
 
 .wn-logotitle {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 25px;
   color: var(--brand);
   letter-spacing: -0.5px;
@@ -138,7 +138,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   color: var(--on-brand);
   font-size: 16px;
 }
@@ -179,7 +179,7 @@
 }
 
 .wn-title {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 32px;
   color: var(--ink);
   margin: 0;
@@ -231,7 +231,7 @@
 }
 
 .wn-sumval {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 26px;
   color: var(--ink);
   line-height: 1;
@@ -254,7 +254,7 @@
   border: none;
   background: var(--brand);
   color: var(--on-brand);
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 15px;
   padding: 13px 22px;
   border-radius: 14px;
@@ -356,7 +356,7 @@
 }
 
 .wn-question {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 18px;
   color: var(--ink);
   margin-bottom: 16px;
@@ -537,7 +537,7 @@
 }
 
 .wn-foottext h3 {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 19px;
   color: var(--ok-ink);
   margin: 0 0 4px;
@@ -567,7 +567,7 @@
 }
 
 .wn-empty h3 {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 21px;
   color: var(--ink);
   margin: 10px 0 6px;

@@ -98,7 +98,7 @@ function TraceSparkline({ points }: { points: [number, number][] }) {
     <svg className="op-bh-spark" viewBox={`0 0 ${W} ${H}`} width={W} height={H} aria-hidden="true">
       <path d={d} fill="none" stroke="#7a5bd6" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
       <circle cx={mx(first[0])} cy={my(first[1])} r="2" fill="#17b08c" />
-      <circle cx={mx(last[0])} cy={my(last[1])} r="2" fill="#ff5a4d" />
+      <circle cx={mx(last[0])} cy={my(last[1])} r="2" fill="#ea5443" />
     </svg>
   );
 }
@@ -664,14 +664,14 @@ export default function OpsBehavior() {
                     strokeLinejoin="round"
                   />
                   {first && <circle cx={first[0]} cy={first[1]} r="5" fill="#17b08c" />}
-                  {last && <circle cx={last[0]} cy={last[1]} r="5" fill="#ff5a4d" />}
+                  {last && <circle cx={last[0]} cy={last[1]} r="5" fill="#ea5443" />}
                 </svg>
                 <div className="op-bh-modal-legend">
                   <span>
                     <span className="op-bh-dot" style={{ background: '#17b08c' }} /> 시작
                   </span>
                   <span>
-                    <span className="op-bh-dot" style={{ background: '#ff5a4d' }} /> 끝
+                    <span className="op-bh-dot" style={{ background: '#ea5443' }} /> 끝
                   </span>
                 </div>
               </div>

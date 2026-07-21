@@ -47,7 +47,7 @@ export function drawWeeklyReport(d: WeeklyReportData): HTMLCanvasElement {
   // 헤더 배너
   const grad = ctx.createLinearGradient(0, 0, W, 0);
   grad.addColorStop(0, '#FF7A4D');
-  grad.addColorStop(1, '#FF5A4D');
+  grad.addColorStop(1, '#ea5443');
   ctx.fillStyle = grad;
   roundRect(ctx, 40, 40, W - 80, 190, 28);
   ctx.fill();
@@ -70,7 +70,7 @@ export function drawWeeklyReport(d: WeeklyReportData): HTMLCanvasElement {
     ctx.strokeStyle = '#F3E7DA';
     ctx.lineWidth = 2;
     ctx.stroke();
-    ctx.fillStyle = '#FF5A4D';
+    ctx.fillStyle = '#ea5443';
     ctx.font = `900 46px ${F}`;
     ctx.fillText(`${s.value}${s.unit ?? ''}`, x + 26, 340);
     ctx.fillStyle = '#8A8070';

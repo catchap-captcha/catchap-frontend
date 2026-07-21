@@ -36,7 +36,7 @@
 }
 
 .ce-title {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 27px;
   color: var(--ink);
   margin: 0;
@@ -110,7 +110,7 @@
   border-radius: 999px;
   background: var(--ok-soft);
   color: var(--ok);
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 17px;
 }
 .ce-badge i {
@@ -161,7 +161,7 @@
   gap: 8px;
   border: none;
   border-radius: 15px;
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 15.5px;
   padding: 13px 26px;
   cursor: pointer;

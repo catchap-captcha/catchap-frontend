@@ -22,7 +22,7 @@ export interface SubjectMeta {
 export const SUBJECT_ORDER: SubjectKey[] = ['국어', '영어', '수학', '과학', '사회', '생활'];
 
 export const SUBJECT_META: Record<SubjectKey, SubjectMeta> = {
-  국어: { key: '국어', solid: '#FF5A4D', soft: '#FFE0DB', icon: 'ph-fill ph-book-open' },
+  국어: { key: '국어', solid: '#ea5443', soft: '#fcede9', icon: 'ph-fill ph-book-open' },
   영어: { key: '영어', solid: '#FF922E', soft: '#FFEDD6', icon: 'ph-fill ph-translate' },
   수학: { key: '수학', solid: '#17B08C', soft: '#DFF6EE', icon: 'ph-fill ph-plus-minus' },
   과학: { key: '과학', solid: '#2E7BFF', soft: '#E1EDFF', icon: 'ph-fill ph-flask' },

@@ -16,7 +16,7 @@
   padding: 24px;
   position: relative;
   overflow: hidden;
-  background: linear-gradient(160deg, var(--brand) 0%, var(--brand) 55%, #ff4d77 100%);
+  background: linear-gradient(160deg, var(--brand) 0%, var(--brand) 55%, #c8412f 100%);
   font-family: 'Pretendard', system-ui, sans-serif;
 }
 .ac-blob { position: absolute; border-radius: 50%; background: rgba(255, 255, 255, 0.12); pointer-events: none; }
@@ -47,14 +47,14 @@
 .ac-stepdot {
   width: 30px; height: 30px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  font-family: 'Jua', sans-serif; font-size: 15px;
+  font-family: var(--font-display); font-weight: 800; font-size: 15px;
   background: var(--brand-soft); color: #ffab98; transition: all 0.3s;
 }
 .ac-stepdot--on { background: var(--brand); color: var(--on-brand); box-shadow: 0 6px 14px -6px rgba(255, 90, 77, 0.7); }
 .ac-stepline { width: 44px; height: 3px; border-radius: 3px; background: var(--brand-soft); }
 
 .ac-title {
-  font-family: 'Jua', sans-serif; font-size: 28px; color: var(--ink);
+  font-family: var(--font-display); font-weight: 800; font-size: 28px; color: var(--ink);
   text-align: center; margin: 0 0 8px; letter-spacing: -0.5px;
 }
 .ac-sub { text-align: center; color: var(--ink-2); font-weight: 600; font-size: 14px; margin: 0 0 24px; line-height: 1.6; }
@@ -87,7 +87,7 @@
   width: 100%; margin-top: 22px;
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   background: linear-gradient(180deg, #ff6459, #ff5346); color: var(--on-brand);
-  font-family: 'Jua', sans-serif; font-size: 18px; letter-spacing: 0.3px;
+  font-family: var(--font-display); font-weight: 800; font-size: 18px; letter-spacing: 0.3px;
   padding: 15px; border-radius: 16px; border: none; cursor: pointer;
   box-shadow: 0 12px 24px -10px rgba(255, 90, 77, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.25);
   transition: transform 0.2s cubic-bezier(0.34, 1.2, 0.5, 1), box-shadow 0.2s;

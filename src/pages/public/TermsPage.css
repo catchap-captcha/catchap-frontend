@@ -27,7 +27,7 @@
   border-radius: 50%;
 }
 .tm-brand-name {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 17px;
   color: #F3F0E9;
   letter-spacing: -.3px;

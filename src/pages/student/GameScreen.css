@@ -100,7 +100,7 @@
 }
 
 .gs-gametitle {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 18px;
   color: var(--ink);
 }
@@ -160,7 +160,7 @@
 }
 
 .gs-scorechip span {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 16px;
   color: var(--warn-ink);
 }
@@ -282,7 +282,7 @@
 }
 
 .gs-question {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 28px;
   color: var(--ink);
   margin: 0 0 4px;
@@ -365,7 +365,7 @@
 }
 
 .gs-mount-title {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 20px;
   color: var(--ink);
 }
@@ -411,7 +411,7 @@
 }
 
 .gs-cheer {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 15px;
   color: var(--brand-ink);
   line-height: 1.45;
@@ -477,7 +477,7 @@
 
 .gs-statval {
   margin-left: auto;
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
 }
 
 .gs-statval-ok {
@@ -590,7 +590,7 @@
   border: none;
   background: var(--gs-solid);
   color: var(--on-brand);
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 17px;
   padding: 13px 34px;
   border-radius: 15px;
@@ -842,7 +842,7 @@
   margin-bottom: 8px;
 }
 .gs-quitpop-title {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 20px;
   color: var(--ink);
   margin-bottom: 6px;

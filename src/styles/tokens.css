@@ -1,9 +1,9 @@
 /* CatChap design tokens — extracted from Claude Design handoff (do not change values) */
 :root {
   /* Brand */
-  --cc-brand: #ff5a4d;
-  --cc-brand-hover: #f5493c;
-  --cc-brand-grad: linear-gradient(135deg, #ff7a5b, #ff4d77);
+  --cc-brand: #ea5443;
+  --cc-brand-hover: #c8412f;
+  --cc-brand-grad: linear-gradient(135deg, #ea5443, #c8412f);
 
   /* Semantic */
   --cc-success: #17b08c;
@@ -31,8 +31,8 @@
   --cc-soft: #fff1e9;
 
   /* Subject signature colors (전 화면 일관) */
-  --subject-korean: #ff5a4d;
-  --subject-korean-soft: #ffe0db;
+  --subject-korean: #ea5443;
+  --subject-korean-soft: #fcede9;
   --subject-english: #ff922e;
   --subject-english-soft: #ffedd6;
   --subject-math: #17b08c;
@@ -45,7 +45,7 @@
   --subject-life-soft: #ffe3ef;
 
   /* Fonts */
-  --font-display: 'Jua', sans-serif;
+  --font-display: 'Pretendard', 'Noto Sans KR', system-ui, sans-serif;
   --font-body: 'Pretendard', system-ui, sans-serif;
   --font-serif: 'Noto Serif KR', serif;
 }

@@ -47,7 +47,7 @@ function newPage(title: string, pageNo: number): { canvas: HTMLCanvasElement; ct
   ctx.fillStyle = '#FFFFFF';
   ctx.fillRect(0, 0, PAGE_W, PAGE_H);
   // 헤더 밴드
-  ctx.fillStyle = '#FF5A4D';
+  ctx.fillStyle = '#ea5443';
   ctx.fillRect(0, 0, PAGE_W, 8);
   ctx.fillStyle = '#1F2330';
   ctx.font = `900 40px ${F}`;
@@ -72,7 +72,7 @@ export async function tableToPdf(filename: string, title: string, rows: Row[]) {
     const { ctx } = page;
     const y = page.y;
     if (section) {
-      ctx.fillStyle = '#FF5A4D';
+      ctx.fillStyle = '#ea5443';
       ctx.font = `900 28px ${F}`;
       ctx.fillText(String(row[0] ?? '').replace(/^\[|\]$/g, ''), MARGIN, y + 30);
       page.y += ROW_H + 10;

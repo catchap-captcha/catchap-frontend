@@ -50,7 +50,7 @@
 }
 
 .al-logotitle {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 25px;
   color: var(--brand);
   letter-spacing: -0.5px;
@@ -183,7 +183,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   color: var(--on-brand);
   font-size: 16px;
 }
@@ -232,7 +232,7 @@
 }
 
 .al-title {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 32px;
   color: var(--ink);
   margin: 0;
@@ -261,7 +261,7 @@
 }
 
 .al-stat-value {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 22px;
   line-height: 1;
 }
@@ -396,7 +396,7 @@
 }
 
 .al-panel-title {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 23px;
   margin: 16px 0 4px;
   position: relative;
@@ -926,7 +926,7 @@ a.al-ls:hover {
 .al-sec-head { margin-bottom: 14px; }
 .al-sec-title {
   display: flex; align-items: center; gap: 8px;
-  font-family: 'Jua', sans-serif; font-size: 22px; color: var(--ink); margin: 0;
+  font-family: var(--font-display); font-weight: 800; font-size: 22px; color: var(--ink); margin: 0;
 }
 .al-sec-title i { color: var(--brand); }
 .al-empty {
@@ -954,12 +954,12 @@ a.al-ls:hover {
   font-weight: 800; font-size: 11.5px; padding: 4px 10px; border-radius: var(--r-pill);
 }
 .al-course-title {
-  font-family: 'Jua', sans-serif; font-size: 18px; color: var(--ink); margin: 2px 0 0;
+  font-family: var(--font-display); font-weight: 800; font-size: 18px; color: var(--ink); margin: 2px 0 0;
   line-height: 1.3;
 }
 .al-course-inst { font-size: 12.5px; color: var(--ink-2); font-weight: 600; }
 .al-course-meta { font-size: 13px; color: var(--ink); font-weight: 600; margin-top: 2px; }
-.al-course-meta b { color: var(--brand-ink); font-family: 'Jua', sans-serif; font-weight: 400; }
+.al-course-meta b { color: var(--brand-ink); font-family: var(--font-display); font-weight: 400; }
 .al-course-locked { color: var(--ink-3); font-weight: 600; }
 .al-course-none { color: var(--ink-3); font-weight: 600; }
 .al-course-btn {

@@ -26,7 +26,7 @@ interface ResultEntry {
 
 // TODO(api): studentApi.result() 실패 시 원본 SUBJECTS 하드코딩 데이터 유지
 const FALLBACK: Record<string, ResultEntry> = {
-  '국어': { solid: '#FF5A4D', soft: '#FFE0DB', cleared: 5, correct: 5, score: '+150', time: '2:40', streak: 5, ai: '글의 속뜻까지 잘 파악했어요! 낱말과 문장을 꼼꼼히 읽는 습관이 멋져요. 다음 단계도 잘 해낼 거예요! 🐾' },
+  '국어': { solid: '#ea5443', soft: '#FFE0DB', cleared: 5, correct: 5, score: '+150', time: '2:40', streak: 5, ai: '글의 속뜻까지 잘 파악했어요! 낱말과 문장을 꼼꼼히 읽는 습관이 멋져요. 다음 단계도 잘 해낼 거예요! 🐾' },
   '영어': { solid: '#FF922E', soft: '#FFEDD6', cleared: 3, correct: 4, score: '+90', time: '2:10', streak: 3, ai: '영어 문장과 문법을 척척 풀었어요! 단어의 쓰임을 잘 이해했네요. 다음 단계도 잘 해낼 거예요! 🐾' },
   '수학': { solid: '#17B08C', soft: '#DFF6EE', cleared: 5, correct: 5, score: '+160', time: '3:05', streak: 5, ai: '계산과 도형 문제를 아주 정확하게 풀었어요! 차근차근 따지는 방법이 완벽했어요. 다음 단계도 도전해봐요! 🐾' },
   '과학': { solid: '#2E7BFF', soft: '#E1EDFF', cleared: 2, correct: 4, score: '+95', time: '2:20', streak: 3, ai: '관찰하고 탐구를 참 잘했어요! 원리를 꼼꼼히 살피는 눈이 멋져요. 다음엔 더 깊은 탐구에 도전해봐요! 🐾' },
@@ -38,14 +38,14 @@ const FALLBACK: Record<string, ResultEntry> = {
    6과목 완료 지도 카드가 사라지며 소비처가 없어졌다. */
 
 const CONFETTI = [
-  { left: '6%', bg: '#FF5A4D', delay: '0s' },
+  { left: '6%', bg: '#ea5443', delay: '0s' },
   { left: '14%', bg: '#FFB43C', delay: '.5s' },
   { left: '22%', bg: '#33C892', delay: '1.1s' },
   { left: '31%', bg: '#2E7BFF', delay: '.3s' },
   { left: '39%', bg: '#FF6DA6', delay: '1.6s' },
   { left: '47%', bg: '#8B6BFF', delay: '.8s' },
   { left: '55%', bg: '#FFB43C', delay: '.2s' },
-  { left: '63%', bg: '#FF5A4D', delay: '1.3s' },
+  { left: '63%', bg: '#ea5443', delay: '1.3s' },
   { left: '71%', bg: '#17B08C', delay: '.6s' },
   { left: '79%', bg: '#2E7BFF', delay: '1.9s' },
   { left: '87%', bg: '#FF6DA6', delay: '1s' },

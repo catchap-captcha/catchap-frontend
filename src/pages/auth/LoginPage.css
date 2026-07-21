@@ -55,7 +55,7 @@
 .lg-left {
   position: relative;
   flex: 1.4;
-  background: linear-gradient(150deg, var(--brand) 0%, var(--brand) 48%, #ff4d77 100%);
+  background: linear-gradient(150deg, var(--brand) 0%, var(--brand) 48%, #c8412f 100%);
   display: flex;
   flex-direction: column;
 }
@@ -146,7 +146,7 @@
 }
 
 .lg-brand-name {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 28px;
   color: var(--on-brand);
   letter-spacing: -0.5px;
@@ -183,7 +183,7 @@
 }
 
 .lg-hero-title {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 38px;
   color: var(--on-brand);
   line-height: 1.28;
@@ -246,7 +246,7 @@
 }
 
 .lg-h2 {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 28px;
   color: var(--ink);
   margin: 0 0 6px;
@@ -581,7 +581,7 @@
   cursor: pointer;
   background: var(--brand);
   color: var(--on-brand);
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 17px;
   padding: 15px;
   border-radius: 15px;
@@ -610,7 +610,7 @@
   cursor: pointer;
   background: var(--surface);
   color: var(--brand);
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 16px;
   padding: 14px;
   border-radius: 15px;
@@ -774,7 +774,7 @@
 
 .lg-kind-title {
   display: block;
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 18px;
   color: var(--ink);
 }
@@ -1029,7 +1029,7 @@
 }
 
 .lg-section {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 15px;
   color: var(--brand);
   margin: 0 0 12px;
@@ -1099,7 +1099,7 @@
 }
 
 .lg-orgresult-head h2 {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 24px;
   color: var(--ink);
   margin: 0 0 10px;
@@ -1278,7 +1278,7 @@
   cursor: pointer;
   background: var(--surface);
   color: var(--brand);
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 14.5px;
   padding: 13px;
   border-radius: 14px;
@@ -1294,7 +1294,7 @@
   text-align: center;
   background: var(--brand);
   color: var(--on-brand);
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 14.5px;
   padding: 13px;
   border-radius: 14px;
@@ -1334,7 +1334,7 @@
 
 /* ===== ORG PLANS ===== */
 .lg-h2--org {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 24px;
   color: var(--ink);
   margin: 0 0 8px;
@@ -1427,7 +1427,7 @@
 }
 
 .lg-plan-name {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 17px;
   color: var(--ink);
 }
@@ -1449,7 +1449,7 @@
 }
 
 .lg-plan-price {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 16px;
   color: var(--brand);
   white-space: nowrap;
@@ -1501,13 +1501,13 @@
 }
 
 .lg-contract-name {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 20px;
   color: var(--ink);
 }
 
 .lg-contract-price {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 18px;
   color: var(--brand);
 }
@@ -1666,7 +1666,7 @@
 }
 
 .lg-cap-title {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 20px;
   color: var(--on-brand);
   line-height: 1.25;
@@ -1726,7 +1726,7 @@
 }
 
 .lg-cap-prompt-row > span {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 15px;
   color: var(--ink);
 }
@@ -1853,7 +1853,7 @@
 }
 
 .lg-cap-ready-title {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 15px;
   color: var(--ink-2);
 }
@@ -1873,7 +1873,7 @@
   cursor: pointer;
   background: var(--brand);
   color: var(--on-brand);
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 17px;
   padding: 15px;
   border-radius: 16px;
@@ -2039,7 +2039,7 @@
 }
 
 .lg-done-card h3 {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 23px;
   color: var(--ink);
   margin: 0 0 8px;
@@ -2066,7 +2066,7 @@
   cursor: pointer;
   background: var(--brand);
   color: var(--on-brand);
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 16px;
   padding: 14px;
   border-radius: 15px;

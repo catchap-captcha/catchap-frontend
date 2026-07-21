@@ -43,7 +43,7 @@ export default function ActivatePage() {
           to={PATHS.LOGIN}
           style={{
             display: 'inline-block',
-            background: '#FF5A4D',
+            background: '#ea5443',
             color: '#fff',
             borderRadius: 14,
             padding: '12px 26px',

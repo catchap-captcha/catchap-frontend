@@ -47,7 +47,7 @@ export default function SchoolSunset() {
           <Link
             to={PATHS.CONTACT}
             style={{
-              background: '#FF5A4D',
+              background: '#ea5443',
               color: '#fff',
               borderRadius: 14,
               padding: '12px 24px',

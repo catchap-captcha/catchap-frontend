@@ -14,41 +14,41 @@
  * ========================================================================== */
 
 :root {
-  /* ---- 배경 / 표면 ---- */
-  --bg: #faf7f2;            /* 페이지 바탕(따뜻한 크림) */
-  --bg-tint: #fff6f1;       /* 헤더 등 아주 옅은 코랄 틴트 */
+  /* ---- 배경 / 표면 (리뉴얼: 차분한 웜-뉴트럴) ---- */
+  --bg: #fbfaf8;            /* 페이지 바탕(맑은 오프화이트) */
+  --bg-tint: #f5f3ef;       /* 헤더 등 아주 옅은 뉴트럴 틴트 */
   --surface: #ffffff;       /* 카드·패널 */
-  --surface-2: #faf6f2;     /* 카드 안 삽입 행(inset) */
-  --surface-3: #f4ece1;     /* 한 단계 더 진한 삽입 */
-  --overlay: rgba(43, 37, 48, 0.42); /* 모달 뒤 배경 */
+  --surface-2: #fbfaf8;     /* 카드 안 삽입 행(inset) */
+  --surface-3: #f3f1ed;     /* 한 단계 더 진한 삽입 */
+  --overlay: rgba(23, 23, 26, 0.42); /* 모달 뒤 배경 */
 
   /* ---- 경계선 ---- */
-  --line: #efe7dc;
-  --line-strong: #e6dccf;
+  --line: #eae8e4;
+  --line-strong: #dcd9d3;
 
-  /* ---- 글자 ---- */
-  --ink: #2b2530;           /* 본문·제목 */
-  --ink-2: #8b8378;         /* 보조 설명 */
-  --ink-3: #b0a89c;         /* 아주 흐린 라벨 */
+  /* ---- 글자 (중립 잉크) ---- */
+  --ink: #17171a;           /* 본문·제목 */
+  --ink-2: #5b5b63;         /* 보조 설명 */
+  --ink-3: #8e8e98;         /* 아주 흐린 라벨 */
   --on-brand: #ffffff;      /* 코랄 버튼 위 글자 */
 
-  /* ---- 브랜드(코랄) ---- */
-  --brand: #ff5a4d;
-  --brand-strong: #e5473b;
-  --brand-ink: #d1573f;     /* 라이트 배경 위 코랄 글자(대비 확보) */
-  --brand-soft: #fff2ec;    /* 코랄 옅은 배경(선택/틴트) */
-  --brand-soft-line: #ffd9cc;
+  /* ---- 브랜드(코랄, 리뉴얼: 채도 낮춘 벽돌빛) ---- */
+  --brand: #ea5443;
+  --brand-strong: #c8412f;
+  --brand-ink: #c8412f;     /* 라이트 배경 위 코랄 글자(대비 확보) */
+  --brand-soft: #fcede9;    /* 코랄 옅은 배경(선택/틴트) */
+  --brand-soft-line: #f5d9d1;
 
   /* ---- 상태색(성공/경고/위험/정보) ---- */
-  --ok: #17a884;   --ok-soft: #ddf3ea;   --ok-ink: #158a5b;
-  --warn: #d99a1a; --warn-soft: #fff3d6; --warn-ink: #b9791a;
-  --danger: #e5473b; --danger-soft: #ffe3e3; --danger-ink: #d64545;
-  --info: #6c4cff; --info-soft: #ece7ff; --info-ink: #5a3ee0;
+  --ok: #1f9d6b;   --ok-soft: #e4f4ec;   --ok-ink: #1a845a;
+  --warn: #c08815; --warn-soft: #faf0d8; --warn-ink: #9e6f11;
+  --danger: #d64545; --danger-soft: #fbe6e6; --danger-ink: #c13a3a;
+  --info: #5b4be0; --info-soft: #ece9fb; --info-ink: #4a3acb;
 
-  /* ---- 그림자 ---- */
-  --shadow-sm: 0 1px 2px rgba(58, 51, 64, 0.04);
-  --shadow-md: 0 1px 2px rgba(58, 51, 64, 0.04), 0 14px 30px -26px rgba(90, 60, 55, 0.22);
-  --shadow-lg: 0 1px 2px rgba(58, 51, 64, 0.05), 0 20px 46px -24px rgba(90, 60, 55, 0.30);
+  /* ---- 그림자 (중립 그레이 기반) ---- */
+  --shadow-sm: 0 1px 2px rgba(23, 23, 26, 0.04);
+  --shadow-md: 0 1px 2px rgba(23, 23, 26, 0.05), 0 14px 30px -26px rgba(23, 23, 26, 0.18);
+  --shadow-lg: 0 1px 2px rgba(23, 23, 26, 0.05), 0 20px 46px -24px rgba(23, 23, 26, 0.24);
 
   /* ---- 형태 ---- */
   --r-sm: 10px;
@@ -80,16 +80,16 @@
   --ink-3: #6b7284;
   --on-brand: #ffffff;
 
-  --brand: #ff7a5c;
-  --brand-strong: #ff6b4d;
-  --brand-ink: #ff8a6b;      /* 다크 배경 위 코랄 글자(밝게) */
-  --brand-soft: #33241f;     /* 다크 코랄 틴트 */
-  --brand-soft-line: #4a3128;
+  --brand: #f06a5a;
+  --brand-strong: #ea5443;
+  --brand-ink: #f5897b;      /* 다크 배경 위 코랄 글자(밝게) */
+  --brand-soft: #2e211e;     /* 다크 코랄 틴트 */
+  --brand-soft-line: #45312b;
 
-  --ok: #2fd0a0;   --ok-soft: #16302a;   --ok-ink: #4fe0b6;
-  --warn: #e6b85c; --warn-soft: #352c18; --warn-ink: #e6b85c;
-  --danger: #ff6b5c; --danger-soft: #3a2020; --danger-ink: #ff8f82;
-  --info: #9a86ff; --info-soft: #241f3a; --info-ink: #b3a4ff;
+  --ok: #35c48d;   --ok-soft: #16302a;   --ok-ink: #57dba7;
+  --warn: #dba83e; --warn-soft: #352c18; --warn-ink: #e6b85c;
+  --danger: #e86a6a; --danger-soft: #3a2020; --danger-ink: #f58f8f;
+  --info: #8c7cf0; --info-soft: #241f3a; --info-ink: #afa4ff;
 
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
   --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.35), 0 16px 34px -26px rgba(0, 0, 0, 0.7);

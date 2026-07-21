@@ -42,7 +42,7 @@ export default function InvitePage() {
         <button
           onClick={() => navigate(PATHS.LOGIN)}
           style={{
-            background: '#FF5A4D',
+            background: '#ea5443',
             color: '#fff',
             border: 'none',
             borderRadius: 14,

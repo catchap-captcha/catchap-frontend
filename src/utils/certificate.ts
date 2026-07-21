@@ -106,7 +106,7 @@ export function drawCertificate(d: CertificateData): HTMLCanvasElement {
   ctx.fillStyle = '#8A8070';
   ctx.font = `700 30px ${F}`;
   ctx.fillText(`${ty}년 ${tm}월 ${td}일`, W / 2, 830);
-  ctx.fillStyle = '#FF5A4D';
+  ctx.fillStyle = '#ea5443';
   ctx.font = `900 42px ${F}`;
   ctx.fillText('CatChap 캣챱', W / 2, 896);
   ctx.textAlign = 'left';
@@ -160,7 +160,7 @@ export function drawCourseCertificate(d: CourseCertificateData): HTMLCanvasEleme
   ctx.textAlign = 'center';
 
   // 상단 브랜드
-  ctx.fillStyle = '#FF5A4D';
+  ctx.fillStyle = '#ea5443';
   ctx.font = `900 34px ${F}`;
   ctx.fillText('CatChap · 캣챱', W2 / 2, 150);
 

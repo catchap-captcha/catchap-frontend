@@ -21,7 +21,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 19px;
   color: var(--ink);
   margin: 0;
@@ -50,7 +50,7 @@
   gap: 4px;
 }
 .mon-llm-num {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 24px;
   color: var(--ink);
   line-height: 1;
@@ -116,7 +116,7 @@
   gap: 8px;
 }
 .mon-card-title {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 17px;
   color: var(--ink);
   margin: 0;
@@ -172,7 +172,7 @@
   color: var(--ink-2);
 }
 .mon-metric-val {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 15px;
 }
 .mon-metric-sub {
@@ -318,7 +318,7 @@
   align-self: center;
 }
 .mon-alertbar > b {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 15px;
   white-space: nowrap;
 }

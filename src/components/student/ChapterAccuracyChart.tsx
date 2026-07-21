@@ -23,7 +23,7 @@ export interface SubjectStat {
 }
 
 const SUBJECT_COLOR: Record<string, string> = {
-  국어: '#FF5A4D', 영어: '#FF922E', 수학: '#17B08C',
+  국어: '#ea5443', 영어: '#FF922E', 수학: '#17B08C',
   과학: '#2E7BFF', 사회: '#8B6BFF', 생활: '#FF6DA6',
 };
 const ORDER = ['국어', '영어', '수학', '과학', '사회', '생활'];

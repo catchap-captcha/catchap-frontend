@@ -32,7 +32,7 @@
 .ih-kpi:nth-child(3)::before { background: linear-gradient(#28c39a, var(--ok)); }
 .ih-kpi:nth-child(4)::before { background: linear-gradient(#ffbe3d, var(--warn)); }
 .ih-kpi-num {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 30px;
   color: var(--ink);
   line-height: 1;
@@ -72,7 +72,7 @@
   font-size: 18px;
 }
 .ih-card-title {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 19px;
   color: var(--ink);
   margin: 0;
@@ -93,7 +93,7 @@
   margin: 14px 0 12px;
 }
 .ih-todo-big {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 40px;
   color: var(--brand-strong);
   line-height: 1;
@@ -199,7 +199,7 @@
   color: var(--ink-2);
 }
 .ih-weak-rate {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 16px;
   color: var(--brand-strong);
 }
@@ -254,7 +254,7 @@
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .ih-cq-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-.ih-cq-rate { font-family: 'Jua', sans-serif; font-size: 18px; color: var(--brand-strong); min-width: 44px; text-align: right; }
+.ih-cq-rate { font-family: var(--font-display); font-weight: 800; font-size: 18px; color: var(--brand-strong); min-width: 44px; text-align: right; }
 .ih-cq-flag {
   background: var(--danger-soft); color: var(--danger-ink); font-weight: 800; font-size: 11px;
   padding: 4px 9px; border-radius: 999px; white-space: nowrap;

@@ -66,7 +66,7 @@
   box-shadow: 0 6px 14px rgba(255, 90, 77, 0.3);
 }
 .ct-brand-name {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 23px;
   color: var(--brand);
   letter-spacing: -0.5px;
@@ -114,7 +114,7 @@
   font-size: 16px;
 }
 .ct-header-title {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 38px;
   color: var(--ink);
   margin: 16px 0 10px;
@@ -163,7 +163,7 @@
   font-size: 44px;
 }
 .ct-sent-title {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 24px;
   color: var(--ink);
   margin: 0 0 8px;
@@ -302,7 +302,7 @@
   cursor: pointer;
   background: var(--brand);
   color: var(--on-brand);
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 17px;
   padding: 15px;
   border-radius: 15px;
@@ -333,7 +333,7 @@
   box-shadow: 0 12px 26px -22px rgba(180, 120, 90, 0.5);
 }
 .ct-info-title {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 17px;
   color: var(--ink);
   margin-bottom: 16px;
@@ -426,7 +426,7 @@
   font-size: 18px;
 }
 .ct-faq-head-title {
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-display); font-weight: 800;
   font-size: 17px;
   color: var(--ink);
 }

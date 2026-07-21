@@ -260,7 +260,7 @@ export default function LectureList() {
           <div className="cp-tabsrow">
             {tabDefs.map((t) => {
               const active = tab === t.key;
-              const c = t.key === '전체' ? '#FF5A4D' : LECTURE_SUBJECTS[t.key].color;
+              const c = t.key === '전체' ? '#ea5443' : LECTURE_SUBJECTS[t.key].color;
               return (
                 <button
                   key={t.key}

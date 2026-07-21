@@ -11,7 +11,7 @@ export interface LectureSubjectTheme {
 }
 
 export const LECTURE_SUBJECTS: Record<string, LectureSubjectTheme> = {
-  '국어': { color: '#FF5A4D', soft: '#FFE0DB', band: 'linear-gradient(150deg,#FFE6E0,#FFD3CB)', grad: 'linear-gradient(150deg,#FF7A7A,#FF5A6E)', icon: 'ph-fill ph-book-open' },
+  '국어': { color: '#ea5443', soft: '#fcede9', band: 'linear-gradient(150deg,#FFE6E0,#FFD3CB)', grad: 'linear-gradient(150deg,#FF7A7A,#FF5A6E)', icon: 'ph-fill ph-book-open' },
   '영어': { color: '#FF922E', soft: '#FFEDD6', band: 'linear-gradient(150deg,#FFEFD9,#FFE0BE)', grad: 'linear-gradient(150deg,#FFB43C,#FF922E)', icon: 'ph-fill ph-translate' },
   '수학': { color: '#17B08C', soft: '#DFF6EE', band: 'linear-gradient(150deg,#E4F7F0,#CDEEE1)', grad: 'linear-gradient(150deg,#33C892,#17B0A0)', icon: 'ph-fill ph-plus-minus' },
   '과학': { color: '#2E7BFF', soft: '#E1EDFF', band: 'linear-gradient(150deg,#E9F1FF,#D3E3FF)', grad: 'linear-gradient(150deg,#4AA6FF,#2E7BFF)', icon: 'ph-fill ph-flask' },
