@@ -324,12 +324,19 @@ export interface ExamCertificate {
 }
 
 /** 강의 전사(자막) 상태 — 강사 제공(srt/vtt/paste) 또는 자동 STT(stt) */
+export interface TranscriptSegment {
+  start: number;
+  end: number;
+  text: string;
+}
 export interface TranscriptStatus {
   has_transcript: boolean;
   source: 'srt' | 'vtt' | 'paste' | 'stt' | null;
   segment_count: number;
-  preview: { start: number; end: number; text: string }[];
+  preview: TranscriptSegment[];
   updated_at: string | null;
+  /** full=true로 요청했을 때만 채워진다 — 전사 전체(강사 '전체 보기' 검수용) */
+  segments?: TranscriptSegment[];
 }
 
 export interface OpsLectureQuestion {
@@ -753,8 +760,10 @@ export const lectureApi = {
       .then((r) => r.data),
 
   /* ---- 강사 제공 자막(전사) — 자동 STT 대체·캐시 ---- */
-  opsTranscriptGet: (lectureId: string) =>
-    client.get<TranscriptStatus>(`/ops/lectures/${lectureId}/transcript`).then((r) => r.data),
+  opsTranscriptGet: (lectureId: string, full = false) =>
+    client
+      .get<TranscriptStatus>(`/ops/lectures/${lectureId}/transcript`, { params: { full } })
+      .then((r) => r.data),
   /** 붙여넣기/텍스트 저장 — 파싱 실패(빈 자막)면 400 */
   opsTranscriptPut: (lectureId: string, content: string, format = 'auto') =>
     client

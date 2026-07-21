@@ -136,6 +136,31 @@
 .op-lect-tr-paste-act { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
 .op-lect-tr-paste-act .op-btn { padding: 8px 16px; font-size: 13px; }
 
+/* 전사 전체 보기 모달 — 강사가 자막을 끝까지 검수(시각+텍스트 목록). 토큰만 참조. */
+.op-lect-trfull { max-width: 640px; width: 92vw; }
+.op-lect-trfull-body { max-height: 60vh; overflow-y: auto; padding: 4px 2px; }
+.op-lect-trfull-list { list-style: none; margin: 0; padding: 0; }
+.op-lect-trfull-list li {
+  display: flex;
+  gap: 12px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--line);
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+.op-lect-trfull-list li:last-child { border-bottom: none; }
+.op-lect-trfull-time {
+  flex-shrink: 0;
+  min-width: 48px;
+  padding-top: 1px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 12.5px;
+  color: var(--brand-ink);
+}
+.op-lect-trfull-text { color: var(--ink); }
+.op-lect-trfull-empty { color: var(--ink-3); text-align: center; padding: 24px; }
+
 /* 첫 방문 강사 힌트 배너 */
 .op-lect-hint {
   display: flex; align-items: center; gap: 10px;

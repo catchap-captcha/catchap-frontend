@@ -11,6 +11,7 @@ import {
   type OpsLectureMaterial,
   type OpsLectureQuestion,
   type TranscriptStatus,
+  type TranscriptSegment,
 } from '../../api/lectures';
 import OpsNav from '../../components/ops/OpsNav';
 import { useAuth } from '../../hooks/useAuth';
@@ -2033,11 +2034,28 @@ function TranscriptBar({
   const [pasteOpen, setPasteOpen] = useState(false);
   const [pasteText, setPasteText] = useState('');
   const fileRef = useRef<HTMLInputElement | null>(null);
+  // 전체 보기(전사 끝까지 검수) — 목록엔 preview 3개만, '전체 보기' 누르면 전체를 따로 로드.
+  const [fullOpen, setFullOpen] = useState(false);
+  const [fullSegs, setFullSegs] = useState<TranscriptSegment[] | null>(null);
+  const [fullBusy, setFullBusy] = useState(false);
 
   const load = () => {
     lectureApi.opsTranscriptGet(lectureId).then(setSt).catch(() => setSt(null));
   };
   useEffect(load, [lectureId]);
+
+  const openFull = async () => {
+    setFullBusy(true);
+    try {
+      const r = await lectureApi.opsTranscriptGet(lectureId, true);
+      setFullSegs(r.segments ?? []);
+      setFullOpen(true);
+    } catch (e) {
+      note(false, errorDetail(e, '전사를 불러오지 못했어요.'));
+    } finally {
+      setFullBusy(false);
+    }
+  };
 
   const onUpload = async (f: File | null) => {
     if (!f) return;
@@ -2113,6 +2131,12 @@ function TranscriptBar({
             <i className="ph-bold ph-clipboard-text" /> 붙여넣기
           </button>
           {st?.has_transcript && (
+            <button className="op-btn op-btn--soft" disabled={fullBusy} onClick={openFull}>
+              <i className="ph-bold ph-list-magnifying-glass" />{' '}
+              {fullBusy ? '불러오는 중…' : '전체 보기'}
+            </button>
+          )}
+          {st?.has_transcript && (
             <button className="op-btn op-btn--soft" disabled={busy} onClick={clear}>
               <i className="ph-bold ph-trash" /> 삭제
             </button>
@@ -2132,6 +2156,35 @@ function TranscriptBar({
             <button className="op-btn op-btn--approve" disabled={busy || !pasteText.trim()} onClick={savePaste}>
               {busy ? '저장 중…' : '자막 저장'}
             </button>
+          </div>
+        </div>
+      )}
+      {fullOpen && (
+        <div className="op-bh-overlay" onClick={() => setFullOpen(false)}>
+          <div className="op-formmodal op-lect-trfull" onClick={(e) => e.stopPropagation()}>
+            <div className="op-bh-modal-h">
+              <span>
+                <i className="ph-fill ph-closed-captioning" /> 전사 전체 보기 ·{' '}
+                {_TR_SRC_LABEL[st?.source ?? ''] ?? st?.source} · {st?.segment_count ?? 0}개 구간
+              </span>
+              <button className="op-bh-modal-x" onClick={() => setFullOpen(false)}>
+                <i className="ph-bold ph-x" />
+              </button>
+            </div>
+            <div className="op-lect-trfull-body">
+              {(fullSegs ?? []).length === 0 ? (
+                <p className="op-lect-trfull-empty">전사 내용이 없어요.</p>
+              ) : (
+                <ol className="op-lect-trfull-list">
+                  {(fullSegs ?? []).map((s, i) => (
+                    <li key={i}>
+                      <span className="op-lect-trfull-time">{fmtMMSS(s.start)}</span>
+                      <span className="op-lect-trfull-text">{s.text}</span>
+                    </li>
+                  ))}
+                </ol>
+              )}
+            </div>
           </div>
         </div>
       )}
