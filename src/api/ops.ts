@@ -555,6 +555,19 @@ export const opsSettingsApi = {
     client
       .post<{ ok: boolean; detail: string }>('/ops/settings/ai/test', { provider })
       .then((r) => r.data),
+  /** 문항 생성 '출제 규칙'(프롬프트) 조회 — 현재 규칙 + 기본값 */
+  getAiPrompt: () =>
+    client
+      .get<{ rules: string; default_rules: string; is_custom: boolean }>('/ops/settings/ai/prompt')
+      .then((r) => r.data),
+  /** 출제 규칙 저장(빈 값=기본값 복원). 다음 문항 생성부터 즉시 반영 */
+  putAiPrompt: (rules: string) =>
+    client
+      .put<{ rules: string; default_rules: string; is_custom: boolean }>(
+        '/ops/settings/ai/prompt',
+        { rules },
+      )
+      .then((r) => r.data),
 };
 
 /** 운영자 AI 모델 선택(#26) — 실제 LLM 호출(문항 생성·자기검증)에 쓰는 모델의 런타임 설정.

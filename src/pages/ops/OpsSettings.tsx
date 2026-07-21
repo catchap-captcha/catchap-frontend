@@ -133,6 +133,96 @@ function KeyCard({
   );
 }
 
+/** 문항 생성 프롬프트(출제 규칙) 편집 — 운영자가 LLM 지침을 직접 손본다. 구조부(JSON 형식·
+ *  변수 주입)는 서버가 고정하고 여기선 '규칙'만 바꿔, 생성 파서가 깨지지 않게 한다. */
+function PromptEditor() {
+  const [rules, setRules] = useState('');
+  const [defaultRules, setDefaultRules] = useState('');
+  const [isCustom, setIsCustom] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+
+  useEffect(() => {
+    opsSettingsApi
+      .getAiPrompt()
+      .then((d) => {
+        setRules(d.rules);
+        setDefaultRules(d.default_rules);
+        setIsCustom(d.is_custom);
+      })
+      .catch(() => setMsg({ ok: false, text: '프롬프트를 불러오지 못했어요.' }))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const save = async (value: string) => {
+    setSaving(true);
+    setMsg(null);
+    try {
+      const d = await opsSettingsApi.putAiPrompt(value);
+      setRules(d.rules);
+      setIsCustom(d.is_custom);
+      setMsg({
+        ok: true,
+        text: d.is_custom
+          ? '출제 규칙을 저장했어요 — 다음 문항 생성부터 적용돼요.'
+          : '기본값으로 되돌렸어요.',
+      });
+    } catch (e) {
+      setMsg({ ok: false, text: errorDetail(e, '저장에 실패했어요.') });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) return null;
+  return (
+    <section className="ops-set-card">
+      <div className="ops-set-head">
+        <h2>문항 생성 프롬프트 — 출제 규칙</h2>
+        <span className={`ops-set-chip ${isCustom ? 'ops-set-chip--ok' : 'ops-set-chip--off'}`}>
+          <i className={`ph-fill ${isCustom ? 'ph-pencil-simple' : 'ph-check-circle'}`} />{' '}
+          {isCustom ? '사용자 지정' : '기본값'}
+        </span>
+      </div>
+      <p className="ops-set-desc">
+        LLM에 주는 <b>출제 규칙</b>을 직접 바꿀 수 있어요(난이도·문체·언어 등). JSON 형식·변수
+        주입·출제 시점 지침 같은 <b>구조부는 서버가 고정</b>하니, 이 규칙만 바꿔도 생성이 안전하게
+        동작해요.
+      </p>
+      <textarea
+        className="ops-set-prompt"
+        value={rules}
+        onChange={(e) => setRules(e.target.value)}
+        rows={7}
+        spellCheck={false}
+        placeholder={defaultRules}
+      />
+      {msg && (
+        <p className={`ops-set-src${msg.ok ? ' ops-set-src--ok' : ' ops-set-src--bad'}`}>
+          {msg.text}
+        </p>
+      )}
+      <div className="ops-set-row">
+        <button className="op-btn op-btn--approve" disabled={saving} onClick={() => save(rules)}>
+          {saving ? '저장 중…' : '규칙 저장'}
+        </button>
+        <button
+          className="op-btn op-btn--soft"
+          disabled={saving || !isCustom}
+          onClick={() => {
+            setRules(defaultRules);
+            void save('');
+          }}
+          title="서버 기본 규칙으로 되돌려요"
+        >
+          기본값으로 복원
+        </button>
+      </div>
+    </section>
+  );
+}
+
 export default function OpsSettings() {
   const [data, setData] = useState<AiSettings | null>(null);
   const [loadErr, setLoadErr] = useState('');
@@ -249,6 +339,8 @@ export default function OpsSettings() {
           조회 API·감사 로그 어디에도 원문이 남지 않아요. 저장 후 <b>‘연결 테스트’</b>로 키가
           유효한지 바로 확인하세요 — 잘못된 키는 인증 실패(401 등)로 정직하게 표시돼요.
         </p>
+
+        <PromptEditor />
       </main>
     </div>
   );

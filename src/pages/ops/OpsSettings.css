@@ -41,6 +41,13 @@
 .ops-set-src { margin: 6px 0 0; font-size: 12px; color: var(--ink-3); font-weight: 700; }
 .ops-set-src--bad { color: #d15448; }
 .ops-set-src--ok { color: #1f9d57; }
+.ops-set-prompt {
+  width: 100%; box-sizing: border-box; margin: 8px 0; padding: 10px 12px;
+  border: 1px solid var(--line, #d8dee7); border-radius: 8px;
+  background: var(--surface, #fff); color: var(--ink-1, #1a1f27);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12.5px; line-height: 1.6; resize: vertical;
+}
 
 .ops-set-row { display: flex; gap: 8px; margin-top: 12px; align-items: center; flex-wrap: wrap; }
 .ops-set-inputwrap { position: relative; flex: 1; min-width: 260px; }
