@@ -304,10 +304,24 @@ export default function OpsSettings() {
             <span>
               강의 영상 음성을 <b>STT</b>로 전사(자막화)하고, 그 자막을 근거로 <b>LLM</b>이
               확인 문항과 출제 시점(되감기 지점 포함)을 초안(draft)으로 만들어요 — 운영자가
-              검수 후 공개해요. STT 키가 없으면 제목·설명만으로 생성되고 시점 제안은 빠져요.
+              검수 후 공개해요.{' '}
+              {data?.stt_worker?.configured ? (
+                <b>STT는 자체 GPU 워커가 무료로 처리해요(OpenAI 키 불필요).</b>
+              ) : (
+                'STT 워커·키가 모두 없으면 제목·설명만으로 생성되고 시점 제안은 빠져요.'
+              )}
             </span>
           </div>
         </div>
+
+        {data?.stt_worker?.configured && (
+          <div className="ops-set-banner ops-set-banner--ok">
+            <i className="ph-fill ph-check-circle" /> 자체 STT 워커(faster-whisper·GPU)로 강의 자막을{' '}
+            <b>무료</b>로 전사 중이에요 — 아래 OpenAI 키는 STT에 필수가 아니에요(GPT 모델·폴백용).
+          </div>
+        )}
+
+        <h2 className="ops-set-section">API 키</h2>
 
         <KeyCard
           title="LLM — 문항 생성 (Anthropic)"
@@ -322,8 +336,12 @@ export default function OpsSettings() {
           saving={saving === 'llm'}
         />
         <KeyCard
-          title="OpenAI 키 — 음성 전사(STT) + GPT 모델"
-          desc="강의 음성을 타임스탬프 있는 자막으로 바꾸는 Whisper 전사에 써요(25MB 이하). 위 'AI 모델 선택'에서 GPT 모델을 슬롯에 넣으면 이 키로 문항 생성·검증도 호출해요 — OpenAI는 이 키 하나로 둘 다 동작해요."
+          title="OpenAI 키 — (선택) GPT 모델 · STT 폴백"
+          desc={
+            data?.stt_worker?.configured
+              ? "STT(자막 전사)는 위 자체 워커가 무료로 처리하므로 이 키는 필수가 아니에요. 'AI 모델 선택'에서 GPT 모델을 쓰거나, 자체 워커가 멈췄을 때 OpenAI Whisper로 폴백하려면 입력하세요."
+              : "강의 음성을 자막으로 바꾸는 STT와 GPT 모델에 써요. 자체 STT 워커가 없을 때 이 키로 OpenAI Whisper 전사(25MB 이하)를 해요."
+          }
           status={data?.stt ?? null}
           provider="openai"
           placeholder="sk-…"

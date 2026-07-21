@@ -543,6 +543,8 @@ export interface AiSettings {
   llm: AiKeyStatus;
   stt: AiKeyStatus;
   llm_model: string;
+  /** 자체 STT 워커(faster-whisper/GPU) 설정 여부 — 켜져 있으면 STT는 무료(OpenAI 키 불요) */
+  stt_worker: { configured: boolean };
 }
 
 export const opsSettingsApi = {
