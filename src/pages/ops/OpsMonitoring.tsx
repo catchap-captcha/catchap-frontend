@@ -1,6 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import OpsNav from '../../components/ops/OpsNav';
-import { monitoringApi, type MonitoringData, type ServerMetric } from '../../api/monitoring';
+import {
+  monitoringApi,
+  METRIC_RANGES,
+  type MetricRange,
+  type MonitoringData,
+  type ServerMetric,
+} from '../../api/monitoring';
 import { fmtKrw } from '../../utils/currency';
 import './OpsApproval.css';
 import './OpsMonitoring.css';
@@ -35,8 +41,13 @@ function Bar({ label, pct, sub }: { label: string; pct: number; sub: string }) {
 /** 서버 자원 추이(최근 구간) — CPU/메모리/GPU 라인. y=0~100%, 외부 의존 없는 SVG. */
 function Trend({ h }: { h: NonNullable<ServerMetric['history']> }) {
   const n = h.cpu.length;
+  const rangeLabel = METRIC_RANGES.find((r) => r.key === h.range)?.label ?? h.range;
   if (n < 2) {
-    return <div className="mon-trend-empty">추이를 모으는 중… (10초마다 갱신)</div>;
+    return (
+      <div className="mon-trend-empty">
+        최근 {rangeLabel} 추이를 모으는 중… (표본이 더 쌓이면 그려져요)
+      </div>
+    );
   }
   const poly = (vals: (number | null)[]) =>
     vals
@@ -60,7 +71,7 @@ function Trend({ h }: { h: NonNullable<ServerMetric['history']> }) {
         <span className="mon-lg mon-lg--cpu">CPU</span>
         <span className="mon-lg mon-lg--mem">메모리</span>
         {hasGpu && <span className="mon-lg mon-lg--gpu">GPU</span>}
-        <span className="mon-trend-span">최근 {n}점</span>
+        <span className="mon-trend-span">최근 {rangeLabel} · {n}개</span>
       </div>
     </div>
   );
@@ -178,10 +189,12 @@ export default function OpsMonitoring() {
     }
   });
   const dragKey = useRef<string | null>(null);
+  // 추이 그래프 기간(6h/24h/7d/30d) — 서버가 raw/롤업 소스를 가른다.
+  const [range, setRange] = useState<MetricRange>('6h');
 
   const load = () => {
     monitoringApi
-      .get()
+      .get(range)
       .then((d) => {
         setData(d);
         setState('ready');
@@ -191,12 +204,14 @@ export default function OpsMonitoring() {
 
   useEffect(() => {
     load();
-    // 현황판 — 10초마다 자동 새로고침(백엔드는 매 호출 self-collect라 값이 갱신됨)
+    // 현황판 — 10초마다 자동 새로고침(백엔드는 매 호출 self-collect라 값이 갱신됨).
+    // range가 바뀌면 재로드 + 타이머 갱신(load가 현재 range를 클로저로 잡는다).
     timer.current = window.setInterval(load, 10000);
     return () => {
       if (timer.current) window.clearInterval(timer.current);
     };
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [range]);
 
   const llm = data?.llm;
   const maxCost = Math.max(1e-9, ...(llm?.providers.map((p) => p.cost_usd) ?? [0]));
@@ -237,9 +252,24 @@ export default function OpsMonitoring() {
               각 서버의 CPU·메모리·디스크·GPU와 LLM API 사용량을 한눈에 봐요. 10초마다 자동 갱신.
             </p>
           </div>
-          <button className="op-refresh" onClick={load} disabled={state === 'loading'}>
-            새로고침
-          </button>
+          <div className="mon-head-actions">
+            <div className="mon-range" role="group" aria-label="추이 기간">
+              {METRIC_RANGES.map((r) => (
+                <button
+                  key={r.key}
+                  type="button"
+                  className={`mon-range-btn${range === r.key ? ' mon-range-btn--on' : ''}`}
+                  onClick={() => setRange(r.key)}
+                  aria-pressed={range === r.key}
+                >
+                  {r.label}
+                </button>
+              ))}
+            </div>
+            <button className="op-refresh" onClick={load} disabled={state === 'loading'}>
+              새로고침
+            </button>
+          </div>
         </div>
 
         {state === 'error' && (

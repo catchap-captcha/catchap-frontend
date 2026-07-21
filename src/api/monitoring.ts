@@ -24,9 +24,19 @@ export interface ServerMetric {
   stale?: boolean;
   /** 임계 초과 경보 — metric='수집'은 오래됨(값 없음). value/threshold는 %. */
   alerts?: { metric: string; value: number | null; threshold: number | null }[];
-  /** 추이 그래프용 최근 표본(데이터 있는 서버만). gpu는 GPU 없는 서버면 null 배열. */
-  history?: { t: string[]; cpu: number[]; mem: number[]; gpu: (number | null)[] };
+  /** 추이 그래프용 표본(데이터 있는 서버만). gpu는 GPU 없는 서버면 null 배열.
+   *  range=요청 기간(6h/24h=raw 30초 표본, 7d/30d=시간별 롤업 평균). */
+  history?: { range: string; t: string[]; cpu: number[]; mem: number[]; gpu: (number | null)[] };
 }
+
+/** 추이 기간 선택 — 6h/24h는 raw 표본, 7d/30d는 시간별 롤업 평균(서버가 소스를 가름). */
+export type MetricRange = '6h' | '24h' | '7d' | '30d';
+export const METRIC_RANGES: { key: MetricRange; label: string }[] = [
+  { key: '6h', label: '6시간' },
+  { key: '24h', label: '24시간' },
+  { key: '7d', label: '7일' },
+  { key: '30d', label: '30일' },
+];
 
 export interface LlmUsage {
   tokens_in: number;
@@ -45,6 +55,8 @@ export interface MonitoringData {
 }
 
 export const monitoringApi = {
-  /** 운영자 모니터링 대시보드 — 서버별 자원 + LLM 사용량. 백엔드는 요청 시 self-collect(실측). */
-  get: () => client.get<MonitoringData>('/ops/monitoring').then((r) => r.data),
+  /** 운영자 모니터링 대시보드 — 서버별 자원 + LLM 사용량. 백엔드는 요청 시 self-collect(실측).
+   *  range로 추이 기간을 고른다(기본 6h). */
+  get: (range: MetricRange = '6h') =>
+    client.get<MonitoringData>('/ops/monitoring', { params: { range } }).then((r) => r.data),
 };

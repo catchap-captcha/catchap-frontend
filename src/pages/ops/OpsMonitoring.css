@@ -124,6 +124,40 @@
   font-size: 12.5px;
   color: var(--ink-3);
 }
+/* 추이 기간 선택(6h/24h/7d/30d) 세그먼트 — 토큰만 참조해 라·다 자동 */
+.mon-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.mon-range {
+  display: inline-flex;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 2px;
+  gap: 2px;
+}
+.mon-range-btn {
+  padding: 6px 12px;
+  border: none;
+  background: transparent;
+  color: var(--ink-2);
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.mon-range-btn:hover {
+  color: var(--ink);
+}
+.mon-range-btn--on {
+  background: var(--surface);
+  color: var(--brand-ink);
+  box-shadow: var(--shadow-sm);
+}
 .mon-card--empty {
   opacity: 0.85;
 }
