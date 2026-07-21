@@ -785,19 +785,8 @@ function LectureFormModal({
   };
   const set = (k: keyof LectureForm) => (v: string) => setForm((f) => ({ ...f, [k]: v }));
 
-  /* 이 과목에 담을 수 있는 코스만 노출(코스=과목 고정). 편집 중인 강의가 이미 담긴 코스는
-     혹시 숨김(hidden)이어도 계속 보이게 유지한다(현재 소속을 감추면 실수로 빼게 된다). */
-  const subjectCourses = courses.filter(
-    (c) => c.subject === form.subject && (c.status !== 'hidden' || c.id === form.course_id),
-  );
-  /* 과목 변경 시 — 지금 고른 코스가 새 과목과 안 맞으면 미분류로 되돌린다(서버 400 선제 차단).
-     맞으면 유지. 코스=과목 고정이라 "국어 코스에 담긴 채 과목만 수학으로" 같은 상태를 못 만든다. */
-  const changeSubject = (v: string) =>
-    setForm((f) => ({
-      ...f,
-      subject: v,
-      course_id: courses.find((c) => c.id === f.course_id)?.subject === v ? f.course_id : '',
-    }));
+  /* Phase 1(코스 중심): 과목 선택을 없애 subjectCourses·changeSubject를 제거했다. 강의 폼은
+     코스만 고르고, 과목은 그 코스에서 자동 유래한다(미분류면 기본 과목 유지 — DB·은행 정합). */
 
   /* 파일 선택 시 브라우저가 영상 메타데이터에서 길이를 읽어 자동 기입한다.
      운영자가 초를 손으로 계산하면 틀리기 쉽고, 틀리면 시청 검증이 깨진다
@@ -1016,32 +1005,37 @@ function LectureFormModal({
             강의 제목
             <input value={form.title} onChange={(e) => set('title')(e.target.value)} placeholder="예: 깊이 있게 읽어요(1)" />
           </label>
-          <label className="ox-field">
-            과목
-            <select value={form.subject} onChange={(e) => changeSubject(e.target.value)}>
-              {subjects.map((s) => (
-                <option key={s} value={s}>{s}</option>
-              ))}
-            </select>
-          </label>
-          {/* 코스 배정 — 같은 과목 코스만 고를 수 있다(코스=과목 고정). 없으면 '코스 관리'에서
-              먼저 만든다. 미분류로 두면 학생 화면에서 과목 최상위에 낱개 강의로 보인다. */}
-          <label className="ox-field">
+          {/* Phase 1(코스 중심): 과목 선택 제거 — 코스를 고르면 그 코스의 과목이 자동 적용된다.
+              미분류면 기본 과목으로 둔다(DB 컬럼·은행 정합 유지). 코스가 최상위 단위. */}
+          <label className="ox-field op-form-span2">
             코스
             <span className="lu-help">
-              {subjectCourses.length === 0
-                ? `'${form.subject}' 과목 코스가 없어요 — 미분류로 두거나 아래에서 새로 만드세요`
-                : '같은 과목 코스에만 담을 수 있어요'}
+              강의가 속할 코스를 고르세요. 미분류로 두면 학생 화면에서 코스 없이 낱개로 보여요.
+              코스가 없으면 오른쪽 &lsquo;새 코스&rsquo;로 바로 만들 수 있어요.
             </span>
             <div className="op-lect-courserow">
-              <select value={form.course_id} onChange={(e) => set('course_id')(e.target.value)}>
+              <select
+                value={form.course_id}
+                onChange={(e) => {
+                  const cid = e.target.value;
+                  const c = courses.find((x) => x.id === cid);
+                  // 코스를 고르면 과목은 그 코스를 따른다(미분류면 기본 과목 유지).
+                  setForm((f) => ({
+                    ...f,
+                    course_id: cid,
+                    subject: c?.subject || f.subject || subjects[0] || '일반',
+                  }));
+                }}
+              >
                 <option value="">미분류(코스 없음)</option>
-                {subjectCourses.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.title}
-                    {c.status === 'hidden' ? ' (숨김)' : ''}
-                  </option>
-                ))}
+                {courses
+                  .filter((c) => c.status !== 'deleted')
+                  .map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.title}
+                      {c.status === 'hidden' ? ' (숨김)' : ''}
+                    </option>
+                  ))}
               </select>
               {newCourse === null && (
                 <button
