@@ -952,7 +952,7 @@ export default function LecturePlayer() {
 
         {/* ===== 강의 목차 사이드바 ===== */}
         <aside className="lp-side">
-          <div className="lp-side-head" style={{ background: theme.grad }}>
+          <div className="lp-side-head">
             <div className="lp-side-title">
               <i className="ph-fill ph-list-numbers" />
               강의 목차

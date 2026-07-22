@@ -1,250 +1,563 @@
-/* 강의 목록(오늘의 강의 카탈로그) — 개념 설명(Concepts.css cp-*) 재사용분 외 추가 스타일 */
+/* CatChap 강의 목록 — handoff `CatChap 강의 목록.dc.html` (jy 중성 인강 디자인) */
 
-/* 로딩/에러/빈 상태 */
+.ll-root {
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+.ll-container {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 40px 28px 60px;
+}
+
+/* ===== HERO ===== */
+.ll-hero {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: 16px;
+  padding: 30px 32px;
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.ll-heroleft {
+  min-width: 0;
+}
+
+.ll-herobadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--brand-ink);
+  background: var(--brand-soft);
+  font-weight: 700;
+  font-size: 12.5px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  margin-bottom: 12px;
+}
+
+.ll-herobadge i {
+  font-size: 14px;
+}
+
+.ll-herotitle {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 28px;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+  margin: 0 0 7px;
+}
+
+.ll-herodesc {
+  font-size: 14.5px;
+  color: var(--ink-2);
+  font-weight: 500;
+  margin: 0;
+  max-width: 520px;
+  line-height: 1.6;
+}
+
+.ll-herostats {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.ll-herostatnum {
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 800;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+}
+
+.ll-herostatslash {
+  color: var(--ink-3);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.ll-herostatlabel {
+  font-size: 12.5px;
+  color: var(--ink-3);
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.ll-herostatlabel-err {
+  color: var(--danger-ink);
+}
+
+/* ===== CATEGORY FILTER TABS ===== */
+.ll-tabsrow {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 26px;
+}
+
+.ll-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--line-strong);
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 13.5px;
+  padding: 9px 15px;
+  border-radius: 9px;
+  background: var(--surface);
+  color: var(--ink-2);
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.ll-tab:hover {
+  border-color: var(--ink-3);
+  color: var(--ink);
+}
+
+.ll-tab-on,
+.ll-tab-on:hover {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--on-brand);
+}
+
+.ll-tab i {
+  font-size: 15px;
+}
+
+/* ===== 로딩/에러/빈 상태 ===== */
 .ll-state {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 42px 20px;
-  border-radius: 20px;
+  padding: 32px 20px;
+  border-radius: 12px;
   background: var(--surface);
-  border: 1.5px dashed var(--line);
+  border: 1px dashed var(--line-strong);
   color: var(--ink-2);
-  font-weight: 700;
-  font-size: 14.5px;
-  margin-bottom: 28px;
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 24px;
 }
-.ll-state i { font-size: 20px; }
-.ll-state-err { color: var(--brand-strong); border-color: var(--line); background: var(--surface); }
+.ll-state i { font-size: 18px; }
+.ll-state-err { color: var(--danger-ink); }
 .ll-retry {
-  margin-left: 10px;
+  margin-left: 8px;
   border: none;
   border-radius: 999px;
   padding: 8px 16px;
   background: var(--brand);
   color: var(--on-brand);
-  font-weight: 800;
+  font-weight: 700;
   font-size: 13px;
   cursor: pointer;
   font-family: inherit;
 }
-.ll-retry:hover { filter: brightness(1.05); }
+.ll-retry:hover { background: var(--brand-strong); }
 
-/* '학습중' 배지 — 읽음(민트) / 새 강의(흰색)와 구분되는 톤 */
-.ll-badge-watching {
-  background: var(--surface);
-  color: var(--warn);
-  box-shadow: 0 6px 12px -6px rgba(255, 146, 46, 0.7);
+/* ===== SECTIONS (분류) ===== */
+.ll-section {
+  margin: 0 0 32px;
 }
 
-/* 더보기 카드 — 목업의 점선 카드 */
-.ll-more {
-  border: 2px dashed color-mix(in srgb, var(--ll-c, var(--brand)) 45%, var(--surface));
-  border-radius: 22px;
-  background: transparent;
-  min-height: 220px;
+.ll-sechead {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.ll-secicon {
+  width: 42px;
+  height: 42px;
+  border-radius: 11px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  cursor: pointer;
-  font-family: inherit;
-  transition: background 0.15s ease, transform 0.15s ease;
+  flex-shrink: 0;
 }
-.ll-more:hover {
-  background: color-mix(in srgb, var(--ll-c, var(--brand)) 6%, transparent);
-  transform: translateY(-2px);
-}
-.ll-more-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 14px;
-  display: grid;
-  place-items: center;
-  background: var(--surface);
-  color: var(--ll-c, var(--brand));
-  font-size: 20px;
-  box-shadow: 0 10px 18px -12px rgba(60, 40, 30, 0.35);
-}
-.ll-more-title { font-weight: 800; font-size: 15px; color: var(--ll-c, var(--brand)); }
-.ll-more-sub { font-weight: 700; font-size: 12.5px; color: var(--ink-3); }
+.ll-secicon i { font-size: 22px; }
 
-/* 강사별 코스 그룹 — 과목 섹션 안에서 코스 단위로 강의를 묶는다(과목 → 코스 → 강의) */
+.ll-sectitle {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 19px;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  margin: 0;
+}
+
+.ll-secsub {
+  margin: 2px 0 0;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink-3);
+}
+
+/* ===== 강사별 코스 그룹 ===== */
 .ll-coursegroup { margin-bottom: 22px; }
+
 .ll-coursehead {
   display: flex;
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
-  margin: 6px 2px 12px;
+  margin-bottom: 14px;
+  padding: 11px 15px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 11px;
 }
+
 .ll-coursebadge {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 3px 10px;
-  border-radius: 999px;
-  font-weight: 800;
+  padding: 4px 9px;
+  border-radius: 6px;
+  font-weight: 700;
   font-size: 11.5px;
+  color: var(--brand-ink);
+  background: var(--brand-soft);
 }
-.ll-coursetitle { margin: 0; font-weight: 800; font-size: 16px; color: var(--ink); }
-.ll-coursetitle--none { color: var(--ink-3); font-weight: 700; font-size: 14.5px; }
+.ll-coursebadge i { font-size: 12px; }
+
+.ll-coursetitle { margin: 0; font-weight: 700; font-size: 14.5px; color: var(--ink); }
+.ll-coursetitle--none { color: var(--ink-3); font-weight: 600; font-size: 14px; }
+
 .ll-courseinst {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  font-weight: 700;
+  gap: 5px;
+  font-weight: 500;
   font-size: 12.5px;
-  color: var(--ink-2);
+  color: var(--ink-3);
 }
+
 .ll-coursecount {
   margin-left: auto;
-  font-weight: 700;
-  font-size: 12px;
-  color: var(--ink-3);
-}
-
-/* 코스 Q(3단계-b) — 코스 머리 우측: 열린 문항이 있으면 연습 진입 버튼 */
-.ll-course-qbtn {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  border: none;
-  border-radius: 999px;
-  padding: 7px 14px;
-  font-family: 'Pretendard', sans-serif;
-  font-weight: 800;
+  font-weight: 600;
   font-size: 12.5px;
-  color: var(--on-brand);
-  cursor: pointer;
-  transition: filter 0.15s;
-}
-.ll-course-qbtn:hover {
-  filter: brightness(1.08);
-}
-.ll-course-qbtn i {
-  font-size: 14px;
-}
-/* 문항은 있는데 전부 잠김 — 완주 유도 안내(버튼 아님, 빈 약속 금지) */
-.ll-course-qlock {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-weight: 700;
-  font-size: 12px;
   color: var(--ink-3);
 }
-.ll-course-qlock i {
-  font-size: 13px;
-}
 
-/* 수강신청/취소 — 무료 자유 신청. 미신청=과목 색 필드(행동 유도), 수강 중=옅은 확인 상태.
-   hover 시 '수강 중'은 취소 뉘앙스로 살짝 어두워진다(별도 텍스트 없이 title로 안내). */
+/* 수강신청/취소 — 무료 자유 신청. 미신청=브랜드 필드(행동 유도), 수강 중=옅은 확인 상태.
+   hover 시 '수강 중'은 취소 뉘앙스로 테두리·글자가 위험색으로(별도 텍스트 없이 title로 안내). */
 .ll-enroll {
   display: inline-flex;
   align-items: center;
   gap: 5px;
   border: none;
-  border-radius: 999px;
-  padding: 7px 14px;
-  font-family: 'Pretendard', sans-serif;
-  font-weight: 800;
+  border-radius: 8px;
+  padding: 7px 13px;
+  font-family: inherit;
+  font-weight: 700;
   font-size: 12.5px;
   color: var(--on-brand);
+  background: var(--brand);
   cursor: pointer;
-  transition: filter 0.15s, opacity 0.15s;
+  transition: background 0.15s ease, opacity 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
-.ll-enroll i {
-  font-size: 14px;
-}
-.ll-enroll:hover {
-  filter: brightness(1.08);
-}
-.ll-enroll:disabled {
-  opacity: 0.55;
-  cursor: default;
-}
+.ll-enroll i { font-size: 14px; }
+.ll-enroll:hover { background: var(--brand-strong); }
+.ll-enroll:disabled { opacity: 0.55; cursor: default; }
 .ll-enroll--on {
-  background: var(--surface-2, var(--surface));
+  background: var(--surface-2);
   color: var(--ink-2);
-  border: 1.5px solid var(--line);
+  border: 1px solid var(--line-strong);
 }
 .ll-enroll--on:hover {
-  filter: none;
-  border-color: var(--danger, #d9534f);
-  color: var(--danger, #d9534f);
+  background: var(--surface-2);
+  border-color: var(--danger-ink);
+  color: var(--danger-ink);
 }
 
-/* ===== 수료 시험 카드(#28) — 코스 그룹 말미 ===== */
+/* 코스 Q(3단계-b) */
+.ll-course-qbtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: none;
+  border-radius: 8px;
+  padding: 7px 13px;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 12.5px;
+  color: var(--on-brand);
+  background: var(--brand);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.ll-course-qbtn:hover { background: var(--brand-strong); }
+.ll-course-qbtn i { font-size: 14px; }
+
+.ll-course-qlock {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--ink-3);
+}
+.ll-course-qlock i { font-size: 13px; }
+
+/* ===== 강의 카드 그리드 ===== */
+.ll-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.ll-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  overflow: hidden;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  transition: border-color 0.15s ease;
+}
+.ll-card:hover { border-color: var(--line-strong); }
+
+.ll-thumb {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background: #1b1a1f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ll-thumb i { color: rgba(255, 255, 255, 0.85); font-size: 26px; }
+
+.ll-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 3px 9px;
+  border-radius: 6px;
+}
+
+.ll-time {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.ll-cardbody {
+  padding: 15px 16px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.ll-cardchip {
+  display: inline-block;
+  align-self: flex-start;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--brand-ink);
+  background: var(--brand-soft);
+  padding: 3px 9px;
+  border-radius: 6px;
+  margin-bottom: 9px;
+}
+
+.ll-cardtitle {
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  margin-bottom: 5px;
+}
+
+.ll-carddesc {
+  margin: 0 0 13px;
+  font-size: 12.5px;
+  color: var(--ink-2);
+  font-weight: 500;
+  line-height: 1.55;
+  flex: 1;
+}
+
+.ll-cardfoot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ll-cardstatus {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 700;
+  font-size: 12.5px;
+  color: var(--brand-ink);
+}
+.ll-cardstatus--done { color: var(--ok-ink); }
+.ll-cardstatus i { font-size: 14px; }
+
+.ll-cardwatch {
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 700;
+  font-size: 12.5px;
+  color: var(--brand-ink);
+}
+.ll-cardwatch:hover { color: var(--brand-strong); }
+.ll-cardwatch i { font-size: 13px; }
+
+/* 더보기 카드 */
+.ll-more {
+  border: 1px dashed var(--line-strong);
+  border-radius: 13px;
+  background: transparent;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.ll-more:hover {
+  border-color: var(--ink-3);
+  background: var(--surface-2);
+}
+.ll-more-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  color: var(--ink-2);
+  font-size: 18px;
+}
+.ll-more-title { font-weight: 700; font-size: 14px; color: var(--ink); }
+.ll-more-sub { font-weight: 600; font-size: 12px; color: var(--ink-3); }
+
+/* ===== 수료 시험 카드(#28) ===== */
 .ll-examcard {
   display: flex;
   align-items: center;
-  gap: 13px;
+  gap: 12px;
   width: 100%;
   text-align: left;
   margin-top: 14px;
   padding: 15px 18px;
-  border: 2px solid var(--line);
-  border-radius: 18px;
+  border: 1px dashed var(--line-strong);
+  border-radius: 12px;
   background: var(--surface);
   cursor: pointer;
-  transition: transform 0.15s, box-shadow 0.15s;
-  box-shadow: 0 10px 24px -20px rgba(60, 90, 140, 0.35);
+  font-family: inherit;
+  transition: border-color 0.15s ease;
 }
-.ll-examcard:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 16px 30px -20px rgba(60, 90, 140, 0.42);
-}
+.ll-examcard:hover { border-color: var(--warn); }
 .ll-examcard--passed {
-  border-color: var(--line);
-  background: linear-gradient(120deg, var(--surface), var(--surface));
-}
-.ll-examcard--locked {
-  cursor: pointer;
-  background: var(--surface);
+  border-style: solid;
   border-color: var(--line);
 }
+.ll-examcard--passed:hover { border-color: var(--line-strong); }
+
 .ll-examicon {
   flex-shrink: 0;
-  width: 46px;
-  height: 46px;
-  border-radius: 14px;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 24px;
+  font-size: 20px;
+  background: var(--warn-soft);
+  color: var(--warn);
 }
+.ll-examicon--passed { background: var(--ok-soft); color: var(--ok-ink); }
+.ll-examicon--perfect { background: var(--warn-soft); color: var(--warn-ink); }
+
 .ll-exambody {
   flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 2px;
 }
+
 .ll-examtitle {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-family: var(--font-display); font-weight: 800;
-  font-size: 16px;
+  font-weight: 700;
+  font-size: 14.5px;
   color: var(--ink);
 }
+
 .ll-exambadge {
-  font-family: 'Pretendard', sans-serif;
-  font-weight: 800;
+  font-weight: 700;
   font-size: 10.5px;
-  padding: 2px 9px;
+  padding: 2px 8px;
   border-radius: 999px;
+  background: var(--ok-soft);
+  color: var(--ok-ink);
 }
+.ll-exambadge--perfect { background: var(--warn-soft); color: var(--warn-ink); }
+
 .ll-examdesc {
   font-size: 12.5px;
-  font-weight: 600;
-  color: var(--ink-2);
+  font-weight: 500;
+  color: var(--ink-3);
 }
+
 .ll-exsmgo {
   flex-shrink: 0;
-  font-size: 18px;
+  font-size: 16px;
+  color: var(--ink-3);
   display: flex;
+}
+
+/* ===== 모바일 반응형 (레이아웃만) ===== */
+@media (max-width: 768px) {
+  .ll-container { padding: 28px 18px 48px; }
+  .ll-hero { flex-direction: column; align-items: flex-start; padding: 24px; }
+  .ll-herostats { text-align: left; }
+  .ll-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 480px) {
+  .ll-container { padding: 22px 14px 40px; }
+  .ll-hero { padding: 20px; }
+  .ll-grid { grid-template-columns: 1fr; }
 }

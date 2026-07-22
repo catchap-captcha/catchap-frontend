@@ -1,12 +1,10 @@
-import { useEffect, useState, type CSSProperties } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
 import { lectureApi, type LectureItem, type StudentCourse } from '../../api/lectures';
 import ScreenTimeReminder from '../../components/motion/ScreenTimeReminder';
-import mascot from '../../assets/characters/catchap-logo.png';
 import { StudentNav } from '../../layouts/StudentLayout';
-import { LECTURE_SUBJECTS, categoryTheme } from './lectureSubjects';
-import './Concepts.css'; // 개념 설명과 같은 카탈로그 디자인(cp-*)을 그대로 재사용
+import { categoryTheme, formatClock } from './lectureSubjects';
 import './LectureList.css';
 
 /** 코스(그룹)별 기본 노출 개수 — 그 이상은 '더보기' 카드로 접는다(목업 동일) */
@@ -20,7 +18,7 @@ function watchState(l: LectureItem): WatchState {
   return 'new';
 }
 
-/** 한 과목 안의 강의를 강사별 코스로 묶는다(코스는 order_no순). course_id=null은 '기타' 그룹.
+/** 한 분류(category) 안의 강의를 강사별 코스로 묶는다(코스는 order_no순). course_id=null은 '기타' 그룹.
  *  rows는 서버가 (과목·order_no·created_at)로 정렬해 주므로 필터만 해도 코스 안 순서가 지켜진다. */
 interface CourseGroup {
   key: string;
@@ -61,34 +59,25 @@ function courseGroupsForCategory(
 
 /** 코스 수료 시험 카드(#28) — 코스 그룹 말미. 배움(강의)→연습(Q)→증명(시험)의 마지막 조각.
  *  상태 흐름을 한 카드에: 잠김(완주 필요) → 응시 가능(진행) → 수료(+완벽 통과). */
-function ExamCard({
-  course, color, soft, onGo,
-}: {
-  course: StudentCourse;
-  color: string;
-  soft: string;
-  onGo: () => void;
-}) {
+function ExamCard({ course, onGo }: { course: StudentCourse; onGo: () => void }) {
   const ex = course.exam!;
   const passed = ex.passed;
   const perfect = ex.perfect;
   const locked = !ex.available && !passed;
   return (
     <button
-      className={`ll-examcard${passed ? ' ll-examcard--passed' : ''}${locked ? ' ll-examcard--locked' : ''}`}
-      style={!passed && !locked ? { borderColor: soft } : undefined}
+      className={`ll-examcard${passed ? ' ll-examcard--passed' : ''}`}
       onClick={onGo}
     >
       <span
-        className="ll-examicon"
-        style={{ background: passed ? 'var(--ok-soft)' : locked ? 'var(--surface-2)' : soft, color: passed ? 'var(--ok)' : locked ? 'var(--ink-3)' : color }}
+        className={`ll-examicon${passed ? (perfect ? ' ll-examicon--perfect' : ' ll-examicon--passed') : ''}`}
       >
         <i className={passed ? (perfect ? 'ph-fill ph-crown' : 'ph-fill ph-seal-check') : locked ? 'ph-fill ph-lock-simple' : 'ph-fill ph-exam'} />
       </span>
       <span className="ll-exambody">
         <b className="ll-examtitle">
           수료 시험
-          {passed && <span className="ll-exambadge" style={{ background: perfect ? 'var(--warn-soft)' : 'var(--ok-soft)', color: perfect ? 'var(--warn-ink)' : 'var(--ok)' }}>
+          {passed && <span className={`ll-exambadge${perfect ? ' ll-exambadge--perfect' : ''}`}>
             {perfect ? '완벽 통과' : '수료'}
           </span>}
         </b>
@@ -103,7 +92,7 @@ function ExamCard({
         </span>
       </span>
       {!passed && !locked && (
-        <span className="ll-exsmgo" style={{ color }}>
+        <span className="ll-exsmgo">
           <i className="ph-bold ph-arrow-right" />
         </span>
       )}
@@ -117,7 +106,7 @@ export default function LectureList() {
 
   const [tab, setTab] = useState<string>(() => {
     const t = searchParams.get('subject');
-    if (t) return t; // 알려진 6과목뿐 아니라 '일반' 등 어떤 과목 딥링크도 허용(없으면 빈 탭·무해)
+    if (t) return t; // 알려진 분류뿐 아니라 어떤 분류 딥링크도 허용(없으면 빈 탭·무해)
     return '전체';
   });
   const [rows, setRows] = useState<LectureItem[] | null>(null);
@@ -127,8 +116,8 @@ export default function LectureList() {
 
   const load = () => {
     setState('loading');
-    // 강의와 코스를 함께 불러온다 — 코스는 과목→강사별 코스→강의 그룹의 상위 메타.
-    // 강의 로드가 실패하면 에러 상태(정직 노출), 코스만 실패하면 코스 없이 과목·미분류로만 묶는다.
+    // 강의와 코스를 함께 불러온다 — 코스는 분류→강사별 코스→강의 그룹의 상위 메타.
+    // 강의 로드가 실패하면 에러 상태(정직 노출), 코스만 실패하면 코스 없이 분류·미분류로만 묶는다.
     Promise.all([lectureApi.list(), lectureApi.courses().catch(() => [] as StudentCourse[])])
       .then(([lects, crs]) => {
         setRows(Array.isArray(lects) ? lects : []);
@@ -178,41 +167,26 @@ export default function LectureList() {
     }
   };
 
-  /** 강의 카드 — 코스 그룹 안에서 반복 렌더한다(과목 테마 s, 그룹 내 순번 i). */
-  const renderCard = (l: LectureItem, i: number, s: (typeof LECTURE_SUBJECTS)[string]) => {
+  /** 강의 카드 — 코스 그룹 안에서 반복 렌더한다(그룹 내 순번 i로 강 번호를 센다). */
+  const renderCard = (l: LectureItem, i: number) => {
     const st = watchState(l);
     // 코스 안 순서는 그룹 내 위치(1강·2강…)로 센다 — order_no는 과목 전역이라 코스로 묶으면
     // 2강·3강처럼 건너뛰어 보인다(정렬 순서는 이미 order_no로 맞춰져 있어 위치가 곧 강 순서).
     const num = i + 1;
+    const badgeText = st === 'done' ? '봤어요' : st === 'watching' ? '학습중' : '새 강의';
     return (
-      <div key={l.id} className="cp-card" onClick={() => goWatch(l.id)}>
-        <div className="cp-cardband" style={{ background: s.band }}>
-          <span className="cp-cardbandicon" style={{ color: s.color }}>
-            <i className={s.icon} />
-          </span>
-          {st === 'done' ? (
-            <span className="cp-cardbadge cp-cardbadge-read">봤어요</span>
-          ) : st === 'watching' ? (
-            <span className="cp-cardbadge ll-badge-watching">학습중</span>
-          ) : (
-            <span
-              className="cp-cardbadge"
-              style={{ background: 'var(--surface)', color: s.color, boxShadow: `0 6px 12px -6px ${s.color}` }}
-            >
-              새 강의
-            </span>
-          )}
+      <div key={l.id} className="ll-card" onClick={() => goWatch(l.id)}>
+        <div className="ll-thumb">
+          <i className="ph-fill ph-play" />
+          <span className="ll-badge">{badgeText}</span>
+          <span className="ll-time">{formatClock(l.duration_sec)}</span>
         </div>
-        <div className="cp-cardbody">
-          <div className="cp-cardchiprow">
-            <span className="cp-cardchip" style={{ color: s.color, background: s.soft }}>
-              {num}강
-            </span>
-          </div>
-          <div className="cp-cardname">{l.title}</div>
-          <p className="cp-cardsummary">{l.description || '이 강의의 내용을 배워요.'}</p>
-          <div className="cp-cardfoot">
-            <span className="cp-cardstatus" style={{ color: st === 'done' ? '#17B08C' : s.color }}>
+        <div className="ll-cardbody">
+          <span className="ll-cardchip">{num}강</span>
+          <div className="ll-cardtitle">{l.title}</div>
+          <p className="ll-carddesc">{l.description || '이 강의의 내용을 배워요.'}</p>
+          <div className="ll-cardfoot">
+            <span className={`ll-cardstatus${st === 'done' ? ' ll-cardstatus--done' : ''}`}>
               <i
                 className={
                   st === 'done'
@@ -225,8 +199,7 @@ export default function LectureList() {
               {st === 'done' ? '다시 보기' : st === 'watching' ? '이어서 보기' : '새 강의'}
             </span>
             <button
-              className="cp-quizbtn"
-              style={{ background: s.color }}
+              className="ll-cardwatch"
               onClick={(e) => {
                 e.stopPropagation();
                 goWatch(l.id);
@@ -242,73 +215,55 @@ export default function LectureList() {
   };
 
   return (
-    <div className="cp-root">
+    <div className="ll-root">
       <StudentNav />
 
-      <div className="cp-container">
-        {/* HEADER — 개념 설명 히어로와 동일 골격 */}
-        <section className="cp-herosec">
-          <div className="cp-hero">
-            <div className="cp-herocircle" />
-            <div className="cp-heroleft">
-              <span className="cp-herobadge">
-                <i className="ph-fill ph-video-camera" />
-                오늘의 강의
-              </span>
-              <h1 className="cp-herotitle">오늘의 강의를 편하게 들어봐요 📺</h1>
-              <p className="cp-herodesc">
-                각 과목의 핵심 개념을 냥냥이 선생님 인강으로 쉽고 편하게 배워요. 하루 한 편이면
-                충분해요.
-              </p>
-              <div className="cp-heroprog">
-                <span className="cp-heroprogicon">
-                  <i className="ph-fill ph-check-circle" />
-                </span>
-                <span className="cp-heroprogtext">
-                  {state === 'ready' ? (
-                    <>
-                      {total}편 중 <span className="cp-heroprognum">{watched}편</span> 봤어요
-                    </>
-                  ) : state === 'loading' ? (
-                    '내 시청 기록을 불러오는 중…'
-                  ) : (
-                    '시청 기록을 불러오지 못했어요'
-                  )}
-                </span>
-              </div>
-            </div>
-            <div className="cp-heroright">
-              <div className="cp-herobubble">
-                오늘은 이 강의부터
-                <br />
-                들어볼까요?
-                <div className="cp-herobubbletail" />
-              </div>
-              <img src={mascot} alt="냥냥이" className="cp-heromascot" />
-            </div>
+      <div className="ll-container">
+        {/* HERO */}
+        <section className="ll-hero">
+          <div className="ll-heroleft">
+            <span className="ll-herobadge">
+              <i className="ph-fill ph-video-camera" />
+              강의 카탈로그
+            </span>
+            <h1 className="ll-herotitle">과목별 강의를 골라 학습하세요</h1>
+            <p className="ll-herodesc">
+              각 과목의 핵심 개념을 강의로 배우고, 시청 중 확인 문제로 이해를 점검합니다.
+            </p>
+          </div>
+          <div className="ll-herostats">
+            {state === 'ready' ? (
+              <>
+                <div className="ll-herostatnum">
+                  {watched}
+                  <span className="ll-herostatslash">/{total}편</span>
+                </div>
+                <div className="ll-herostatlabel">시청 완료</div>
+              </>
+            ) : state === 'loading' ? (
+              <div className="ll-herostatlabel">내 시청 기록을 불러오는 중…</div>
+            ) : (
+              <div className="ll-herostatlabel ll-herostatlabel-err">시청 기록을 불러오지 못했어요</div>
+            )}
           </div>
         </section>
 
-        {/* SUBJECT FILTER TABS */}
-        <section className="cp-tabssec">
-          <div className="cp-tabsrow">
-            {tabDefs.map((t) => {
-              const active = tab === t.key;
-              const c = t.key === '전체' ? '#ea5443' : categoryTheme(t.key).color;
-              return (
-                <button
-                  key={t.key}
-                  className={`cp-tab${active ? ' cp-tab-on' : ''}`}
-                  style={{ '--cp-c': c } as CSSProperties}
-                  onClick={() => setTab(t.key)}
-                >
-                  <i className={t.icon} />
-                  {t.key}
-                </button>
-              );
-            })}
-          </div>
-        </section>
+        {/* CATEGORY FILTER TABS */}
+        <div className="ll-tabsrow">
+          {tabDefs.map((t) => {
+            const active = tab === t.key;
+            return (
+              <button
+                key={t.key}
+                className={`ll-tab${active ? ' ll-tab-on' : ''}`}
+                onClick={() => setTab(t.key)}
+              >
+                <i className={t.icon} />
+                {t.key}
+              </button>
+            );
+          })}
+        </div>
 
         {state === 'loading' && (
           <div className="ll-state">
@@ -334,14 +289,14 @@ export default function LectureList() {
             const subjTotal = groups.reduce((n, g) => n + g.lectures.length, 0);
             if (subjTotal === 0 && tab === '전체') return null; // 전체 탭에선 빈 분류 생략
             return (
-              <section key={sub} className="cp-section">
-                <div className="cp-sechead">
-                  <span className="cp-secicon" style={{ background: s.soft, color: s.color }}>
+              <section key={sub} className="ll-section">
+                <div className="ll-sechead">
+                  <span className="ll-secicon">
                     <i className={s.icon} />
                   </span>
                   <div>
-                    <h2 className="cp-sectitle">{sub}</h2>
-                    <p className="cp-secsub">
+                    <h2 className="ll-sectitle">{sub}</h2>
+                    <p className="ll-secsub">
                       {subjTotal}강
                       {groups.some((g) => g.title) ? ` · 코스 ${groups.filter((g) => g.title).length}개` : ''}
                     </p>
@@ -354,8 +309,8 @@ export default function LectureList() {
                   </div>
                 ) : (
                   (() => {
-                    // 이 과목에 진짜 코스가 하나라도 있나 — 없으면 '기타 강의' 머리를 숨겨
-                    // (코스 없는 과목은 예전처럼 카드만 평면 노출) 어색한 라벨을 피한다.
+                    // 이 분류에 진짜 코스가 하나라도 있나 — 없으면 '기타 강의' 머리를 숨겨
+                    // (코스 없는 분류는 카드만 평면 노출) 어색한 라벨을 피한다.
                     const hasCourses = groups.some((g) => g.title);
                     return groups.map((g) => {
                       const showAll = !!expanded[g.key];
@@ -365,15 +320,12 @@ export default function LectureList() {
                       return (
                         <div key={g.key} className="ll-coursegroup">
                           {/* 코스 머리 — 강사별 코스명(+강사). 미분류는 '기타 강의'로 옅게.
-                              코스가 아예 없는 과목이면 머리를 생략한다. */}
+                              코스가 아예 없는 분류면 머리를 생략한다. */}
                           {showHead && (
                             <div className="ll-coursehead">
                               {g.title ? (
                                 <>
-                                  <span
-                                    className="ll-coursebadge"
-                                    style={{ color: s.color, background: s.soft }}
-                                  >
+                                  <span className="ll-coursebadge">
                                     <i className="ph-fill ph-stack" /> 코스
                                   </span>
                                   <h3 className="ll-coursetitle">{g.title}</h3>
@@ -402,7 +354,6 @@ export default function LectureList() {
                                 ) : (
                                   <button
                                     className="ll-enroll"
-                                    style={{ background: s.color }}
                                     disabled={!!enrollBusy[g.course.id]}
                                     onClick={() => toggleEnroll(g.course!.id, true)}
                                   >
@@ -415,7 +366,6 @@ export default function LectureList() {
                               {g.course && (g.course.unlocked_question_count ?? 0) > 0 && (
                                 <button
                                   className="ll-course-qbtn"
-                                  style={{ background: s.color }}
                                   onClick={() =>
                                     navigate(
                                       `${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(g.course!.subject)}&bank=1&course=${g.course!.id}`,
@@ -436,12 +386,11 @@ export default function LectureList() {
                                 )}
                             </div>
                           )}
-                        <div className="cp-grid">
-                          {shown.map((l, i) => renderCard(l, i, s))}
+                        <div className="ll-grid">
+                          {shown.map((l, i) => renderCard(l, i))}
                           {hidden > 0 && (
                             <button
                               className="ll-more"
-                              style={{ '--ll-c': s.color } as CSSProperties}
                               onClick={() => setExpanded((prev) => ({ ...prev, [g.key]: true }))}
                             >
                               <span className="ll-more-icon">
@@ -455,7 +404,7 @@ export default function LectureList() {
                         {/* 수료 시험 카드(#28) — 코스 그룹 말미. 배움→연습→증명의 마지막 조각.
                             활성 문항 0개면 렌더 안 함(시험 없는 코스). 상태: 잠김/응시/진행/수료 */}
                         {g.course?.exam?.has_exam && (
-                          <ExamCard course={g.course} color={s.color} soft={s.soft} onGo={() =>
+                          <ExamCard course={g.course} onGo={() =>
                             navigate(`${PATHS.STUDENT_COURSE_EXAM}?course=${g.course!.id}`)
                           } />
                         )}
