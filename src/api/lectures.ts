@@ -125,6 +125,20 @@ export interface OpsLecture {
   created_at: string | null;
 }
 
+/** 휴지통 항목 — 삭제된(복구 가능) 강의. days_left = 자동 완전삭제까지 남은 일수
+ *  (null이면 구데이터라 자동삭제 안 함). */
+export interface OpsTrashLecture {
+  id: string;
+  title: string;
+  subject: string;
+  course_id: string | null;
+  video_bytes: number;
+  duration_sec: number;
+  question_count: number;
+  deleted_at: string | null;
+  days_left: number | null;
+}
+
 /** 강사 코스 — 한 강사가 한 과목으로 묶는 강의 묶음(예: '수학 기초반'). 코스=과목 고정
  *  (도입 배경·설계는 docs/product-direction.md §3.5). 강사는 자기 코스만, 운영자는 전체. */
 export interface OpsCourse {
@@ -478,8 +492,20 @@ export const lectureApi = {
     }>,
   ) => client.put<OpsLecture>(`/ops/lectures/${lectureId}`, body).then((r) => r.data),
 
+  /** 강의 삭제 = 휴지통으로 이동(복구 가능). 파일·문항·전사 모두 보존되고 30일 뒤 자동 완전삭제. */
   opsDelete: (lectureId: string) =>
     client.delete<{ ok: boolean }>(`/ops/lectures/${lectureId}`).then((r) => r.data),
+
+  /** 휴지통 목록 — 삭제된(복구 가능) 강의. 조회 시 서버가 30일 지난 것은 먼저 자동 완전삭제한다. */
+  opsTrash: () => client.get<OpsTrashLecture[]>('/ops/lectures/trash').then((r) => r.data),
+
+  /** 휴지통에서 복구 — 활성으로 되돌린다(파일·문항·전사 그대로라 즉시 재생·출제 가능). */
+  opsRestore: (lectureId: string) =>
+    client.post<{ ok: boolean }>(`/ops/lectures/${lectureId}/restore`).then((r) => r.data),
+
+  /** 완전 삭제 — 되돌릴 수 없이 문항·STT 전사·시청이력·자료·파일까지 물리 제거. 휴지통 항목만 가능. */
+  opsPermanentDelete: (lectureId: string) =>
+    client.delete<{ ok: boolean }>(`/ops/lectures/${lectureId}/permanent`).then((r) => r.data),
 
   /** 드래그로 바꾼 강의 순서 저장 — 한 그룹(한 코스 또는 한 과목의 미분류)의 강의 전체를
    *  새 순서대로 보낸다. 서버가 차례대로 order_no=1,2,3…을 부여한다(부분 전송 금지 — 서버 주석). */

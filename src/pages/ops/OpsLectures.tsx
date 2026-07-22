@@ -10,6 +10,7 @@ import {
   type OpsLecture,
   type OpsLectureMaterial,
   type OpsLectureQuestion,
+  type OpsTrashLecture,
   type TranscriptStatus,
   type TranscriptSegment,
 } from '../../api/lectures';
@@ -50,6 +51,7 @@ type Modal =
   | { mode: 'questions'; lec: OpsLecture }
   | { mode: 'materials'; lec: OpsLecture }
   | { mode: 'courses' }
+  | { mode: 'trash' }
   | null;
 
 /** 강의 목록을 과목 → 코스 → 강의로 묶은 섹션. 각 섹션 안에서만 드래그로 순서를 바꾼다
@@ -287,11 +289,15 @@ export default function OpsLectures() {
   };
 
   const remove = async (lec: OpsLecture) => {
-    if (!window.confirm(`'${lec.title}' 강의를 삭제할까요? 학생 화면에서 즉시 사라져요(시청 이력은 보존).`))
+    if (
+      !window.confirm(
+        `'${lec.title}' 강의를 휴지통으로 보낼까요? 학생 화면에서 바로 사라지지만, 30일 안에는 '휴지통'에서 복구할 수 있어요(문항·자막·영상 모두 보존).`,
+      )
+    )
       return;
     try {
       await lectureApi.opsDelete(lec.id);
-      say('강의를 삭제했어요.');
+      say('강의를 휴지통으로 옮겼어요. 30일 안에 복구할 수 있어요.');
       load();
     } catch (e) {
       say(errorDetail(e, '삭제에 실패했어요.'));
@@ -330,6 +336,10 @@ export default function OpsLectures() {
             <button className="op-btn op-btn--reject" onClick={() => setModal({ mode: 'courses' })}>
               <i className="ph-bold ph-stack" />
               코스 관리
+            </button>
+            <button className="op-btn op-btn--soft" onClick={() => setModal({ mode: 'trash' })}>
+              <i className="ph-bold ph-trash" />
+              휴지통
             </button>
             {!isOps && (
               <button className="op-refresh" onClick={() => setModal({ mode: 'create' })}>
@@ -643,6 +653,13 @@ export default function OpsLectures() {
             loadCourses();
             load(); // 코스 삭제로 강의가 미분류로 풀리면 강의 목록 태그도 갱신
           }}
+          say={say}
+        />
+      )}
+      {modal?.mode === 'trash' && (
+        <TrashModal
+          onClose={() => setModal(null)}
+          onRestored={load} // 복구되면 활성 목록에 다시 나타나야 하므로 재조회
           say={say}
         />
       )}
@@ -1152,6 +1169,138 @@ interface CourseForm {
   category: string; // 브라우징용 대분류('' = 미분류). 수정 가능(과목과 달리).
   description: string;
   status: string;
+}
+
+/* ================= 휴지통 모달 ================= */
+// 삭제한 강의를 복구하거나 완전 삭제한다. 조회 시 서버가 30일 지난 항목을 자동 완전삭제한다.
+function TrashModal({
+  onClose,
+  onRestored,
+  say,
+}: {
+  onClose: () => void;
+  onRestored: () => void; // 복구되면 활성 목록 재조회(부모)
+  say: (m: string) => void;
+}) {
+  const mRef = useModalA11y<HTMLDivElement>(onClose);
+  const [items, setItems] = useState<OpsTrashLecture[] | null>(null);
+  const [banner, setBanner] = useState('');
+  const [busy, setBusy] = useState<string | null>(null); // 처리 중인 강의 id(연타 방지)
+
+  const load = () => {
+    lectureApi
+      .opsTrash()
+      .then(setItems)
+      .catch((e) => {
+        setItems([]);
+        setBanner(errorDetail(e, '휴지통을 불러오지 못했어요.'));
+      });
+  };
+  useEffect(load, []);
+
+  const restore = async (t: OpsTrashLecture) => {
+    setBusy(t.id);
+    try {
+      await lectureApi.opsRestore(t.id);
+      say(`'${t.title}' 강의를 복구했어요.`);
+      load();
+      onRestored();
+    } catch (e) {
+      setBanner(errorDetail(e, '복구에 실패했어요.'));
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const purge = async (t: OpsTrashLecture) => {
+    if (
+      !window.confirm(
+        `'${t.title}' 강의를 완전히 삭제할까요?\n\n문항·자막(STT)·시청 이력·영상 파일까지 영구 삭제되며 되돌릴 수 없어요.`,
+      )
+    )
+      return;
+    setBusy(t.id);
+    try {
+      await lectureApi.opsPermanentDelete(t.id);
+      say(`'${t.title}' 강의를 완전히 삭제했어요.`);
+      load();
+    } catch (e) {
+      setBanner(errorDetail(e, '완전 삭제에 실패했어요.'));
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  return (
+    <div className="op-bh-overlay" onClick={onClose}>
+      <div
+        ref={mRef}
+        className="op-formmodal op-lect-widemodal"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="op-bh-modal-h">
+          <h3>
+            <i className="ph-fill ph-trash" /> 휴지통
+          </h3>
+          <button className="op-bh-modal-x" onClick={onClose}>
+            <i className="ph-bold ph-x" />
+          </button>
+        </div>
+        <p className="lu-help">
+          삭제한 강의는 여기서 <b>복구</b>할 수 있어요. 삭제 후 <b>30일</b>이 지나면 문항·자막(STT)·
+          영상까지 <b>자동으로 완전 삭제</b>돼요.
+        </p>
+        {banner && <div className="op-form-err op-lect-banner">{banner}</div>}
+        {items === null ? (
+          <div className="op-logrow">불러오는 중…</div>
+        ) : items.length === 0 ? (
+          <div className="op-logrow">휴지통이 비어 있어요.</div>
+        ) : (
+          <ul className="op-trash-list">
+            {items.map((t) => (
+              <li key={t.id} className="op-trash-row">
+                <div className="op-trash-info">
+                  <div className="op-trash-title">{t.title}</div>
+                  <div className="op-trash-meta">
+                    <span>{t.subject}</span>
+                    <span>·</span>
+                    <span>문항 {t.question_count}개</span>
+                    <span>·</span>
+                    <span>{fmtBytes(t.video_bytes)}</span>
+                    {t.days_left != null && (
+                      <span
+                        className={
+                          'op-trash-days' + (t.days_left <= 7 ? ' op-trash-days--soon' : '')
+                        }
+                      >
+                        <i className="ph-fill ph-clock-countdown" /> {t.days_left}일 후 자동 삭제
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="op-trash-actions">
+                  <button
+                    className="op-btn op-btn--approve"
+                    disabled={busy === t.id}
+                    onClick={() => restore(t)}
+                  >
+                    <i className="ph-bold ph-arrow-counter-clockwise" /> 복구
+                  </button>
+                  <button
+                    className="op-btn op-btn--reject"
+                    disabled={busy === t.id}
+                    onClick={() => purge(t)}
+                  >
+                    <i className="ph-bold ph-trash" /> 완전 삭제
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
+  );
 }
 
 function CoursesModal({
