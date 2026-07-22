@@ -36,6 +36,17 @@ export function subjectTheme(sub: string): LectureSubjectTheme {
   return LECTURE_SUBJECTS[sub] ?? DEFAULT_SUBJECT_THEME;
 }
 
+/** 분류(category) → 테마 — 과목 은퇴 후 학생 목록은 코스 category로 묶는다. 알려진 6과목명이
+ *  카테고리로도 쓰이면 그 테마, 아니면 이름 해시로 팔레트 색을 고정 배정(카테고리마다 일관된 색). */
+const CATEGORY_PALETTE = Object.values(LECTURE_SUBJECTS);
+export function categoryTheme(cat: string): LectureSubjectTheme {
+  if (LECTURE_SUBJECTS[cat]) return LECTURE_SUBJECTS[cat];
+  if (!cat || cat === '기타') return DEFAULT_SUBJECT_THEME;
+  let h = 0;
+  for (let i = 0; i < cat.length; i++) h = (h * 31 + cat.charCodeAt(i)) >>> 0;
+  return CATEGORY_PALETTE[h % CATEGORY_PALETTE.length];
+}
+
 /** 초 → 화면 표시(29분 / 45초). 목차·플레이어 시간 표기에 공용. */
 export function formatDurationLabel(sec: number): string {
   const s = Math.max(0, Math.round(sec || 0));

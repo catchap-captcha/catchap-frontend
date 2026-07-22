@@ -38,6 +38,8 @@ export interface StudentCourse {
   id: string;
   title: string;
   subject: string;
+  /** 브라우징 대분류(과목 대체) — 학생 목록이 이걸로 묶는다. null/빈값이면 '기타'. */
+  category: string | null;
   description: string | null;
   order_no: number;
   instructor_name: string | null;

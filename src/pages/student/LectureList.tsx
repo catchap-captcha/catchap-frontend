@@ -5,7 +5,7 @@ import { lectureApi, type LectureItem, type StudentCourse } from '../../api/lect
 import ScreenTimeReminder from '../../components/motion/ScreenTimeReminder';
 import mascot from '../../assets/characters/catchap-logo.png';
 import { StudentNav } from '../../layouts/StudentLayout';
-import { LECTURE_SUBJECTS, LECTURE_SUBJECT_ORDER, subjectTheme } from './lectureSubjects';
+import { LECTURE_SUBJECTS, categoryTheme } from './lectureSubjects';
 import './Concepts.css'; // 개념 설명과 같은 카탈로그 디자인(cp-*)을 그대로 재사용
 import './LectureList.css';
 
@@ -30,27 +30,32 @@ interface CourseGroup {
   /** 코스 Q 배지(3단계-b) — 코스 그룹에만. 미분류(기타)는 코스 Q가 없다 */
   course?: StudentCourse;
 }
-function courseGroupsForSubject(
-  subject: string,
+const CAT_ETC = '기타';
+/** 코스의 분류(category) — 없으면 '기타'. 과목 은퇴 후 학생 목록은 이걸로 묶는다. */
+function catOf(c: StudentCourse): string {
+  return (c.category || '').trim() || CAT_ETC;
+}
+function courseGroupsForCategory(
+  category: string,
   rows: LectureItem[],
   courses: StudentCourse[],
 ): CourseGroup[] {
   const groups: CourseGroup[] = [];
   const visibleCourseIds = new Set(courses.map((c) => c.id));
-  for (const c of courses.filter((c) => c.subject === subject)) {
+  for (const c of courses.filter((c) => catOf(c) === category)) {
     const lects = rows.filter((l) => l.course_id === c.id);
     if (lects.length)
       groups.push({
         key: `c-${c.id}`, title: c.title, instructor: c.instructor_name, lectures: lects, course: c,
       });
   }
-  // '기타'는 코스 없음(null)뿐 아니라 '보이지 않는 코스(숨김·삭제)에 매인 강의'도 담는다 —
-  // 숨겨진 코스의 course_id를 가진 활성 강의가 어느 그룹에도 안 걸려 목록에서 사라지는 것을 막는다.
-  const uncoursed = rows.filter(
-    (l) => l.subject === subject && (!l.course_id || !visibleCourseIds.has(l.course_id)),
-  );
-  if (uncoursed.length)
-    groups.push({ key: `u-${subject}`, title: null, instructor: null, lectures: uncoursed });
+  // '기타' 분류엔 코스 없는 강의(또는 숨김·삭제 코스에 매인 강의)도 담는다 — 어느 분류에도
+  // 안 걸려 목록에서 사라지는 것을 막는다(코스 없이 올린 강의).
+  if (category === CAT_ETC) {
+    const uncoursed = rows.filter((l) => !l.course_id || !visibleCourseIds.has(l.course_id));
+    if (uncoursed.length)
+      groups.push({ key: 'u-etc', title: null, instructor: null, lectures: uncoursed });
+  }
   return groups;
 }
 
@@ -137,22 +142,20 @@ export default function LectureList() {
   const total = rows?.length ?? 0;
   const watched = (rows ?? []).filter((l) => watchState(l) === 'done').length;
 
-  // 화면에 실제 있는 과목만 동적으로 — 하드코딩 6과목만 그리면 코스 subject가 '일반'(코스 중심
-  // 전환 기본값)·성인 인강 카테고리처럼 그 밖이면 코스·수강신청이 통째로 안 보인다(사용자 제보).
-  // 순서: 알려진 6과목(있는 것만) 먼저, 그다음 그 외 과목을 이름순으로.
-  const presentSubjects = (() => {
+  // 과목 은퇴(0722) — 학교식 6과목 대신 코스의 '분류(category)'로 브라우징한다. 화면에 실제
+  // 있는 분류만 동적으로 묶고, 코스 없이 올린 강의가 있으면 '기타'를 맨 뒤에 붙인다.
+  const presentCategories = (() => {
     const set = new Set<string>();
-    for (const c of courses) if (c.subject) set.add(c.subject);
-    for (const l of rows ?? []) if (l.subject) set.add(l.subject);
-    const known = LECTURE_SUBJECT_ORDER.filter((s) => set.has(s));
-    const extra = [...set].filter((s) => !LECTURE_SUBJECTS[s]).sort();
-    return [...known, ...extra];
+    for (const c of courses) set.add(catOf(c));
+    if ((rows ?? []).some((l) => !l.course_id)) set.add(CAT_ETC);
+    const arr = [...set].filter((x) => x !== CAT_ETC).sort();
+    return set.has(CAT_ETC) ? [...arr, CAT_ETC] : arr;
   })();
 
   const tabDefs = [{ key: '전체', icon: 'ph-fill ph-squares-four' }].concat(
-    presentSubjects.map((sub) => ({ key: sub, icon: subjectTheme(sub).icon })),
+    presentCategories.map((cat) => ({ key: cat, icon: categoryTheme(cat).icon })),
   );
-  const visibleSubjects = tab === '전체' ? presentSubjects : [tab];
+  const visibleCategories = tab === '전체' ? presentCategories : [tab];
 
   const goWatch = (id: string) => navigate(PATHS.STUDENT_LECTURE, { state: { id } });
 
@@ -176,7 +179,7 @@ export default function LectureList() {
   };
 
   /** 강의 카드 — 코스 그룹 안에서 반복 렌더한다(과목 테마 s, 그룹 내 순번 i). */
-  const renderCard = (l: LectureItem, i: number, s: (typeof LECTURE_SUBJECTS)[string], sub: string) => {
+  const renderCard = (l: LectureItem, i: number, s: (typeof LECTURE_SUBJECTS)[string]) => {
     const st = watchState(l);
     // 코스 안 순서는 그룹 내 위치(1강·2강…)로 센다 — order_no는 과목 전역이라 코스로 묶으면
     // 2강·3강처럼 건너뛰어 보인다(정렬 순서는 이미 order_no로 맞춰져 있어 위치가 곧 강 순서).
@@ -207,7 +210,7 @@ export default function LectureList() {
             </span>
           </div>
           <div className="cp-cardname">{l.title}</div>
-          <p className="cp-cardsummary">{l.description || `${sub} 개념을 배우는 강의예요.`}</p>
+          <p className="cp-cardsummary">{l.description || '이 강의의 내용을 배워요.'}</p>
           <div className="cp-cardfoot">
             <span className="cp-cardstatus" style={{ color: st === 'done' ? '#17B08C' : s.color }}>
               <i
@@ -291,7 +294,7 @@ export default function LectureList() {
           <div className="cp-tabsrow">
             {tabDefs.map((t) => {
               const active = tab === t.key;
-              const c = t.key === '전체' ? '#ea5443' : subjectTheme(t.key).color;
+              const c = t.key === '전체' ? '#ea5443' : categoryTheme(t.key).color;
               return (
                 <button
                   key={t.key}
@@ -324,12 +327,12 @@ export default function LectureList() {
         )}
 
         {state === 'ready' &&
-          visibleSubjects.map((sub) => {
-            const s = subjectTheme(sub);
-            // 과목 → 강사별 코스 → 강의. 코스가 하나도 없으면 '기타' 그룹 하나로 떨어진다.
-            const groups = courseGroupsForSubject(sub, rows ?? [], courses);
+          visibleCategories.map((sub) => {
+            const s = categoryTheme(sub);
+            // 분류(category) → 강사별 코스 → 강의. '기타'엔 코스 없는 강의가 모인다.
+            const groups = courseGroupsForCategory(sub, rows ?? [], courses);
             const subjTotal = groups.reduce((n, g) => n + g.lectures.length, 0);
-            if (subjTotal === 0 && tab === '전체') return null; // 전체 탭에선 빈 과목 생략
+            if (subjTotal === 0 && tab === '전체') return null; // 전체 탭에선 빈 분류 생략
             return (
               <section key={sub} className="cp-section">
                 <div className="cp-sechead">
@@ -347,7 +350,7 @@ export default function LectureList() {
                 {subjTotal === 0 ? (
                   <div className="ll-state">
                     <i className="ph-fill ph-video-camera-slash" />
-                    아직 등록된 {sub} 강의가 없어요. 조금만 기다려 주세요!
+                    아직 등록된 강의가 없어요. 조금만 기다려 주세요!
                   </div>
                 ) : (
                   (() => {
@@ -415,7 +418,7 @@ export default function LectureList() {
                                   style={{ background: s.color }}
                                   onClick={() =>
                                     navigate(
-                                      `${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(sub)}&bank=1&course=${g.course!.id}`,
+                                      `${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(g.course!.subject)}&bank=1&course=${g.course!.id}`,
                                     )
                                   }
                                 >
@@ -434,7 +437,7 @@ export default function LectureList() {
                             </div>
                           )}
                         <div className="cp-grid">
-                          {shown.map((l, i) => renderCard(l, i, s, sub))}
+                          {shown.map((l, i) => renderCard(l, i, s))}
                           {hidden > 0 && (
                             <button
                               className="ll-more"
