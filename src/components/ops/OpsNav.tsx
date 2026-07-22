@@ -3,6 +3,11 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { useTheme } from '../../hooks/useTheme';
 import { settingsApi } from '../../api/settings';
+import { notificationApi, type Notification } from '../../api/notifications';
+import {
+  notifyNotificationsUpdated,
+  useUnreadNotifications,
+} from '../../hooks/useUnreadNotifications';
 import { PATHS } from '../../routes/paths';
 import mascot from '../../assets/characters/catchap-logo.png';
 
@@ -75,6 +80,41 @@ export default function OpsNav() {
   const isInstructor = me?.role === 'instructor';
   const groups = isInstructor ? INSTRUCTOR_GROUPS : GROUPS;
   const home = isInstructor ? PATHS.OPS_INSTRUCTOR_HOME : PATHS.OPS_APPROVAL;
+
+  // 알림 — 콘솔 벨. 안읽음 배지(useUnreadNotifications) + 패널에서 목록·읽음 처리.
+  // 문항 자동 생성 완료/실패 알림(비동기 잡)이 여기로 온다(강사가 떠나 있어도 확인).
+  const unread = useUnreadNotifications();
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [notes, setNotes] = useState<Notification[] | null>(null);
+
+  const openNotif = () => {
+    setNotifOpen(true);
+    setNotes(null);
+    notificationApi
+      .list()
+      .then(setNotes)
+      .catch(() => setNotes([]));
+  };
+  const readOne = async (n: Notification) => {
+    if (n.read_at) return;
+    try {
+      await notificationApi.markRead(n.id);
+      setNotes((prev) => prev?.map((x) => (x.id === n.id ? { ...x, read_at: new Date().toISOString() } : x)) ?? null);
+      notifyNotificationsUpdated(); // 벨 배지 갱신
+    } catch {
+      /* 실패해도 목록은 유지 */
+    }
+  };
+  const readAll = async () => {
+    try {
+      await notificationApi.markAllRead();
+      const now = new Date().toISOString();
+      setNotes((prev) => prev?.map((x) => ({ ...x, read_at: x.read_at ?? now })) ?? null);
+      notifyNotificationsUpdated();
+    } catch {
+      /* ignore */
+    }
+  };
 
   // 강사 본인 비밀번호 변경 — 운영자는 운영자 계정 페이지에 같은 기능이 있지만,
   // 강사는 접근 가능한 관리 페이지가 없어 사이드바 푸터에서 직접 연다.
@@ -164,6 +204,16 @@ export default function OpsNav() {
         )}
         <button
           type="button"
+          className="op-side-logout op-side-notif"
+          onClick={openNotif}
+          title="알림"
+        >
+          <i className="ph-fill ph-bell" />
+          <span>알림</span>
+          {unread > 0 && <span className="op-side-notifbadge">{unread > 9 ? '9+' : unread}</span>}
+        </button>
+        <button
+          type="button"
           className="op-side-logout op-side-theme"
           onClick={toggleTheme}
           title={theme === 'dark' ? '라이트 모드로 전환' : '다크 모드로 전환'}
@@ -176,6 +226,47 @@ export default function OpsNav() {
           <span>로그아웃</span>
         </button>
       </div>
+
+      {/* 알림 패널 — 목록 + 읽음 처리(문항 생성 완료/실패 등) */}
+      {notifOpen && (
+        <div className="op-bh-overlay" onClick={() => setNotifOpen(false)}>
+          <div className="op-formmodal op-notif-panel" onClick={(e) => e.stopPropagation()}>
+            <div className="op-bh-modal-h">
+              <span><i className="ph-fill ph-bell" /> 알림</span>
+              <button className="op-bh-modal-x" onClick={() => setNotifOpen(false)}>
+                <i className="ph-bold ph-x" />
+              </button>
+            </div>
+            {notes && notes.some((n) => !n.read_at) && (
+              <button type="button" className="op-notif-readall" onClick={readAll}>
+                <i className="ph-bold ph-checks" /> 모두 읽음
+              </button>
+            )}
+            <div className="op-notif-list">
+              {notes === null ? (
+                <div className="op-notif-empty">불러오는 중…</div>
+              ) : notes.length === 0 ? (
+                <div className="op-notif-empty">알림이 없어요.</div>
+              ) : (
+                notes.map((n) => (
+                  <button
+                    key={n.id}
+                    type="button"
+                    className={'op-notif-item' + (n.read_at ? '' : ' op-notif-item--unread')}
+                    onClick={() => readOne(n)}
+                  >
+                    <div className="op-notif-item-h">
+                      {!n.read_at && <span className="op-notif-dot" />}
+                      <span className="op-notif-title">{n.title}</span>
+                    </div>
+                    <div className="op-notif-msg">{n.message}</div>
+                  </button>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 강사 본인 비밀번호 변경 모달 (OpsApproval.css 공용 모달 스타일) */}
       {pwOpen && (
