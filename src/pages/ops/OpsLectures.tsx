@@ -703,7 +703,7 @@ const _GUIDE_STEPS: { icon: string; title: string; body: string }[] = [
   {
     icon: 'ph-exam',
     title: '5. (선택) 코스 & 수료 시험',
-    body: "여러 강의를 '코스 관리'로 묶고, 코스에는 수료 시험을 붙일 수 있어요. 시험 문항도 '강의 문항 가져오기'·'AI로 생성'으로 빠르게 채워요(자막이 있으면 시험도 더 깊어져요).",
+    body: "여러 강의를 '코스 관리'로 묶고, 코스에는 수료 시험을 붙일 수 있어요. 수료 시험 문항도 '강의 문항 가져오기'·'AI로 생성'으로 빠르게 채워요(자막이 있으면 시험도 더 깊어져요).",
   },
 ];
 function LectureGuideModal({ onClose }: { onClose: () => void }) {
@@ -1319,7 +1319,7 @@ function CoursesModal({
   const [form, setForm] = useState<CourseForm | null>(null); // null = 편집 폼 닫힘
   const [err, setErr] = useState('');
   const [saving, setSaving] = useState(false);
-  const [examCourse, setExamCourse] = useState<OpsCourse | null>(null); // 시험 문항 모달 대상
+  const [examCourse, setExamCourse] = useState<OpsCourse | null>(null); // 수료 시험 문항 모달 대상
   const editing = form?.id != null;
 
   // 운영자 모더레이션 — 코스 공개/숨김만
@@ -1522,7 +1522,7 @@ function CoursesModal({
                   onClick={() => setExamCourse(c)}
                   title="이 코스의 수료 시험 문항을 관리해요"
                 >
-                  <i className="ph-fill ph-exam" /> 시험 문항
+                  <i className="ph-fill ph-exam" /> 수료 시험 문항
                 </button>
                 {isOps ? (
                   <button
@@ -1623,7 +1623,7 @@ function ExamQuestionsModal({
     lectureApi
       .opsExamQuestions(course.id)
       .then(setRows)
-      .catch((e) => setLoadErr(errorDetail(e, '시험 문항을 불러오지 못했어요.')));
+      .catch((e) => setLoadErr(errorDetail(e, '수료 시험 문항을 불러오지 못했어요.')));
   };
   useEffect(load, [course.id]);
   useEffect(() => {
@@ -1689,15 +1689,15 @@ function ExamQuestionsModal({
     try {
       if (form.id) {
         await lectureApi.opsExamQuestionUpdate(course.id, form.id, body);
-        say('시험 문항을 수정했어요.');
+        say('수료 시험 문항을 수정했어요.');
       } else {
         await lectureApi.opsExamQuestionCreate(course.id, body);
-        say('시험 문항을 추가했어요.');
+        say('수료 시험 문항을 추가했어요.');
       }
       setForm(null);
       load();
     } catch (e) {
-      setErr(errorDetail(e, '시험 문항 저장에 실패했어요.'));
+      setErr(errorDetail(e, '수료 시험 문항 저장에 실패했어요.'));
     } finally {
       setSaving(false);
     }
@@ -1726,14 +1726,14 @@ function ExamQuestionsModal({
   };
 
   const remove = async (q: OpsExamQuestion) => {
-    if (!window.confirm('이 시험 문항을 삭제할까요? 학생 응답 기록은 보존돼요.')) return;
+    if (!window.confirm('이 수료 시험 문항을 삭제할까요? 학생 응답 기록은 보존돼요.')) return;
     try {
       await lectureApi.opsExamQuestionDelete(course.id, q.id);
-      say('시험 문항을 삭제했어요.');
+      say('수료 시험 문항을 삭제했어요.');
       if (form?.id === q.id) setForm(null);
       load();
     } catch (e) {
-      say(errorDetail(e, '시험 문항 삭제에 실패했어요.'));
+      say(errorDetail(e, '수료 시험 문항 삭제에 실패했어요.'));
     }
   };
 
@@ -1746,7 +1746,7 @@ function ExamQuestionsModal({
       const r = await lectureApi.opsExamImportFromLectures(course.id);
       say(
         r.imported > 0
-          ? `강의 문항 ${r.imported}개를 시험 문항 초안으로 가져왔어요${r.skipped ? ` (${r.skipped}개 건너뜀)` : ''}. 검수 후 공개하세요.`
+          ? `강의 문항 ${r.imported}개를 수료 시험 문항 초안으로 가져왔어요${r.skipped ? ` (${r.skipped}개 건너뜀)` : ''}. 검수 후 공개하세요.`
           : `가져올 새 강의 문항이 없어요${r.skipped ? ` (${r.skipped}개는 이미 가져왔거나 미지원)` : ''}.`,
       );
       load();
@@ -1758,7 +1758,7 @@ function ExamQuestionsModal({
   };
 
   const generateLlm = async () => {
-    const raw = window.prompt('AI로 만들 시험 문항 개수 (1~20)', '5');
+    const raw = window.prompt('AI로 만들 수료 시험 문항 개수 (1~20)', '5');
     if (raw == null) return;
     const n = Math.max(1, Math.min(20, parseInt(raw, 10) || 5));
     setBulkBusy('gen');
@@ -1767,7 +1767,7 @@ function ExamQuestionsModal({
       const trNote = r.used_transcripts > 0
         ? `강의 자막 ${r.used_transcripts}개 기반`
         : '강의 제목·설명 기반(자막을 넣으면 더 깊은 문항이 나와요)';
-      say(`${trNote}로 AI가 시험 문항 ${r.created}개를 초안으로 만들었어요. 검수 후 공개하세요.`);
+      say(`${trNote}로 AI가 수료 시험 문항 ${r.created}개를 초안으로 만들었어요. 검수 후 공개하세요.`);
       load();
     } catch (e) {
       say(errorDetail(e, 'AI 문항 생성에 실패했어요. (운영 콘솔 설정에서 모델·키를 확인하세요)'));
@@ -1812,7 +1812,7 @@ function ExamQuestionsModal({
                 className="op-btn op-btn--soft"
                 onClick={importFromLectures}
                 disabled={bulkBusy !== null}
-                title="이 코스 강의의 확인 문항을 시험 문항 초안으로 가져와요(이미 가져온 건 건너뜀)"
+                title="이 코스 강의의 확인 문항을 수료 시험 문항 초안으로 가져와요(이미 가져온 건 건너뜀)"
               >
                 <i className="ph-bold ph-download-simple" />{' '}
                 {bulkBusy === 'import' ? '가져오는 중…' : '강의 문항 가져오기'}
@@ -1821,7 +1821,7 @@ function ExamQuestionsModal({
                 className="op-btn op-btn--soft"
                 onClick={generateLlm}
                 disabled={bulkBusy !== null}
-                title="AI가 코스 강의 구성으로 시험 문항 초안을 만들어요(운영 콘솔 설정의 생성 모델 사용)"
+                title="AI가 코스 강의 구성으로 수료 시험 문항 초안을 만들어요(운영 콘솔 설정의 생성 모델 사용)"
               >
                 <i className="ph-bold ph-magic-wand" />{' '}
                 {bulkBusy === 'gen' ? '생성 중…' : 'AI로 생성'}
@@ -2018,7 +2018,7 @@ function ExamQuestionsModal({
           {rows === null && !loadErr && <div className="op-logrow">불러오는 중…</div>}
           {rows !== null && rows.length === 0 && (
             <div className="op-logrow">
-              아직 시험 문항이 없어요. &lsquo;문항 추가&rsquo;로 첫 문항을 만드세요.
+              아직 수료 시험 문항이 없어요. &lsquo;문항 추가&rsquo;로 첫 문항을 만드세요.
             </div>
           )}
           {(rows ?? []).map((q, i) => (
@@ -2722,7 +2722,7 @@ function QuestionsModal({
   // 은행 적합 문항 대량 승격 — 강사가 '다중 선택'한 것만(선택=검토, 자동 무검토 아님).
   // 후보 = verdict=bank·미배치(draft·active 모두 — 은행 문항은 확인 문항으로 안 쓰여 보통 draft로 남는다).
   const bankCandidates = (items ?? []).filter(
-    (q) => q.suggested_placement === 'bank' && !q.bank_placed && q.status !== 'deleted',
+    (q) => q.suggested_placement === 'bank' && !q.bank_placed && q.status === 'draft',
   );
   const [bankSel, setBankSel] = useState<Set<string>>(new Set());
   const [promoting, setPromoting] = useState(false);
@@ -3428,7 +3428,7 @@ function QuestionsModal({
             <div key={q.id} className="op-lect-qrow">
               <div className="op-lect-qmeta">
                 {/* 은행 적합 문항 다중 선택 체크 — 체크한 것만 '선택 N개 은행으로'로 보낸다(선택=검토) */}
-                {q.suggested_placement === 'bank' && !q.bank_placed && q.status !== 'deleted' && (
+                {q.suggested_placement === 'bank' && !q.bank_placed && q.status === 'draft' && (
                   <label className="op-lect-qcheck" title="은행으로 보낼 문항 선택">
                     <input
                       type="checkbox"
@@ -3567,11 +3567,14 @@ function QuestionsModal({
               </div>
               {!isOps && (
               <div className="op-lect-actions">
-                {q.status === 'draft' && (
+                {/* 공개하기(확인 문항으로 출제)는 아직 어디로도 안 보낸 검수 대기 문항에만.
+                    문제 은행으로 보낸 문항은 '한 문항=한 목적지' 원칙상 공개하기를 숨긴다
+                    (은행 문항은 봇이 상식으로 풀어 확인 문항엔 부적합 — 둘 다 보내지는 것 방지). */}
+                {q.status === 'draft' && !q.bank_placed && (
                   <button
                     className="op-btn op-btn--approve"
                     onClick={() => approve(q)}
-                    title="이 문항을 학생 강의에 출제해요(공개=시청 검증 문항으로 확정). 되돌리려면 수정에서 '검수 대기'로 바꾸면 돼요."
+                    title="이 문항을 학생 강의에 출제해요(공개=확인 문항으로 확정). 되돌리려면 수정에서 '검수 대기'로 바꾸면 돼요."
                   >
                     <i className="ph-bold ph-check-circle" /> 공개하기
                   </button>

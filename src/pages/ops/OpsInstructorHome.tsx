@@ -90,7 +90,7 @@ export default function OpsInstructorHome() {
                   <span className="ih-todo-big">{data.draft_question_count}</span>
                   <span className="ih-todo-unit">건</span>
                   <span className="ih-todo-break">
-                    확인문항 {data.draft_lecture_questions} · 시험문항 {data.draft_exam_questions}
+                    확인문항 {data.draft_lecture_questions} · 수료 시험 문항 {data.draft_exam_questions}
                   </span>
                 </div>
 
