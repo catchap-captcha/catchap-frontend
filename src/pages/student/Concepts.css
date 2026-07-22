@@ -825,3 +825,10 @@ animation: cpFloat 4.5s ease-in-out infinite;
 [data-theme='dark'] .cp-root {
   background: var(--bg);
 }
+
+/* 다크모드 — 분류 팔레트의 밝은 파스텔 배경(인라인 s.band/s.soft)을 중성 다크 표면으로 덮는다.
+   색 아이콘·텍스트(s.color)는 그대로 둬 분류 색 정체성은 유지하고, 배경만 다크에 맞춘다.
+   인라인 style을 이기려 !important를 쓴다(이 파일의 다크 전용 규칙에 한함). */
+[data-theme='dark'] .cp-cardband { background: var(--surface-2) !important; }
+[data-theme='dark'] .cp-cardchip { background: var(--surface-2) !important; }
+[data-theme='dark'] .cp-secicon { background: var(--surface-2) !important; }
