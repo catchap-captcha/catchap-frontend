@@ -1,4 +1,6 @@
-/* CatChap 보안캡챠 — handoff 원본 값 그대로 (접두사 cp-)
+/* 보안 캡차 — handoff: CatChap 보안캡차.dc.html (카드/헤더/로고 행 값 정렬, 접두사 cp-)
+   실제 챌린지(퍼즐·그림 선택)는 CatChap Guard API가 #captcha-mount에 마운트 → 정적 목업의 3x3
+   아이콘 그리드 대신 API 연동 슬롯(로딩/준비 상태)을 유지함 — 이는 목업이 생략한 실동작이라 보존.
    ccSpin 만 공용 animations.css와 동일 → 공용 재사용. 나머지는 값이 다르거나 공용에 없음 → cp 접두사. */
 
 /* rotate는 비트맵 마스코트를 매 프레임 리샘플링해 번져 보임 → 이동만 남김 */
@@ -75,146 +77,106 @@
 
 .cp-page {
   min-height: 100vh;
-  background:
-    radial-gradient(1100px 560px at 80% -10%, #ffe4d0 0%, rgba(255, 228, 208, 0) 60%),
-    radial-gradient(900px 500px at 8% 100%, #ffe0ea 0%, rgba(255, 224, 234, 0) 55%),
-    var(--bg);
+  background: var(--bg);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 32px 24px;
-  position: relative;
-  overflow: hidden;
-}
-
-/* floating cute shapes */
-.cp-shape1 {
-  position: absolute;
-  top: 12%;
-  left: 13%;
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.5);
-  filter: blur(1px);
-  animation: cpBounce 5s ease-in-out infinite;
-}
-.cp-shape2 {
-  position: absolute;
-  bottom: 15%;
-  right: 12%;
-  width: 54px;
-  height: 54px;
-  border-radius: 18px;
-  background: rgba(255, 180, 160, 0.4);
-  transform: rotate(16deg);
-  animation: cpBounce 6s ease-in-out infinite;
-}
-.cp-shape3 {
-  position: absolute;
-  top: 24%;
-  right: 18%;
-  width: 30px;
-  height: 30px;
-  border-radius: 9px;
-  background: rgba(255, 146, 46, 0.3);
-  transform: rotate(-12deg);
-}
-.cp-shape4 {
-  position: absolute;
-  bottom: 26%;
-  left: 16%;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: rgba(255, 109, 166, 0.4);
+  padding: 40px 24px;
 }
 
 /* WIDGET */
 .cp-widget {
   width: 100%;
-  max-width: 580px;
-  position: relative;
-  z-index: 2;
+  max-width: 440px;
   animation: cpIn 0.45s ease;
 }
 
-/* peeking mascot */
-.cp-peek {
+/* brand row — handoff: 작은 로고 + 워드마크 (그 외 장식 없음) */
+.cp-brand-row {
   display: flex;
+  align-items: center;
   justify-content: center;
-  margin-bottom: -30px;
-  position: relative;
-  z-index: 3;
+  gap: 9px;
+  margin-bottom: 22px;
 }
-.cp-peek-float {
-  animation: cpFloat 4.5s ease-in-out infinite;
-  will-change: transform;
+.cp-brand-logo {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
 }
-.cp-peek-img {
-  width: 84px;
-  height: 84px;
-  border-radius: 50%;
-  /* 떠다니는 마스코트 그림자 제거 */
-  border: 4px solid var(--surface);
+.cp-brand-name {
+  font-weight: 800;
+  font-size: 19px;
+  letter-spacing: -0.02em;
+  color: var(--ink);
 }
 
 /* SHELL */
 .cp-shell {
   background: var(--surface);
-  border: 3px solid var(--line);
-  border-radius: 30px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
   overflow: hidden;
-  box-shadow: 0 30px 60px -24px rgba(180, 120, 90, 0.55);
+  box-shadow: 0 24px 50px -34px rgba(60, 40, 35, 0.4);
 }
 .cp-shell-shake {
   animation: cpShake 0.45s ease;
 }
 
-/* HEADER — 그라디언트 색은 phase에 따라 CSS 변수로 주입 */
+/* HEADER — handoff: 흰 카드 안 아이콘+텍스트 한 줄 (배너/그라디언트 아님) */
 .cp-header {
-  background: linear-gradient(120deg, var(--cp-hc1), var(--cp-hc2));
-  padding: 34px 22px 20px;
-  text-align: center;
-  transition: background 0.3s;
-  position: relative;
-}
-.cp-guard-chip {
-  position: absolute;
-  top: 14px;
-  right: 16px;
+  background: var(--surface);
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--line);
   display: flex;
   align-items: center;
-  gap: 5px;
-  background: rgba(255, 255, 255, 0.24);
-  padding: 5px 11px;
-  border-radius: 20px;
+  gap: 10px;
 }
-.cp-guard-icon {
-  font-size: 14px;
-  color: var(--on-brand);
+.cp-header-icon {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-.cp-guard-text {
-  font-size: 10.5px;
-  font-weight: 800;
-  color: var(--on-brand);
+.cp-header-icon i {
+  font-size: 20px;
+}
+.cp-header-icon--challenge {
+  background: var(--brand-soft);
+  color: var(--brand);
+}
+.cp-header-icon--success {
+  background: var(--ok-soft);
+  color: var(--ok);
+}
+.cp-header-icon--locked {
+  background: var(--warn-soft);
+  color: var(--warn);
+}
+.cp-header-text {
+  flex: 1;
+  min-width: 0;
 }
 .cp-h-title {
   font-family: var(--font-display); font-weight: 800;
-  font-size: 21px;
-  color: var(--on-brand);
-  line-height: 1.25;
+  font-size: 15px;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  line-height: 1.3;
 }
 .cp-h-sub {
-  font-size: 12.5px;
-  color: rgba(255, 255, 255, 0.92);
-  font-weight: 600;
-  margin-top: 4px;
+  font-size: 12px;
+  color: var(--ink-3);
+  font-weight: 500;
+  margin-top: 2px;
 }
 
 /* BODY */
 .cp-body {
-  padding: 22px;
+  padding: 24px;
 }
 
 /* WHY BANNER */
@@ -496,7 +458,7 @@
   box-shadow: 0 14px 26px -8px rgba(23, 176, 140, 0.6);
 }
 .cp-success-btn:hover {
-  background: #149478;
+  background: var(--ok-ink);
 }
 .cp-success-arrow {
   font-size: 18px;

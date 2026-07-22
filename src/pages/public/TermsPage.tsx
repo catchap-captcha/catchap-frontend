@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
-import ThemeToggle from '../../components/common/ThemeToggle';
 import mascot from '../../assets/characters/catchap-logo.png';
 import './TermsPage.css';
 
@@ -10,38 +9,21 @@ export default function TermsPage() {
       {/* NAV */}
       <div className="tm-nav">
         <div className="tm-nav-inner">
+          <Link to={PATHS.HOME} className="tm-back-link"><i className="ph-bold ph-arrow-left" />뒤로</Link>
+          <div className="tm-nav-divider"></div>
           <Link to={PATHS.HOME} className="tm-brand">
             <img src={mascot} alt="CatChap" className="tm-brand-logo" />
             <span className="tm-brand-name">CatChap</span>
           </Link>
-          <span className="tm-nav-legal">LEGAL</span>
-          <Link to={PATHS.HOME} className="tm-nav-back">
-            <i className="ph-bold ph-arrow-left tm-nav-back-icon" />
-            메인으로 돌아가기
-          </Link>
-          <ThemeToggle />
+          <Link to={PATHS.PRIVACY} className="tm-nav-related">개인정보처리방침</Link>
         </div>
       </div>
 
-      {/* MASTHEAD */}
-      <div className="tm-masthead">
-        <div className="tm-masthead-rule">
-          <div className="tm-masthead-row">
-            <div>
-              <div className="tm-eyebrow">TERMS OF SERVICE</div>
-              <h1 className="tm-title">서비스 이용약관</h1>
-            </div>
-            <div className="tm-doc-meta">
-              <div className="tm-doc-service">CatChap 어린이 학습 서비스</div>
-              <div className="tm-doc-number">문서번호 CC-TOS-2026</div>
-            </div>
-          </div>
-        </div>
-        <div className="tm-meta-row">
-          <span>시행일자 {' '}2026. 07. 01.</span>
-          <span>최종 개정 {' '}2026. 06. 20.</span>
-          <span>버전 {' '}v1.2</span>
-        </div>
+      {/* HEADER */}
+      <div className="tm-header">
+        <span className="tm-badge"><i className="ph-fill ph-scroll" />이용약관</span>
+        <h1 className="tm-title">서비스 이용약관</h1>
+        <p className="tm-meta">시행일 2026. 07. 01. · 최종 개정 2026. 06. 20. · 버전 v1.2 · 문서번호 CC-TOS-2026</p>
       </div>
 
       {/* CONTENT SHEET */}

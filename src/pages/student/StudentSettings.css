@@ -1,11 +1,9 @@
-/* handoff `CatChap 설정.dc.html` 원본 그대로 — 접두사 st- */
+/* handoff `CatChap 설정.dc.html` — 접두사 st- (rootStyle()는 실제로 flat var(--bg); 아래
+   radial-gradient/굵은 테두리/오버사이즈 radius/그림자는 핸드오프에 없는 구-리뉴얼 잔재라 정리함) */
 
 .st-root {
   min-height: 100vh;
-  background:
-    radial-gradient(1200px 600px at 82% -8%, var(--info-soft) 0%, rgba(230, 240, 255, 0) 60%),
-    radial-gradient(900px 500px at 5% 10%, var(--brand-soft) 0%, rgba(255, 233, 214, 0) 55%),
-    var(--bg);
+  background: var(--bg);
   padding-bottom: 60px;
   font-family: 'Pretendard', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -23,74 +21,6 @@
   }
 }
 
-/* NAV */
-.st-navbar {
-  position: sticky;
-  top: 0;
-  z-index: 60;
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(12px);
-  border-bottom: 2px solid var(--line);
-}
-
-.st-navinner {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 12px 24px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.st-back {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  text-decoration: none;
-  color: var(--ink-2);
-  font-weight: 800;
-  font-size: 14px;
-  padding: 9px 14px;
-  border-radius: 12px;
-  background: var(--brand-soft);
-}
-
-.st-back:hover {
-  background: var(--brand-soft);
-  color: var(--brand);
-}
-
-.st-back i {
-  font-size: 16px;
-}
-
-.st-navtitle {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.st-navicon {
-  width: 38px;
-  height: 38px;
-  border-radius: 12px;
-  background: var(--brand-soft);
-  color: var(--brand);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.st-navicon i {
-  font-size: 22px;
-}
-
-.st-navname {
-  font-family: var(--font-display); font-weight: 800;
-  font-size: 22px;
-  color: var(--ink);
-}
-
 /* MAIN */
 .st-main {
   max-width: 900px;
@@ -101,30 +31,28 @@
   gap: 18px;
 }
 
-/* PROFILE */
+/* PROFILE — handoff: 흰 카드(1px 테두리·14px radius, 그림자 없음) + ink색 이니셜 원 */
 .st-profile {
-  background: linear-gradient(150deg, var(--brand-soft), var(--info-soft));
-  border: 2px solid var(--line);
-  border-radius: 24px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
   padding: 22px 24px;
   display: flex;
   align-items: center;
   gap: 16px;
-  box-shadow: 0 16px 32px -26px rgba(180, 130, 200, 0.5);
 }
 
 .st-avatar {
-  width: 64px;
-  height: 64px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--warn), var(--brand));
+  background: var(--ink);
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: var(--font-display); font-weight: 800;
-  color: var(--on-brand);
-  font-size: 26px;
-  box-shadow: 0 10px 20px -10px rgba(255, 140, 60, 0.6);
+  color: var(--surface);
+  font-size: 22px;
 }
 
 .st-profileinfo {
@@ -133,68 +61,45 @@
 
 .st-profilename {
   font-family: var(--font-display); font-weight: 800;
-  font-size: 21px;
-  color: var(--info-ink);
+  font-size: 18px;
+  color: var(--ink);
 }
 
 .st-profilesub {
   font-size: 13px;
-  color: var(--info-ink);
-  font-weight: 600;
+  color: var(--ink-3);
+  font-weight: 500;
   margin-top: 2px;
 }
 
-.st-profilebtn {
-  text-decoration: none;
-  background: var(--surface);
-  color: var(--info-ink);
-  font-weight: 800;
-  font-size: 13.5px;
-  padding: 11px 16px;
-  border-radius: 14px;
-  min-height: 44px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  box-shadow: 0 8px 16px -10px rgba(150, 100, 180, 0.5);
-}
-
-.st-profilebtn:hover {
-  color: var(--brand);
-}
-
-.st-profilebtn i {
-  font-size: 16px;
-}
-
-/* SECTION CARD */
+/* SECTION CARD — handoff: 흰 카드 1px 테두리·14px radius, 그림자 없음 */
 .st-card {
   background: var(--surface);
-  border: 2px solid var(--line);
-  border-radius: 24px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
   padding: 8px 24px;
-  box-shadow: 0 14px 30px -26px rgba(180, 120, 90, 0.5);
 }
 
 .st-cardtitle {
   font-family: var(--font-display); font-weight: 800;
-  font-size: 16px;
-  color: var(--brand);
-  padding: 18px 0 10px;
+  font-size: 13px;
+  color: var(--ink-2);
+  padding: 16px 0 12px;
   display: flex;
   align-items: center;
   gap: 8px;
+  letter-spacing: 0.01em;
 }
 
 .st-cardtitle i {
-  font-size: 18px;
+  font-size: 16px;
 }
 
 .st-row {
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 15px 0;
+  padding: 14px 0;
   border-top: 1px solid var(--line);
 }
 
@@ -202,7 +107,7 @@
   width: 38px;
   height: 38px;
   flex-shrink: 0;
-  border-radius: 12px;
+  border-radius: 10px;
   background: var(--bg);
   color: var(--c);
   display: flex;
@@ -231,17 +136,17 @@
   margin-top: 2px;
 }
 
-/* TOGGLE */
+/* TOGGLE — handoff: 44x26 트랙(꺼짐 var(--line2))·20x20 노브 */
 .st-toggle {
   position: relative;
-  width: 52px;
-  height: 30px;
+  width: 44px;
+  height: 26px;
   flex-shrink: 0;
   border: none;
   border-radius: 20px;
   cursor: pointer;
   transition: background 0.2s;
-  background: var(--brand-soft);
+  background: var(--line-strong);
 }
 
 .st-toggle--on {
@@ -252,8 +157,8 @@
   position: absolute;
   top: 3px;
   left: 3px;
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   background: var(--surface);
   transition: left 0.2s;
@@ -261,7 +166,7 @@
 }
 
 .st-toggle--on .st-knob {
-  left: 25px;
+  left: 21px;
 }
 
 /* FONT SIZE */
@@ -293,7 +198,7 @@
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 15px 0;
+  padding: 14px 0;
   border-top: 1px solid var(--line);
   text-decoration: none;
 }
@@ -303,17 +208,17 @@
   color: var(--ink-3);
 }
 
-/* LOGOUT */
+/* LOGOUT — handoff: 1px 테두리(var(--line2))·11px radius·14.5px, hover 시 브랜드 테두리+소프트 배경 */
 .st-logout {
   text-decoration: none;
   text-align: center;
-  border: 2px solid var(--brand-soft);
+  border: 1px solid var(--line-strong);
   background: var(--surface);
-  color: var(--brand);
-  font-family: var(--font-display); font-weight: 800;
-  font-size: 16px;
-  padding: 15px;
-  border-radius: 16px;
+  color: var(--brand-ink);
+  font-family: var(--font-display); font-weight: 700;
+  font-size: 14.5px;
+  padding: 14px;
+  border-radius: 11px;
   min-height: 52px;
   display: inline-flex;
   align-items: center;
@@ -321,10 +226,12 @@
   gap: 8px;
   cursor: pointer;
   width: 100%;
+  box-sizing: border-box;
 }
 
 .st-logout:hover {
-  background: var(--surface-2);
+  border-color: var(--brand);
+  background: var(--brand-soft);
 }
 
 .st-logout i {
@@ -444,39 +351,32 @@
 }
 
 /* ===== 정제(polish): 액션 버튼 hover 부상 + 탄력 눌림 (배경색 불변, 그림자/모션만) ===== */
-.st-fbtn,
-.st-profilebtn {
+.st-fbtn {
   transition:
     transform 0.2s cubic-bezier(0.34, 1.2, 0.5, 1),
     box-shadow 0.2s ease,
     filter 0.2s ease;
 }
-.st-fbtn:hover,
-.st-profilebtn:hover {
+.st-fbtn:hover {
   transform: translateY(-1px);
   box-shadow: 0 5px 12px -6px rgba(255, 90, 77, 0.28);
 }
-.st-fbtn:active,
-.st-profilebtn:active {
+.st-fbtn:active {
   transform: translateY(0) scale(0.97);
   box-shadow: 0 2px 6px -4px rgba(255, 90, 77, 0.28);
   transition-duration: 0.09s;
 }
 @media (prefers-reduced-motion: reduce) {
-  .st-fbtn,
-  .st-profilebtn { transition: none; }
-  .st-fbtn:hover, .st-fbtn:active,
-  .st-profilebtn:hover, .st-profilebtn:active { transform: none; }
+  .st-fbtn { transition: none; }
+  .st-fbtn:hover, .st-fbtn:active { transform: none; }
 }
 
 
 /* ===== 모바일 반응형 (레이아웃만: 패딩·flex 방향) ===== */
 @media (max-width: 768px) {
-  .st-navinner { padding: 12px 16px; }
   .st-main { padding: 0 16px; }
 }
 @media (max-width: 480px) {
-  .st-navinner { padding: 10px 13px; }
   .st-main { padding: 0 13px; }
   .st-profile { flex-wrap: wrap; padding: 20px 18px; }
   .st-card { padding: 8px 18px; }

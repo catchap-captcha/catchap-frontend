@@ -2,7 +2,6 @@ import { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
 import { useRevealOnScroll } from '../../hooks/useRevealOnScroll';
-import ThemeToggle from '../../components/common/ThemeToggle';
 import mascot from '../../assets/characters/catchap-logo.png';
 import './MainPage.css';
 
@@ -34,7 +33,6 @@ export default function MainPage() {
             <a href="#how" className="mn-nav-link">이용 방법</a>
           </nav>
           <div className="mn-nav-right">
-            <ThemeToggle />
             <Link to={PATHS.CONTACT} className="mn-contact-link"><i className="ph-fill ph-chat-circle-text" />문의하기</Link>
             <Link to={PATHS.LOGIN} className="mn-login-link">로그인</Link>
           </div>
@@ -44,11 +42,12 @@ export default function MainPage() {
       {/* HERO */}
       <section className="mn-hero">
         <div className="mn-hero-left cc-reveal-group">
-          <span className="mn-hero-badge"><i className="ph-fill ph-paw-print" />영상 시청을 검증하는 강의 플랫폼</span>
+          <span className="mn-hero-badge"><i className="ph-fill ph-shield-check" />영상 시청을 검증하는 강의 플랫폼</span>
           <h1 className="mn-hero-title">틀어만 놓는 인강은<br />이제 그만,<br /><span className="mn-hero-title-accent">시청을 검증하는 강의</span></h1>
           <p className="mn-hero-desc">CatChap은 영상 시청을 검증하는 강의 플랫폼이에요. 강의 중간중간 그 강의 내용으로 만든 확인 문제가 나와 실제로 보고 있는지 확인해요. 학습자는 놓치는 부분 없이 배우고, 기관은 시청 완료를 믿을 수 있어요.</p>
           <div className="mn-hero-cta-row">
-            <button className="mn-hero-cta"><i className="ph-fill ph-play-circle" />서비스 둘러보기</button>
+            <a href="#games" className="mn-hero-cta"><i className="ph-bold ph-arrow-right" />서비스 둘러보기</a>
+            <Link to={PATHS.LOGIN} className="mn-hero-cta-secondary">회원가입</Link>
           </div>
           <div className="mn-hero-stats">
             <div><div className="mn-stat-num">6과목</div><div className="mn-stat-label">과목별 강의</div></div>
@@ -59,11 +58,22 @@ export default function MainPage() {
           </div>
         </div>
         <div className="mn-hero-visual cc-reveal">
-          <div className="mn-hero-blob1"></div>
-          <div className="mn-hero-blob2"></div>
-          <div className="mn-hero-mascot"><img src={mascot} alt="CatChap 마스코트" /></div>
-          <div className="mn-hero-chip mn-hero-chip--cat"><i className="ph-fill ph-seal-question" /><span>확인 문제 통과!</span></div>
-          <div className="mn-hero-chip mn-hero-chip--star"><i className="ph-fill ph-monitor-play" /><span>끝까지 봤어요!</span></div>
+          <div className="mn-preview-card">
+            <div className="mn-preview-video">
+              <div className="mn-preview-play"><i className="ph-fill ph-play" /></div>
+              <div className="mn-preview-tag"><i className="ph-fill ph-video-camera" />수학 · 3강</div>
+              <div className="mn-preview-progress"><div className="mn-preview-progress-fill" /></div>
+            </div>
+            <div className="mn-preview-quiz">
+              <span className="mn-preview-quiz-icon"><i className="ph-fill ph-seal-question" /></span>
+              <div>
+                <div className="mn-preview-quiz-title">확인 문제 · 지금 화면에 답하기</div>
+                <div className="mn-preview-quiz-sub">무작위 시점 출제 · 건너뛰기 차단</div>
+              </div>
+            </div>
+          </div>
+          <div className="mn-hero-chip mn-hero-chip--cat"><i className="ph-fill ph-check-circle" /><span>확인 문제 통과</span></div>
+          <div className="mn-hero-chip mn-hero-chip--star"><i className="ph-fill ph-monitor-play" /><span>끝까지 시청 완료</span></div>
         </div>
       </section>
 
@@ -75,17 +85,17 @@ export default function MainPage() {
         </div>
         <div className="mn-vp-grid cc-reveal-group">
           <div className="mn-vp-card">
-            <span className="mn-vp-icon mn-vp-icon--red"><i className="ph-fill ph-monitor-play" /></span>
+            <span className="mn-vp-icon mn-vp-icon--red"><i className="ph ph-monitor-play" /></span>
             <h3 className="mn-vp-title">시청 검증 게이트</h3>
             <p className="mn-vp-text">재생 중 무작위 시점에 그 강의의 확인 문제가 나와요. 건너뛰기·과속 재생은 서버가 막아요.</p>
           </div>
           <div className="mn-vp-card">
-            <span className="mn-vp-icon mn-vp-icon--blue"><i className="ph-fill ph-chart-line-up" /></span>
+            <span className="mn-vp-icon mn-vp-icon--blue"><i className="ph ph-chart-line-up" /></span>
             <h3 className="mn-vp-title">행동 데이터 분석</h3>
             <p className="mn-vp-text">문제를 푸는 과정의 속도·재시도를 분석해 학습자의 이해와 습관을 파악해요.</p>
           </div>
           <div className="mn-vp-card">
-            <span className="mn-vp-icon mn-vp-icon--green"><i className="ph-fill ph-shield-check" /></span>
+            <span className="mn-vp-icon mn-vp-icon--green"><i className="ph ph-shield-check" /></span>
             <h3 className="mn-vp-title">안전한 데이터 보호</h3>
             <p className="mn-vp-text">인증과 시청 데이터를 분리하고, 학습자 정보는 가명·최소 수집으로 지켜요.</p>
           </div>
@@ -104,10 +114,10 @@ export default function MainPage() {
             {GAMES.map((g) => (
               <div key={g.key} className="mn-game-card">
                 <div className="mn-game-head">
-                  <span className={`mn-game-icon mn-game-icon--${g.key}`}><i className={`ph-fill ${g.icon}`} /></span>
+                  <span className="mn-game-icon"><i className={`ph ${g.icon}`} /></span>
                   <div>
                     <div className="mn-game-name">{g.name}</div>
-                    <div className={`mn-game-tag mn-game-tag--${g.key}`}>{g.tag}</div>
+                    <div className="mn-game-tag">{g.tag}</div>
                   </div>
                 </div>
                 <p className="mn-game-desc">{g.desc}</p>
@@ -125,38 +135,35 @@ export default function MainPage() {
           <p className="mn-sec-sub">같은 시청 데이터를 학습자·보호자·기관에게 목적에 맞게 다르게 보여줘요</p>
         </div>
         <div className="mn-roles-grid cc-reveal-group">
-          <div className="mn-role-card mn-role-card--student">
-            <div className="mn-role-bubble"></div>
-            <span className="mn-role-icon"><i className="ph-fill ph-student" /></span>
+          <div className="mn-role-card">
+            <span className="mn-role-icon mn-role-icon--red"><i className="ph ph-student" /></span>
             <h3 className="mn-role-title">학습자</h3>
             <p className="mn-role-desc">오늘의 강의, 시청 진행, 확인 문제 기록을 쉬운 말로 만나요.</p>
             <div className="mn-role-list">
-              <span className="mn-role-item"><i className="ph-fill ph-check-circle" />오늘의 강의·이어보기</span>
-              <span className="mn-role-item"><i className="ph-fill ph-check-circle" />시청 중 확인 문제</span>
-              <span className="mn-role-item"><i className="ph-fill ph-check-circle" />본 데까지 이어서 재생</span>
+              <span className="mn-role-item"><i className="ph ph-check" />오늘의 강의·이어보기</span>
+              <span className="mn-role-item"><i className="ph ph-check" />시청 중 확인 문제</span>
+              <span className="mn-role-item"><i className="ph ph-check" />본 데까지 이어서 재생</span>
             </div>
           </div>
-          <div className="mn-role-card mn-role-card--parent">
-            <div className="mn-role-bubble"></div>
-            <span className="mn-role-icon"><i className="ph-fill ph-users-three" /></span>
+          <div className="mn-role-card">
+            <span className="mn-role-icon mn-role-icon--blue"><i className="ph ph-users-three" /></span>
             <h3 className="mn-role-title">보호자</h3>
             <p className="mn-role-desc">학습자의 주간 시청 요약과 강점·취약점을 쉬운 설명으로 확인해요.</p>
             <div className="mn-role-list">
-              <span className="mn-role-item"><i className="ph-fill ph-check-circle" />주간 시청 요약</span>
-              <span className="mn-role-item"><i className="ph-fill ph-check-circle" />쉬운 말 학습 리포트</span>
-              <span className="mn-role-item"><i className="ph-fill ph-check-circle" />리포트 다운로드</span>
+              <span className="mn-role-item"><i className="ph ph-check" />주간 시청 요약</span>
+              <span className="mn-role-item"><i className="ph ph-check" />쉬운 말 학습 리포트</span>
+              <span className="mn-role-item"><i className="ph ph-check" />리포트 다운로드</span>
             </div>
           </div>
           {/* 제품 전환(2026-07-17): 기관(학교) 카드 → 강사 카드 — 신규 기관 접수 종료 */}
-          <div className="mn-role-card mn-role-card--org">
-            <div className="mn-role-bubble"></div>
-            <span className="mn-role-icon"><i className="ph-fill ph-chalkboard-teacher" /></span>
+          <div className="mn-role-card">
+            <span className="mn-role-icon mn-role-icon--green"><i className="ph ph-chalkboard-teacher" /></span>
             <h3 className="mn-role-title">강사</h3>
             <p className="mn-role-desc">강의 영상을 올리고, 확인 문제와 출제 시점을 직접 설계해 시청을 검증해요.</p>
             <div className="mn-role-list">
-              <span className="mn-role-item"><i className="ph-fill ph-check-circle" />강의 업로드·목차 관리</span>
-              <span className="mn-role-item"><i className="ph-fill ph-check-circle" />확인 문제·출제 시점 설계</span>
-              <span className="mn-role-item"><i className="ph-fill ph-check-circle" />AI 문항 초안 지원</span>
+              <span className="mn-role-item"><i className="ph ph-check" />강의 업로드·목차 관리</span>
+              <span className="mn-role-item"><i className="ph ph-check" />확인 문제·출제 시점 설계</span>
+              <span className="mn-role-item"><i className="ph ph-check" />AI 문항 초안 지원</span>
             </div>
           </div>
         </div>
@@ -172,28 +179,25 @@ export default function MainPage() {
           <div className="mn-how-row cc-reveal-group">
             <div className="mn-step-card">
               <div className="mn-step-label">STEP 1</div>
-              <span className="mn-step-icon mn-step-icon--1"><i className="ph-fill ph-monitor-play" /></span>
+              <span className="mn-step-icon"><i className="ph ph-monitor-play" /></span>
               <h3 className="mn-step-title">강의를 봐요</h3>
               <p className="mn-step-desc">과목별 강의를 골라 이어서 시청해요</p>
             </div>
-            <div className="mn-step-arrow"><i className="ph-bold ph-arrow-right" /></div>
             <div className="mn-step-card">
               <div className="mn-step-label">STEP 2</div>
-              <span className="mn-step-icon mn-step-icon--2"><i className="ph-fill ph-seal-question" /></span>
+              <span className="mn-step-icon"><i className="ph ph-seal-question" /></span>
               <h3 className="mn-step-title">확인 문제를 풀어요</h3>
               <p className="mn-step-desc">무작위 시점에 강의 내용 문제가 나와요</p>
             </div>
-            <div className="mn-step-arrow"><i className="ph-bold ph-arrow-right" /></div>
             <div className="mn-step-card">
               <div className="mn-step-label">STEP 3</div>
-              <span className="mn-step-icon mn-step-icon--3"><i className="ph-fill ph-shield-check" /></span>
+              <span className="mn-step-icon"><i className="ph ph-shield-check" /></span>
               <h3 className="mn-step-title">시청을 검증해요</h3>
               <p className="mn-step-desc">건너뛰기·과속·동시 재생을 서버가 확인해요</p>
             </div>
-            <div className="mn-step-arrow"><i className="ph-bold ph-arrow-right" /></div>
             <div className="mn-step-card">
               <div className="mn-step-label">STEP 4</div>
-              <span className="mn-step-icon mn-step-icon--4"><i className="ph-fill ph-squares-four" /></span>
+              <span className="mn-step-icon"><i className="ph ph-squares-four" /></span>
               <h3 className="mn-step-title">기록으로 보여줘요</h3>
               <p className="mn-step-desc">역할별 화면에 시청·학습 요약을 제공해요</p>
             </div>

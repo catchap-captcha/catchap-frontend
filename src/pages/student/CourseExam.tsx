@@ -8,13 +8,13 @@ import {
   type ExamSession,
   type ExamState,
 } from '../../api/lectures';
-import mascot from '../../assets/characters/catchap-logo.png';
 import { StudentNav } from '../../layouts/StudentLayout';
 import { drawCourseCertificate } from '../../utils/certificate';
 import { canvasToPdf } from '../../utils/pdf';
 import './CourseExam.css';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/* CatChap 수료 시험 — handoff `CatChap 수료 시험.dc.html` */
 
 /**
  * 코스 수료 시험 — 완전학습(mastery). 배움(강의) → 연습(문제은행 Q) → 증명(수료 시험)의
@@ -157,6 +157,11 @@ export default function CourseExam() {
     <div className="ce-root">
       <StudentNav />
       <div className="ce-wrap">
+        <Link to={PATHS.STUDENT_LECTURES} className="ce-back">
+          <i className="ph-bold ph-arrow-left" />
+          강의 목록으로
+        </Link>
+
         {loadErr && (
           <div className="ce-err">
             <i className="ph-fill ph-warning-circle" /> {loadErr}
@@ -222,7 +227,7 @@ export default function CourseExam() {
                           <span className="ce-optmark">
                             <i className={sel.includes(oi)
                               ? (q.multi ? 'ph-fill ph-check-square' : 'ph-fill ph-check-circle')
-                              : (q.multi ? 'ph-bold ph-square' : 'ph-bold ph-circle')} />
+                              : (q.multi ? 'ph ph-square' : 'ph ph-circle')} />
                           </span>
                           {q.option_image_urls?.[oi] && (
                             <img className="ce-optimg" src={API_ORIGIN + q.option_image_urls[oi]!} alt="" />
@@ -283,7 +288,7 @@ export default function CourseExam() {
                           <span className="ce-optmark">
                             {isAnswer ? <i className="ph-fill ph-check-circle" />
                               : isPicked ? <i className="ph-fill ph-x-circle" />
-                              : <i className="ph-bold ph-circle" />}
+                              : <i className="ph ph-circle" />}
                           </span>
                           {r.option_image_urls?.[oi] && (
                             <img className="ce-optimg" src={API_ORIGIN + r.option_image_urls[oi]!} alt="" />
@@ -434,7 +439,7 @@ function ResultHero({
   if (result.passed) {
     return (
       <div className="ce-hero ce-hero--pass">
-        <img src={mascot} alt="" className="ce-heroimg" />
+        <span className="ce-heroseal"><i className="ph-fill ph-seal-check" /></span>
         <div className={`ce-badge${result.perfect ? ' ce-badge--perfect' : ''}`}>
           <i className={result.perfect ? 'ph-fill ph-crown' : 'ph-fill ph-seal-check'} />
           {result.perfect ? '완벽 통과!' : '수료 완료!'}

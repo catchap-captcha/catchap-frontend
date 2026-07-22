@@ -53,21 +53,21 @@ const FALLBACK_EARLIER: NtItem[] = [];
 
 /** API 알림 type → 원본 디자인의 아이콘/색 (type이 category보다 세분화됨: progress/report 등) */
 const TYPE_STYLE: Record<string, { icon: string; color: string; bg: string }> = {
-  progress: { icon: 'ph-fill ph-check-circle', color: '#17B08C', bg: '#DFF6ED' },
-  badge: { icon: 'ph-fill ph-medal', color: '#F0A400', bg: '#FFF3D6' },
-  recommend: { icon: 'ph-fill ph-lightbulb', color: '#ea5443', bg: '#FFE7E2' },
-  ai: { icon: 'ph-fill ph-robot', color: '#2E7BFF', bg: '#E6F0FF' },
-  report: { icon: 'ph-fill ph-chart-line-up', color: '#8B6BFF', bg: '#EDE6FF' },
+  progress: { icon: 'ph-fill ph-check-circle', color: 'var(--ok)', bg: 'var(--ok-soft)' },
+  badge: { icon: 'ph-fill ph-medal', color: 'var(--warn)', bg: 'var(--warn-soft)' },
+  recommend: { icon: 'ph-fill ph-lightbulb', color: 'var(--brand)', bg: 'var(--brand-soft)' },
+  ai: { icon: 'ph-fill ph-robot', color: 'var(--info)', bg: 'var(--info-soft)' },
+  report: { icon: 'ph-fill ph-chart-line-up', color: 'var(--info)', bg: 'var(--info-soft)' },
 };
 
 /** API 알림 category → 원본 카테고리별 아이콘/색 (type 매칭 실패 시 폴백) */
 const API_STYLE: Record<string, { icon: string; color: string; bg: string }> = {
-  진도: { icon: 'ph-fill ph-chart-line-up', color: '#8B6BFF', bg: '#EDE6FF' },
-  배지: { icon: 'ph-fill ph-medal', color: '#F0A400', bg: '#FFF3D6' },
-  추천문제: { icon: 'ph-fill ph-lightbulb', color: '#ea5443', bg: '#FFE7E2' },
-  AI: { icon: 'ph-fill ph-robot', color: '#2E7BFF', bg: '#E6F0FF' },
+  진도: { icon: 'ph-fill ph-chart-line-up', color: 'var(--info)', bg: 'var(--info-soft)' },
+  배지: { icon: 'ph-fill ph-medal', color: 'var(--warn)', bg: 'var(--warn-soft)' },
+  추천문제: { icon: 'ph-fill ph-lightbulb', color: 'var(--brand)', bg: 'var(--brand-soft)' },
+  AI: { icon: 'ph-fill ph-robot', color: 'var(--info)', bg: 'var(--info-soft)' },
 };
-const API_STYLE_DEFAULT = { icon: 'ph-fill ph-check-circle', color: '#17B08C', bg: '#DFF6ED' };
+const API_STYLE_DEFAULT = { icon: 'ph-fill ph-check-circle', color: 'var(--ok)', bg: 'var(--ok-soft)' };
 
 function relTime(iso: string): string {
   // 서버는 KST naive 문자열 — parseServerDate로 절대시각 고정(브라우저 시간대 무관)

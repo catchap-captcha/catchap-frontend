@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { PATHS } from '../../routes/paths';
 import mascot from '../../assets/characters/catchap-logo.png';
@@ -89,58 +89,110 @@ export default function OpsLogin() {
   return (
     <div className="opl-root">
       <ThemeToggle className="theme-toggle--fixed" />
-      <form className="opl-card" onSubmit={submit}>
-        <div className="opl-brand">
-          <img src={mascot} alt="CatChap" className="opl-logo" />
-          <div>
-            <div className="opl-brand-name">CatChap</div>
-            <div className="opl-brand-sub">운영 콘솔</div>
+
+      {/* LEFT — brand / context panel (handoff: dark #3D3935) */}
+      <div className="opl-left">
+        <div className="opl-left-deco">
+          <span className="opl-c1" />
+          <span className="opl-c2" />
+        </div>
+        <div className="opl-left-pin">
+          <div className="opl-brand">
+            <img src={mascot} alt="CatChap" className="opl-logo" />
+            <span className="opl-brand-name">CatChap</span>
+            <span className="opl-brand-tag">운영 콘솔</span>
+          </div>
+          <div className="opl-hero">
+            <span className="opl-pill">
+              <i className="ph-fill ph-lock-key" />
+              내부 전용 · 초대제
+            </span>
+            <h1 className="opl-hero-title">
+              운영자와 강사를 위한
+              <br />
+              관리 콘솔
+            </h1>
+            <p className="opl-hero-sub">
+              기관 승인, 강의·문항 검수, 행동 데이터, 시스템 상태를 한곳에서 운영합니다. 접근
+              권한은 계정 역할에 따라 자동으로 제한됩니다.
+            </p>
+          </div>
+          <div className="opl-badges">
+            <span className="opl-badge">
+              <i className="ph ph-shield-check" />
+              역할 기반 접근 제어
+            </span>
+            <span className="opl-badge">
+              <i className="ph ph-scroll" />
+              감사 로그 기록
+            </span>
           </div>
         </div>
+      </div>
 
-        <h1 className="opl-title">
-          <i className="ph-fill ph-shield-star" />
-          운영자·강사 로그인
-        </h1>
-        <p className="opl-sub">내부 운영자와 초대받은 강사 전용 페이지입니다.</p>
-
-        <label className="opl-label">아이디(이메일)</label>
-        <div className="opl-field">
-          <i className="ph-fill ph-user-circle" />
-          <input
-            type="text"
-            autoComplete="username"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="계정 이메일"
-            className="opl-input"
-          />
-        </div>
-
-        <label className="opl-label">비밀번호</label>
-        <div className="opl-field">
-          <i className="ph-fill ph-lock-key" />
-          <PasswordInput
-            autoComplete="current-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="비밀번호"
-            className="opl-input"
-          />
-        </div>
-
-        {error && (
-          <div className="opl-error">
-            <i className="ph-fill ph-warning-circle" />
-            <span>{error}</span>
+      {/* RIGHT — form */}
+      <div className="opl-right">
+        <form className="opl-card" onSubmit={submit}>
+          <div className="opl-head">
+            <span className="opl-head-icon">
+              <i className="ph-fill ph-shield-star" />
+            </span>
+            <div>
+              <h2 className="opl-title">운영자·강사 로그인</h2>
+              <p className="opl-sub">내부 운영자와 초대받은 강사 전용 페이지입니다.</p>
+            </div>
           </div>
-        )}
 
-        <button type="submit" className="opl-btn" disabled={busy}>
-          <i className="ph-fill ph-sign-in" />
-          {busy ? '확인 중…' : captchaNeeded ? '보안 확인 후 로그인' : '로그인'}
-        </button>
-      </form>
+          <label className="opl-label">아이디 (이메일)</label>
+          <div className="opl-field">
+            <i className="ph ph-user-circle" />
+            <input
+              type="text"
+              autoComplete="username"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="계정 이메일"
+              className="opl-input"
+            />
+          </div>
+
+          <label className="opl-label">비밀번호</label>
+          <div className="opl-field">
+            <i className="ph ph-lock-key" />
+            <PasswordInput
+              autoComplete="current-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="비밀번호"
+              className="opl-input"
+            />
+          </div>
+
+          {error && (
+            <div className="opl-error">
+              <i className="ph-fill ph-warning-circle" />
+              <span>{error}</span>
+            </div>
+          )}
+
+          <button type="submit" className="opl-btn" disabled={busy}>
+            <i className="ph-bold ph-sign-in" />
+            {busy ? '확인 중…' : captchaNeeded ? '보안 확인 후 로그인' : '로그인'}
+          </button>
+
+          <div className="opl-notice">
+            <i className="ph ph-info" />
+            <p>
+              이 페이지는 외부에 노출되지 않는 내부 진입구입니다. 접근 권한이 없으면 로그인이
+              거부되며, 모든 시도는 감사 로그에 기록됩니다.
+            </p>
+          </div>
+
+          <p className="opl-footlink">
+            일반 학습자이신가요? <Link to={PATHS.LOGIN}>학습자 로그인</Link>
+          </p>
+        </form>
+      </div>
 
       {captchaOpen && (
         <div className="opl-cap-overlay" onClick={() => setCaptchaOpen(false)}>

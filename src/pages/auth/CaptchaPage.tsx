@@ -85,53 +85,44 @@ export default function CaptchaPage() {
   const ss = seconds % 60;
   const timerLabel = (mm > 0 ? mm + 'm ' : '') + (ss < 10 ? '0' + ss : ss) + 's';
 
-  // warm palette per phase
-  let hc1 = '#FF8A5B';
-  let hc2 = '#ea5443';
+  // 헤더 아이콘/톤 (handoff: 그라디언트 배너가 아니라 흰 카드 위 아이콘+텍스트 한 줄)
+  let headerIcon = 'ph-shield-check';
+  let headerTone: 'challenge' | 'success' | 'locked' = 'challenge';
   let hTitle = '사람인지 확인해요 🐱';
   let hSub = '냥이랑 잠깐 확인하고 이어가요';
   if (isSuccess) {
-    hc1 = '#33C892';
-    hc2 = '#17B08C';
+    headerIcon = 'ph-check-circle';
+    headerTone = 'success';
     hTitle = '확인되었어요!';
     hSub = '정상 사용자로 확인됐어요';
   }
   if (isLocked) {
-    hc1 = '#FFB43C';
-    hc2 = '#FF922E';
+    headerIcon = 'ph-moon-stars';
+    headerTone = 'locked';
     hTitle = '조금 쉬어가요';
     hSub = '잠시 후 다시 시도할 수 있어요';
   }
 
   return (
     <div className="cp-page">
-      {/* floating cute shapes */}
-      <div className="cp-shape1"></div>
-      <div className="cp-shape2"></div>
-      <div className="cp-shape3"></div>
-      <div className="cp-shape4"></div>
-
       {/* WIDGET */}
       <div className="cp-widget">
-        {/* peeking mascot */}
-        <div className="cp-peek">
-          <div className="cp-peek-float">
-            <img src={mascot} alt="냥냥이" className="cp-peek-img" />
-          </div>
+        {/* brand row — handoff: 작은 로고 + 워드마크 */}
+        <div className="cp-brand-row">
+          <img src={mascot} alt="CatChap" className="cp-brand-logo" />
+          <span className="cp-brand-name">CatChap</span>
         </div>
 
         <div className={`cp-shell${error ? ' cp-shell-shake' : ''}`}>
           {/* HEADER */}
-          <div
-            className="cp-header"
-            style={{ '--cp-hc1': hc1, '--cp-hc2': hc2 } as React.CSSProperties}
-          >
-            <div className="cp-guard-chip">
-              <i className="ph-fill ph-cat cp-guard-icon"></i>
-              <span className="cp-guard-text">냥이 지킴이</span>
+          <div className="cp-header">
+            <span className={`cp-header-icon cp-header-icon--${headerTone}`}>
+              <i className={`ph-fill ${headerIcon}`}></i>
+            </span>
+            <div className="cp-header-text">
+              <div className="cp-h-title">{hTitle}</div>
+              <div className="cp-h-sub">{hSub}</div>
             </div>
-            <div className="cp-h-title">{hTitle}</div>
-            <div className="cp-h-sub">{hSub}</div>
           </div>
 
           {/* BODY */}

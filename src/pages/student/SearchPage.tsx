@@ -212,7 +212,7 @@ export default function SearchPage() {
       <div className="sp-container">
         {/* BIG SEARCH FIELD */}
         <div className="sp-searchwrap">
-          <i className="ph-bold ph-magnifying-glass sp-searchicon" />
+          <i className="ph ph-magnifying-glass sp-searchicon" />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
@@ -239,7 +239,7 @@ export default function SearchPage() {
             <div className="sp-popular">
               <div className="sp-cardhead">
                 <span className="sp-cardicon">
-                  <i className="ph-fill ph-fire" />
+                  <i className="ph-fill ph-compass" />
                 </span>
                 <h2 className="sp-cardtitle">바로가기</h2>
               </div>

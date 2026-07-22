@@ -122,14 +122,6 @@ export default function PasswordResetPage() {
         </Link>
 
         <div className="pr-hero">
-          <div className="pr-hero-row">
-            <div className="pr-mascot">
-              <img src={mascot} alt="마스코트" className="pr-mascot-img" />
-              <span className="pr-mascot-badge">
-                <i className="ph-fill ph-key pr-mascot-badge-icon"></i>
-              </span>
-            </div>
-          </div>
           <h1 className="pr-title">
             비밀번호를
             <br />
@@ -353,12 +345,8 @@ export default function PasswordResetPage() {
               <div className="pr-done-badge">
                 <i className="ph-fill ph-check-circle pr-done-badge-icon"></i>
               </div>
-              <h2 className="pr-h2 pr-done-title">비밀번호가 변경되었어요!</h2>
-              <p className="pr-done-sub">
-                새 비밀번호로 다시 로그인해 주세요.
-                <br />
-                고양이 친구가 기다리고 있어요 🐱
-              </p>
+              <h2 className="pr-h2 pr-done-title">비밀번호가 변경되었습니다</h2>
+              <p className="pr-done-sub">새 비밀번호로 다시 로그인해 주세요.</p>
               <Link to={PATHS.LOGIN} className="pr-done-btn">
                 <i className="ph-fill ph-sign-in pr-btn-icon"></i>로그인하러 가기
               </Link>

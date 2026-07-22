@@ -127,14 +127,11 @@ export default function WrongNotes() {
               <div className="wn-sumlabel">다시 만날 문제</div>
             </div>
           </div>
-          <Link
-            to={`${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(solveAllSubject)}&bank=1`}
-            className="wn-solveall"
-          >
-            <i className="ph-fill ph-arrows-clockwise" />오늘의 Q에서 다시 풀기
-          </Link>
         </div>
+      </section>
 
+      {/* 툴바 — 필터 칩 + 주요 액션 */}
+      <section className="wn-toolbar">
         {/* filter chips */}
         <div className="wn-chips">
           {CHIPS.map((c) => (
@@ -148,6 +145,12 @@ export default function WrongNotes() {
             </button>
           ))}
         </div>
+        <Link
+          to={`${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(solveAllSubject)}&bank=1`}
+          className="wn-solveall"
+        >
+          <i className="ph-fill ph-arrows-clockwise" />오늘의 Q에서 다시 풀기
+        </Link>
       </section>
 
       {/* WRONG ANSWER LIST — SRS wrong 상자 뷰(비면 그 자체가 좋은 소식) */}
@@ -168,7 +171,7 @@ export default function WrongNotes() {
               <div className="wn-cardhead">
                 {/* 태그 = 실제 과목명(q.subject) — 카테고리 라벨('이미지 선택' 등)이 아니라
                     정확한 과목이 보이게. 색·아이콘은 카테고리 테마 유지. */}
-                <span className="wn-tag" style={{ background: t.bg, color: t.c }}>
+                <span className="wn-tag">
                   <i className={t.icon} />
                   {q.subject || t.subject}
                 </span>

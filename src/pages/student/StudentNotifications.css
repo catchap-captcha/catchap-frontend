@@ -1,246 +1,64 @@
-/* handoff `CatChap 알림.dc.html` 원본 그대로 — 접두사 nt- */
+/* handoff `CatChap 알림.dc.html` 리뉴얼(플랫) 정렬 — 접두사 nt- */
 
 .nt-root {
   min-height: 100vh;
-  background:
-    radial-gradient(1200px 600px at 82% -8%, var(--brand-soft) 0%, rgba(255, 233, 214, 0) 60%),
-    radial-gradient(900px 500px at 5% 10%, var(--info-soft) 0%, rgba(230, 240, 255, 0) 55%),
-    var(--bg);
-  padding-bottom: 60px;
+  background: var(--bg);
   font-family: 'Pretendard', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
-}
-
-/* rotate는 비트맵 마스코트를 매 프레임 리샘플링해 번져 보임 → 이동만 남김 */
-@keyframes ntFloat {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
-/* NAV */
-.nt-navbar {
-  position: sticky;
-  top: 0;
-  z-index: 60;
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(12px);
-  border-bottom: 2px solid var(--line);
-}
-
-.nt-navinner {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 12px 24px;
-  display: flex;
-  align-items: center;
-  gap: 26px;
-}
-
-.nt-logo {
-  display: flex;
-  align-items: center;
-  gap: 11px;
-  text-decoration: none;
-}
-
-.nt-logoimg {
-  width: 46px;
-  height: 46px;
-  border-radius: 50%;
-  box-shadow: 0 6px 14px rgba(255, 90, 77, 0.3);
-}
-
-.nt-logotext {
-  display: flex;
-  flex-direction: column;
-  line-height: 1;
-}
-
-.nt-logotitle {
-  font-family: var(--font-display); font-weight: 800;
-  font-size: 25px;
-  color: var(--brand);
-  letter-spacing: -0.5px;
-}
-
-.nt-logosub {
-  font-size: 11px;
-  color: var(--ink-3);
-  font-weight: 600;
-  margin-top: 3px;
-}
-
-.nt-menu {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  margin-left: 8px;
-}
-
-.nt-navlink {
-  text-decoration: none;
-  font-weight: 700;
-  font-size: 15.5px;
-  color: var(--ink-2);
-  padding: 9px 16px;
-  border-radius: 12px;
-}
-
-.nt-navlink:hover {
-  background: var(--brand-soft);
-  color: var(--ink);
-}
-
-.nt-navright {
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.nt-searchbtn {
-  text-decoration: none;
-  width: 42px;
-  height: 42px;
-  border: none;
-  border-radius: 14px;
-  background: var(--brand-soft);
-  color: var(--ink-2);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.nt-searchbtn:hover {
-  background: var(--brand-soft);
-  color: var(--brand);
-}
-
-.nt-searchbtn i {
-  font-size: 20px;
-}
-
-.nt-bellbtn {
-  position: relative;
-  width: 42px;
-  height: 42px;
-  border: none;
-  border-radius: 14px;
-  background: var(--brand-soft);
-  color: var(--brand);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.nt-bellbtn i {
-  font-size: 20px;
-}
-
-.nt-belldot {
-  position: absolute;
-  top: 6px;
-  right: 7px;
-  width: 9px;
-  height: 9px;
-  background: var(--brand);
-  border-radius: 50%;
-  border: 2px solid var(--brand-soft);
-}
-
-.nt-profile {
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  background: var(--surface);
-  border: 2px solid var(--line);
-  padding: 5px 12px 5px 6px;
-  border-radius: 40px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
-  cursor: pointer;
-}
-
-.nt-profile:hover {
-  border-color: var(--line);
-}
-
-.nt-avatar {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--warn), var(--brand));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-display); font-weight: 800;
-  color: var(--on-brand);
-  font-size: 16px;
-}
-
-.nt-profilename {
-  font-weight: 800;
-  font-size: 14px;
-  color: var(--ink);
 }
 
 /* SECTION */
 .nt-section {
   max-width: 820px;
-  margin: 26px auto 0;
-  padding: 0 24px;
+  margin: 0 auto;
+  padding: 40px 28px 60px;
 }
 
 .nt-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 12px;
-  margin-bottom: 18px;
+  gap: 16px;
+  margin-bottom: 22px;
 }
 
 .nt-headleft {
   display: flex;
   align-items: center;
-  gap: 13px;
+  gap: 14px;
 }
 
 .nt-headicon {
-  width: 44px;
-  height: 44px;
-  border-radius: 14px;
-  background: var(--brand-soft);
-  color: var(--brand);
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  color: var(--ink);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .nt-headicon i {
-  font-size: 25px;
+  font-size: 24px;
 }
 
 .nt-title {
-  font-family: var(--font-display); font-weight: 800;
-  font-size: 30px;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 28px;
   color: var(--ink);
-  margin: 0;
-  letter-spacing: -0.5px;
+  margin: 0 0 4px;
+  letter-spacing: -0.03em;
 }
 
 .nt-sub {
-  margin: 3px 0 0;
+  margin: 0;
   color: var(--ink-3);
-  font-weight: 600;
-  font-size: 13.5px;
+  font-weight: 500;
+  font-size: 14px;
 }
 
 .nt-headbtns {
@@ -248,42 +66,23 @@
   gap: 10px;
 }
 
-.nt-togglebtn {
-  border: 2px solid var(--brand-soft);
-  background: var(--surface);
-  color: var(--ink-2);
-  font-weight: 800;
-  font-size: 13px;
-  padding: 10px 15px;
-  border-radius: 13px;
-  cursor: pointer;
-  font-family: 'Pretendard', sans-serif;
-  min-height: 44px;
-}
-
-.nt-togglebtn:hover {
-  background: var(--surface-2);
-  color: var(--brand);
-}
-
 .nt-markall {
-  border: none;
-  background: var(--brand);
-  color: var(--on-brand);
-  font-weight: 800;
-  font-size: 13px;
-  padding: 10px 16px;
-  border-radius: 13px;
-  cursor: pointer;
-  font-family: 'Pretendard', sans-serif;
-  min-height: 44px;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink);
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 700;
+  font-size: 13.5px;
+  padding: 10px 16px;
+  border-radius: 9px;
+  cursor: pointer;
 }
 
 .nt-markall:hover {
-  background: var(--brand-strong);
+  border-color: var(--ink-3);
 }
 
 .nt-markall i {
@@ -293,24 +92,23 @@
 /* CATEGORY FILTER */
 .nt-chips {
   display: flex;
-  align-items: center;
-  gap: 9px;
-  margin-bottom: 18px;
+  gap: 8px;
   flex-wrap: wrap;
+  margin-bottom: 26px;
 }
 
 .nt-chip {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  border: none;
+  gap: 7px;
+  border: 1px solid var(--line-strong);
   cursor: pointer;
   font-family: 'Pretendard', sans-serif;
-  font-weight: 800;
+  font-weight: 700;
   font-size: 13px;
-  padding: 8px 15px;
-  border-radius: 20px;
-  transition: all 0.15s;
+  padding: 8px 14px;
+  border-radius: 9px;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
 
 .nt-chip i {
@@ -318,61 +116,60 @@
 }
 
 .nt-chip--on {
-  background: var(--brand);
-  color: var(--on-brand);
-  box-shadow: 0 6px 14px -8px rgba(255, 90, 77, 0.6);
+  background: var(--ink);
+  color: var(--surface);
+  border-color: var(--ink);
 }
 
 .nt-chip--off {
   background: var(--surface);
   color: var(--ink-2);
-  border: 2px solid var(--line);
 }
 
 /* LIST */
 .nt-groupname {
-  font-family: var(--font-display); font-weight: 800;
-  font-size: 16px;
-  color: var(--ink-2);
-  margin: 8px 0 12px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--ink-3);
+  margin: 0 0 12px;
+  letter-spacing: 0.02em;
 }
 
 .nt-list {
   display: flex;
   flex-direction: column;
-  gap: 11px;
+  gap: 10px;
 }
 
 .nt-list--today {
-  margin-bottom: 26px;
+  margin-bottom: 28px;
 }
 
 .nt-card {
-  position: relative;
   display: flex;
-  gap: 14px;
+  align-items: flex-start;
+  gap: 13px;
   padding: 16px 18px;
-  border-radius: 18px;
-  box-shadow: 0 12px 26px -24px rgba(180, 120, 90, 0.5);
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  cursor: pointer;
+  transition: background 0.12s;
 }
 
 .nt-card--unread {
-  background: var(--surface);
-  border: 2px solid var(--brand-soft);
-  border-left: 5px solid var(--c);
+  background: var(--brand-soft);
+  border-color: var(--brand-soft-line);
 }
 
 .nt-card--read {
   background: var(--surface);
-  border: 2px solid var(--line);
-  border-left: 5px solid transparent;
 }
 
 .nt-iconwrap {
   flex-shrink: 0;
-  width: 46px;
-  height: 46px;
-  border-radius: 14px;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -381,7 +178,7 @@
 }
 
 .nt-iconwrap i {
-  font-size: 24px;
+  font-size: 20px;
 }
 
 .nt-cardbody {
@@ -394,110 +191,89 @@
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
+  margin-bottom: 3px;
 }
 
 .nt-cardtitle {
-  font-weight: 800;
+  font-weight: 700;
   font-size: 14.5px;
   color: var(--ink);
 }
 
 .nt-tag {
+  flex-shrink: 0;
   font-size: 10.5px;
-  font-weight: 800;
-  padding: 2px 9px;
-  border-radius: 20px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 5px;
   background: var(--bg);
   color: var(--c);
 }
 
 .nt-dot {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   background: var(--brand);
   flex-shrink: 0;
 }
 
 .nt-cardtext {
-  margin: 4px 0 0;
+  margin: 0;
   font-size: 13px;
   color: var(--ink-2);
-  font-weight: 600;
-  line-height: 1.5;
+  font-weight: 500;
+  line-height: 1.55;
 }
 
 .nt-time {
-  font-size: 11.5px;
-  font-weight: 700;
+  font-size: 12px;
+  font-weight: 500;
   color: var(--ink-3);
   white-space: nowrap;
+  flex-shrink: 0;
   align-self: flex-start;
 }
 
-/* EMPTY STATE */
+/* EMPTY STATE — 플랫 중립 */
 .nt-empty {
-  background: var(--surface);
-  border: 2px solid var(--line);
-  border-radius: 28px;
-  padding: 60px 30px;
   text-align: center;
-  box-shadow: 0 16px 34px -26px rgba(180, 120, 90, 0.5);
-  margin-top: 12px;
+  padding: 60px 24px;
+  color: var(--ink-3);
 }
 
 .nt-emptyart {
-  display: inline-block;
-  animation: ntFloat 4s ease-in-out infinite;
-  will-change: transform;
-  position: relative;
-  margin-bottom: 20px;
+  display: inline-flex;
+  margin-bottom: 16px;
 }
 
 .nt-emptyicon {
-  width: 96px;
-  height: 96px;
-  border-radius: 28px;
+  width: 72px;
+  height: 72px;
+  border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 44px;
-  color: var(--brand);
-  background: var(--brand-soft);
-  box-shadow: 0 20px 38px -18px rgba(255, 90, 77, 0.4);
-}
-
-.nt-emptybadge {
-  position: absolute;
-  bottom: -4px;
-  right: -6px;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: var(--surface);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 8px 16px -6px rgba(0, 0, 0, 0.2);
-}
-
-.nt-emptybadge i {
-  font-size: 22px;
+  font-size: 34px;
   color: var(--ink-3);
+  background: var(--surface);
+  border: 1px solid var(--line);
 }
 
 .nt-emptytitle {
-  font-family: var(--font-display); font-weight: 800;
-  font-size: 26px;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 20px;
   color: var(--ink);
   margin: 0 0 8px;
+  letter-spacing: -0.02em;
 }
 
 .nt-emptytext {
-  margin: 0 0 24px;
-  font-size: 14.5px;
+  margin: 0 0 22px;
+  font-size: 14px;
   color: var(--ink-3);
-  font-weight: 600;
+  font-weight: 500;
   line-height: 1.6;
 }
 
@@ -509,11 +285,11 @@
   border: none;
   background: var(--brand);
   color: var(--on-brand);
-  font-family: var(--font-display); font-weight: 800;
-  font-size: 16px;
-  padding: 14px 26px;
-  border-radius: 15px;
-  box-shadow: 0 12px 24px -8px rgba(255, 90, 77, 0.7);
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 11px 20px;
+  border-radius: 10px;
 }
 
 .nt-emptycta:hover {
@@ -521,77 +297,21 @@
 }
 
 .nt-emptycta i {
-  font-size: 19px;
+  font-size: 18px;
 }
 
-/* ===== 정제(polish): 액션 버튼 hover 부상 + 탄력 눌림 (배경색 불변, 그림자/모션만) ===== */
-.nt-bellbtn,
-.nt-emptycta,
-.nt-searchbtn {
-  transition:
-    transform 0.2s cubic-bezier(0.34, 1.2, 0.5, 1),
-    box-shadow 0.2s ease,
-    filter 0.2s ease;
-}
-.nt-bellbtn:hover,
-.nt-emptycta:hover,
-.nt-searchbtn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 5px 12px -6px rgba(255, 90, 77, 0.28);
-}
-.nt-bellbtn:active,
-.nt-emptycta:active,
-.nt-searchbtn:active {
-  transform: translateY(0) scale(0.97);
-  box-shadow: 0 2px 6px -4px rgba(255, 90, 77, 0.28);
-  transition-duration: 0.09s;
-}
-@media (prefers-reduced-motion: reduce) {
-  .nt-bellbtn,
-  .nt-emptycta,
-  .nt-searchbtn { transition: none; }
-  .nt-bellbtn:hover, .nt-bellbtn:active,
-  .nt-emptycta:hover, .nt-emptycta:active,
-  .nt-searchbtn:hover, .nt-searchbtn:active { transform: none; }
-}
-
-
-/* ===== 엘리베이션: 카드 질감 고급화 (레이어드 웜 섀도우) ===== */
-.nt-card {
-  box-shadow:
-    0 1px 3px rgba(58, 51, 64, 0.05),
-    0 16px 34px -20px rgba(90, 60, 55, 0.2);
-}
-.nt-card {
-  transition:
-    box-shadow 0.28s ease,
-    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
-}
-.nt-card:hover {
-  transform: translateY(-3px);
-  box-shadow:
-    0 2px 6px rgba(58, 51, 64, 0.06),
-    0 24px 44px -22px rgba(90, 60, 55, 0.26);
-}
-@media (prefers-reduced-motion: reduce) {
-  .nt-card { transition: none; }
-  .nt-card:hover { transform: none; }
-}
-
-
-/* ===== 엘리베이션: 버튼 광택 (솔리드 컬러 버튼 상단 하이라이트, 배경색 불변) ===== */
-.nt-emptycta {
-  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0) 55%);
-}
-
-
-/* ===== 모바일 반응형 (레이아웃만: 패딩·폭) ===== */
+/* 모바일 반응형 (레이아웃만: 패딩·폭) */
 @media (max-width: 768px) {
-  .nt-navinner { padding: 12px 16px; gap: 14px; flex-wrap: wrap; }
-  .nt-section { padding: 0 16px; }
+  .nt-section {
+    padding: 28px 16px 48px;
+  }
 }
+
 @media (max-width: 480px) {
-  .nt-navinner { padding: 10px 13px; gap: 10px; }
-  .nt-section { padding: 0 13px; }
-  .nt-title { font-size: 26px; }
+  .nt-section {
+    padding: 24px 13px 40px;
+  }
+  .nt-title {
+    font-size: 26px;
+  }
 }

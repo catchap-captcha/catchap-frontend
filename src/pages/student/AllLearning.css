@@ -1,985 +1,441 @@
-/* CatChap 전체학습 — handoff `CatChap 전체학습.dc.html` 원본 그대로 */
+/* CatChap 문제은행 — handoff `CatChap 문제은행.dc.html` */
 
 .al-root {
   min-height: 100vh;
-  background:
-    radial-gradient(1200px 600px at 82% -8%, var(--brand-soft) 0%, rgba(255, 233, 214, 0) 60%),
-    radial-gradient(900px 500px at 5% 10%, var(--info-soft) 0%, rgba(230, 240, 255, 0) 55%),
-    var(--bg);
-  padding-bottom: 60px;
-}
-
-/* ---------- NAV ---------- */
-
-.al-nav {
-  position: sticky;
-  top: 0;
-  z-index: 60;
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(12px);
-  border-bottom: 2px solid var(--line);
-}
-
-.al-navinner {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 12px 24px;
-  display: flex;
-  align-items: center;
-  gap: 26px;
-}
-
-.al-logo {
-  display: flex;
-  align-items: center;
-  gap: 11px;
-  text-decoration: none;
-}
-
-.al-logoimg {
-  width: 46px;
-  height: 46px;
-  border-radius: 50%;
-  box-shadow: 0 6px 14px rgba(255, 90, 77, 0.3);
-}
-
-.al-logotext {
-  display: flex;
-  flex-direction: column;
-  line-height: 1;
-}
-
-.al-logotitle {
-  font-family: var(--font-display); font-weight: 800;
-  font-size: 25px;
-  color: var(--brand);
-  letter-spacing: -0.5px;
-}
-
-.al-logosub {
-  font-size: 11px;
-  color: var(--ink-3);
-  font-weight: 600;
-  margin-top: 3px;
-}
-
-.al-menu {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  margin-left: 8px;
-}
-
-.al-navlink {
-  text-decoration: none;
-  font-weight: 700;
-  font-size: 15.5px;
-  color: var(--ink-2);
-  padding: 9px 16px;
-  border-radius: 12px;
-}
-
-.al-navlink:hover {
-  background: var(--brand-soft);
-  color: var(--ink);
-}
-
-.al-navlink-active {
-  text-decoration: none;
-  font-weight: 800;
-  font-size: 15.5px;
-  color: var(--brand);
-  background: var(--brand-soft);
-  padding: 9px 16px;
-  border-radius: 12px;
-}
-
-.al-navright {
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.al-iconbtn {
-  width: 42px;
-  height: 42px;
-  border: none;
-  border-radius: 14px;
-  background: var(--brand-soft);
-  color: var(--ink-2);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-decoration: none;
-}
-
-.al-iconbtn:hover {
-  background: var(--brand-soft);
-  color: var(--brand);
-}
-
-.al-iconbtn i {
-  font-size: 20px;
-}
-
-.al-bellbtn {
-  position: relative;
-  width: 42px;
-  height: 42px;
-  border: none;
-  border-radius: 14px;
-  background: var(--brand-soft);
-  color: var(--ink-2);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.al-bellbtn:hover {
-  background: var(--brand-soft);
-  color: var(--brand);
-}
-
-.al-bellbtn i {
-  font-size: 20px;
-}
-
-.al-belldot {
-  position: absolute;
-  top: 6px;
-  right: 7px;
-  width: 9px;
-  height: 9px;
-  background: var(--brand);
-  border-radius: 50%;
-  border: 2px solid var(--brand-soft);
-}
-
-.al-profile {
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  background: var(--surface);
-  border: 2px solid var(--line);
-  padding: 5px 12px 5px 6px;
-  border-radius: 40px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
-  cursor: pointer;
-}
-
-.al-profile:hover {
-  border-color: var(--line);
-}
-
-.al-avatar {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--warn), var(--brand));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-display); font-weight: 800;
-  color: var(--on-brand);
-  font-size: 16px;
-}
-
-.al-profilename {
-  font-weight: 800;
-  font-size: 14px;
-  color: var(--ink);
+  background: var(--bg);
 }
 
 /* ---------- HEADER ---------- */
 
 .al-header-section {
-  max-width: 1200px;
-  margin: 26px auto 0;
-  padding: 0 24px;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 40px 28px 0;
 }
 
 .al-header {
   display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
+  align-items: center;
   flex-wrap: wrap;
   gap: 16px;
+  margin-bottom: 24px;
 }
 
 .al-header-left {
   display: flex;
   align-items: center;
-  gap: 13px;
+  gap: 14px;
 }
 
 .al-header-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 14px;
-  background: var(--brand-soft);
-  color: var(--brand);
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  color: var(--ink);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .al-header-icon i {
-  font-size: 26px;
+  font-size: 24px;
 }
 
 .al-title {
-  font-family: var(--font-display); font-weight: 800;
-  font-size: 32px;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 28px;
+  letter-spacing: -0.03em;
   color: var(--ink);
-  margin: 0;
-  letter-spacing: -0.5px;
+  margin: 0 0 4px;
 }
 
 .al-subtitle {
-  margin: 4px 0 0;
+  font-size: 14.5px;
   color: var(--ink-3);
-  font-weight: 600;
-  font-size: 14px;
+  font-weight: 500;
+  margin: 0;
 }
 
-.al-stats {
+/* ---------- 오늘의 Q 히어로 카드 (handoff: 고정 다크 그라디언트) ---------- */
+
+.al-qcard {
+  background: linear-gradient(135deg, #443f39, #37322d);
+  border-radius: 16px;
+  padding: 24px 28px;
   display: flex;
-  gap: 12px;
+  align-items: center;
+  gap: 28px;
+  flex-wrap: wrap;
+  margin-bottom: 34px;
 }
 
-.al-stat {
-  background: var(--surface);
-  border: 2px solid var(--line);
-  border-radius: 18px;
-  padding: 12px 18px;
-  text-align: center;
-  box-shadow: 0 10px 22px -20px rgba(180, 120, 90, 0.5);
+.al-qcard-left {
+  flex: 1;
+  min-width: 280px;
 }
 
-.al-stat-value {
-  font-family: var(--font-display); font-weight: 800;
-  font-size: 22px;
-  line-height: 1;
+.al-qcard-titlerow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
 }
 
-.al-stat-level {
-  color: var(--warn);
-}
-
-.al-stat-pct {
-  color: var(--ok);
-}
-
-.al-stat-label {
-  font-size: 11.5px;
+.al-qcard-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
   font-weight: 700;
-  color: var(--ink-3);
-  margin-top: 4px;
+  font-size: 12.5px;
+  padding: 5px 11px;
+  border-radius: 999px;
 }
 
-/* ---------- FILTER CHIPS ---------- */
+.al-qcard-streak {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #f5c77e;
+}
+
+.al-qcard-counts {
+  display: flex;
+  gap: 22px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.al-qcard-count {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.al-qcard-count b {
+  font-size: 17px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.02em;
+}
+
+.al-qcard-goal {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.al-qcard-goaltrack {
+  flex: 1;
+  max-width: 360px;
+  height: 6px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.16);
+  overflow: hidden;
+}
+
+.al-qcard-goalfill {
+  height: 100%;
+  border-radius: 99px;
+  background: var(--brand);
+  transition: width 0.25s ease;
+}
+
+.al-qcard-goaltext {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.55);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.al-qcard-start {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  cursor: pointer;
+  background: var(--brand);
+  color: #fff;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 15px;
+  padding: 13px 24px;
+  border-radius: 11px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+
+.al-qcard-start:hover {
+  background: var(--brand-ink);
+}
+
+.al-qcard-done {
+  font-weight: 700;
+  font-size: 13.5px;
+  color: var(--ok);
+  white-space: nowrap;
+}
+
+@media (max-width: 700px) {
+  .al-qcard {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .al-qcard-start {
+    justify-content: center;
+  }
+}
+
+/* ---------- 과목 필터 칩 ---------- */
 
 .al-chips {
   display: flex;
-  gap: 9px;
+  gap: 8px;
   flex-wrap: wrap;
-  margin-top: 22px;
+  margin-bottom: 22px;
 }
 
 .al-chip {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  border: none;
+  gap: 7px;
+  border: 1px solid var(--line-strong);
   cursor: pointer;
-  font-family: 'Pretendard', sans-serif;
-  font-weight: 800;
+  font-family: inherit;
+  font-weight: 700;
   font-size: 13.5px;
-  padding: 10px 16px;
-  border-radius: 30px;
-  transition: all 0.18s;
-  min-height: 42px;
+  padding: 8px 14px;
+  border-radius: 9px;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
 
 .al-chip i {
-  font-size: 16px;
+  font-size: 15px;
 }
 
 .al-chip-on {
-  background: var(--brand);
+  background: var(--ink);
   color: var(--on-brand);
-  box-shadow: 0 8px 16px -8px rgba(255, 90, 77, 0.7);
+  border-color: var(--ink);
 }
 
 .al-chip-off {
   background: var(--surface);
   color: var(--ink-2);
-  border: 2px solid var(--line);
 }
 
-/* ---------- CATEGORY LIST ---------- */
-
-.al-cats {
-  max-width: 1200px;
-  margin: 24px auto 0;
-  padding: 0 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-}
-
-.al-cat {
-  background: var(--surface);
-  border: 2px solid var(--line);
-  border-radius: 26px;
-  padding: 22px;
-  box-shadow: 0 16px 34px -26px rgba(180, 120, 90, 0.5);
-  display: grid;
-  grid-template-columns: 270px 1fr;
-  gap: 24px;
-  align-items: center;
-}
-
-/* left color panel */
-
-.al-panel {
-  position: relative;
-  overflow: hidden;
-  border-radius: 22px;
-  padding: 20px;
-  color: var(--on-brand);
-  background: linear-gradient(160deg, var(--al-c1), var(--al-c2));
-  box-shadow: 0 16px 30px -20px var(--al-sh);
-}
-
-.al-panel-orb {
-  position: absolute;
-  top: -24px;
-  right: -16px;
-  width: 96px;
-  height: 96px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.16);
-}
-
-.al-panel-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  position: relative;
-}
-
-.al-panel-tag {
-  background: rgba(255, 255, 255, 0.26);
-  font-weight: 800;
-  font-size: 11.5px;
-  padding: 5px 11px;
-  border-radius: 20px;
-}
-
-.al-panel-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.22);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.al-panel-icon i {
-  font-size: 24px;
-}
-
-.al-panel-title {
-  font-family: var(--font-display); font-weight: 800;
-  font-size: 23px;
-  margin: 16px 0 4px;
-  position: relative;
-}
-
-.al-panel-desc {
-  margin: 0 0 16px;
-  font-size: 12.5px;
-  line-height: 1.5;
-  color: rgba(255, 255, 255, 0.9);
-  font-weight: 600;
-  position: relative;
-}
-
-.al-panel-meta {
-  display: flex;
-  justify-content: space-between;
-  font-size: 11.5px;
-  font-weight: 800;
-  margin-bottom: 6px;
-  position: relative;
-}
-
-.al-panel-donelabel {
-  color: rgba(255, 255, 255, 0.9);
-}
-
-.al-panel-track {
-  height: 9px;
-  background: rgba(255, 255, 255, 0.28);
-  border-radius: 20px;
-  overflow: hidden;
-  position: relative;
-}
-
-.al-panel-fill {
-  height: 100%;
-  background: var(--surface);
-  border-radius: 20px;
-}
-
-/* lessons */
-
-.al-lessons-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
-}
-
-.al-lessons-label {
-  font-weight: 800;
-  font-size: 13.5px;
-  color: var(--ink-2);
-}
-
-.al-continue {
-  text-decoration: none;
-  font-weight: 800;
-  font-size: 13px;
-  color: var(--brand);
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.al-continue i {
-  font-size: 13px;
-}
-
-/* 주차 캐러셀 칼럼 — grid 1fr 트랙이 카드 총폭으로 늘어나 페이지가 넘치는 것 방지.
-   min-width:0 이 있어야 안쪽 .al-lessons 의 overflow-x 스크롤이 실제로 작동한다. */
-.al-weeks-col {
-  min-width: 0;
-}
-
-.al-lessons {
-  display: flex;
-  gap: 11px;
-  overflow-x: auto;
-  scroll-snap-type: x proximity;
-  padding-bottom: 4px;
-  scrollbar-width: none; /* Firefox — 화살표로 이동하므로 스크롤바 숨김 */
-}
-.al-lessons::-webkit-scrollbar {
-  display: none;
-}
-
-.al-ls {
-  flex: 0 0 clamp(128px, 19%, 168px); /* 캐러셀: 고정폭 카드, 5개는 한 화면·초과분은 스크롤 */
-  scroll-snap-align: start;
-  border-radius: 16px;
-  padding: 13px;
-  min-height: 96px;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
-}
-
-/* 주차 캐러셀 헤더 우측 — < > 화살표(위) + 이어서 하기(아래) */
-.al-weeks-headright {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 6px;
-}
-.al-weeks-arrows {
-  display: flex;
-  gap: 6px;
-}
-/* al-iconbtn과 같은 언어(soft peach 배경·muted 색·hover coral)로 통일 */
-.al-weeks-arrow {
-  width: 28px;
-  height: 28px;
-  border: none;
-  border-radius: 10px;
-  background: var(--brand-soft);
-  color: var(--ink-2);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-size: 14px;
-  transition: background 0.18s, color 0.18s, transform 0.1s;
-}
-.al-weeks-arrow:hover {
-  background: var(--brand-soft);
-  color: var(--brand);
-}
-.al-weeks-arrow:active {
-  transform: scale(0.92);
-}
-
-.al-ls-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.al-ls-level {
-  font-size: 11px;
-  font-weight: 800;
-}
-
-.al-ls-icon {
-  width: 26px;
-  height: 26px;
-  border-radius: 9px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.al-ls-icon i {
-  font-size: 14px;
-}
-
-.al-ls-name {
-  font-weight: 800;
-  font-size: 13.5px;
-  margin-top: 10px;
-  line-height: 1.3;
-}
-
-.al-ls-state {
-  font-size: 11px;
-  font-weight: 700;
-  margin-top: 5px;
-}
-
-/* lesson states — 원본 lessonStyle() 값 그대로 */
-
-.al-ls-done {
-  background: var(--surface);
-  border: 2px solid var(--line);
-}
-
-.al-ls-done .al-ls-level,
-.al-ls-done .al-ls-state {
-  color: var(--ok-ink);
-}
-
-.al-ls-done .al-ls-icon {
-  background: var(--ok-soft);
-  color: var(--ok);
-}
-
-.al-ls-done .al-ls-name {
-  color: var(--ok-ink);
-}
-
-.al-ls-active {
-  background: var(--surface-2);
-  border: 2px solid var(--line);
-}
-
-.al-ls-active .al-ls-level,
-.al-ls-active .al-ls-state {
-  color: var(--brand);
-}
-
-.al-ls-active .al-ls-icon {
-  background: var(--brand-soft);
-  color: var(--brand);
-}
-
-.al-ls-active .al-ls-name {
-  color: var(--brand-ink);
-}
-
-.al-ls-lock {
-  background: var(--surface);
-  border: 2px dashed var(--line);
-}
-
-.al-ls-lock .al-ls-level,
-.al-ls-lock .al-ls-state {
-  color: var(--ink-3);
-}
-
-.al-ls-lock .al-ls-icon {
-  background: var(--surface);
-  color: var(--brand-ink);
-}
-
-.al-ls-lock .al-ls-name {
-  color: var(--brand-ink);
-}
-
-.al-ls-todo {
-  background: var(--surface);
-  border: 2px solid var(--line);
-}
-
-.al-ls-todo .al-ls-level,
-.al-ls-todo .al-ls-state {
-  color: var(--ink-3);
-}
-
-.al-ls-todo .al-ls-icon {
-  background: var(--surface);
-  color: var(--ink-3);
-}
-
-.al-ls-todo .al-ls-name {
-  color: var(--ink-2);
-}
-
-/* ===== 정제(polish): 액션 버튼 hover 부상 + 탄력 눌림 (배경색 불변, 그림자/모션만) ===== */
-.al-bellbtn {
-  transition:
-    transform 0.2s cubic-bezier(0.34, 1.2, 0.5, 1),
-    box-shadow 0.2s ease,
-    filter 0.2s ease;
-}
-.al-bellbtn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 5px 12px -6px rgba(255, 90, 77, 0.28);
-}
-.al-bellbtn:active {
-  transform: translateY(0) scale(0.97);
-  box-shadow: 0 2px 6px -4px rgba(255, 90, 77, 0.28);
-  transition-duration: 0.09s;
-}
-@media (prefers-reduced-motion: reduce) {
-  .al-bellbtn { transition: none; }
-  .al-bellbtn:hover, .al-bellbtn:active { transform: none; }
-}
-
-/* 5단계(챕터) 세그먼트 바 — 홈처럼 단계별로 나눠 표시 */
-.al-panel-segs { display: flex; gap: 5px; margin-top: 4px; }
-.al-panel-segs .al-seg {
-  flex: 1; height: 8px; border-radius: 6px;
-  background: rgba(255, 255, 255, 0.35);
-}
-.al-panel-segs .al-seg-on { background: var(--surface); }
-
-/* 숙련도(정답률) · 준비중 배지 */
-.al-panel-acc {
-  margin-top: 8px;
-  font-size: 12px;
-  font-weight: 800;
-  color: rgba(255, 255, 255, 0.92);
-}
-.al-panel-soon {
-  margin-top: 12px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  font-weight: 800;
-  color: var(--on-brand);
-  background: rgba(255, 255, 255, 0.22);
-  padding: 6px 12px;
-  border-radius: 999px;
-  align-self: flex-start;
-}
-
-/* 챕터(주차) 카드 안의 5단계 미니 바 */
-.al-ls-segs {
-  display: flex;
-  gap: 3px;
-  margin: 8px 0 6px;
-}
-.al-ls-seg {
-  flex: 1;
-  height: 5px;
-  border-radius: 4px;
-  background: var(--surface-2);
-}
-.al-ls-seg-on {
-  background: #2fbf8f;
-}
-.al-ls-lock .al-ls-seg-on {
-  background: var(--ink-3);
-}
-.al-ls-soon {
-  opacity: 0.75;
-  font-style: normal;
-}
-/* 잠금 아닌 챕터 카드는 클릭 가능 — 링크 기본 스타일 제거 */
-a.al-ls {
-  text-decoration: none;
-  cursor: pointer;
-  transition: transform 0.12s ease, box-shadow 0.12s ease;
-}
-a.al-ls:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 22px -14px rgba(30, 41, 59, 0.35);
-}
-.dq-sec-curric { max-width: 1160px; margin: 0 auto; padding: 8px 24px 4px; }
-.dq-curric {
-  background: var(--surface); border: 1.5px solid var(--line); border-radius: 22px;
-  padding: 22px 24px; box-shadow: 0 14px 34px -26px rgba(255, 109, 166, 0.5);
+.al-chip-off:hover {
+  border-color: var(--brand-ink);
+  color: var(--ink);
 }
-.dq-curric-title {
-  display: flex; align-items: center; gap: 8px;
-  font-size: 18px; font-weight: 900; color: var(--warn-ink); margin: 0 0 5px;
-}
-.dq-curric-title i { color: #FF6DA6; }
-.dq-curric-sub { font-size: 13px; color: var(--warn-ink); margin: 0 0 16px; line-height: 1.5; }
-.dq-curric-sub b { color: #FF6DA6; }
-.dq-curric-track {
-  display: flex; gap: 12px; overflow-x: auto; padding: 4px 2px 10px; scroll-snap-type: x proximity;
-}
-.dq-cur-day-card {
-  flex: 0 0 auto; width: 132px; scroll-snap-align: start;
-  display: flex; flex-direction: column; gap: 6px;
-  padding: 14px 14px 12px; border-radius: 16px;
-  border: 2px solid var(--line); background: var(--surface);
-  text-decoration: none; position: relative;
-}
-.dq-cur-day { font-size: 11.5px; font-weight: 800; color: var(--ink-3); }
-.dq-cur-topic { font-size: 15px; font-weight: 900; color: var(--warn-ink); line-height: 1.3; min-height: 38px; }
-.dq-cur-meta {
-  display: inline-flex; align-items: center; gap: 5px;
-  font-size: 12px; font-weight: 700; color: var(--warn-ink);
-}
-.dq-cur-meta i { font-size: 13px; }
-.dq-cur-flag {
-  position: absolute; top: -9px; right: 10px;
-  font-size: 10.5px; font-weight: 800; color: var(--on-brand);
-  background: var(--brand); border-radius: 20px; padding: 3px 9px;
-}
-.dq-cur-flag--replay { background: var(--info); }
-.dq-cur-today { border-color: #FF6DA6; background: var(--surface); }
-.dq-cur-playable { cursor: pointer; transition: transform 0.12s ease, box-shadow 0.12s ease; }
-.dq-cur-playable:hover { transform: translateY(-3px); box-shadow: 0 12px 24px -16px rgba(255, 109, 166, 0.55); }
-.dq-cur-future { opacity: 0.62; }
-.dq-cur-future .dq-cur-topic { color: #9A9187; }
-@media (prefers-reduced-motion: reduce) { .dq-cur-playable, .dq-cur-playable:hover { transition: none; transform: none; } }
-
-/* ===== 모바일 반응형 (레이아웃만 조정) ===== */
-@media (max-width: 768px) {
-  .al-navinner { padding: 12px 16px; gap: 14px; flex-wrap: wrap; }
-  .al-header-section, .al-cats { padding: 0 16px; }
-  .al-cat { grid-template-columns: 1fr; gap: 18px; padding: 18px; }
-  .al-lessons { grid-template-columns: repeat(3, 1fr); }
-}
-@media (max-width: 480px) {
-  .al-navinner { padding: 10px 13px; }
-  .al-header-section, .al-cats { padding: 0 13px; }
-  .al-lessons { grid-template-columns: repeat(2, 1fr); }
-}
-
-/* ---- 문제은행 모드(0713): 챕터 캐러셀 → 은행 진도 카드 ---- */
-.al-bank-col {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 18px 20px;
-}
-
-.al-bank-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.al-bank-bar {
-  height: 12px;
-  border-radius: 999px;
-  background: var(--surface);
-  overflow: hidden;
-}
-
-.al-bank-fill {
-  height: 100%;
-  border-radius: 999px;
-  transition: width 0.4s ease;
-}
-
-.al-bank-barlabel {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--warn-ink);
-}
-
-.al-bank-acc {
-  color: var(--ok);
-}
-
-.al-bank-pills {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.al-bank-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 13px;
-  font-weight: 800;
-  padding: 6px 12px;
-  border-radius: 999px;
-}
-
-.al-bank-pill-new {
-  background: var(--warn-soft);
-  color: var(--warn-ink);
-}
-
-.al-bank-pill-wrong {
-  background: var(--surface);
-  color: var(--brand-ink);
-}
-
-.al-bank-pill-ok {
-  background: var(--ok-soft);
-  color: var(--ok-ink);
-}
-
-.al-bank-hint {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  color: var(--warn-ink);
-  font-weight: 600;
-}
-
-/* 숙련 축 — 주차별 정답률 섹션 */
-.al-accsection {
-  max-width: 1120px;
-  margin: 0 auto;
-  padding: 8px 20px 40px;
-}
-.al-acchead { margin-bottom: 16px; }
-.al-acctitle { font-size: 20px; font-weight: 800; color: var(--brand-ink); margin: 0 0 6px; letter-spacing: -0.01em; }
-.al-accsub { font-size: 13.5px; color: var(--ink-2); margin: 0; }
-@media (prefers-color-scheme: dark) {
-  .al-acctitle { color: #F1EBE2; }
-  .al-accsub { color: var(--ink-3); }
-}
 
-/* ── 오늘의 Q 카드(퀴즈 통합 1단계) — 일일 목표·연속 학습일·큐 요약 ── */
-.al-qcard {
-  margin-top: 14px;
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  background: var(--surface);
-  border: 1.5px solid var(--line);
-  border-radius: 20px;
-  padding: 16px 20px;
-  box-shadow: 0 14px 28px -20px rgba(60, 40, 30, 0.35);
-}
-.al-qcard-left { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
-.al-qcard-titlerow { display: flex; align-items: center; gap: 10px; }
-.al-qcard-badge {
-  display: inline-flex; align-items: center; gap: 5px;
-  padding: 4px 11px; border-radius: 999px;
-  background: var(--surface); color: var(--info-ink); font-weight: 800; font-size: 12.5px;
-}
-.al-qcard-streak { font-weight: 800; font-size: 12.5px; color: var(--brand-ink); }
-.al-qcard-counts { display: flex; gap: 12px; flex-wrap: wrap; font-weight: 700; font-size: 13px; color: var(--ink-2); }
-.al-qcard-count b { color: var(--ink); }
-.al-qcard-count--due b { color: #4f46e5; }
-.al-qcard-count--wrong b { color: var(--brand-strong); }
-.al-qcard-goal { display: flex; align-items: center; gap: 10px; }
-.al-qcard-goaltrack { flex: 1; max-width: 260px; height: 8px; border-radius: 999px; background: var(--line); overflow: hidden; }
-.al-qcard-goalfill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--warn), var(--brand)); transition: width 0.25s ease; }
-.al-qcard-goaltext { font-weight: 800; font-size: 12.5px; color: var(--ink-2); white-space: nowrap; }
-.al-qcard-start {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 12px 18px; border-radius: 14px;
-  background: var(--brand); color: var(--on-brand); font-weight: 800; font-size: 14px;
-  text-decoration: none; white-space: nowrap;
-}
-.al-qcard-start:hover { filter: brightness(1.05); }
-.al-qcard-done { font-weight: 800; font-size: 13.5px; color: var(--ok); white-space: nowrap; }
-@media (max-width: 700px) {
-  .al-qcard { flex-direction: column; align-items: stretch; }
-  .al-qcard-start { justify-content: center; }
-}
+/* ---------- 코스별 연습 ---------- */
 
-/* ===== 성인화(0720): 코스별 연습 카드 (6과목 그리드·주차챕터 대체) ===== */
 .al-courses {
-  max-width: 1200px;
-  margin: 22px auto 0;
-  padding: 0 24px 60px;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0 28px 60px;
 }
-.al-sec-head { margin-bottom: 14px; }
+
+.al-sec-head {
+  margin-bottom: 16px;
+}
+
 .al-sec-title {
-  display: flex; align-items: center; gap: 8px;
-  font-family: var(--font-display); font-weight: 800; font-size: 22px; color: var(--ink); margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 19px;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  margin: 0;
 }
-.al-sec-title i { color: var(--brand); }
+
+.al-sec-title i {
+  font-size: 20px;
+  color: var(--ink);
+}
+
 .al-empty {
-  background: var(--surface); border: 1px solid var(--line); border-radius: var(--r);
-  padding: 28px 22px; color: var(--ink-2); font-weight: 600; font-size: 14px;
-  box-shadow: var(--shadow-sm);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 40px;
+  text-align: center;
+  color: var(--ink-3);
+  font-size: 14px;
+  font-weight: 600;
 }
+
 .al-course-grid {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
 }
+
 .al-course {
-  display: flex; flex-direction: column; gap: 8px;
-  background: var(--surface); border: 1px solid var(--line); border-radius: var(--r);
-  padding: 20px 20px 18px; box-shadow: var(--shadow-md);
-  transition: transform 0.15s, box-shadow 0.15s;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  transition: border-color 0.15s;
 }
-.al-course:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
-.al-course-top { display: flex; align-items: center; justify-content: space-between; }
+
+.al-course:hover {
+  border-color: var(--line-strong);
+}
+
+.al-course-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
 .al-course-subj {
-  background: var(--brand-soft); color: var(--brand-ink);
-  font-weight: 800; font-size: 12px; padding: 4px 11px; border-radius: var(--r-pill);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--brand-ink);
+  background: var(--brand-soft);
+  padding: 4px 10px;
+  border-radius: 999px;
 }
+
 .al-course-done {
-  background: var(--ok-soft); color: var(--ok-ink);
-  font-weight: 800; font-size: 11.5px; padding: 4px 10px; border-radius: var(--r-pill);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ok);
+  background: var(--ok-soft);
+  padding: 4px 10px;
+  border-radius: 999px;
 }
+
 .al-course-title {
-  font-family: var(--font-display); font-weight: 800; font-size: 18px; color: var(--ink); margin: 2px 0 0;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 16.5px;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  margin: 0 0 3px;
   line-height: 1.3;
 }
-.al-course-inst { font-size: 12.5px; color: var(--ink-2); font-weight: 600; }
-.al-course-meta { font-size: 13px; color: var(--ink); font-weight: 600; margin-top: 2px; }
-.al-course-meta b { color: var(--brand-ink); font-family: var(--font-display); font-weight: 400; }
-.al-course-locked { color: var(--ink-3); font-weight: 600; }
-.al-course-none { color: var(--ink-3); font-weight: 600; }
+
+.al-course-inst {
+  font-size: 12.5px;
+  color: var(--ink-3);
+  font-weight: 500;
+  margin-bottom: 14px;
+}
+
+.al-course-meta {
+  font-size: 13px;
+  color: var(--ink-2);
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.al-course-meta b {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.al-course-locked {
+  color: var(--ink-3);
+  font-weight: 600;
+}
+
+.al-course-none {
+  color: var(--ink-3);
+  font-weight: 600;
+}
+
 .al-course-btn {
-  margin-top: 8px; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-  border: none; background: var(--brand); color: var(--on-brand);
-  font-weight: 800; font-size: 13.5px; font-family: inherit;
-  padding: 11px 14px; border-radius: 12px; cursor: pointer; text-decoration: none;
+  margin-top: auto;
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: none;
+  background: var(--brand);
+  color: var(--on-brand);
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 11px;
+  border-radius: 9px;
+  cursor: pointer;
+  text-decoration: none;
   transition: background 0.15s;
 }
-.al-course-btn:hover { background: var(--brand-strong); }
+
+.al-course-btn:hover {
+  background: var(--brand-ink);
+}
+
 .al-course-btn--lock {
-  background: var(--surface-2); color: var(--ink-3); cursor: default;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--ink-3);
+  font-size: 13px;
+  cursor: not-allowed;
 }
-.al-course-btn--lock:hover { background: var(--surface-2); }
+
+.al-course-btn--lock:hover {
+  background: var(--bg);
+}
+
 .al-course-btn--ghost {
-  background: var(--surface-2); color: var(--ink-2);
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink);
 }
-.al-course-btn--ghost:hover { background: var(--surface-3); }
+
+.al-course-btn--ghost:hover {
+  background: var(--surface-2);
+}
+
 .al-course-examlink {
-  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-  margin-top: 2px; color: var(--info-ink); font-weight: 800; font-size: 12.5px; text-decoration: none;
+  margin-top: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: var(--info-ink);
+  font-weight: 700;
+  font-size: 12.5px;
+  text-decoration: none;
 }
-.al-course-examlink:hover { text-decoration: underline; }
+
+.al-course-examlink:hover {
+  text-decoration: underline;
+}
+
+/* ===== 모바일 반응형 (레이아웃만: 열 수·패딩) ===== */
+@media (max-width: 900px) {
+  .al-course-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .al-header-section,
+  .al-courses {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+  .al-course-grid {
+    grid-template-columns: 1fr;
+  }
+}

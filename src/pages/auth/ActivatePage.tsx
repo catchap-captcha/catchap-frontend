@@ -14,28 +14,28 @@ export default function ActivatePage() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: '#FFF6EC',
-        fontFamily: "'Pretendard','Apple SD Gothic Neo',sans-serif",
+        background: 'var(--bg)',
+        fontFamily: 'var(--font)',
         padding: 20,
       }}
     >
       <div
         style={{
-          background: '#fff',
-          border: '2px solid #FFEDE4',
+          background: 'var(--surface)',
+          border: '1px solid var(--line)',
           borderRadius: 28,
           padding: '36px 30px',
           textAlign: 'center',
           maxWidth: 440,
           width: '100%',
-          boxShadow: '0 22px 46px -28px rgba(180,120,90,0.5)',
+          boxShadow: 'var(--shadow-lg)',
         }}
       >
         <img src={mascot} alt="CatChap" style={{ width: 60, marginBottom: 12 }} />
-        <h1 style={{ fontSize: 20, color: '#3A3340', margin: '0 0 10px' }}>
+        <h1 style={{ fontSize: 20, color: 'var(--ink)', margin: '0 0 10px' }}>
           학교 코드 가입이 종료됐어요
         </h1>
-        <p style={{ fontSize: 14, color: '#8A8072', lineHeight: 1.7, margin: '0 0 20px' }}>
+        <p style={{ fontSize: 14, color: 'var(--ink-2)', lineHeight: 1.7, margin: '0 0 20px' }}>
           CatChap은 개인 학습자 대상 강의 서비스로 전환되어, 학교에서 받은 가입
           코드는 더 이상 사용할 수 없어요. <b>이메일로 간편하게 가입</b>할 수 있어요.
         </p>
@@ -43,8 +43,8 @@ export default function ActivatePage() {
           to={PATHS.LOGIN}
           style={{
             display: 'inline-block',
-            background: '#ea5443',
-            color: '#fff',
+            background: 'var(--brand)',
+            color: 'var(--on-brand)',
             borderRadius: 14,
             padding: '12px 26px',
             fontSize: 15,

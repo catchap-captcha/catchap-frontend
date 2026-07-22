@@ -1,46 +1,75 @@
-/* 운영 콘솔 · API 발급/관리 — OpsApproval.css 위에 얹는 전용 스타일 (ak- 프리픽스) */
+/* 운영 콘솔 · API 발급/관리 — 핸드오프 소스: CatChap API 발급.dc.html
+ * OpsApproval.css(공용, 구코랄·둥근·그라디언트 스타일) 위에 얹혀, 이 페이지(.ops-apikeys) 안의
+ * 공용 클래스(op-head/op-card/op-btn 등)까지 플랫 핸드오프 톤으로 재정의한다.
+ * (OpsApproval.css는 다른 운영 페이지와 공유되므로 직접 수정하지 않고 이 스코프에서만 덮어씀) */
 
-/* 제품 안내 카드 2개 */
+/* ── 페이지 배경 · 헤더 · 새로고침 버튼(공용 op-* 재정의) ── */
+.ops-apikeys.op-root {
+  background: var(--bg);
+}
+.ops-apikeys .op-refresh {
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink);
+  border-radius: 9px;
+  box-shadow: none;
+}
+.ops-apikeys .op-refresh:hover {
+  transform: none;
+  background: var(--surface);
+  border-color: var(--ink-3);
+  color: var(--ink);
+}
+
+/* ── 제품 안내 카드 2개 ── */
 .ak-products {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 14px;
-  margin-bottom: 20px;
+  margin-bottom: 18px;
 }
 .ak-prod {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 13px;
   background: var(--surface);
-  border: 1.5px solid var(--brand-soft);
-  border-radius: 20px;
-  padding: 16px 18px;
-  box-shadow: 0 1px 3px rgba(58, 51, 64, 0.05), 0 16px 34px -22px rgba(90, 60, 55, 0.2);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 18px 20px;
 }
 .ak-prod-ic {
-  width: 46px;
-  height: 46px;
-  border-radius: 14px;
+  width: 44px;
+  height: 44px;
+  border-radius: 11px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 24px;
+  font-size: 22px;
   flex-shrink: 0;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55), 0 5px 12px -5px rgba(120, 90, 70, 0.28);
+  box-shadow: none;
 }
 .ak-prod--captcha .ak-prod-ic { background: var(--brand-soft); color: var(--brand); }
 .ak-prod--edu .ak-prod-ic { background: var(--info-soft); color: var(--info); }
-.ak-prod-name { font-family: var(--font-display); font-weight: 800; font-size: 17px; color: var(--ink); }
-.ak-prod-blurb { font-weight: 700; font-size: 12.5px; color: var(--ink-3); margin-top: 3px; }
+.ak-prod-name { font-family: var(--font-display); font-weight: 800; font-size: 14.5px; color: var(--ink); }
+.ak-prod-blurb { font-weight: 500; font-size: 12.5px; color: var(--ink-3); margin-top: 2px; }
 
-/* 발급 폼 */
-.ak-form { margin-bottom: 30px; }
+/* ── 발급 폼 ── */
+.ak-form.op-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 22px 24px;
+  box-shadow: none;
+  transition: none;
+  margin-bottom: 20px;
+}
+.ak-form.op-card:hover { transform: none; box-shadow: none; }
 .ak-form-title {
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: 8px;
   font-family: var(--font-display); font-weight: 800;
-  font-size: 19px;
+  font-size: 16px;
   color: var(--ink);
   margin-bottom: 18px;
 }
@@ -50,69 +79,101 @@
   grid-template-columns: repeat(2, 1fr);
   gap: 16px 18px;
 }
-.ak-field { display: flex; flex-direction: column; gap: 7px; }
-.ak-label { font-weight: 800; font-size: 13px; color: var(--ink-2); }
-.ak-opt { font-weight: 700; font-size: 11px; color: var(--ink-3); margin-left: 4px; }
+.ak-field { display: flex; flex-direction: column; gap: 6px; }
+.ak-label { font-weight: 700; font-size: 12.5px; color: var(--ink); }
+.ak-opt { font-weight: 500; font-size: 11px; color: var(--ink-3); margin-left: 4px; }
 .ak-select,
 .ak-input {
   width: 100%;
   box-sizing: border-box;
-  border: 1.5px solid var(--brand-soft);
-  border-radius: 12px;
-  background: var(--surface-2);
+  border: 1px solid var(--line-strong);
+  border-radius: 9px;
+  background: var(--bg);
   padding: 11px 13px;
   font: inherit;
-  font-size: 14px;
-  font-weight: 700;
+  font-size: 13.5px;
+  font-weight: 600;
   color: var(--ink);
-  transition: border-color 0.2s, background 0.2s;
+  transition: border-color 0.15s, background 0.15s;
 }
 .ak-select:focus,
 .ak-input:focus { outline: none; border-color: var(--brand); background: var(--surface); }
-.ak-hint { font-weight: 700; font-size: 12px; color: var(--ink-3); }
+.ak-hint { font-weight: 500; font-size: 12px; color: var(--ink-3); }
 .ak-form-actions { display: flex; justify-content: flex-end; margin-top: 20px; }
 
-/* 목록 헤더 */
+/* ── 목록 헤더 ── */
 .ak-list-head {
   font-family: var(--font-display); font-weight: 800;
-  font-size: 20px;
+  font-size: 15px;
   color: var(--ink);
-  margin: 4px 0 16px;
+  margin: 4px 0 14px;
 }
+.ak-list-total { color: var(--ink-3); font-weight: 600; font-size: 12.5px; }
 
-/* 키 카드 */
+/* ── 키 카드(공용 op-card 재정의 포함) ── */
+.ops-apikeys .op-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 18px 22px;
+  box-shadow: none;
+  transition: none;
+}
+.ops-apikeys .op-card:hover { transform: none; box-shadow: none; }
+.ops-apikeys .op-card-ic {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  box-shadow: none;
+  font-size: 19px;
+}
+.ops-apikeys .op-card-name { font-size: 14.5px; }
+.ops-apikeys .op-card-type {
+  font-weight: 700;
+  font-size: 10.5px;
+  color: var(--ink-3);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  padding: 2px 8px;
+  border-radius: 5px;
+}
+.ops-apikeys .op-status {
+  font-weight: 700;
+  font-size: 11.5px;
+  padding: 5px 11px;
+}
 .ak-key-ic--captcha { background: var(--brand-soft) !important; color: var(--brand) !important; }
 .ak-key-ic--edu { background: var(--info-soft) !important; color: var(--info) !important; }
 .ak-subject {
-  font-weight: 800;
-  font-size: 11.5px;
+  font-weight: 700;
+  font-size: 10.5px;
   color: var(--ok);
   background: var(--ok-soft);
-  padding: 3px 10px;
-  border-radius: 20px;
+  padding: 2px 8px;
+  border-radius: 5px;
 }
 
 .ak-keyline {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 12px 14px;
+  padding: 10px 14px;
   margin-top: 4px;
-  background: var(--surface-2);
-  border: 1.5px solid var(--brand-soft);
-  border-radius: 13px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 9px;
 }
 .ak-keyline-k {
-  font-weight: 800;
-  font-size: 11.5px;
+  font-weight: 700;
+  font-size: 11px;
   color: var(--ink-3);
   flex-shrink: 0;
 }
 .ak-keyline-k--secret { color: var(--warn-ink); }
 .ak-mono {
   font-family: 'JetBrains Mono', 'Consolas', monospace;
-  font-size: 13.5px;
-  color: var(--ink);
+  font-size: 13px;
+  color: var(--ink-2);
   word-break: break-all;
   flex: 1;
 }
@@ -120,43 +181,43 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  border: 1.5px solid var(--brand-soft);
+  border: 1px solid var(--line-strong);
   background: var(--surface);
   color: var(--ink-2);
-  font-weight: 800;
-  font-size: 12.5px;
-  padding: 7px 12px;
-  border-radius: 10px;
+  font-weight: 700;
+  font-size: 12px;
+  padding: 6px 12px;
+  border-radius: 7px;
   cursor: pointer;
   flex-shrink: 0;
-  transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.15s;
+  transition: border-color 0.15s, color 0.15s;
 }
-.ak-copy:hover { background: #fff5f0; color: var(--brand); border-color: var(--brand-soft); transform: translateY(-1px); }
+.ak-copy:hover { background: var(--surface); color: var(--ink); border-color: var(--ink-3); transform: none; }
 .ak-copy--wide { width: 100%; justify-content: center; margin-top: 10px; }
 
 .ak-key-meta {
   display: flex;
-  gap: 20px;
+  gap: 16px;
   margin-top: 12px;
-  font-weight: 700;
-  font-size: 12.5px;
+  font-weight: 500;
+  font-size: 12px;
   color: var(--ink-3);
 }
 
-/* 임베드 스니펫 */
+/* ── 임베드 스니펫 ── */
 .ak-snippet {
-  margin-top: 14px;
+  margin-top: 12px;
   padding: 14px 16px;
-  background: #2c2734;
-  border-radius: 14px;
+  background: var(--ink);
+  border-radius: 10px;
 }
 .ak-snippet-h {
   display: flex;
   align-items: center;
   gap: 7px;
-  font-weight: 800;
-  font-size: 12.5px;
-  color: #c9b8ff;
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--info-soft);
   margin-bottom: 10px;
 }
 .ak-snippet-pre {
@@ -169,34 +230,62 @@
   word-break: break-all;
 }
 
-/* secret 1회 노출 모달 */
+/* ── 카드 액션 버튼(공용 op-btn 재정의) ── */
+.ops-apikeys .op-btn {
+  border-radius: 8px;
+  font-size: 12.5px;
+  padding: 8px 13px;
+}
+.ops-apikeys .op-btn--reject {
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  color: var(--ink-2);
+}
+.ops-apikeys .op-btn--reject:hover:not(:disabled) {
+  transform: none;
+  background: var(--surface);
+  border-color: var(--ink-3);
+  color: var(--ink);
+}
+.ops-apikeys .op-btn--approve {
+  background: var(--brand);
+  color: var(--on-brand);
+  border-radius: 10px;
+  box-shadow: none;
+}
+.ops-apikeys .op-btn--approve:hover:not(:disabled) {
+  transform: none;
+  background: var(--brand-ink);
+  box-shadow: none;
+}
+.ops-apikeys .op-btn--approve:active:not(:disabled) { transform: none; }
+
+/* ── secret 1회 노출 모달 ── */
 .ak-modal-back {
   position: fixed;
   inset: 0;
   z-index: 90;
-  background: rgba(40, 30, 45, 0.5);
-  backdrop-filter: blur(4px);
+  background: var(--overlay);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 20px;
-  animation: ak-fade 0.2s ease;
+  animation: ak-fade 0.15s ease;
 }
 @keyframes ak-fade { from { opacity: 0; } to { opacity: 1; } }
 .ak-modal {
   width: 100%;
   max-width: 520px;
   background: var(--surface);
-  border-radius: 26px;
-  padding: 30px 30px 26px;
-  box-shadow: 0 30px 70px -20px rgba(60, 40, 55, 0.5);
-  animation: ak-pop 0.28s cubic-bezier(0.34, 1.3, 0.5, 1);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 28px 28px 24px;
+  box-shadow: var(--shadow-lg);
 }
-@keyframes ak-pop { from { transform: translateY(14px) scale(0.97); opacity: 0; } to { transform: none; opacity: 1; } }
-.ak-modal-ic { font-size: 46px; color: var(--ok); line-height: 1; text-align: center; }
+.ak-modal-ic { font-size: 40px; color: var(--ok); line-height: 1; text-align: center; }
 .ak-modal-title {
   font-family: var(--font-display); font-weight: 800;
-  font-size: 23px;
+  font-size: 19px;
   color: var(--ink);
   text-align: center;
   margin: 10px 0 14px;
@@ -206,16 +295,16 @@
   align-items: flex-start;
   gap: 8px;
   background: var(--warn-soft);
-  border: 1.5px solid var(--line);
-  border-radius: 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
   padding: 12px 14px;
-  font-weight: 700;
+  font-weight: 600;
   font-size: 13px;
   color: var(--warn-ink);
   line-height: 1.5;
   margin-bottom: 18px;
 }
-.ak-modal-warn i { color: #e0a000; margin-top: 1px; }
+.ak-modal-warn i { color: var(--warn-ink); margin-top: 1px; }
 .ak-modal-field { margin-bottom: 14px; }
 .ak-modal-field .ak-keyline-k { display: block; margin-bottom: 7px; }
 .ak-modal-val {
@@ -223,14 +312,14 @@
   align-items: center;
   gap: 10px;
   padding: 12px 14px;
-  background: var(--surface-2);
-  border: 1.5px solid var(--brand-soft);
-  border-radius: 13px;
+  background: var(--bg);
+  border: 1px solid var(--line-strong);
+  border-radius: 9px;
 }
-.ak-modal-val--secret { background: #fffaf0; border-color: var(--line); }
+.ak-modal-val--secret { background: var(--warn-soft); border-color: var(--line); }
 .ak-modal-done { width: 100%; justify-content: center; margin-top: 8px; }
 
-/* 반응형 */
+/* ── 반응형 ── */
 @media (max-width: 720px) {
   .ak-products,
   .ak-grid { grid-template-columns: 1fr; }
@@ -238,22 +327,20 @@
   .ak-mono { flex-basis: 100%; }
 }
 
-/* first_party 체크박스 / 판매 프로비저닝(구매 과목) 편집 — 강제·과목판매 추가분 */
-.ak-field--check {
-  justify-content: flex-start;
-}
+/* ── first_party 체크박스 / 판매 프로비저닝(구매 과목) 편집 ── */
+.ak-field--check { justify-content: flex-start; }
 .ak-check {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 14px;
-  font-weight: 700;
+  font-size: 13.5px;
+  font-weight: 600;
   color: var(--ink);
   cursor: pointer;
 }
 .ak-check input {
-  width: 17px;
-  height: 17px;
+  width: 16px;
+  height: 16px;
   accent-color: var(--brand);
   cursor: pointer;
 }
@@ -261,22 +348,20 @@
 .ak-ent {
   margin-top: 4px;
   padding: 14px 16px;
-  border: 1px dashed var(--line);
-  border-radius: 14px;
-  background: var(--surface-2);
+  border: 1px dashed var(--line-strong);
+  border-radius: 10px;
+  background: var(--bg);
 }
 .ak-ent-head {
   display: flex;
   align-items: center;
   gap: 7px;
-  font-size: 14px;
+  font-size: 13.5px;
   color: var(--ink);
   margin-bottom: 10px;
   flex-wrap: wrap;
 }
-.ak-ent-head .ak-hint {
-  margin-left: 4px;
-}
+.ak-ent-head .ak-hint { margin-left: 4px; }
 .ak-ent-chips {
   display: flex;
   flex-wrap: wrap;
@@ -287,13 +372,13 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  padding: 7px 14px;
-  border-radius: 20px;
-  border: 1.5px solid var(--line);
+  padding: 6px 13px;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
   background: var(--surface);
   color: var(--ink-2);
-  font-size: 13px;
-  font-weight: 800;
+  font-size: 12.5px;
+  font-weight: 700;
   cursor: pointer;
 }
 .ak-entchip--on {
@@ -301,23 +386,39 @@
   background: var(--ok-soft);
   color: var(--ok);
 }
-.ak-ent-save {
-  margin-left: auto;
-}
+.ak-ent-save { margin-left: auto; }
 
 .ak-fp {
   display: inline-block;
   padding: 2px 9px;
-  border-radius: 20px;
-  font-size: 11px;
-  font-weight: 800;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 700;
   margin-left: 2px;
 }
-.ak-fp--in {
+.ak-fp--in { background: var(--info-soft); color: var(--info); }
+.ak-fp--ext { background: var(--warn-soft); color: var(--warn-ink); }
+
+/* ── 목록 하단 페이지네이션(공용 op-log* 재정의) ── */
+.ops-apikeys .op-logpage { margin-top: 14px; }
+.ops-apikeys .op-pagebtn,
+.ops-apikeys .op-filsel,
+.ops-apikeys .op-fildate {
+  border: 1px solid var(--line-strong);
   background: var(--surface);
-  color: var(--info);
+  color: var(--ink);
+  border-radius: 9px;
 }
-.ak-fp--ext {
-  background: var(--warn-soft);
-  color: var(--warn-ink);
+.ops-apikeys .op-pagebtn:hover:not(:disabled) { background: var(--surface); border-color: var(--ink-3); transform: none; }
+.ops-apikeys .op-bh-select {
+  border: 1px solid var(--line-strong);
+  background: var(--bg);
+  color: var(--ink);
+  border-radius: 9px;
 }
+.ops-apikeys .op-bh-select:focus { outline: none; border-color: var(--brand); background: var(--surface); }
+.ak-list-filter { border-radius: 9px; }
+
+/* ── 빈 상태 / 토스트(공용 재정의) ── */
+.ops-apikeys .op-empty i { color: var(--ink-3); }
+.ops-apikeys .op-toast { border-radius: 12px; box-shadow: var(--shadow-md); }

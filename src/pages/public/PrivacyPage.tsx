@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
-import ThemeToggle from '../../components/common/ThemeToggle';
 import mascot from '../../assets/characters/catchap-logo.png';
 import './PrivacyPage.css';
 
@@ -10,38 +9,21 @@ export default function PrivacyPage() {
       {/* NAV */}
       <div className="pv-nav">
         <div className="pv-nav-inner">
+          <Link to={PATHS.HOME} className="pv-back-link"><i className="ph-bold ph-arrow-left" />뒤로</Link>
+          <div className="pv-nav-divider"></div>
           <Link to={PATHS.HOME} className="pv-brand">
             <img src={mascot} alt="CatChap" className="pv-brand-logo" />
             <span className="pv-brand-name">CatChap</span>
           </Link>
-          <span className="pv-nav-legal">LEGAL</span>
-          <ThemeToggle />
-          <Link to={PATHS.HOME} className="pv-nav-back">
-            <i className="ph-bold ph-arrow-left pv-nav-back-icon" />
-            메인으로 돌아가기
-          </Link>
+          <Link to={PATHS.TERMS} className="pv-nav-related">이용약관</Link>
         </div>
       </div>
 
-      {/* MASTHEAD */}
-      <div className="pv-masthead">
-        <div className="pv-masthead-rule">
-          <div className="pv-masthead-row">
-            <div>
-              <div className="pv-eyebrow">PRIVACY POLICY</div>
-              <h1 className="pv-title">개인정보 처리방침</h1>
-            </div>
-            <div className="pv-doc-meta">
-              <div className="pv-doc-service">CatChap 어린이 학습 서비스</div>
-              <div className="pv-doc-number">문서번호 CC-PRV-2026</div>
-            </div>
-          </div>
-        </div>
-        <div className="pv-meta-row">
-          <span>시행일자 {' '}2026. 07. 01.</span>
-          <span>최종 개정 {' '}2026. 06. 20.</span>
-          <span>버전 {' '}v1.2</span>
-        </div>
+      {/* HEADER */}
+      <div className="pv-header">
+        <span className="pv-badge"><i className="ph-fill ph-shield-check" />개인정보처리방침</span>
+        <h1 className="pv-title">개인정보 처리방침</h1>
+        <p className="pv-meta">시행일 2026. 07. 01. · 최종 개정 2026. 06. 20. · 버전 v1.2 · 문서번호 CC-PRV-2026</p>
       </div>
 
       {/* CONTENT SHEET */}

@@ -1,0 +1,156 @@
+/* 운영 콘솔 · 행동 데이터 — 핸드오프 소스: CatChap 행동 데이터.dc.html
+ * OpsApproval.css(공용, 구코랄·둥근·그라디언트 스타일) 위에 얹혀, 이 페이지(.ops-behavior) 안의
+ * 공용 클래스(KPI/비교표/차트/필터/목록/궤적 모달)만 플랫 핸드오프 톤으로 덮어쓴다.
+ * (OpsApproval.css는 다른 운영 페이지와 공유되므로 직접 수정하지 않음) */
+
+.ops-behavior.op-root { background: var(--bg); }
+
+.ops-behavior .op-refresh {
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink);
+  border-radius: 9px;
+  box-shadow: none;
+}
+.ops-behavior .op-refresh:hover { transform: none; border-color: var(--ink-3); background: var(--surface); color: var(--ink); }
+.ops-behavior .op-refresh:disabled { transform: none; }
+
+/* ── KPI ── */
+.ops-behavior .op-kpi {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: none;
+}
+.ops-behavior .op-kpi-ic { border-radius: 12px; box-shadow: none; }
+.ops-behavior .op-kpi-ic--log { background: var(--info-soft); color: var(--info); }
+.ops-behavior .op-kpi-ic--stu { background: var(--ok-soft); color: var(--ok); }
+.ops-behavior .op-kpi-ic--inq { background: var(--info-soft); color: var(--info); }
+.ops-behavior .op-kpi-ic--org { background: var(--brand-soft); color: var(--brand); }
+
+/* ── 학습자 vs 익명 비교표 ── */
+.op-bh-compare {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: none;
+}
+.op-bh-compare-h i { color: var(--info); }
+.op-bh-note { color: var(--ink-3); }
+.op-bhc-head { color: var(--ink-3); border-bottom: 1px solid var(--line); font-weight: 700; }
+.op-bhc-row { border-bottom: 1px solid var(--line); }
+.op-bh-group i { color: var(--brand); }
+.op-bh-group--anonymous i { color: var(--info); }
+
+/* ── 분포 차트 카드 ── */
+.op-bh-chart {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: none;
+}
+.op-bh-chart-h { color: var(--ink); }
+.op-bh-chart-h i { color: var(--brand); }
+.op-bh-chart-note { color: var(--ink-3); }
+.op-bh-hourbar { background: var(--brand-soft); }
+.op-bh-hourbar--night { background: var(--info); }
+.op-bh-histbar { background: var(--ok-soft); }
+.op-bh-histbar--danger { background: var(--brand); }
+.op-bh-histbar--warn { background: var(--warn); }
+.op-bh-hourlb, .op-bh-histlb { color: var(--ink-3); }
+
+/* ── 필터 바 ── */
+.op-bh-select {
+  border: 1px solid var(--line-strong);
+  background: var(--bg);
+  color: var(--ink);
+  border-radius: 9px;
+}
+.op-bh-select:focus { outline: none; border-color: var(--brand); background: var(--surface); }
+.op-bh-date {
+  border: 1px solid var(--line-strong);
+  background: var(--bg);
+  color: var(--ink);
+  border-radius: 9px;
+}
+.op-bh-date:focus { outline: none; border-color: var(--brand); background: var(--surface); }
+.op-bh-datedash { color: var(--ink-3); }
+.op-bh-total { color: var(--ink-3); }
+
+/* ── 선택 도구모음 ── */
+.op-bh-selbar { background: var(--ink); border-radius: 12px; }
+.op-bh-selbtn { background: var(--ink-2); color: var(--surface); border-radius: 8px; }
+.op-bh-selbtn:hover { background: var(--ink-3); }
+.op-bh-selbtn--hum { background: var(--ok); }
+.op-bh-selbtn--hum:hover { background: var(--ok-ink); }
+.op-bh-selbtn--bot { background: var(--brand); }
+.op-bh-selbtn--bot:hover { background: var(--brand-ink); }
+
+/* ── 목록(표) ── */
+.ops-behavior .op-logcard {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: none;
+}
+.op-bh-head-row { background: var(--bg); border-bottom: 1px solid var(--line); color: var(--ink-3); font-weight: 700; }
+.op-bh-row { border-bottom: 1px solid var(--line); }
+.op-bh-row:hover { background: var(--bg); }
+.op-bh-row--sel { background: var(--brand-soft); }
+.op-bh-src { border-radius: 6px; font-weight: 700; }
+.op-bh-src--game { background: var(--warn-soft); color: var(--warn-ink); }
+.op-bh-src--edu { background: var(--info-soft); color: var(--info); }
+.op-bh-who b { color: var(--ink); }
+.op-bh-who small { color: var(--ink-3); }
+.op-bh-res--ok { background: var(--ok-soft); color: var(--ok); border-radius: 999px; }
+.op-bh-res--no { background: var(--danger-soft); color: var(--danger); border-radius: 999px; }
+.op-bh-risk--low { color: var(--ok); }
+.op-bh-risk--review { color: var(--warn-ink); }
+.op-bh-risk--elevated { color: var(--danger); }
+.op-bh-label { border-radius: 6px; }
+.op-bh-label--bot { background: var(--danger-soft); color: var(--brand-ink); }
+.op-bh-label--hum { background: var(--ok-soft); color: var(--ok-ink); }
+.op-bh-label--org { background: var(--bg); color: var(--ink-3); }
+.op-bh-dsbtn {
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink-3);
+  border-radius: 6px;
+}
+.op-bh-dsbtn:hover { border-color: var(--ink-3); color: var(--ink-2); }
+.op-bh-dsbtn--cand.op-bh-dsbtn--on { background: var(--warn-soft); color: var(--warn-ink); border-color: var(--line); }
+.op-bh-dsbtn--inc.op-bh-dsbtn--on { background: var(--ok-soft); color: var(--ok); border-color: var(--line); }
+.op-bh-dsbtn--exc.op-bh-dsbtn--on { background: var(--danger-soft); color: var(--danger); border-color: var(--line); }
+.op-bh-tracebtn {
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--info);
+  border-radius: 6px;
+}
+.op-bh-tracebtn:hover { background: var(--info-soft); border-color: var(--line-strong); }
+.op-bh-spark { background: var(--bg); border: 1px solid var(--line); border-radius: 6px; }
+.op-bh-check { accent-color: var(--brand); }
+
+.ops-behavior .op-bh-foot .op-refresh:disabled { transform: none; }
+
+/* ── 궤적 뷰어 모달 ── */
+.ops-behavior .op-bh-overlay { background: var(--overlay); }
+.ops-behavior .op-bh-modal {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: var(--shadow-lg);
+}
+.ops-behavior .op-bh-modal-h { border-bottom: 1px solid var(--line); color: var(--ink); }
+.ops-behavior .op-bh-modal-h i { color: var(--brand); }
+.ops-behavior .op-bh-modal-x { background: var(--surface); border: 1px solid var(--line); border-radius: 9px; color: var(--ink-2); }
+.ops-behavior .op-bh-modal-x:hover { background: var(--bg); color: var(--ink); }
+.op-bh-modal-meta { color: var(--ink-3); }
+.op-bh-svg { background: var(--bg); border: 1px solid var(--line); border-radius: 10px; }
+.op-bh-modal-legend { color: var(--ink-2); }
+
+/* ── 빈 상태 ── */
+.ops-behavior .op-empty i,
+.ops-behavior .op-bh-row.op-bh-row--empty { color: var(--ink-3); }
+
+.ops-behavior .op-toast { border-radius: 12px; box-shadow: var(--shadow-md); }
