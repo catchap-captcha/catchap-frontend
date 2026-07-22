@@ -1,4 +1,5 @@
-/* 설정 페이지 — 키 카드 2장 + 흐름 안내. OpsApproval.css의 공통(op-page/op-main/op-btn) 위에 얹는다 */
+/* 설정 페이지 — handoff `CatChap 시스템 설정.dc.html` 정렬(플랫: 1px 선·14px 라운드·토큰 색상만).
+   OpsApproval.css의 공통(op-page/op-main/op-btn) 위에 얹는다 */
 
 .ops-set-flow {
   display: flex;
@@ -35,17 +36,17 @@
   font-size: 12px;
   font-weight: 800;
 }
-.ops-set-chip--ok { background: #e5f6ee; color: var(--ok-ink); }
-.ops-set-chip--off { background: #fff1ef; color: var(--brand-ink); }
+.ops-set-chip--ok { background: var(--ok-soft); color: var(--ok-ink); }
+.ops-set-chip--off { background: var(--brand-soft); color: var(--brand-ink); }
 .ops-set-desc { margin: 8px 0 0; font-size: 13px; color: var(--ink-2); font-weight: 600; line-height: 1.6; }
 .ops-set-src { margin: 6px 0 0; font-size: 12px; color: var(--ink-3); font-weight: 700; }
-.ops-set-src--bad { color: #d15448; }
-.ops-set-src--ok { color: #1f9d57; }
-.ops-set-section { margin: 24px 0 8px; font-size: 15px; font-weight: 800; color: var(--ink-1, #1a1f27); }
+.ops-set-src--bad { color: var(--danger); }
+.ops-set-src--ok { color: var(--ok); }
+.ops-set-section { margin: 24px 0 8px; font-size: 15px; font-weight: 800; color: var(--ink); }
 .ops-set-prompt {
   width: 100%; box-sizing: border-box; margin: 8px 0; padding: 10px 12px;
-  border: 1px solid var(--line, #d8dee7); border-radius: 8px;
-  background: var(--surface, #fff); color: var(--ink-1, #1a1f27);
+  border: 1px solid var(--line); border-radius: 8px;
+  background: var(--surface); color: var(--ink);
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 12.5px; line-height: 1.6; resize: vertical;
 }
@@ -55,7 +56,7 @@
 .ops-set-inputwrap input {
   width: 100%;
   box-sizing: border-box;
-  border: 1.5px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: 10px;
   padding: 11px 42px 11px 13px;
   font-size: 13.5px;
@@ -89,7 +90,7 @@
   margin-bottom: 14px;
   max-width: 760px;
 }
-.ops-set-banner--ok { background: #e5f6ee; color: var(--ok-ink); border: 1px solid var(--line); }
+.ops-set-banner--ok { background: var(--ok-soft); color: var(--ok-ink); border: 1px solid var(--line); }
 
 .ops-set-note {
   display: flex;
@@ -133,7 +134,7 @@
   width: 100%; border: 1px solid var(--line); border-radius: 9px; padding: 9px 10px;
   font-size: 13px; font-weight: 600; color: var(--ink); background: var(--surface); cursor: pointer;
 }
-.ops-air-select:focus { outline: 2px solid #ffd0c8; border-color: #ff8a7d; }
+.ops-air-select:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-soft); }
 
 .ops-air-swap {
   display: flex; gap: 9px; align-items: flex-start;
@@ -158,21 +159,21 @@
 .ops-air-badge {
   font-size: 10.5px; font-weight: 800; border-radius: 5px; padding: 1px 6px; color: var(--on-brand);
 }
-.ops-air-badge--gen { background: #ff7a5c; }
-.ops-air-badge--ver { background: #5aa9e6; }
+.ops-air-badge--gen { background: var(--brand); }
+.ops-air-badge--ver { background: var(--info); }
 
 .ops-air-toggle {
   display: inline-flex; align-items: center; gap: 6px;
   border: 1px solid var(--line); background: var(--surface); color: var(--ink-3);
   border-radius: 999px; padding: 4px 11px 4px 8px; font-size: 12px; font-weight: 800; cursor: pointer;
 }
-.ops-air-toggle--on { background: #e5f6ee; border-color: var(--line); color: var(--ok-ink); }
+.ops-air-toggle--on { background: var(--ok-soft); border-color: var(--line); color: var(--ok-ink); }
 .ops-air-toggle-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--brand-soft); }
-.ops-air-toggle--on .ops-air-toggle-dot { background: #17b877; }
+.ops-air-toggle--on .ops-air-toggle-dot { background: var(--ok); }
 .ops-air-actions { white-space: nowrap; text-align: right; }
 
 .ops-air-empty, .ops-air-warn { font-size: 12.5px; color: var(--brand-ink); font-weight: 600; line-height: 1.6; padding: 6px 2px; }
-.ops-air-warn { color: #c0632a; }
+.ops-air-warn { color: var(--warn-ink); }
 .ops-air-warn i { margin-right: 4px; }
 
 /* 추가/수정 모달의 단가 2열 (op-form 위에 얹음) */

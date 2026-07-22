@@ -2,8 +2,7 @@
 @import '@phosphor-icons/web/bold';
 @import '@phosphor-icons/web/fill';
 @import '@phosphor-icons/web/duotone';
-@import './tokens.css';
-@import './theme.css'; /* 라이트/다크 시맨틱 토큰 — tokens.css 다음(다크 override가 이김) */
+@import './theme.css'; /* 라이트/다크 시맨틱 토큰(단일 소스) */
 @import './animations.css';
 @import './polish.css';
 @import './reveal.css';

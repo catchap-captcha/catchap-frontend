@@ -6,6 +6,7 @@ import {
   type AiRuntimeModelBody,
 } from '../../api/ops';
 import { errorDetail } from '../../api/lectures';
+import './OpsAiRuntimeSection.css';
 
 /** 운영자 AI 모델 선택(#26) — 실제 LLM 호출(문항 생성·자기검증)에 쓰는 모델을 고른다.
  *

@@ -1,4 +1,5 @@
-/* 강의 관리 — OpsApproval.css(op-*) 공용 위에 얹는 페이지 전용 스타일 */
+/* 강의 관리 — handoff `CatChap 강의 관리.dc.html`(목록) + `CatChap 코스 관리.dc.html`(코스 모달) 정렬.
+   OpsApproval.css(op-*) 공용 위에 얹는 페이지 전용 스타일. */
 
 .op-lect-grid {
   display: grid;
@@ -25,15 +26,14 @@
 }
 /* 로딩·빈 상태 등 카드 밖 직속 행도 카드처럼 */
 .op-lect-listwrap > .op-logrow {
-  background: var(--surface); border: 1.5px solid var(--line); border-radius: 16px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
   padding: 18px 22px; color: var(--ink-3); font-weight: 600; margin-bottom: 12px;
 }
-/* ★코스 카드 — 흰 배경·테두리·그림자·간격으로 코스별 확실 분리 */
+/* ★코스 카드 — 흰 배경·테두리·간격으로 코스별 확실 분리(핸드오프: 그림자 없이 1px 선만) */
 .op-lect-group {
   background: var(--surface);
-  border: 1.5px solid var(--line);
-  border-radius: 18px;
-  box-shadow: 0 1px 2px rgba(58, 51, 64, 0.04), 0 14px 30px -24px rgba(90, 60, 55, 0.22);
+  border: 1px solid var(--line);
+  border-radius: 14px;
   margin: 0 0 16px;
   overflow: hidden;
 }
@@ -42,15 +42,16 @@
   align-items: center;
   gap: 10px;
   padding: 13px 22px;
-  background: linear-gradient(180deg, var(--surface-2), var(--surface));
-  border-bottom: 1.5px solid var(--line);
+  background: var(--bg);
+  border-bottom: 1px solid var(--line);
 }
 .op-lect-groupsubj {
-  padding: 3px 10px;
-  border-radius: 999px;
-  background: var(--warn-soft);
-  color: var(--warn-ink);
-  font-weight: 800;
+  padding: 3px 9px;
+  border-radius: 6px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  color: var(--ink-2);
+  font-weight: 700;
   font-size: 11.5px;
 }
 .op-lect-grouptitle {
@@ -85,7 +86,7 @@
 .op-lect-draggable { cursor: grab; }
 .op-lect-draggable:active { cursor: grabbing; }
 .op-lect-dragging { opacity: 0.45; }
-.op-lect-draghandle { color: #c9bda9; margin-right: 6px; cursor: grab; vertical-align: middle; }
+.op-lect-draghandle { color: var(--ink-3); margin-right: 6px; cursor: grab; vertical-align: middle; }
 .op-lect-draghandle:hover { color: var(--ink-2); }
 .op-lect-movebtns { display: inline-flex; flex-direction: column; gap: 2px; margin-right: 2px; }
 .op-lect-movebtn { padding: 2px 6px !important; line-height: 1; }
@@ -102,14 +103,14 @@
 /* 업로드 진행률 */
 .op-lect-progress { margin-top: 12px; display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 12.5px; color: var(--ink-2); }
 .op-lect-progress-track { flex: 1; height: 8px; border-radius: 999px; background: var(--line); overflow: hidden; }
-.op-lect-progress-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--warn), var(--brand)); transition: width 0.2s ease; }
+.op-lect-progress-fill { height: 100%; border-radius: 999px; background: var(--brand); transition: width 0.2s ease; }
 
 /* 문항/자료 모달 */
 .op-lect-widemodal { width: min(760px, calc(100vw - 40px)); max-height: 86vh; overflow-y: auto; }
 .op-lect-qtools { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
 .op-lect-qbtns { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 /* 보조 액션(가져오기·AI 생성) — 주 액션(문항 추가·초록)보다 낮은 시각 위계 */
-.op-btn--soft { background: var(--surface); border: 2px solid var(--line); color: var(--ink-2); padding: 9px 18px; }
+.op-btn--soft { background: var(--surface); border: 1px solid var(--line-strong); color: var(--ink-2); padding: 9px 18px; }
 .op-btn--soft:hover:not(:disabled) { transform: translateY(-1px); background: var(--surface-2); color: var(--ink); }
 
 /* 강사 제공 자막(전사) 바 — 확인 문항 모달의 'AI 문항 생성' 아래 */
@@ -129,7 +130,7 @@
   padding: 9px 11px; font-size: 12.5px; font-family: ui-monospace, monospace; line-height: 1.6;
   color: var(--ink); resize: vertical;
 }
-.op-lect-tr-paste textarea:focus { outline: 2px solid #ffd0c8; border-color: var(--brand); }
+.op-lect-tr-paste textarea:focus { outline: 2px solid var(--brand-soft); border-color: var(--brand); }
 .op-lect-tr-paste-act { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
 .op-lect-tr-paste-act .op-btn { padding: 8px 16px; font-size: 13px; }
 
@@ -167,7 +168,7 @@
 .op-lect-filterbar { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
 .op-lect-search {
   display: flex; align-items: center; gap: 8px; flex: 1; min-width: 220px;
-  background: var(--surface); border: 2px solid var(--line); border-radius: 13px; padding: 9px 12px;
+  background: var(--surface); border: 1px solid var(--line-strong); border-radius: 9px; padding: 9px 12px;
 }
 .op-lect-search i { color: var(--ink-3); flex-shrink: 0; }
 .op-lect-search input { flex: 1; border: none; outline: none; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ink); background: transparent; }
@@ -175,13 +176,13 @@
 .op-lect-search-x { border: none; background: transparent; color: var(--ink-3); cursor: pointer; display: flex; padding: 2px; border-radius: 6px; }
 .op-lect-search-x:hover { color: var(--brand-strong); background: var(--brand-soft); }
 .op-lect-subjfilter {
-  border: 2px solid var(--line); border-radius: 13px; padding: 9px 12px; font-family: inherit;
+  border: 1px solid var(--line-strong); border-radius: 9px; padding: 9px 12px; font-family: inherit;
   font-weight: 700; font-size: 13.5px; color: var(--ink-2); background: var(--surface); cursor: pointer;
 }
 /* 고급 설정 토글(되감기 지점 접기) — 폼 단순화용 */
 .op-lect-advrow { flex-direction: row !important; align-items: center; gap: 10px; flex-wrap: wrap; }
 .op-lect-advtoggle {
-  display: inline-flex; align-items: center; gap: 6px; border: 1.5px dashed var(--line);
+  display: inline-flex; align-items: center; gap: 6px; border: 1px dashed var(--line);
   background: var(--surface-2); color: var(--ink-2); font-weight: 800; font-size: 12.5px; font-family: inherit;
   padding: 7px 12px; border-radius: 10px; cursor: pointer;
 }
@@ -198,7 +199,7 @@
 .op-lect-groupcaret:hover { color: var(--brand-strong); background: var(--brand-soft); }
 .op-lect-gen { display: flex; align-items: center; gap: 6px; }
 .op-lect-gen-lb { display: inline-flex; align-items: center; gap: 5px; font-weight: 700; font-size: 13px; color: var(--ink-2); }
-.op-lect-gen-n { width: 52px; border: 1.5px solid var(--line); border-radius: 10px; padding: 8px; font-weight: 700; text-align: center; font-family: inherit; }
+.op-lect-gen-n { width: 52px; border: 1px solid var(--line); border-radius: 10px; padding: 8px; font-weight: 700; text-align: center; font-family: inherit; }
 .op-lect-genhint {
   display: flex;
   align-items: flex-start;
@@ -206,14 +207,14 @@
   margin: 0 0 12px;
   padding: 9px 12px;
   background: var(--info-soft);
-  border: 1.5px solid var(--line);
+  border: 1px solid var(--line);
   border-radius: 12px;
   color: var(--info-ink);
   font-weight: 600;
   font-size: 12.5px;
   line-height: 1.5;
 }
-.op-lect-genhint i { color: #7c5cff; margin-top: 1px; flex-shrink: 0; }
+.op-lect-genhint i { color: var(--info); margin-top: 1px; flex-shrink: 0; }
 .op-lect-genhint b { color: var(--ink); }
 .op-lect-genwait {
   display: flex;
@@ -222,7 +223,7 @@
   margin: 0 0 12px;
   padding: 10px 12px;
   background: var(--warn-soft);
-  border: 1.5px solid var(--line);
+  border: 1px solid var(--line);
   border-radius: 12px;
   color: var(--warn-ink);
   font-weight: 700;
@@ -258,31 +259,31 @@
   font-size: 13px;
 }
 .op-lect-banner-warn i { margin-top: 2px; }
-.op-lect-qform { border: 1.5px solid var(--line); border-radius: 16px; padding: 18px; margin-bottom: 12px; background: var(--surface-2); }
+.op-lect-qform { border: 1px solid var(--line); border-radius: 14px; padding: 18px; margin-bottom: 12px; background: var(--surface-2); }
 /* 문항 폼 필드 통일 — 라벨/입력 위계·포커스 링으로 전문화(스코프: 강의 모달 폼). 종전엔
    op-form-grid 미정의로 스택되고 input 스타일이 없어 제각각이었다. */
 .op-lect-qform .ox-field { gap: 7px; font-size: 11.5px; font-weight: 800; color: var(--ink-2); }
 .op-lect-qform .ox-field > input,
 .op-lect-qform .ox-field > textarea {
   width: 100%; box-sizing: border-box;
-  border: 1.5px solid var(--line); border-radius: 11px; background: var(--surface-2);
+  border: 1px solid var(--line); border-radius: 11px; background: var(--surface-2);
   padding: 10px 13px; font: inherit; font-size: 13.5px; font-weight: 600; color: var(--ink);
   transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
 }
 .op-lect-qform .ox-field > input::placeholder,
-.op-lect-qform .ox-field > textarea::placeholder { color: #c2b4a2; font-weight: 500; }
+.op-lect-qform .ox-field > textarea::placeholder { color: var(--ink-3); font-weight: 500; }
 .op-lect-qform .ox-field > input:focus,
 .op-lect-qform .ox-field > textarea:focus {
   outline: none; border-color: var(--brand); background: var(--surface); box-shadow: 0 0 0 3px var(--brand-soft);
 }
 .op-lect-qform .ox-field select:focus { box-shadow: 0 0 0 3px var(--brand-soft); }
-.op-lect-textarea { border: 1.5px solid var(--line); border-radius: 10px; padding: 10px; font-family: inherit; font-weight: 600; font-size: 13.5px; resize: vertical; }
+.op-lect-textarea { border: 1px solid var(--line); border-radius: 10px; padding: 10px; font-family: inherit; font-weight: 600; font-size: 13.5px; resize: vertical; }
 .op-lect-qlist { display: flex; flex-direction: column; gap: 10px; }
 .op-lect-qrow {
   display: flex;
   gap: 12px;
   align-items: flex-start;
-  border: 1.5px solid var(--line);
+  border: 1px solid var(--line);
   border-radius: 14px;
   padding: 12px 14px;
   background: var(--surface);
@@ -292,7 +293,7 @@
 .op-lect-qopts { display: flex; flex-wrap: wrap; gap: 6px; }
 .op-lect-qopt { padding: 4px 10px; border-radius: 999px; background: var(--surface-2); color: var(--ink-2); font-weight: 700; font-size: 12px; }
 .op-lect-qopt-ans { background: var(--ok-soft); color: var(--ok); }
-.op-lect-matform { border: 1.5px solid var(--line); border-radius: 14px; padding: 14px; margin-bottom: 12px; background: var(--surface-2); }
+.op-lect-matform { border: 1px solid var(--line); border-radius: 14px; padding: 14px; margin-bottom: 12px; background: var(--surface-2); }
 .op-lect-matmode { display: flex; gap: 8px; margin-bottom: 10px; }
 
 @media (max-width: 900px) {
@@ -324,7 +325,7 @@
 .lu-drop--has { border-style: solid; border-color: var(--line); background: var(--surface); }
 .lu-drop b { font-size: 14px; color: var(--info-ink); word-break: break-all; }
 .lu-drop-ico { font-size: 30px; color: var(--ink-3); }
-.lu-drop-ico--ok { color: #22c55e; }
+.lu-drop-ico--ok { color: var(--ok); }
 .lu-drop-sub { font-size: 12.5px; color: var(--info-ink); }
 
 .lu-help {
@@ -361,7 +362,7 @@
 .lu-imgdrop:hover { border-color: var(--ink-3); background: var(--surface); }
 .lu-imgdrop--over { border-color: #2563eb; background: var(--surface); }
 .lu-imgdrop--off { cursor: default; opacity: 0.75; }
-.lu-imgdrop--off:hover { border-color: #cbd5e1; background: var(--surface); }
+.lu-imgdrop--off:hover { border-color: var(--line-strong); background: var(--surface); }
 
 /* 문제 이미지 썸네일 + 교체/삭제 */
 .lu-imgthumb { margin-top: 6px; display: flex; align-items: flex-start; gap: 10px; flex-wrap: wrap; }
@@ -369,7 +370,7 @@
   max-width: min(280px, 100%);
   max-height: 160px;
   border-radius: 10px;
-  border: 1.5px solid var(--line);
+  border: 1px solid var(--line);
   background: var(--surface);
   object-fit: contain;
 }
@@ -381,7 +382,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  border: 1.5px solid var(--line);
+  border: 1px solid var(--line);
   border-radius: 10px;
   padding: 6px 8px;
   background: var(--surface);
@@ -414,7 +415,7 @@
   justify-content: center;
   width: 30px;
   height: 30px;
-  border: 1.5px solid var(--line);
+  border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--surface-2);
   color: var(--ink-2);
@@ -433,7 +434,7 @@
   height: 30px;
   object-fit: cover;
   border-radius: 6px;
-  border: 1.5px solid var(--line);
+  border: 1px solid var(--line);
   background: var(--surface);
 }
 .lu-optimg-note { font-size: 11px; font-weight: 700; color: var(--ink-3); white-space: nowrap; flex: none; }
@@ -443,7 +444,7 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  border: 1.5px dashed var(--line);
+  border: 1px dashed var(--line);
   border-radius: 8px;
   background: var(--surface);
   padding: 6px 12px;
@@ -461,7 +462,7 @@
   max-width: 180px;
   max-height: 100px;
   border-radius: 8px;
-  border: 1.5px solid var(--line);
+  border: 1px solid var(--line);
   background: var(--surface);
   object-fit: contain;
   align-self: flex-start;
@@ -507,7 +508,7 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  border: 1.5px dashed var(--line);
+  border: 1px dashed var(--line);
   border-radius: 8px;
   background: var(--surface);
   padding: 6px 12px;
@@ -661,10 +662,10 @@
   font-weight: 800;
 }
 .op-exam-tag--manual { background: var(--info-soft); color: var(--info); }
-.op-exam-tag--past_exam { background: #fff1e0; color: var(--warn); }
+.op-exam-tag--past_exam { background: var(--warn-soft); color: var(--warn); }
 .op-exam-tag--lecture { background: var(--info-soft); color: var(--info); }
 .op-exam-tag--llm { background: var(--ok-soft); color: var(--ok); }
-.op-exam-tag--draft { background: #f4efe6; color: var(--ink-3); }
+.op-exam-tag--draft { background: var(--surface-3); color: var(--ink-3); }
 
 /* ===== 코스 시험 지표(대시보드) ===== */
 /* 요약 KPI 밴드 — 응시·수료·수료율·완벽 통과 */
@@ -710,9 +711,9 @@
 .op-exam-qstat-b i { font-size: 11px; }
 .op-exam-pass-sub { font-weight: 700; opacity: 0.75; }
 .op-exam-pass--ok { background: var(--ok-soft); color: var(--ok-ink); }
-.op-exam-pass--mid { background: #fff3d9; color: var(--warn-ink); }
-.op-exam-pass--low { background: #ffe2df; color: var(--brand-ink); }
-.op-exam-qstat-b { background: #f1eee8; color: var(--warn-ink); }
+.op-exam-pass--mid { background: var(--warn-soft); color: var(--warn-ink); }
+.op-exam-pass--low { background: var(--brand-soft); color: var(--brand-ink); }
+.op-exam-qstat-b { background: var(--surface-3); color: var(--warn-ink); }
 
 /* 오답 선택지 분석(distractor analysis) — 틀린 학생이 고른 보기 */
 .op-exam-distractors {
@@ -746,7 +747,7 @@
 .op-exam-distr-tag {
   font-size: 9.5px;
   font-weight: 800;
-  background: #2e6fd6;
+  background: var(--info);
   color: var(--on-brand);
   border-radius: 5px;
   padding: 0 4px;

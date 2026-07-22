@@ -1,8 +1,11 @@
-/* 강의실(LecturePlayer) — design-room 목업 재현. 크림/코럴 팔레트·과목색(--lp-c) 재사용 */
+/* CatChap 강의실 — handoff `CatChap 강의실.dc.html` */
+/* 실제 재생·하트비트·게이트(캡차)·이어보기 로직은 LecturePlayer.tsx 그대로 — 여기선
+   크림/화이트 플랫 크롬만 입힌다. 과목색은 기존처럼 --lp-c(lectureSubjects.ts theme.color)를
+   그대로 재사용(핸드오프엔 없는, 기존부터 있던 과목 테마 기능이라 유지). */
 
 .lp-root {
   min-height: 100vh;
-  background: var(--surface);
+  background: var(--bg);
   font-family: inherit;
 }
 
@@ -17,42 +20,40 @@
 .lp-topbar-inner {
   max-width: 1320px;
   margin: 0 auto;
-  padding: 10px 20px;
+  padding: 12px 20px;
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 16px;
 }
 .lp-back {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 14px;
-  border-radius: 999px;
-  border: 1.5px solid var(--line);
-  background: var(--surface);
+  padding-right: 16px;
+  border-right: 1px solid var(--line);
   color: var(--ink-2);
-  font-weight: 800;
-  font-size: 13px;
+  font-weight: 700;
+  font-size: 13.5px;
   text-decoration: none;
 }
-.lp-back:hover { background: var(--line); }
+.lp-back:hover { color: var(--ink); }
 .lp-brand { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; }
-.lp-brand-img { width: 34px; height: 34px; border-radius: 10px; }
-.lp-brand-name { font-weight: 900; font-size: 17px; color: var(--brand); }
+.lp-brand-img { width: 26px; height: 26px; border-radius: 7px; }
+.lp-brand-name { font-weight: 800; font-size: 16px; color: var(--ink); letter-spacing: -0.02em; }
 .lp-crumb {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
   color: var(--ink-3);
-  font-weight: 700;
+  font-weight: 600;
   font-size: 13px;
   min-width: 0;
 }
-.lp-crumb-sep { font-size: 10px; color: #cfc5b6; }
+.lp-crumb-sep { font-size: 12px; color: var(--ink-3); }
 .lp-crumb-link { color: var(--ink-2); text-decoration: none; }
 .lp-crumb-link:hover { color: var(--brand); }
 .lp-crumb-cur {
-  color: var(--brand-ink);
+  color: var(--ink);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -62,25 +63,21 @@
 .lp-profile {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 12px 6px 6px;
-  border-radius: 999px;
-  border: 1.5px solid var(--line);
-  background: var(--surface);
+  gap: 9px;
   text-decoration: none;
 }
 .lp-profile-avatar {
-  width: 30px;
-  height: 30px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--warn), var(--brand));
+  background: var(--ink);
   color: var(--on-brand);
-  font-weight: 900;
-  font-size: 13px;
+  font-weight: 700;
+  font-size: 12.5px;
   display: grid;
   place-items: center;
 }
-.lp-profile-name { font-weight: 800; font-size: 13px; color: var(--brand-ink); }
+.lp-profile-name { font-weight: 600; font-size: 13.5px; color: var(--ink); }
 
 /* ===== 본문 그리드 ===== */
 .lp-main {
@@ -88,7 +85,7 @@
   margin: 0 auto;
   padding: 26px 20px 60px;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 380px;
+  grid-template-columns: minmax(0, 1fr) 340px;
   gap: 24px;
   align-items: start;
 }
@@ -97,12 +94,10 @@
 /* ===== 플레이어 카드 ===== */
 .lp-shell {
   position: relative;
-  border-radius: 24px;
+  border-radius: 16px;
   overflow: hidden;
-  background:
-    linear-gradient(160deg, rgba(30, 16, 20, 0.55), rgba(20, 12, 16, 0.78)),
-    linear-gradient(160deg, var(--lp-c, var(--brand)), #3b2030);
-  box-shadow: 0 24px 48px -24px rgba(60, 30, 30, 0.55);
+  /* 핸드오프 고정 다크 캔버스색(#1B1A1F) — 과목 그라디언트 대신 플랫 다크 배경 */
+  background: #1b1a1f;
   aspect-ratio: 16 / 9;
 }
 .lp-shell:fullscreen { border-radius: 0; aspect-ratio: auto; }
@@ -114,13 +109,12 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 7px 13px;
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.42);
+  padding: 5px 11px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.5);
   color: var(--on-brand);
-  font-weight: 800;
-  font-size: 12.5px;
-  backdrop-filter: blur(4px);
+  font-weight: 700;
+  font-size: 12px;
 }
 .lp-video {
   position: absolute;
@@ -129,6 +123,7 @@
   height: 100%;
   object-fit: contain;
   background: transparent;
+  cursor: pointer;
 }
 .lp-video-empty { pointer-events: none; }
 
@@ -141,7 +136,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 8px;
   background: transparent;
   border: none;
   cursor: pointer;
@@ -149,18 +144,18 @@
   font-family: inherit;
 }
 .lp-idle-icon {
-  width: 92px;
-  height: 92px;
-  border-radius: 26px;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
   display: grid;
   place-items: center;
   background: rgba(255, 255, 255, 0.16);
-  font-size: 44px;
-  color: rgba(255, 255, 255, 0.92);
-  margin-bottom: 8px;
+  font-size: 32px;
+  color: var(--on-brand);
+  margin-bottom: 6px;
 }
-.lp-idle-num { font-weight: 800; font-size: 14px; opacity: 0.85; }
-.lp-idle-title { font-weight: 900; font-size: clamp(20px, 3vw, 30px); text-align: center; padding: 0 20px; }
+.lp-idle-num { font-weight: 700; font-size: 13px; opacity: 0.85; }
+.lp-idle-title { font-weight: 800; font-size: clamp(18px, 2.6vw, 26px); text-align: center; padding: 0 20px; }
 
 /* ===== 컨트롤 ===== */
 .lp-controls {
@@ -169,89 +164,89 @@
   right: 0;
   bottom: 0;
   z-index: 6;
-  padding: 26px 16px 12px;
-  background: linear-gradient(180deg, transparent, rgba(10, 6, 8, 0.72));
+  padding: 20px 16px 14px;
+  background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.55));
 }
 .lp-scrub {
   -webkit-appearance: none;
   appearance: none;
   width: 100%;
-  height: 6px;
+  height: 4px;
   border-radius: 999px;
   outline: none;
   cursor: pointer;
   background:
     linear-gradient(
       to right,
-      var(--surface) 0 var(--lp-played, 0%),
+      var(--brand) 0 var(--lp-played, 0%),
       rgba(255, 255, 255, 0.55) var(--lp-played, 0%) var(--lp-watched, 0%),
       rgba(255, 255, 255, 0.22) var(--lp-watched, 0%) 100%
     );
 }
 .lp-scrub::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 14px;
-  height: 14px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
-  background: var(--surface);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  background: var(--on-brand);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
 }
 .lp-scrub::-moz-range-thumb {
-  width: 14px;
-  height: 14px;
+  width: 12px;
+  height: 12px;
   border: none;
   border-radius: 50%;
-  background: var(--surface);
+  background: var(--on-brand);
 }
-.lp-ctrlrow { display: flex; align-items: center; gap: 12px; margin-top: 8px; }
+.lp-ctrlrow { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
 .lp-playbtn {
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   border: none;
-  background: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.16);
   color: var(--on-brand);
-  font-size: 19px;
+  font-size: 18px;
   cursor: pointer;
   display: grid;
   place-items: center;
 }
-.lp-playbtn:hover { background: rgba(255, 255, 255, 0.3); }
-.lp-time { color: rgba(255, 255, 255, 0.92); font-weight: 700; font-size: 13.5px; }
+.lp-playbtn:hover { background: rgba(255, 255, 255, 0.28); }
+.lp-time { color: var(--on-brand); opacity: 0.92; font-weight: 600; font-size: 12.5px; }
 .lp-ctrlspace { flex: 1; }
 .lp-chipbtn {
   border: none;
-  border-radius: 999px;
-  padding: 7px 13px;
-  background: rgba(255, 255, 255, 0.18);
+  border-radius: 8px;
+  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.16);
   color: var(--on-brand);
-  font-weight: 800;
+  font-weight: 700;
   font-size: 12.5px;
   cursor: pointer;
   font-family: inherit;
 }
-.lp-chipbtn:hover { background: rgba(255, 255, 255, 0.3); }
+.lp-chipbtn:hover { background: rgba(255, 255, 255, 0.28); }
 .lp-speedwrap { position: relative; }
 .lp-speedmenu {
   position: absolute;
-  bottom: 42px;
+  bottom: 40px;
   right: 0;
   background: rgba(20, 14, 16, 0.95);
-  border-radius: 14px;
+  border-radius: 10px;
   padding: 6px;
   display: flex;
   flex-direction: column;
   min-width: 96px;
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.35);
 }
 .lp-speeditem {
   border: none;
   background: transparent;
-  color: rgba(255, 255, 255, 0.85);
-  font-weight: 700;
+  color: rgba(255, 255, 255, 0.82);
+  font-weight: 600;
   font-size: 13px;
   padding: 8px 12px;
-  border-radius: 9px;
+  border-radius: 8px;
   cursor: pointer;
   text-align: left;
   font-family: inherit;
@@ -259,20 +254,20 @@
 .lp-speeditem:hover { background: rgba(255, 255, 255, 0.12); }
 .lp-speeditem.lp-on { color: var(--warn); }
 .lp-volwrap { display: flex; align-items: center; gap: 8px; }
-.lp-vol { width: 88px; accent-color: var(--on-brand); cursor: pointer; }
+.lp-vol { width: 84px; accent-color: var(--on-brand); cursor: pointer; }
 .lp-iconbtn {
-  width: 38px;
-  height: 38px;
+  width: 34px;
+  height: 34px;
   border: none;
-  border-radius: 12px;
+  border-radius: 8px;
   background: rgba(255, 255, 255, 0.14);
   color: var(--on-brand);
-  font-size: 18px;
+  font-size: 17px;
   cursor: pointer;
   display: grid;
   place-items: center;
 }
-.lp-iconbtn:hover { background: rgba(255, 255, 255, 0.28); }
+.lp-iconbtn:hover { background: rgba(255, 255, 255, 0.26); }
 
 /* ===== 게이트/오버레이 ===== */
 .lp-gate {
@@ -282,17 +277,17 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(24, 14, 18, 0.62);
-  backdrop-filter: blur(6px);
+  background: rgba(20, 18, 24, 0.72);
+  backdrop-filter: blur(3px);
   padding: 18px;
   overflow-y: auto;
 }
 .lp-gatecard {
   width: min(560px, 100%);
-  background: var(--surface-2);
-  border-radius: 22px;
-  padding: 16px 18px 18px;
-  box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.6);
+  background: var(--surface);
+  border-radius: 16px;
+  padding: 20px 22px 22px;
+  box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.5);
   max-height: 100%;
   overflow-y: auto;
 }
@@ -301,51 +296,48 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 12px;
+  padding: 5px 11px;
   border-radius: 999px;
   background: var(--brand-soft);
   color: var(--brand-ink);
-  font-weight: 800;
+  font-weight: 700;
   font-size: 12.5px;
 }
-.lp-gatetitle { margin: 8px 0 2px; font-weight: 900; font-size: 17px; color: var(--ink); text-align: center; }
-.lp-gatedesc { color: var(--ink-2); font-weight: 600; font-size: 12.5px; text-align: center; line-height: 1.5; }
+.lp-gatetitle { margin: 10px 0 4px; font-weight: 800; font-size: 19px; color: var(--ink); text-align: center; }
+.lp-gatedesc { color: var(--ink-3); font-weight: 500; font-size: 13.5px; text-align: center; line-height: 1.5; }
 .lp-gatewrong {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  background: var(--surface);
   color: var(--brand-ink);
-  font-weight: 800;
-  font-size: 13.5px;
-  border-radius: 12px;
-  padding: 10px;
-  margin-bottom: 8px;
+  font-weight: 700;
+  font-size: 12.5px;
+  margin-bottom: 10px;
 }
 .lp-gatewidget { min-height: 200px; }
 .lp-gatemiss {
   padding: 30px 16px;
   text-align: center;
   color: var(--brand-strong);
-  font-weight: 700;
+  font-weight: 600;
   font-size: 13.5px;
   line-height: 1.7;
-  background: var(--surface);
-  border: 1.5px dashed var(--line);
-  border-radius: 14px;
+  background: var(--bg);
+  border: 1px dashed var(--line-strong);
+  border-radius: 12px;
 }
-.lp-conflictcard { text-align: center; padding: 28px 24px; }
+.lp-conflictcard { text-align: center; padding: 30px 26px; }
 .lp-conflict-ic {
-  width: 64px;
-  height: 64px;
-  margin: 0 auto 6px;
-  border-radius: 20px;
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 8px;
+  border-radius: 16px;
   display: grid;
   place-items: center;
   background: var(--brand-soft);
   color: var(--brand-ink);
-  font-size: 30px;
+  font-size: 28px;
 }
 .lp-gateactions { display: flex; justify-content: center; gap: 10px; margin-top: 18px; }
 .lp-btn-main {
@@ -357,12 +349,12 @@
   padding: 12px 22px;
   background: var(--brand);
   color: var(--on-brand);
-  font-weight: 800;
+  font-weight: 700;
   font-size: 14px;
   cursor: pointer;
   font-family: inherit;
-  box-shadow: 0 12px 24px -12px rgba(255, 90, 77, 0.8);
 }
+.lp-btn-main:hover { background: var(--brand-strong); }
 .lp-btn-main:disabled { opacity: 0.6; cursor: default; }
 .lp-btn-ghost {
   display: inline-flex;
@@ -371,7 +363,7 @@
   padding: 12px 20px;
   background: var(--line);
   color: var(--ink-2);
-  font-weight: 800;
+  font-weight: 700;
   font-size: 14px;
   text-decoration: none;
 }
@@ -383,14 +375,13 @@
   left: 50%;
   transform: translateX(-50%);
   z-index: 25;
-  background: rgba(20, 14, 16, 0.88);
+  background: rgba(20, 14, 16, 0.9);
   color: var(--on-brand);
-  font-weight: 800;
-  font-size: 13.5px;
-  padding: 10px 18px;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 9px 16px;
   border-radius: 999px;
   white-space: nowrap;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
 }
 .lp-hbwarn {
   position: absolute;
@@ -401,75 +392,74 @@
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  background: rgba(224, 87, 74, 0.92);
+  background: var(--danger);
   color: var(--on-brand);
-  font-weight: 800;
+  font-weight: 700;
   font-size: 12.5px;
   padding: 8px 14px;
   border-radius: 999px;
   white-space: nowrap;
 }
 
-/* ===== 탭 ===== */
+/* ===== 탭 (핸드오프: 언더라인 탭 스트립 + 아래 패널이 한 카드로 이어짐) ===== */
 .lp-tabs {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
+  display: flex;
+  gap: 4px;
   margin-top: 18px;
+  border-bottom: 1px solid var(--line);
 }
 .lp-tab {
-  display: flex;
-  flex-direction: column;
+  display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 13px 8px;
-  border-radius: 16px;
-  border: 1.5px solid var(--line);
-  background: var(--surface);
-  color: var(--ink-2);
-  font-weight: 800;
-  font-size: 13.5px;
+  gap: 7px;
+  padding: 12px 14px;
+  margin-bottom: -1px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--ink-3);
+  font-weight: 600;
+  font-size: 14px;
   cursor: pointer;
   font-family: inherit;
-  transition: all 0.15s ease;
 }
-.lp-tab i { font-size: 18px; }
-.lp-tab:hover { background: var(--line); }
+.lp-tab i { font-size: 16px; }
+.lp-tab:hover { color: var(--ink-2); }
 .lp-tab-on {
-  background: color-mix(in srgb, var(--lp-c, var(--brand)) 12%, var(--surface));
-  border-color: color-mix(in srgb, var(--lp-c, var(--brand)) 35%, var(--surface));
-  color: var(--lp-c, var(--brand));
+  color: var(--lp-c, var(--brand-ink));
+  border-bottom-color: var(--lp-c, var(--brand));
+  font-weight: 700;
 }
 
-/* ===== 정보/자료 카드 ===== */
+/* ===== 정보/자료 카드 (탭 스트립에 이어붙는 패널) ===== */
 .lp-info {
-  margin-top: 18px;
   background: var(--surface);
-  border-radius: 22px;
-  padding: 22px 24px;
-  box-shadow: 0 18px 36px -26px rgba(80, 60, 40, 0.35);
+  border: 1px solid var(--line);
+  border-top: none;
+  border-radius: 0 0 14px 14px;
+  padding: 24px;
 }
 .lp-info-head { display: flex; align-items: center; gap: 12px; }
 .lp-info-ic {
   width: 46px;
   height: 46px;
-  border-radius: 14px;
+  border-radius: 11px;
   display: grid;
   place-items: center;
   font-size: 22px;
   flex: none;
 }
-.lp-info-title { font-weight: 900; font-size: 18px; color: var(--ink); margin: 0; }
+.lp-info-title { font-family: var(--font-display); font-weight: 800; font-size: 18px; color: var(--ink); margin: 0; }
 .lp-info-time { font-weight: 700; font-size: 13px; color: var(--ink-3); }
-.lp-info-desc { color: var(--ink-2); font-weight: 600; font-size: 14px; line-height: 1.7; margin: 14px 0 0; }
+.lp-info-desc { color: var(--ink-2); font-weight: 500; font-size: 14px; line-height: 1.65; margin: 14px 0 0; }
 .lp-info-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
 .lp-chip {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 7px 12px;
-  border-radius: 999px;
-  font-weight: 800;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-weight: 700;
   font-size: 12.5px;
 }
 .lp-chip-done { background: var(--ok-soft); color: var(--ok); }
@@ -480,7 +470,7 @@
   gap: 8px;
   padding: 34px 10px;
   color: var(--ink-3);
-  font-weight: 700;
+  font-weight: 600;
   font-size: 14px;
 }
 .lp-tabempty i { font-size: 20px; }
@@ -492,22 +482,22 @@
   align-items: center;
   gap: 12px;
   padding: 12px 14px;
-  border: 1.5px solid var(--line);
-  border-radius: 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
   background: var(--surface-2);
 }
 .lp-mat-ic {
   width: 42px;
   height: 42px;
-  border-radius: 13px;
+  border-radius: 10px;
   display: grid;
   place-items: center;
   font-size: 20px;
   flex: none;
 }
 .lp-mat-body { flex: 1; min-width: 0; }
-.lp-mat-title { font-weight: 800; font-size: 14.5px; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.lp-mat-sub { font-weight: 700; font-size: 12px; color: var(--ink-3); margin-top: 2px; }
+.lp-mat-title { font-weight: 700; font-size: 14.5px; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lp-mat-sub { font-weight: 600; font-size: 12px; color: var(--ink-3); margin-top: 2px; }
 .lp-mat-btn {
   display: inline-flex;
   align-items: center;
@@ -516,7 +506,7 @@
   border-radius: 999px;
   padding: 9px 15px;
   color: var(--on-brand);
-  font-weight: 800;
+  font-weight: 700;
   font-size: 12.5px;
   cursor: pointer;
   text-decoration: none;
@@ -528,16 +518,16 @@
 /* ===== 목차 사이드바 ===== */
 .lp-side {
   background: var(--surface);
-  border-radius: 22px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
   overflow: hidden;
-  box-shadow: 0 18px 36px -26px rgba(80, 60, 40, 0.35);
   position: sticky;
   top: 76px;
 }
-.lp-side-head { padding: 18px 20px; color: var(--on-brand); }
-.lp-side-title { display: flex; align-items: center; gap: 8px; font-weight: 900; font-size: 16.5px; }
-.lp-side-sub { margin-top: 4px; font-weight: 700; font-size: 12px; opacity: 0.88; }
-.lp-side-list { max-height: min(66vh, 640px); overflow-y: auto; padding: 6px 0; }
+.lp-side-head { padding: 18px 20px; border-bottom: 1px solid var(--line); }
+.lp-side-title { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 15px; color: var(--ink); letter-spacing: -0.02em; }
+.lp-side-sub { margin-top: 4px; font-weight: 600; font-size: 12.5px; color: var(--ink-3); }
+.lp-side-list { max-height: min(66vh, 640px); overflow-y: auto; padding: 0; }
 .lp-tocitem {
   display: flex;
   align-items: center;
@@ -552,42 +542,44 @@
   font-family: inherit;
 }
 .lp-tocitem:last-child { border-bottom: none; }
-.lp-tocitem:hover { background: #fbf7f1; }
+.lp-tocitem:hover { background: var(--surface-2); }
 .lp-toc-cur { background: color-mix(in srgb, var(--lp-c, var(--brand)) 9%, var(--surface)); }
 .lp-toc-cur:hover { background: color-mix(in srgb, var(--lp-c, var(--brand)) 12%, var(--surface)); }
 .lp-tocnum {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
   display: grid;
   place-items: center;
-  background: var(--line);
+  background: var(--bg);
+  border: 1px solid var(--line);
   color: var(--ink-2);
-  font-weight: 800;
+  font-weight: 700;
   font-size: 12.5px;
   flex: none;
 }
-.lp-toc-cur .lp-tocnum { background: var(--lp-c, var(--brand)); color: var(--on-brand); }
-.lp-tocnum-done { background: var(--ok-soft); color: var(--ok); }
+.lp-toc-cur .lp-tocnum { background: var(--lp-c, var(--brand)); color: var(--on-brand); border-color: transparent; }
+.lp-tocnum-done { background: var(--ok-soft); color: var(--ok); border-color: transparent; }
 .lp-tocbody { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
 .lp-tocbadge {
   align-self: flex-start;
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: var(--lp-c, var(--brand));
-  color: var(--on-brand);
-  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 5px;
+  background: var(--brand-soft);
+  color: var(--brand-ink);
+  font-weight: 700;
   font-size: 10.5px;
 }
 .lp-toctitle {
-  font-weight: 800;
+  font-weight: 600;
   font-size: 13.5px;
-  color: var(--brand-ink);
+  color: var(--ink);
+  line-height: 1.4;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.lp-toctime { font-weight: 700; font-size: 12px; color: var(--ink-3); flex: none; }
+.lp-toctime { font-weight: 600; font-size: 11.5px; color: var(--ink-3); flex: none; }
 
 /* ===== 에러 화면 ===== */
 .lp-errwrap {
@@ -606,10 +598,11 @@
   border-radius: 999px;
   background: var(--brand);
   color: var(--on-brand);
-  font-weight: 800;
+  font-weight: 700;
   font-size: 14px;
   text-decoration: none;
 }
+.lp-errback:hover { background: var(--brand-strong); }
 
 /* ===== 반응형 ===== */
 @media (max-width: 1080px) {
@@ -622,12 +615,13 @@
   .lp-brand-name { display: none; }
   .lp-profile-name { display: none; }
   .lp-main { padding: 16px 12px 40px; gap: 16px; }
-  .lp-shell { border-radius: 18px; }
+  .lp-shell { border-radius: 14px; }
   .lp-time { font-size: 12px; }
   .lp-vol { width: 60px; }
-  .lp-tabs { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .lp-tabs { gap: 2px; }
+  .lp-tab { padding: 10px 8px; font-size: 12.5px; }
   .lp-info { padding: 16px; }
-  .lp-idle-icon { width: 64px; height: 64px; font-size: 30px; border-radius: 18px; }
+  .lp-idle-icon { width: 56px; height: 56px; font-size: 26px; }
   /* 모바일: 16:9 플레이어 셸(높이 ~190px) 안에 게이트를 가두면 확인 문제가 잘려
      카드 안 스크롤이 생긴다 — 게이트만 화면 전체(fixed)로 띄운다. 전체화면 모드에서도
      .lp-gate는 fullscreen 서브트리(.lp-shell 자식) 안이라 그대로 보인다. */

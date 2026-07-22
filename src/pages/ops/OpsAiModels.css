@@ -1,0 +1,133 @@
+/* 운영 콘솔 · AI 모델 — 핸드오프 소스: CatChap AI 모델.dc.html
+ * OpsApproval.css(공용, 구코랄·둥근·그라디언트 스타일) 위에 얹혀, 이 페이지(.ops-aimodels) 안의
+ * 공용 클래스(op-refresh/op-logcard/op-logrow/op-formmodal 등)만 플랫 핸드오프 톤으로 덮어쓴다.
+ * (OpsApproval.css는 다른 운영 페이지와 공유되므로 직접 수정하지 않음) */
+
+.ops-aimodels.op-root { background: var(--bg); }
+
+.ops-aimodels .op-refresh {
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink);
+  border-radius: 9px;
+  box-shadow: none;
+}
+.ops-aimodels .op-refresh:hover { transform: none; border-color: var(--ink-3); background: var(--surface); color: var(--ink); }
+
+/* ── 모델 목록(표) ── */
+.ops-aimodels .op-logcard {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: none;
+}
+.ops-aimodels .op-loghead {
+  background: var(--bg);
+  border-bottom: 1px solid var(--line);
+  font-weight: 700;
+  color: var(--ink-3);
+}
+.ops-aimodels .op-logrow {
+  border-bottom: 1px solid var(--line);
+}
+.ops-aimodels .op-logrow:hover { background: var(--bg); }
+.ops-aimodels .op-aimodel-cat { font-weight: 700; color: var(--brand-ink); }
+.ops-aimodels .op-aimodel-desc { display: block; color: var(--ink-3); font-weight: 500; font-size: 11.5px; }
+.ops-aimodels .op-mono { color: var(--ink-2); }
+
+/* 모델 상태 배지 — 핸드오프는 완전한 pill(999px) 사용 */
+.ops-aimodels .op-sys-status { border-radius: 999px; font-weight: 700; }
+.ops-aimodels .op-sys-status--ok { background: var(--ok-soft); color: var(--ok-ink); }
+.ops-aimodels .op-sys-status--warn { background: var(--warn-soft); color: var(--warn-ink); }
+.ops-aimodels .op-sys-status--no { background: var(--danger-soft); color: var(--danger-ink); }
+.ops-aimodels .op-sys-status--neutral { background: var(--bg); border: 1px solid var(--line); color: var(--ink-3); }
+
+/* 목록 관리(수정) 버튼 */
+.ops-aimodels .op-logrow .op-btn--reject {
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink-2);
+  border-radius: 8px;
+  font-size: 12.5px;
+  padding: 7px 13px;
+}
+.ops-aimodels .op-logrow .op-btn--reject:hover:not(:disabled) {
+  transform: none;
+  border-color: var(--ink-3);
+  color: var(--ink);
+}
+
+/* ── 등록/수정 모달 ── */
+.ops-aimodels .op-bh-overlay { background: var(--overlay); }
+.ops-aimodels .op-formmodal {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: var(--shadow-lg);
+}
+.ops-aimodels .op-bh-modal-h {
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+}
+.ops-aimodels .op-bh-modal-h i { color: var(--brand); }
+.ops-aimodels .op-bh-modal-x {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  color: var(--ink-2);
+}
+.ops-aimodels .op-bh-modal-x:hover { background: var(--bg); color: var(--ink); }
+
+.ops-aimodels .op-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 16px;
+  margin-top: 4px;
+}
+.ops-aimodels .op-form-span2 { grid-column: 1 / -1; }
+.ops-aimodels .ox-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-weight: 700;
+  font-size: 12.5px;
+  color: var(--ink);
+}
+.ops-aimodels .ox-field input,
+.ops-aimodels .ox-field select {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--line-strong);
+  border-radius: 9px;
+  background: var(--bg);
+  padding: 10px 12px;
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--ink);
+  transition: border-color 0.15s, background 0.15s;
+}
+.ops-aimodels .ox-field input:focus,
+.ops-aimodels .ox-field select:focus { outline: none; border-color: var(--brand); background: var(--surface); }
+
+.ops-aimodels .op-form-err {
+  background: var(--danger-soft);
+  color: var(--danger-ink);
+  border-radius: 9px;
+  margin-top: 14px;
+}
+.ops-aimodels .op-form-actions { margin-top: 18px; }
+.ops-aimodels .op-btn--reject {
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink-2);
+}
+.ops-aimodels .op-btn--reject:hover:not(:disabled) { transform: none; border-color: var(--ink-3); color: var(--ink); }
+.ops-aimodels .op-btn--approve {
+  background: var(--brand);
+  color: var(--on-brand);
+  box-shadow: none;
+}
+.ops-aimodels .op-btn--approve:hover:not(:disabled) { transform: none; background: var(--brand-ink); box-shadow: none; }
+
+.ops-aimodels .op-toast { border-radius: 12px; box-shadow: var(--shadow-md); }

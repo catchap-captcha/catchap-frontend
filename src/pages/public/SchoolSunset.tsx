@@ -13,32 +13,32 @@ export default function SchoolSunset() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: '#FFF6EC',
-        fontFamily: "'Pretendard','Apple SD Gothic Neo',sans-serif",
+        background: 'var(--bg)',
+        fontFamily: 'var(--font)',
         padding: 20,
       }}
     >
       <div
         style={{
-          background: '#fff',
-          border: '2px solid #FFEDE4',
+          background: 'var(--surface)',
+          border: '1px solid var(--line)',
           borderRadius: 28,
           padding: '40px 34px',
           textAlign: 'center',
           maxWidth: 480,
           width: '100%',
-          boxShadow: '0 22px 46px -28px rgba(180,120,90,0.5)',
+          boxShadow: 'var(--shadow-lg)',
         }}
       >
         <img src={mascot} alt="CatChap" style={{ width: 64, marginBottom: 14 }} />
-        <h1 style={{ fontSize: 21, color: '#3A3340', margin: '0 0 12px' }}>
+        <h1 style={{ fontSize: 21, color: 'var(--ink)', margin: '0 0 12px' }}>
           학교·기관·학부모 서비스가 종료되었어요
         </h1>
-        <p style={{ fontSize: 14.5, color: '#8A8072', lineHeight: 1.7, margin: '0 0 8px' }}>
+        <p style={{ fontSize: 14.5, color: 'var(--ink-2)', lineHeight: 1.7, margin: '0 0 8px' }}>
           CatChap은 <b>개인 학습자 대상 강의 서비스</b>로 전환되었습니다.
           기관·교사·학부모 콘솔은 더 이상 제공되지 않아요.
         </p>
-        <p style={{ fontSize: 13.5, color: '#A89C8C', lineHeight: 1.7, margin: '0 0 22px' }}>
+        <p style={{ fontSize: 13.5, color: 'var(--ink-3)', lineHeight: 1.7, margin: '0 0 22px' }}>
           자녀(만 14세 미만) 가입 동의는 자녀 가입 화면의 보호자 이메일 인증으로
           진행돼요. 보관 중인 데이터 처리나 기타 문의는 아래 문의하기로 알려주시면
           운영팀이 도와드릴게요.
@@ -47,8 +47,8 @@ export default function SchoolSunset() {
           <Link
             to={PATHS.CONTACT}
             style={{
-              background: '#ea5443',
-              color: '#fff',
+              background: 'var(--brand)',
+              color: 'var(--on-brand)',
               borderRadius: 14,
               padding: '12px 24px',
               fontSize: 15,
@@ -61,8 +61,8 @@ export default function SchoolSunset() {
           <Link
             to={PATHS.HOME}
             style={{
-              background: '#FFF1E9',
-              color: '#B0552F',
+              background: 'var(--brand-soft)',
+              color: 'var(--brand-ink)',
               borderRadius: 14,
               padding: '12px 24px',
               fontSize: 15,

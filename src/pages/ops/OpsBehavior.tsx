@@ -9,6 +9,7 @@ import {
 import OpsNav from '../../components/ops/OpsNav';
 import { dateSuffix, downloadCSV } from '../../utils/download';
 import './OpsApproval.css';
+import './OpsBehavior.css';
 
 const PAGE_SIZE = 50;
 const EXPORT_CAP = 2000; // CSV 내보내기 상한 (서버 페이지 200 × 10회)
@@ -328,7 +329,7 @@ export default function OpsBehavior() {
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (
-    <div className="op-root">
+    <div className="op-root ops-behavior">
       <OpsNav />
 
       <main className="op-main">

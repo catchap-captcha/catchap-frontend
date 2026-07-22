@@ -3,6 +3,7 @@ import { PATHS } from '../../routes/paths';
 import mascot from '../../assets/characters/catchap-logo.png';
 import './NotFoundPage.css';
 
+/* CatChap 404 — handoff `CatChap 404.dc.html` */
 export default function NotFoundPage() {
   const navigate = useNavigate();
 
@@ -13,32 +14,26 @@ export default function NotFoundPage() {
 
   return (
     <div className="nf-page">
-      {/* decorative shapes */}
-      <div className="nf-shape-square" />
-      <div className="nf-shape-circle" />
-      <i className="ph-fill ph-star-four nf-star-1" />
-      <i className="ph-fill ph-star-four nf-star-2" />
-
       <div className="nf-card">
-        {/* 4 🐾 4 */}
+        {/* 4 [logo] 4 */}
         <div className="nf-code-row">
           <span className="nf-digit">4</span>
-          <div className="nf-mascot-wrap">
-            <img src={mascot} alt="CatChap 마스코트" className="nf-mascot" />
-            <span className="nf-mascot-badge">
-              <i className="ph-fill ph-magnifying-glass nf-mascot-badge-icon" />
-            </span>
-          </div>
+          <span className="nf-badge">
+            <img src={mascot} alt="CatChap" className="nf-badge-img" />
+          </span>
           <span className="nf-digit">4</span>
         </div>
 
         <div className="nf-pill">
           <i className="ph-fill ph-compass nf-pill-icon" />
-          페이지를 찾을 수 없어요
+          페이지를 찾을 수 없습니다
         </div>
 
-        <h1 className="nf-title">냥이가 길을 잃었어요!</h1>
-        <p className="nf-desc">찾으시는 페이지가 사라졌거나 주소가 바뀌었나 봐요. 냥이랑 다시 홈으로 돌아가 볼까요?</p>
+        <h1 className="nf-title">요청하신 페이지가 없습니다</h1>
+        <p className="nf-desc">
+          찾으시는 페이지가 사라졌거나 주소가 바뀌었을 수 있습니다. 홈으로 돌아가거나 검색으로 원하는
+          화면을 찾아보세요.
+        </p>
 
         {/* actions */}
         <div className="nf-actions">
@@ -47,13 +42,13 @@ export default function NotFoundPage() {
             이전 페이지로 돌아가기
           </button>
           <Link to={PATHS.STUDENT_SEARCH} className="nf-link-search">
-            <i className="ph-fill ph-magnifying-glass nf-link-search-icon" />
+            <i className="ph ph-magnifying-glass nf-link-search-icon" />
             검색하기
           </Link>
         </div>
 
         <div className="nf-error-row">
-          <i className="ph-fill ph-warning-circle nf-error-icon" />
+          <i className="ph ph-warning-circle nf-error-icon" />
           <span className="nf-error-text">오류 코드 404 · 페이지를 찾을 수 없음</span>
         </div>
       </div>

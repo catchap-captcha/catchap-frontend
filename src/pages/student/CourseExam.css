@@ -1,10 +1,7 @@
-/* 코스 수료 시험 — 완전학습(mastery) 자체 UI. 문제은행/오답노트와 같은 웜 톤 계열. */
+/* CatChap 수료 시험 — handoff `CatChap 수료 시험.dc.html` */
 .ce-root {
   min-height: 100vh;
-  background:
-    radial-gradient(1100px 560px at 84% -10%, var(--info-soft) 0%, rgba(230, 240, 255, 0) 58%),
-    radial-gradient(900px 500px at 6% 8%, #fff0e0 0%, rgba(255, 240, 224, 0) 55%),
-    #fff8f0;
+  background: var(--bg);
   padding-bottom: 64px;
 }
 
@@ -14,12 +11,26 @@
   padding: 0 20px;
 }
 
+.ce-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ink-2);
+  font-weight: 600;
+  font-size: 13.5px;
+  text-decoration: none;
+  margin-bottom: 20px;
+}
+.ce-back:hover {
+  color: var(--ink);
+}
+
 .ce-err {
   display: flex;
   align-items: center;
   gap: 8px;
   background: var(--surface);
-  border: 2px solid var(--line);
+  border: 1px solid var(--line);
   color: var(--brand-ink);
   border-radius: 14px;
   padding: 12px 16px;
@@ -37,7 +48,7 @@
 
 .ce-title {
   font-family: var(--font-display); font-weight: 800;
-  font-size: 27px;
+  font-size: 24px;
   color: var(--ink);
   margin: 0;
   letter-spacing: -0.5px;
@@ -46,7 +57,7 @@
   gap: 10px;
 }
 .ce-title i {
-  color: var(--info);
+  color: var(--brand);
 }
 .ce-sub {
   margin: 8px 0 0;
@@ -59,19 +70,18 @@
 /* ===== INTRO 카드 ===== */
 .ce-introcard {
   background: var(--surface);
-  border: 2px solid var(--info-soft);
-  border-radius: 26px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
   padding: 40px 32px;
   text-align: center;
-  box-shadow: 0 20px 44px -30px rgba(60, 90, 140, 0.35);
 }
 .ce-introicon {
   width: 72px;
   height: 72px;
   margin: 0 auto 16px;
-  border-radius: 22px;
-  background: linear-gradient(150deg, var(--info-soft), var(--info-soft));
-  color: var(--info);
+  border-radius: 16px;
+  background: var(--brand-soft);
+  color: var(--brand);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -92,7 +102,7 @@
   margin-top: 14px;
   padding: 9px 18px;
   border-radius: 999px;
-  background: var(--surface);
+  background: var(--surface-2);
   color: var(--ink-2);
   font-weight: 800;
   font-size: 14px;
@@ -117,9 +127,8 @@
   font-size: 20px;
 }
 .ce-badge--perfect {
-  background: linear-gradient(120deg, var(--warn-soft), var(--warn-soft));
+  background: var(--warn-soft);
   color: var(--warn-ink);
-  box-shadow: 0 8px 20px -10px rgba(224, 138, 0, 0.5);
 }
 
 .ce-challenge-hint {
@@ -148,7 +157,7 @@
 }
 .ce-progressfill {
   height: 100%;
-  background: linear-gradient(90deg, #4b9bff, var(--info));
+  background: var(--brand);
   border-radius: 20px;
   transition: width 0.4s ease;
 }
@@ -160,44 +169,43 @@
   justify-content: center;
   gap: 8px;
   border: none;
-  border-radius: 15px;
-  font-family: var(--font-display); font-weight: 800;
-  font-size: 15.5px;
-  padding: 13px 26px;
+  border-radius: 11px;
+  font-family: var(--font-display); font-weight: 700;
+  font-size: 14.5px;
+  padding: 13px 24px;
   cursor: pointer;
   text-decoration: none;
   min-height: 50px;
   margin-top: 20px;
-  transition: filter 0.15s, transform 0.15s;
+  transition: background 0.15s, border-color 0.15s;
 }
 .ce-btn i {
   font-size: 18px;
 }
 .ce-btn--primary {
-  background: var(--info);
+  background: var(--brand);
   color: var(--on-brand);
-  box-shadow: 0 14px 28px -10px rgba(46, 123, 255, 0.6);
 }
 .ce-btn--primary:hover {
-  filter: brightness(1.06);
+  background: var(--brand-strong);
 }
 .ce-btn--ghost {
   background: var(--surface);
-  border: 2px solid var(--line);
-  color: var(--ink-2);
+  border: 1px solid var(--line-strong);
+  color: var(--ink);
 }
 .ce-btn--ghost:hover {
-  background: var(--surface);
+  border-color: var(--ink-3);
 }
 .ce-btn--lg {
   font-size: 17px;
   padding: 15px 34px;
   min-height: 56px;
 }
-/* 수료증 다운로드 — 주 동작(완벽 도전·다음 회차)과 구분되는 보조 강조(청록) */
+/* 수료증 다운로드 — 주 동작(완벽 도전·다음 회차)과 구분되는 보조 강조 */
 .ce-btn--soft {
   background: var(--surface);
-  border: 2px solid var(--line);
+  border: 1px solid var(--line-strong);
   color: var(--ok-ink);
 }
 .ce-btn--soft:hover {
@@ -218,11 +226,12 @@
 }
 .ce-answered {
   flex-shrink: 0;
-  background: var(--info-soft);
-  color: var(--info);
-  font-weight: 800;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  color: var(--ink-2);
+  font-weight: 700;
   font-size: 13px;
-  padding: 8px 14px;
+  padding: 7px 14px;
   border-radius: 999px;
   white-space: nowrap;
 }
@@ -235,27 +244,29 @@
 .ce-qcard,
 .ce-rcard {
   background: var(--surface);
-  border: 2px solid var(--line);
-  border-radius: 20px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 22px 24px;
+}
+.ce-rcard {
   padding: 20px 22px;
-  box-shadow: 0 14px 30px -26px rgba(60, 90, 140, 0.4);
 }
 .ce-qhead {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
   flex-wrap: wrap;
 }
 .ce-qnum {
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   flex-shrink: 0;
-  border-radius: 9px;
-  background: var(--info-soft);
-  color: var(--info);
-  font-weight: 800;
-  font-size: 14px;
+  border-radius: 8px;
+  background: var(--ink);
+  color: var(--on-brand);
+  font-weight: 700;
+  font-size: 13px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -269,10 +280,10 @@
 .ce-multi {
   background: var(--info-soft);
   color: var(--info);
-  font-weight: 800;
+  font-weight: 700;
   font-size: 11px;
-  padding: 3px 10px;
-  border-radius: 999px;
+  padding: 3px 9px;
+  border-radius: 6px;
 }
 .ce-source {
   display: inline-flex;
@@ -283,10 +294,10 @@
   font-size: 11.5px;
 }
 .ce-prompt {
-  font-size: 16.5px;
+  font-size: 15.5px;
   font-weight: 700;
   color: var(--ink);
-  margin: 0 0 14px;
+  margin: 0 0 16px;
   line-height: 1.5;
 }
 /* 이미지 문항 — 프롬프트 이미지(문제 그림)·보기 이미지(그림 보기) */
@@ -317,34 +328,33 @@
   gap: 11px;
   width: 100%;
   text-align: left;
-  border: 2px solid var(--line);
+  border: 1px solid var(--line-strong);
   background: var(--surface);
-  border-radius: 14px;
-  padding: 13px 15px;
+  border-radius: 10px;
+  padding: 12px 15px;
   cursor: pointer;
   font-size: 14.5px;
   font-weight: 600;
-  color: var(--info-ink);
-  transition: all 0.14s;
+  color: var(--ink);
+  transition: border-color 0.14s, background 0.14s;
 }
 .ce-opt:hover {
-  border-color: var(--line);
-  background: var(--surface);
+  border-color: var(--ink-3);
 }
 .ce-opt--on {
-  border-color: var(--info);
-  background: var(--info-soft);
-  color: var(--info-ink);
+  border-color: var(--brand);
+  background: var(--brand-soft);
+  color: var(--ink);
   font-weight: 800;
 }
 .ce-optmark {
   flex-shrink: 0;
   font-size: 20px;
-  color: #b7c2d4;
+  color: var(--ink-3);
   display: flex;
 }
 .ce-opt--on .ce-optmark {
-  color: var(--info);
+  color: var(--brand);
 }
 .ce-opttext {
   flex: 1;
@@ -370,28 +380,16 @@
 /* ===== RESULT ===== */
 .ce-hero {
   background: var(--surface);
-  border: 2px solid var(--line);
-  border-radius: 26px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
   padding: 30px 28px;
   text-align: center;
-  margin-bottom: 20px;
-  box-shadow: 0 18px 40px -30px rgba(60, 90, 140, 0.35);
-}
-.ce-hero--pass {
-  background: linear-gradient(150deg, var(--surface), var(--surface));
-  border-color: var(--line);
-}
-.ce-heroimg {
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  background: var(--surface);
-  padding: 5px;
-  box-shadow: 0 10px 22px -10px rgba(23, 176, 140, 0.5);
+  margin-bottom: 22px;
 }
 .ce-hero .ce-title {
   display: block;
   margin-top: 10px;
+  font-size: 26px;
 }
 .ce-encourage {
   margin: 10px 0 0;
@@ -400,35 +398,80 @@
   font-size: 13.5px;
 }
 
+/* 수료 히어로 — 다크 그라디언트 씰체크 카드(핸드오프 완벽 통과·수료) */
+.ce-hero--pass {
+  background: linear-gradient(135deg, #443f39, #37322d);
+  border: none;
+  border-radius: 18px;
+  padding: 36px 28px;
+}
+.ce-heroseal {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  margin-bottom: 6px;
+}
+.ce-hero--pass .ce-title,
+.ce-hero--pass .ce-title i {
+  color: #fff;
+}
+.ce-hero--pass .ce-sub {
+  color: rgba(255, 255, 255, 0.72);
+}
+.ce-hero--pass .ce-badge {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 6px 14px;
+}
+.ce-hero--pass .ce-badge--perfect {
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffd98a;
+}
+
 .ce-rcard--ok {
-  border-color: var(--line);
-  background: var(--surface);
+  border-color: var(--ok-soft);
+  border-left: 3px solid var(--ok);
 }
 .ce-rcard--no {
-  border-color: var(--brand-soft);
-  background: var(--surface);
+  border-color: var(--line);
+  border-left: 3px solid var(--brand);
 }
 .ce-rnum {
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   flex-shrink: 0;
-  border-radius: 9px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--on-brand);
-  font-size: 16px;
+  font-size: 13px;
 }
 .ce-rnum--ok {
-  background: var(--ok);
+  background: var(--ok-soft);
+  color: var(--ok);
 }
 .ce-rnum--no {
-  background: #ff6d5b;
+  background: var(--brand-soft);
+  color: var(--brand);
 }
 .ce-rlabel {
-  font-weight: 800;
-  font-size: 13.5px;
+  font-weight: 700;
+  font-size: 13px;
   color: var(--ink-2);
+}
+.ce-rcard--ok .ce-rlabel {
+  color: var(--ok);
+}
+.ce-rcard--no .ce-rlabel {
+  color: var(--brand-ink);
 }
 .ce-ropts {
   display: flex;
@@ -439,39 +482,39 @@
   display: flex;
   align-items: center;
   gap: 11px;
-  border: 2px solid var(--line);
+  border: 1px solid var(--line);
   background: var(--surface);
-  border-radius: 13px;
+  border-radius: 10px;
   padding: 11px 14px;
   font-size: 14px;
   font-weight: 600;
-  color: var(--warn-ink);
+  color: var(--ink);
 }
 .ce-ropt--answer {
   border-color: var(--ok);
-  background: var(--surface);
+  background: var(--ok-soft);
   color: var(--ok-ink);
   font-weight: 800;
 }
 .ce-ropt--wrong {
-  border-color: var(--line);
-  background: var(--surface);
+  border-color: var(--brand);
+  background: var(--brand-soft);
   color: var(--brand-ink);
 }
 .ce-ropt .ce-optmark {
-  color: #b7c2d4;
+  color: var(--ink-3);
 }
 .ce-ropt--answer .ce-optmark {
   color: var(--ok);
 }
 .ce-ropt--wrong .ce-optmark {
-  color: var(--brand-ink);
+  color: var(--brand);
 }
 .ce-answertag,
 .ce-picktag {
   flex-shrink: 0;
-  font-size: 10.5px;
-  font-weight: 800;
+  font-size: 11px;
+  font-weight: 700;
   padding: 2px 9px;
   border-radius: 999px;
 }
@@ -480,24 +523,24 @@
   color: var(--ok);
 }
 .ce-picktag {
-  background: var(--danger-soft);
+  background: var(--brand-soft);
   color: var(--brand-ink);
 }
 .ce-explain {
   display: flex;
-  gap: 9px;
-  margin-top: 12px;
-  background: var(--surface);
-  border-radius: 13px;
+  gap: 8px;
+  margin-top: 13px;
+  background: var(--bg);
+  border-radius: 10px;
   padding: 12px 14px;
-  font-size: 12.5px;
-  line-height: 1.55;
-  color: var(--info-ink);
-  font-weight: 600;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--ink-2);
+  font-weight: 500;
 }
 .ce-explain i {
-  color: var(--info);
-  font-size: 17px;
+  color: var(--warn);
+  font-size: 16px;
   flex-shrink: 0;
 }
 

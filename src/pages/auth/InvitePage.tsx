@@ -19,31 +19,31 @@ export default function InvitePage() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: '#FFF6EC',
-        fontFamily: "'Pretendard','Apple SD Gothic Neo',sans-serif",
+        background: 'var(--bg)',
+        fontFamily: 'var(--font)',
         padding: 20,
       }}
     >
       <div
         style={{
-          background: '#fff',
-          border: '2px solid #FFEDE4',
+          background: 'var(--surface)',
+          border: '1px solid var(--line)',
           borderRadius: 28,
           padding: '36px 30px',
           textAlign: 'center',
           maxWidth: 420,
           width: '100%',
-          boxShadow: '0 22px 46px -28px rgba(180,120,90,0.5)',
+          boxShadow: 'var(--shadow-lg)',
         }}
       >
         <div style={{ fontSize: 40, marginBottom: 12 }}>🐾</div>
-        <h1 style={{ fontSize: 20, color: '#3A3340', margin: '0 0 10px' }}>초대 가입이 종료됐어요</h1>
-        <p style={{ fontSize: 14, color: '#8A8072', lineHeight: 1.6, margin: '0 0 20px' }}>{error}</p>
+        <h1 style={{ fontSize: 20, color: 'var(--ink)', margin: '0 0 10px' }}>초대 가입이 종료됐어요</h1>
+        <p style={{ fontSize: 14, color: 'var(--ink-2)', lineHeight: 1.6, margin: '0 0 20px' }}>{error}</p>
         <button
           onClick={() => navigate(PATHS.LOGIN)}
           style={{
-            background: '#ea5443',
-            color: '#fff',
+            background: 'var(--brand)',
+            color: 'var(--on-brand)',
             border: 'none',
             borderRadius: 14,
             padding: '12px 26px',

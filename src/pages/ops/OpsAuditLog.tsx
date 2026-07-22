@@ -3,6 +3,7 @@ import { opsApi, type OpsAuditLog as Row } from '../../api/ops';
 import OpsNav from '../../components/ops/OpsNav';
 import { AUDIT_ACTION_META as ACTION_META, AUDIT_TARGET_LABEL as TARGET_LABEL } from '../../constants/auditActions';
 import './OpsApproval.css';
+import './OpsAuditLog.css';
 
 function fmt(ts: string | null): string {
   if (!ts) return '-';
@@ -68,7 +69,7 @@ export default function OpsAuditLog() {
   const to = Math.min(total, page * PAGE_SIZE);
 
   return (
-    <div className="op-root">
+    <div className="op-root ops-auditlog">
       <OpsNav />
 
       <main className="op-main">

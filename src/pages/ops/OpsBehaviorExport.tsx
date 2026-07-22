@@ -4,6 +4,7 @@ import { kstDateString } from '../../utils/format';
 import { opsApi, type BehaviorExportPreview } from '../../api/ops';
 import OpsNav from '../../components/ops/OpsNav';
 import './OpsApproval.css';
+import './OpsBehaviorExport.css';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -88,7 +89,7 @@ export default function OpsBehaviorExport() {
   };
 
   return (
-    <div className="op-root">
+    <div className="op-root ops-export">
       <OpsNav />
       <main className="op-main">
         <div className="op-head">

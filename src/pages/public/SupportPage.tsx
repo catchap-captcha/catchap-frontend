@@ -2,7 +2,6 @@ import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
 import { inquiryApi } from '../../api/misc';
-import { useAuth } from '../../hooks/useAuth';
 import mascot from '../../assets/characters/catchap-logo.png';
 import './SupportPage.css';
 
@@ -28,7 +27,6 @@ function isEmail(v: string) {
 }
 
 export default function SupportPage() {
-  const { me } = useAuth();
   const [open, setOpen] = useState(0);
   const [sent, setSent] = useState(false);
   const [sending, setSending] = useState(false);
@@ -38,8 +36,6 @@ export default function SupportPage() {
   const emailRef = useRef<HTMLInputElement>(null);
   const typeRef = useRef<HTMLSelectElement>(null);
   const contentRef = useRef<HTMLTextAreaElement>(null);
-
-  const displayName = me?.student?.nickname || me?.name || '하은';
 
   const submitInquiry = async () => {
     // 서버 성공/실패를 사용자에게 명확히 보여준다(조용히 삼키지 않음)
@@ -80,49 +76,31 @@ export default function SupportPage() {
       {/* NAV */}
       <div className="sp-nav">
         <div className="sp-nav-inner">
-          <Link to={PATHS.STUDENT_HOME} className="sp-brand">
+          <Link to={PATHS.HOME} className="sp-back-link"><i className="ph-bold ph-arrow-left" />뒤로</Link>
+          <div className="sp-nav-divider"></div>
+          <Link to={PATHS.HOME} className="sp-brand">
             <img src={mascot} alt="CatChap" className="sp-brand-logo" />
-            <div className="sp-brand-text">
-              <span className="sp-brand-name">CatChap</span>
-              <span className="sp-brand-tagline">놀면서 배우는 캡챠 학습</span>
-            </div>
+            <span className="sp-brand-name">CatChap</span>
           </Link>
-          <nav className="sp-nav-menu">
-            <Link to={PATHS.STUDENT_HOME} className="sp-nav-link">홈</Link>
-            <Link to={PATHS.STUDENT_ALL_LEARNING} className="sp-nav-link">문제은행</Link>
-            <a href="#" className="sp-nav-link--active">고객 지원</a>
-          </nav>
-          <div className="sp-nav-right">
-            <Link to={PATHS.STUDENT_SEARCH} title="검색" className="sp-icon-btn"><i className="ph-bold ph-magnifying-glass" /></Link>
-            <button className="sp-bell-btn"><i className="ph-fill ph-bell" /><span className="sp-bell-dot"></span></button>
-            <Link to={PATHS.STUDENT_SETTINGS} title="설정" className="sp-profile">
-              <div className="sp-profile-avatar">{displayName.charAt(0)}</div>
-              <span className="sp-profile-name">{displayName}</span>
-            </Link>
-          </div>
+          <Link to={PATHS.CONTACT} className="sp-contact-link">문의하기</Link>
+          <Link to={PATHS.LOGIN} className="sp-login-link">로그인</Link>
         </div>
       </div>
 
       {/* HERO */}
       <section className="sp-hero">
-        <div className="sp-hero-panel">
-          <div className="sp-hero-bubble1"></div>
-          <div className="sp-hero-bubble2"></div>
-          <div className="sp-hero-content">
-            <span className="sp-hero-badge"><i className="ph-fill ph-lifebuoy" />고객 지원 센터</span>
-            <h1 className="sp-hero-title">무엇을 도와드릴까요?</h1>
-            <p className="sp-hero-sub">궁금한 점을 검색하거나, 아래에서 자주 묻는 질문을 확인해 보세요.</p>
-            <div className="sp-search-box">
-              <i className="ph-bold ph-magnifying-glass sp-search-icon" />
-              <input type="text" placeholder="예) 비밀번호를 잊어버렸어요" className="sp-search-input" />
-            </div>
-            <div className="sp-hero-chips">
-              <span className="sp-hero-chip">로그인 문제</span>
-              <span className="sp-hero-chip">자녀 계정 연결</span>
-              <span className="sp-hero-chip">결제·환불</span>
-              <span className="sp-hero-chip">학습 기록</span>
-            </div>
-          </div>
+        <span className="sp-hero-badge"><i className="ph-fill ph-lifebuoy" />고객 지원 센터</span>
+        <h1 className="sp-hero-title">무엇을 도와드릴까요?</h1>
+        <p className="sp-hero-sub">궁금한 점을 검색하거나, 아래에서 자주 묻는 질문을 확인해 보세요.</p>
+        <div className="sp-search-box">
+          <i className="ph ph-magnifying-glass sp-search-icon" />
+          <input type="text" placeholder="예) 비밀번호를 잊어버렸어요" className="sp-search-input" />
+        </div>
+        <div className="sp-hero-chips">
+          <button className="sp-hero-chip">로그인 문제</button>
+          <button className="sp-hero-chip">자녀 계정 연결</button>
+          <button className="sp-hero-chip">결제·환불</button>
+          <button className="sp-hero-chip">학습 기록</button>
         </div>
       </section>
 
@@ -130,22 +108,22 @@ export default function SupportPage() {
       <section className="sp-cats">
         <div className="sp-cats-grid">
           <div className="sp-cat-card">
-            <span className="sp-cat-icon sp-cat-icon--account"><i className="ph-fill ph-user-circle" /></span>
+            <span className="sp-cat-icon"><i className="ph ph-user-circle" /></span>
             <div className="sp-cat-name">계정</div>
             <p className="sp-cat-desc">로그인·비밀번호</p>
           </div>
           <div className="sp-cat-card">
-            <span className="sp-cat-icon sp-cat-icon--learn"><i className="ph-fill ph-book-open-text" /></span>
+            <span className="sp-cat-icon"><i className="ph ph-book-open-text" /></span>
             <div className="sp-cat-name">학습</div>
             <p className="sp-cat-desc">놀이·진도·기록</p>
           </div>
           <div className="sp-cat-card">
-            <span className="sp-cat-icon sp-cat-icon--pay"><i className="ph-fill ph-credit-card" /></span>
+            <span className="sp-cat-icon"><i className="ph ph-credit-card" /></span>
             <div className="sp-cat-name">결제</div>
             <p className="sp-cat-desc">구독·환불</p>
           </div>
           <div className="sp-cat-card">
-            <span className="sp-cat-icon sp-cat-icon--tech"><i className="ph-fill ph-wrench" /></span>
+            <span className="sp-cat-icon"><i className="ph ph-wrench" /></span>
             <div className="sp-cat-name">기술 문제</div>
             <p className="sp-cat-desc">오류·접속</p>
           </div>
@@ -189,11 +167,11 @@ export default function SupportPage() {
               <h3 className="sp-contact-title">문의하기</h3>
             </div>
             {sent ? (
-              <div style={{ textAlign: 'center', padding: '20px 4px' }}>
-                <span style={{ fontSize: 44, color: '#17B08C', lineHeight: 1 }}><i className="ph-fill ph-check-circle" /></span>
-                <div style={{ fontWeight: 700, fontSize: 18, margin: '12px 0 6px' }}>문의가 접수되었어요!</div>
-                <p style={{ color: '#6B6B76', fontSize: 14, marginBottom: 16 }}>영업일 기준 1일 이내에 입력해 주신 이메일로 답변드려요.</p>
-                <button onClick={resetInquiry} className="sp-submit-btn">새 문의 작성하기</button>
+              <div className="sp-sent">
+                <span className="sp-sent-icon"><i className="ph-fill ph-check-circle" /></span>
+                <div className="sp-sent-title">문의가 접수되었어요!</div>
+                <p className="sp-sent-desc">영업일 기준 1일 이내에 입력해 주신 이메일로 답변드려요.</p>
+                <button onClick={resetInquiry} className="sp-reset-btn">새 문의 작성하기</button>
               </div>
             ) : (
               <>
@@ -215,7 +193,7 @@ export default function SupportPage() {
                 <label className="sp-label">문의 내용</label>
                 <textarea ref={contentRef} placeholder="궁금한 내용을 자세히 적어주세요" rows={4} className="sp-textarea"></textarea>
                 {formError && (
-                  <div className="sp-form-error" style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#E23D3D', margin: '8px 0' }}>
+                  <div className="sp-form-error">
                     <i className="ph-fill ph-warning-circle" />
                     <span>{formError}</span>
                   </div>

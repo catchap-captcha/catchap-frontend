@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { opsApi, type OpsAiModel, type OpsAiModelBody } from '../../api/ops';
 import OpsNav from '../../components/ops/OpsNav';
 import './OpsApproval.css';
+import './OpsAiModels.css';
 
 /** 모델 레지스트리 관리 — 이 목록이 각 기관 콘솔 'AI 모델' 화면에 그대로 노출된다.
  * (콘텐츠 관리 도구 — 실제 판정 서빙 여부는 시스템 상태의 'AI 판정 서버'가 진실) */
@@ -79,7 +80,7 @@ export default function OpsAiModels() {
   };
 
   return (
-    <div className="op-root">
+    <div className="op-root ops-aimodels">
       <OpsNav />
       <main className="op-main">
         <div className="op-head">

@@ -74,6 +74,7 @@ export default function ContactPage() {
       <div className="ct-nav">
         <div className="ct-nav-inner">
           <Link to={PATHS.HOME} className="ct-back-link"><i className="ph-bold ph-arrow-left" />뒤로</Link>
+          <div className="ct-nav-divider"></div>
           <Link to={PATHS.HOME} className="ct-brand">
             <img src={mascot} alt="CatChap" className="ct-brand-logo" />
             <span className="ct-brand-name">CatChap</span>
@@ -87,7 +88,7 @@ export default function ContactPage() {
         {/* HEADER */}
         <div className="ct-header">
           <span className="ct-header-badge"><i className="ph-fill ph-chat-circle-text" />문의하기</span>
-          <h1 className="ct-header-title">무엇을 도와드릴까요? 🐱</h1>
+          <h1 className="ct-header-title">무엇을 도와드릴까요?</h1>
           <p className="ct-header-sub">도입 상담부터 기술 지원까지, CatChap 팀이 빠르게 답해드려요.</p>
         </div>
 
@@ -98,7 +99,7 @@ export default function ContactPage() {
               <div className="ct-sent">
                 <div className="ct-sent-icon"><i className="ph-fill ph-check-circle" /></div>
                 <h2 className="ct-sent-title">문의가 접수되었어요!</h2>
-                <p className="ct-sent-desc">보통 1영업일 안에 입력해 주신 이메일로<br />답변드려요. 조금만 기다려 주세요 🐾</p>
+                <p className="ct-sent-desc">보통 1영업일 안에 입력해 주신 이메일로<br />답변드려요. 조금만 기다려 주세요.</p>
                 <button onClick={reset} className="ct-reset-btn">새 문의 작성하기</button>
               </div>
             ) : (
@@ -188,22 +189,19 @@ export default function ContactPage() {
             </div>
             <div className="ct-faq-card">
               <div className="ct-faq-head">
-                <span className="ct-faq-head-icon"><i className="ph-fill ph-question" /></span>
+                <span className="ct-faq-head-icon"><i className="ph ph-question" /></span>
                 <span className="ct-faq-head-title">자주 묻는 질문</span>
               </div>
               <div className="ct-faq-list">
                 <Link to={PATHS.SUPPORT} className="ct-faq-item">
-                  <span className="ct-faq-icon ct-faq-icon--key"><i className="ph-fill ph-key" /></span>
                   <span className="ct-faq-q">기관 코드는 어디서 받나요?</span>
                   <i className="ph-bold ph-caret-right ct-faq-caret" />
                 </Link>
                 <Link to={PATHS.SUPPORT} className="ct-faq-item">
-                  <span className="ct-faq-icon ct-faq-icon--card"><i className="ph-fill ph-credit-card" /></span>
                   <span className="ct-faq-q">요금제와 결제는 어떻게 하나요?</span>
                   <i className="ph-bold ph-caret-right ct-faq-caret" />
                 </Link>
                 <Link to={PATHS.SUPPORT} className="ct-faq-item">
-                  <span className="ct-faq-icon ct-faq-icon--shield"><i className="ph-fill ph-shield-check" /></span>
                   <span className="ct-faq-q">아이 정보는 안전하게 관리되나요?</span>
                   <i className="ph-bold ph-caret-right ct-faq-caret" />
                 </Link>

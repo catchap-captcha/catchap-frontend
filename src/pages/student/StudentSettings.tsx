@@ -41,29 +41,29 @@ interface ToggleRow {
 
 /* 원본 display/notify/sound 행 정의 그대로 */
 const DISPLAY_ROWS: ToggleRow[] = [
-  { key: 'eye', title: '눈 보호 모드', sub: '따뜻한 색으로 눈을 편하게 해줘요', icon: 'ph-fill ph-eye', bg: '#E1F5EC', color: '#17B08C' },
-  { key: 'dark', title: '어두운 화면', sub: '밤에 보기 편한 다크 모드', icon: 'ph-fill ph-moon', bg: '#EDE6FF', color: '#8B6BFF' },
-  { key: 'reduce', title: '움직임 줄이기', sub: '화면 애니메이션을 줄여요', icon: 'ph-fill ph-wind', bg: '#E6F0FF', color: '#2E7BFF' },
-  { key: 'color', title: '색약 친화 표시', sub: '색 외에 아이콘·모양으로도 구분해요', icon: 'ph-fill ph-circles-three', bg: '#FFEDE0', color: '#FF922E' },
+  { key: 'eye', title: '눈 보호 모드', sub: '따뜻한 색으로 눈부심을 줄입니다', icon: 'ph-fill ph-eye', bg: 'var(--ok-soft)', color: 'var(--ok)' },
+  { key: 'dark', title: '어두운 화면', sub: '밤에 보기 편한 다크 모드', icon: 'ph-fill ph-moon', bg: 'var(--info-soft)', color: 'var(--info)' },
+  { key: 'reduce', title: '움직임 줄이기', sub: '화면 애니메이션을 줄입니다', icon: 'ph-fill ph-wind', bg: 'var(--info-soft)', color: 'var(--info)' },
+  { key: 'color', title: '색약 친화 표시', sub: '색 외에 아이콘·모양으로도 구분합니다', icon: 'ph-fill ph-circles-three', bg: 'var(--warn-soft)', color: 'var(--warn)' },
 ];
 
 const NOTIFY_ROWS: ToggleRow[] = [
-  { key: 'remind', title: '학습 리마인드', sub: '오늘 학습을 잊지 않게 알려줘요', icon: 'ph-fill ph-alarm', bg: '#FFEDE0', color: '#FF922E' },
-  { key: 'badge', title: '배지 획득 알림', sub: '새 배지를 얻으면 알려줘요', icon: 'ph-fill ph-medal', bg: '#FFF3D6', color: '#F0A400' },
-  { key: 'weekly', title: '주간 요약 알림', sub: '한 주 학습을 정리해서 보내요', icon: 'ph-fill ph-calendar-check', bg: '#E6F0FF', color: '#2E7BFF' },
+  { key: 'remind', title: '학습 리마인드', sub: '오늘 학습을 잊지 않게 알려줍니다', icon: 'ph-fill ph-alarm', bg: 'var(--warn-soft)', color: 'var(--warn)' },
+  { key: 'badge', title: '배지 획득 알림', sub: '새 배지를 얻으면 알려줍니다', icon: 'ph-fill ph-medal', bg: 'var(--warn-soft)', color: 'var(--warn)' },
+  { key: 'weekly', title: '주간 요약 알림', sub: '한 주 학습을 정리해서 보냅니다', icon: 'ph-fill ph-calendar-check', bg: 'var(--info-soft)', color: 'var(--info)' },
 ];
 
 const SOUND_ROWS: ToggleRow[] = [
-  { key: 'sfx', title: '효과음', sub: '정답·오답 소리를 켜요', icon: 'ph-fill ph-music-notes', bg: '#FFE3E9', color: '#FF5A6E' },
-  { key: 'voice', title: '냥냥이 목소리', sub: 'AI 선생님이 말로 알려줘요', icon: 'ph-fill ph-microphone', bg: '#EDE6FF', color: '#8B6BFF' },
+  { key: 'sfx', title: '효과음', sub: '정답·오답 소리를 켭니다', icon: 'ph-fill ph-music-notes', bg: 'var(--brand-soft)', color: 'var(--brand)' },
+  { key: 'voice', title: '음성 안내', sub: 'AI 선생님이 음성으로 안내합니다', icon: 'ph-fill ph-microphone', bg: 'var(--info-soft)', color: 'var(--info)' },
 ];
 
 /* 원본 links 그대로 (href는 HANDOFF_ROUTE_MAP 매핑) */
 const LINK_ROWS = [
-  { title: '비밀번호 변경', sub: '로그인 비밀번호를 바꿔요', icon: 'ph-fill ph-lock-key', bg: '#FFE3E9', color: '#FF5A6E', to: PATHS.PASSWORD_RESET },
-  { title: '개인정보 처리방침', sub: '내 정보가 어떻게 쓰이는지 확인해요', icon: 'ph-fill ph-shield-check', bg: '#E1F5EC', color: '#17B08C', to: PATHS.PRIVACY },
-  { title: '이용약관', sub: '서비스 이용 규칙을 확인해요', icon: 'ph-fill ph-scroll', bg: '#E6F0FF', color: '#2E7BFF', to: PATHS.TERMS },
-  { title: '고객 지원', sub: '궁금한 점을 물어봐요', icon: 'ph-fill ph-lifebuoy', bg: '#FFEDE0', color: '#FF922E', to: PATHS.SUPPORT },
+  { title: '비밀번호 변경', sub: '로그인 비밀번호를 바꿉니다', icon: 'ph-fill ph-lock-key', bg: 'var(--brand-soft)', color: 'var(--brand)', to: PATHS.PASSWORD_RESET },
+  { title: '개인정보 처리방침', sub: '내 정보가 어떻게 쓰이는지 확인합니다', icon: 'ph-fill ph-shield-check', bg: 'var(--ok-soft)', color: 'var(--ok)', to: PATHS.PRIVACY },
+  { title: '이용약관', sub: '서비스 이용 규칙을 확인합니다', icon: 'ph-fill ph-scroll', bg: 'var(--info-soft)', color: 'var(--info)', to: PATHS.TERMS },
+  { title: '고객 지원', sub: '궁금한 점을 문의합니다', icon: 'ph-fill ph-lifebuoy', bg: 'var(--warn-soft)', color: 'var(--warn)', to: PATHS.SUPPORT },
 ];
 
 const FONT_LABELS = ['작게', '보통', '크게'];
