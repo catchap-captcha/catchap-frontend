@@ -698,7 +698,7 @@ const _GUIDE_STEPS: { icon: string; title: string; body: string }[] = [
   {
     icon: 'ph-seal-check',
     title: '4. 검수 & 공개',
-    body: "만든 문항은 초안(draft)이에요. 배지(캡차 적합/은행/불량 의심)를 보고 다듬은 뒤 '공개(active)'로 바꿔야 학생에게 떠요. 공개 문항이 0개면 그 강의는 시청 검증이 동작하지 않아요.",
+    body: "만든 문항은 초안(draft)이에요. 배지(확인 문항 적합/은행/불량 의심)를 보고 다듬은 뒤 '공개(active)'로 바꿔야 학생에게 떠요. 공개 문항이 0개면 그 강의는 시청 검증이 동작하지 않아요.",
   },
   {
     icon: 'ph-exam',
@@ -2696,14 +2696,14 @@ function QuestionsModal({
   };
 
   const toBank = async (q: OpsLectureQuestion) => {
-    if (!window.confirm('이 문항을 전체학습 지식 은행으로 보낼까요? (캡차가 아닌 일반 학습 문제로 쓰여요)'))
+    if (!window.confirm('이 문항을 전체학습 문제 은행으로 보낼까요? (확인 문항이 아닌 일반 학습 문제로 쓰여요)'))
       return;
     try {
       const res = await lectureApi.opsQuestionToBank(lec.id, q.id);
       setBannerOk(true);
       // runtime_visible=false = DB엔 들어갔지만 런타임 반영 실패(재기동 필요) — 숨기지 않는다
       const demoteNote = res.demoted_from_active
-        ? ' (이 문항은 강의 캡차 출제에서 빠졌어요 — 상식으로 풀려 시청 검증엔 부적합)'
+        ? ' (이 문항은 확인 문항 출제에서 빠졌어요 — 상식으로 풀려 시청 검증엔 부적합)'
         : '';
       setBanner(
         (res.runtime_visible
@@ -2720,7 +2720,7 @@ function QuestionsModal({
   };
 
   // 은행 적합 문항 대량 승격 — 강사가 '다중 선택'한 것만(선택=검토, 자동 무검토 아님).
-  // 후보 = verdict=bank·미배치(draft·active 모두 — 은행 문항은 캡차로 안 쓰여 보통 draft로 남는다).
+  // 후보 = verdict=bank·미배치(draft·active 모두 — 은행 문항은 확인 문항으로 안 쓰여 보통 draft로 남는다).
   const bankCandidates = (items ?? []).filter(
     (q) => q.suggested_placement === 'bank' && !q.bank_placed && q.status !== 'deleted',
   );
@@ -2756,7 +2756,7 @@ function QuestionsModal({
       setBanner(
         `은행에 ${res.placed}개 배치했어요` +
           (skips ? ` (형식 미지원 건너뜀: ${skips})` : '') +
-          (res.placed > 0 ? ' — 배치된 문항은 캡차 출제에서 빠집니다.' : '') +
+          (res.placed > 0 ? ' — 배치된 문항은 확인 문항 출제에서 빠집니다.' : '') +
           (res.placed > 0 && !res.runtime_visible ? ' 즉시 반영 실패(재기동 필요).' : ''),
       );
       setBankSel(new Set());
@@ -2812,7 +2812,7 @@ function QuestionsModal({
               ? ` · 불량 의심 ${job.discard_candidates}개(자막을 줘도 안 풀림 — 폐기 검토)`
               : '';
             setBanner(
-              `${trNote}로 AI가 ${job.created}개 생성 → 캡차 적합 ${job.captcha_candidates}개(강의를 봐야 풀림)·` +
+              `${trNote}로 AI가 ${job.created}개 생성 → 확인 문항 적합 ${job.captcha_candidates}개(강의를 봐야 풀림)·` +
                 `은행 적합 ${job.bank_candidates}개(상식으로 풀림)${discardNote}. 각 문항 배지를 보고 검수·배치하세요.`,
             );
           } else {
@@ -2973,7 +2973,7 @@ function QuestionsModal({
               </div>
               {bankCandidates.length > 0 && (
                 <div className="op-lect-bankbulk">
-                  <span className="op-lect-bankbulk-lb" title="봇이 상식으로 풀어 시청 검증(캡차)엔 부적합 — 아래 체크로 골라 전체학습 은행으로 보내세요(선택=검토)">
+                  <span className="op-lect-bankbulk-lb" title="봇이 상식으로 풀어 확인 문항엔 부적합 — 아래 체크로 골라 전체학습 은행으로 보내세요(선택=검토)">
                     <i className="ph-bold ph-brain" /> 은행 적합 {bankCandidates.length}개
                   </span>
                   <button className="op-btn op-btn--soft" onClick={toggleSelectAllBank}>
@@ -3036,7 +3036,7 @@ function QuestionsModal({
             <i className="ph-fill ph-warning-circle" /> {loadErr}
           </div>
         )}
-        {/* 활성 문항 0개 = 확인(캡차)이 아예 안 떠서 시청 검증이 조용히 꺼진다 — 모달 안에서도 경고 */}
+        {/* 활성 문항 0개 = 확인 문항이 아예 안 떠서 시청 검증이 조용히 꺼진다 — 모달 안에서도 경고 */}
         {items !== null && !loadErr && activeCount === 0 && (
           <div className="op-form-err op-lect-banner">
             <i className="ph-fill ph-warning" /> 공개(active) 문항이 없어 이 강의는 시청 검증이
@@ -3398,12 +3398,12 @@ function QuestionsModal({
               </p>
               <ul>
                 <li>
-                  <span className="op-sys-status op-sys-status--ok"><i className="ph-bold ph-shield-check" /> 캡차 적합</span>
-                  <b>‘공개하기’</b> → 학생 강의에 출제되는 <b>시청 검증 문항(강의 캡차)</b>이 돼요. 강의를 봐야 풀려요.
+                  <span className="op-sys-status op-sys-status--ok"><i className="ph-bold ph-shield-check" /> 확인 문항 적합</span>
+                  <b>‘공개하기’</b> → 학생 강의에 출제되는 <b>시청 검증 문항(확인 문항)</b>이 돼요. 강의를 봐야 풀려요.
                 </li>
                 <li>
                   <span className="op-sys-status op-sys-status--warn"><i className="ph-bold ph-brain" /> 은행 적합</span>
-                  <b>‘지식 은행으로’</b> → 봇도 상식으로 푸니 시청 검증엔 부적합. 전체학습 지식 은행으로 보내요.
+                  <b>‘문제 은행으로’</b> → 봇도 상식으로 푸니 시청 검증엔 부적합. 전체학습 문제 은행으로 보내요.
                 </li>
                 <li>
                   <span className="op-sys-status op-sys-status--no"><i className="ph-bold ph-warning" /> 불량 의심</span>
@@ -3411,9 +3411,9 @@ function QuestionsModal({
                 </li>
               </ul>
               <p className="op-lect-guide2-foot">
-                <i className="ph-bold ph-lightbulb" /> 정리하면 — <b>공개하기 = 강의 캡차로 출제</b>,
-                <b> 지식 은행으로 = 별도 학습 문제로 보관</b>. 두 곳은 서로 다른 목적지라, 은행으로
-                보낸 문항은 강의 캡차로 승인할 필요가 없어요.
+                <i className="ph-bold ph-lightbulb" /> 정리하면 — <b>공개하기 = 확인 문항로 출제</b>,
+                <b> 문제 은행으로 = 별도 학습 문제로 보관</b>. 두 곳은 서로 다른 목적지라, 은행으로
+                보낸 문항은 확인 문항로 승인할 필요가 없어요.
               </p>
             </div>
           </details>
@@ -3476,15 +3476,15 @@ function QuestionsModal({
                 {q.suggested_placement === 'captcha' && (
                   <span
                     className="op-sys-status op-sys-status--ok"
-                    title="블라인드 AI(봇)는 못 풀고 자막을 주면 풀리는 문제 — 강의를 봐야 답할 수 있어요. 강의 시청 검증(캡차)에 이상적입니다."
+                    title="블라인드 AI(봇)는 못 풀고 자막을 주면 풀리는 문제 — 강의를 봐야 답할 수 있어요. 강의 확인 문항에 이상적입니다."
                   >
-                    <i className="ph-bold ph-shield-check" /> 캡차 적합
+                    <i className="ph-bold ph-shield-check" /> 확인 문항 적합
                   </span>
                 )}
                 {q.suggested_placement === 'bank' && (
                   <span
                     className="op-sys-status op-sys-status--warn"
-                    title="블라인드 AI(봇)도 상식으로 푼 문제 — 시청 검증(캡차)엔 부적합(봇이 그냥 통과). 전체학습 지식 은행에 어울려요."
+                    title="블라인드 AI(봇)도 상식으로 푼 문제 — 확인 문항엔 부적합(봇이 그냥 통과). 전체학습 문제 은행에 어울려요."
                   >
                     <i className="ph-bold ph-brain" /> 은행 적합
                   </span>
@@ -3539,7 +3539,7 @@ function QuestionsModal({
                   ) : q.suggested_placement === 'bank' ? (
                     <div className="op-lect-rec op-lect-rec--warn">
                       <i className="ph-fill ph-brain" />
-                      <span><b>봇도 상식으로 풀어요</b> — 시청 검증엔 부적합해요(안 보고도 통과). ‘지식 은행으로’ 보내 전체학습에 쓰세요.</span>
+                      <span><b>봇도 상식으로 풀어요</b> — 시청 검증엔 부적합해요(안 보고도 통과). ‘문제 은행으로’ 보내 전체학습에 쓰세요.</span>
                     </div>
                   ) : q.suggested_placement === 'discard' ? (
                     <div className="op-lect-rec op-lect-rec--no">
@@ -3549,7 +3549,7 @@ function QuestionsModal({
                   ) : (
                     <div className="op-lect-rec op-lect-rec--neutral">
                       <i className="ph-fill ph-info" />
-                      <span>검토한 뒤 <b>공개</b>(강의에 출제)하거나 <b>지식 은행</b>으로 보내세요.</span>
+                      <span>검토한 뒤 <b>공개</b>(강의에 출제)하거나 <b>문제 은행</b>으로 보내세요.</span>
                     </div>
                   )
                 )}
@@ -3576,10 +3576,10 @@ function QuestionsModal({
                   q.suggested_placement === 'bank' && (
                     <button
                       className="op-btn op-btn--reject"
-                      title="이 문항을 전체학습 지식 은행으로 보냅니다(강의 캡차에는 부적합 — 상식으로 풀림). 형식은 서버가 변환해요."
+                      title="이 문항을 전체학습 문제 은행으로 보냅니다(확인 문항에는 부적합 — 상식으로 풀림). 형식은 서버가 변환해요."
                       onClick={() => toBank(q)}
                     >
-                      <i className="ph-bold ph-brain" /> 지식 은행으로
+                      <i className="ph-bold ph-brain" /> 문제 은행으로
                     </button>
                   )
                 )}
