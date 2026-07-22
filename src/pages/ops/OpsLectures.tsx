@@ -2369,6 +2369,22 @@ function QuestionsModal({
   // (잡은 서버에서 계속되고, 다시 열면 초안이 보인다). setState-after-unmount 방지.
   const genPollRef = useRef(false);
   useEffect(() => () => { genPollRef.current = false; }, []);
+  // 진행 중인 생성 잡을 강의별로 기억한다(localStorage) — 창을 닫거나 뒤로 나갔다 다시 열어도
+  // '생성 중'을 이어서 보여주고 폴링을 재개하기 위함(사용자 제보: 나갔다 오면 진행 상태가 안 보임).
+  const GENJOB_KEY = `catchap_genjob_${lec.id}`;
+  const [genElapsed, setGenElapsed] = useState(0); // 생성 경과(초) — 멈춘 것처럼 안 보이게 표시
+  const genStartRef = useRef(0);
+  // 경과 타이머 — 생성 중 매초 갱신
+  useEffect(() => {
+    if (!generating) return;
+    const t = window.setInterval(() => {
+      setGenElapsed(Math.max(0, Math.round((Date.now() - genStartRef.current) / 1000)));
+    }, 1000);
+    return () => window.clearInterval(t);
+  }, [generating]);
+  const clearGenJob = () => {
+    try { localStorage.removeItem(GENJOB_KEY); } catch { /* 저장소 접근 불가여도 무해 */ }
+  };
   /* 이미지 업로드/삭제 in-flight 슬롯('prompt' | 'opt-{i}') — 동시에 하나만 */
   const [imgBusy, setImgBusy] = useState<string | null>(null);
   const [imgProgress, setImgProgress] = useState<number | null>(null);
@@ -2395,7 +2411,10 @@ function QuestionsModal({
   useEffect(load, [lec.id]);
 
   const close = () => {
-    if (saving || generating || imgBusy != null) return; // in-flight 중 닫힘 방지 — 목록 카운트 유실 예방
+    // 동기 저장(save)·이미지 업로드 중에만 닫힘을 막는다(중단 시 데이터 유실). 생성(generating)은
+    // 서버 백그라운드 잡이라 닫아도 계속되므로 막지 않는다 — 막으면 몇 분간 창에 갇힌다(사용자 제보).
+    if (saving || imgBusy != null) return;
+    genPollRef.current = false; // 폴링만 멈춤(잡은 서버서 계속·job_id는 남겨 재진입 시 이어봄)
     if (changedRef.current) onChanged(); // 문항 수 변경을 목록에 반영
     onClose();
   };
@@ -2762,25 +2781,22 @@ function QuestionsModal({
     }
   };
 
-  const generate = async () => {
-    const n = Number(genN);
-    if (!Number.isInteger(n) || n < 1 || n > 10) {
-      setBannerOk(false);
-      setBanner('생성 개수는 1~10 사이 정수예요.');
-      return;
-    }
-    setGenerating(true);
-    setGenPhase(null);
-    setBanner('');
+  // 진행 중인 생성 잡을 done/error까지 폴링(2초 간격·최대 5분). 시작·재진입 모두 이걸 쓴다.
+  const pollGenJob = async (jobId: string) => {
     genPollRef.current = true;
     try {
-      // 비동기: 서버가 잡을 만들고 즉시 반환 → done/error까지 폴링한다(2초 간격, 최대 5분).
-      // 키 미설정이면 여기서 바로 503이 throw돼 catch로 간다(stub 생성/성공 위장 없음).
-      const started = await lectureApi.opsQuestionGenerate(lec.id, n);
       for (let i = 0; i < 150 && genPollRef.current; i++) {
         await new Promise((r) => setTimeout(r, 2000));
-        if (!genPollRef.current) return; // 모달 닫힘 — 폴링 중단(잡은 서버서 계속)
-        const job = await lectureApi.opsQuestionGenJob(lec.id, started.job_id);
+        if (!genPollRef.current) return; // 창 닫힘 — 폴링만 멈춤(잡은 서버서 계속·job_id 남겨 재진입 시 이어봄)
+        let job;
+        try {
+          job = await lectureApi.opsQuestionGenJob(lec.id, jobId);
+        } catch {
+          // 잡 조회 실패(삭제·만료 등) — 무한 로딩 방지: 자국 지우고 종료
+          clearGenJob();
+          setGenerating(false);
+          return;
+        }
         setGenPhase(job.phase); // 세부 단계 표시(자막 변환/문항 생성/검증)
         if (job.status === 'done') {
           changedRef.current = true;
@@ -2805,6 +2821,7 @@ function QuestionsModal({
                 (job.verify_error ? ` (자기검증 미수행: ${job.verify_error})` : ''),
             );
           }
+          clearGenJob();
           load();
           setGenerating(false);
           return;
@@ -2813,23 +2830,72 @@ function QuestionsModal({
           // 러너가 남긴 실패 원인을 그대로 노출(STT·생성 실패 등) — 조용한 실패 없음
           setBannerOk(false);
           setBanner(job.error || 'AI 문항 생성에 실패했어요.');
+          clearGenJob();
           setGenerating(false);
           return;
         }
         // pending|running → 계속 폴링
       }
       if (genPollRef.current) {
-        // 5분 초과 — 잡은 계속 돌 수 있으니 이탈 안내(창을 닫아도 됨)
+        // 5분 초과 — 잡은 계속 돌 수 있으니 폴링만 멈추고 안내(job_id 남겨 재진입 시 이어봄)
         setBannerOk(true);
-        setBanner('생성이 오래 걸리고 있어요 — 창을 닫아도 백그라운드에서 계속돼요. 잠시 후 새로고침하면 초안이 보여요.');
+        setBanner('생성이 오래 걸리고 있어요 — 창을 닫아도 백그라운드에서 계속돼요. 완료되면 알림·이메일로 알려드리고, 이 창을 다시 열면 상태가 이어져요.');
         setGenerating(false);
       }
     } catch (e) {
       setBannerOk(false);
-      setBanner(errorDetail(e, 'AI 문항 생성에 실패했어요.'));
+      setBanner(errorDetail(e, 'AI 문항 생성 상태 확인에 실패했어요.'));
       setGenerating(false);
     }
   };
+
+  const generate = async () => {
+    const n = Number(genN);
+    if (!Number.isInteger(n) || n < 1 || n > 10) {
+      setBannerOk(false);
+      setBanner('생성 개수는 1~10 사이 정수예요.');
+      return;
+    }
+    setGenerating(true);
+    setGenPhase(null);
+    setBanner('');
+    genStartRef.current = Date.now();
+    setGenElapsed(0);
+    try {
+      // 비동기: 서버가 잡을 만들고 즉시 반환. 키 미설정이면 바로 503 throw(성공 위장 없음).
+      const started = await lectureApi.opsQuestionGenerate(lec.id, n);
+      try {
+        localStorage.setItem(GENJOB_KEY, JSON.stringify({ id: started.job_id, at: Date.now() }));
+      } catch { /* 저장 실패해도 진행엔 지장 없음(재진입 이어보기만 안 됨) */ }
+      await pollGenJob(started.job_id);
+    } catch (e) {
+      setBannerOk(false);
+      setBanner(errorDetail(e, 'AI 문항 생성에 실패했어요.'));
+      clearGenJob();
+      setGenerating(false);
+    }
+  };
+
+  // 재진입 이어보기 — 모달을 다시 열었을 때 이 강의에 진행 중인 생성 잡이 남아 있으면
+  // '생성 중'을 이어 보여주고 폴링을 재개한다(나갔다 와도 진행 상태가 보이게 — 사용자 제보).
+  useEffect(() => {
+    let saved: { id: string; at: number } | null = null;
+    try {
+      const raw = localStorage.getItem(GENJOB_KEY);
+      saved = raw ? JSON.parse(raw) : null;
+    } catch {
+      saved = null;
+    }
+    if (saved?.id) {
+      setGenerating(true);
+      setGenPhase(null);
+      genStartRef.current = saved.at || Date.now();
+      setBannerOk(true);
+      setBanner('이 강의의 문항 생성이 진행 중이에요 — 완료되면 목록에 초안이 뜨고 알림이 와요.');
+      void pollGenJob(saved.id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lec.id]);
 
   /* 입력 중 실시간 환산·범위 안내용 — 저장 검증(save)과 같은 파서를 쓴다 */
   const posPreview = form ? parseSecInput(form.position_sec) : null;
@@ -2947,7 +3013,13 @@ function QuestionsModal({
                     : genPhase === 'verifying'
                       ? '③ 봇 저항(자기검증)을 확인하는 중…'
                       : 'AI가 문항을 만드는 중이에요 — 긴 영상은 몇 분 걸릴 수 있어요.'}
-                {' '}창을 닫아도 백그라운드에서 계속돼요(끝나면 목록에 초안이 떠요).
+                {' '}
+                <b className="op-lect-genelapsed">
+                  경과 {Math.floor(genElapsed / 60)}:{String(genElapsed % 60).padStart(2, '0')}
+                </b>
+                <br />
+                창을 닫아도 백그라운드에서 계속돼요 — 끝나면 목록에 초안이 뜨고, <b>알림·이메일</b>로도
+                알려드려요. (이 창을 다시 열면 진행 상태가 이어져요.)
               </p>
             )}
             {/* 강사 제공 자막 — 있으면 위 'AI 문항 생성'이 자동 STT 대신 이 자막을 쓴다 */}

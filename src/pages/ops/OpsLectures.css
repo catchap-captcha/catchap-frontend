@@ -906,3 +906,15 @@
   gap: 8px;
   flex-shrink: 0;
 }
+
+/* 생성 경과 시간 칩 — '멈춘 것 아님'을 매초 갱신으로 보여준다 */
+.op-lect-genelapsed {
+  display: inline-block;
+  margin-left: 2px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--brand-soft);
+  color: var(--brand-ink, var(--brand));
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
