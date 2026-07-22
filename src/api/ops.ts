@@ -358,7 +358,41 @@ export interface OpsAiModel {
 }
 export type OpsAiModelBody = Omit<OpsAiModel, 'id' | 'updated_on'>;
 
+// ── 문항 지표 (문제은행 노출수·정답률 — 문제은행 2단계) ───────────────────
+export interface OpsQuestionMetric {
+  id: string;
+  subject: string;
+  type: string | null;
+  topic: string | null;
+  prompt: string;
+  attempts: number;
+  correct: number;
+  accuracy: number;
+  flags: string[]; // 'too_easy' | 'too_hard' | 'low_sample'
+}
+export interface OpsQuestionMetricsResp {
+  summary: {
+    questions: number;
+    attempts: number;
+    avg_accuracy: number | null;
+    too_easy: number;
+    too_hard: number;
+    low_sample: number;
+  };
+  items: OpsQuestionMetric[];
+  page: { limit: number; offset: number; total: number };
+}
+export interface OpsQuestionMetricsParams {
+  subject?: string;
+  sort?: 'most_shown' | 'least_shown' | 'hardest' | 'easiest';
+  min_attempts?: number;
+  limit?: number;
+  offset?: number;
+}
+
 export const opsApi = {
+  questionMetrics: (params: OpsQuestionMetricsParams) =>
+    client.get<OpsQuestionMetricsResp>('/ops/question-metrics', { params }).then((r) => r.data),
   aiModels: () => client.get<OpsAiModel[]>('/ops/ai-models').then((r) => r.data),
   createAiModel: (body: OpsAiModelBody) =>
     client.post<OpsAiModel>('/ops/ai-models', body).then((r) => r.data),

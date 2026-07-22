@@ -1,0 +1,197 @@
+/* 문항 지표 — 문제은행 노출수·정답률 (op-* 셸 재사용 + qm-* 전용) */
+
+/* ===== 요약 카드 ===== */
+.qm-summary {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 12px;
+  margin: 18px 0 20px;
+}
+.qm-sumcard {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.qm-sumval {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 22px;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+}
+.qm-sumlbl {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-3);
+}
+.qm-sumcard--hard .qm-sumval { color: var(--danger-ink); }
+.qm-sumcard--easy .qm-sumval { color: var(--warn-ink); }
+.qm-sumcard--low .qm-sumval { color: var(--ink-3); }
+
+@media (max-width: 900px) {
+  .qm-summary { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* ===== 필터·정렬 ===== */
+.qm-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.qm-tabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.qm-tab {
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink-2);
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 7px 13px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.qm-tab:hover { border-color: var(--ink-3); color: var(--ink); }
+.qm-tab-on,
+.qm-tab-on:hover {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--on-brand);
+}
+.qm-sort {
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink);
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* ===== 테이블 ===== */
+.qm-tablewrap {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--surface);
+}
+.qm-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+.qm-table thead th {
+  text-align: left;
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--ink-3);
+  background: var(--surface-2);
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+.qm-th-num, .qm-th-acc { width: 130px; }
+.qm-table tbody td {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+  vertical-align: middle;
+}
+.qm-table tbody tr:last-child td { border-bottom: none; }
+.qm-table tbody tr:hover td { background: var(--bg-tint); }
+
+.qm-td-q { max-width: 420px; }
+.qm-prompt {
+  display: block;
+  font-weight: 600;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 420px;
+}
+.qm-topic {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--ink-3);
+  margin-top: 2px;
+}
+.qm-type { color: var(--ink-2); font-size: 12.5px; }
+.qm-num { font-variant-numeric: tabular-nums; font-weight: 700; color: var(--ink); }
+
+/* 정답률 바 */
+.qm-acc { display: flex; align-items: center; gap: 8px; }
+.qm-acc-track {
+  flex: 1;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--surface-3);
+  overflow: hidden;
+  min-width: 48px;
+}
+.qm-acc-fill { height: 100%; border-radius: 999px; }
+.qm-acc-fill.qm-acc--hard { background: var(--danger); }
+.qm-acc-fill.qm-acc--easy { background: var(--warn); }
+.qm-acc-fill.qm-acc--ok { background: var(--ok); }
+.qm-acc-fill.qm-acc--low { background: var(--ink-3); }
+.qm-acc-val {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 12.5px;
+  color: var(--ink-2);
+  min-width: 34px;
+  text-align: right;
+}
+
+/* 상태 배지 */
+.qm-flag {
+  display: inline-block;
+  font-weight: 700;
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  margin-right: 4px;
+  white-space: nowrap;
+}
+.qm-flag--ok { background: var(--ok-soft); color: var(--ok-ink); }
+.qm-flag--too_hard { background: var(--danger-soft); color: var(--danger-ink); }
+.qm-flag--too_easy { background: var(--warn-soft); color: var(--warn-ink); }
+.qm-flag--low_sample { background: var(--surface-2); color: var(--ink-3); }
+
+/* ===== 페이지네이션 ===== */
+.qm-pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+
+.qm-retry {
+  margin-left: 10px;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 14px;
+  background: var(--brand);
+  color: var(--on-brand);
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+}
+.qm-retry:hover { background: var(--brand-strong); }

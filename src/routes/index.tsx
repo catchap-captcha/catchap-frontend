@@ -48,6 +48,7 @@ const OpsBehavior = lazy(() => import('../pages/ops/OpsBehavior'));
 const OpsBehaviorExport = lazy(() => import('../pages/ops/OpsBehaviorExport'));
 const OpsAuditLog = lazy(() => import('../pages/ops/OpsAuditLog'));
 const OpsMonitoring = lazy(() => import('../pages/ops/OpsMonitoring'));
+const OpsQuestionMetrics = lazy(() => import('../pages/ops/OpsQuestionMetrics'));
 const OpsAiModels = lazy(() => import('../pages/ops/OpsAiModels'));
 const OpsLlmModels = lazy(() => import('../pages/ops/OpsLlmModels'));
 const OpsLlmKeys = lazy(() => import('../pages/ops/OpsLlmKeys'));
@@ -137,6 +138,7 @@ export default function AppRoutes() {
         <Route element={<ProtectedRoute roles={['ops', 'instructor']} />}>
           <Route path={PATHS.OPS_INSTRUCTOR_HOME} element={<OpsInstructorHome />} />
           <Route path={PATHS.OPS_LECTURES} element={<OpsLectures />} />
+          <Route path={PATHS.OPS_QUESTION_METRICS} element={<OpsQuestionMetrics />} />
         </Route>
 
         {/* 404 — handoff: CatChap 404 */}

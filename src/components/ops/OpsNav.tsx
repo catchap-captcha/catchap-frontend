@@ -31,7 +31,10 @@ const GROUPS: { label: string; items: { to: string; icon: string; label: string 
   },
   {
     label: '강의',
-    items: [{ to: PATHS.OPS_LECTURES, icon: 'ph-video-camera', label: '강의 관리' }],
+    items: [
+      { to: PATHS.OPS_LECTURES, icon: 'ph-video-camera', label: '강의 관리' },
+      { to: PATHS.OPS_QUESTION_METRICS, icon: 'ph-chart-bar', label: '문항 지표' },
+    ],
   },
   {
     // LLM 전용 그룹 — 종전엔 실 LLM 설정(모델 선택·API 키·프롬프트)이 범용 '설정' 한 페이지에

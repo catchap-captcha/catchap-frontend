@@ -61,6 +61,7 @@ export const PATHS = {
   OPS_SETTINGS: '/ops/settings', // (레거시) → OPS_LLM_KEYS로 리다이렉트(북마크 보호)
   OPS_INSTRUCTOR_HOME: '/ops/home', // 강사 홈 대시보드 (검수 대기·학생 참여·약한 문항) — 강사 착지
   OPS_LECTURES: '/ops/lectures', // 강의 관리 (영상 업로드·확인 문항·자료실) — 운영자·강사 공용
+  OPS_QUESTION_METRICS: '/ops/question-metrics', // 문항 지표 (문제은행 노출수·정답률 — 문제은행 2단계)
   OPS_INSTRUCTORS: '/ops/instructors', // 강사 계정 관리 (운영자 초대 발급)
 
   // 학생 코드 활성화 가입 (공개) — 학교 발급 코드 흐름 종료 안내만 남음
