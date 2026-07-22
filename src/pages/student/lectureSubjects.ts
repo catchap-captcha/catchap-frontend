@@ -21,6 +21,21 @@ export const LECTURE_SUBJECTS: Record<string, LectureSubjectTheme> = {
 
 export const LECTURE_SUBJECT_ORDER = ['국어', '영어', '수학', '과학', '사회', '생활'];
 
+/** 위 6개(구 학교 과목) 밖의 분류(예: 코스 중심 전환 후 기본값 '일반', 성인 인강 카테고리)를
+ *  위한 기본 테마 — 하드코딩 6과목만 그리던 탓에 그 밖의 코스·수강신청이 안 보이던 문제를 막는다. */
+export const DEFAULT_SUBJECT_THEME: LectureSubjectTheme = {
+  color: '#6b6b73',
+  soft: '#eeedf0',
+  band: 'linear-gradient(150deg,#efeef1,#e2e1e6)',
+  grad: 'linear-gradient(150deg,#8a8a93,#6b6b73)',
+  icon: 'ph-fill ph-graduation-cap',
+};
+
+/** 과목명 → 테마. 알려진 6과목이면 고유 테마, 그 외(‘일반’ 등)는 기본 테마로 폴백한다. */
+export function subjectTheme(sub: string): LectureSubjectTheme {
+  return LECTURE_SUBJECTS[sub] ?? DEFAULT_SUBJECT_THEME;
+}
+
 /** 초 → 화면 표시(29분 / 45초). 목차·플레이어 시간 표기에 공용. */
 export function formatDurationLabel(sec: number): string {
   const s = Math.max(0, Math.round(sec || 0));

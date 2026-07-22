@@ -5,7 +5,7 @@ import { lectureApi, type LectureItem, type StudentCourse } from '../../api/lect
 import ScreenTimeReminder from '../../components/motion/ScreenTimeReminder';
 import mascot from '../../assets/characters/catchap-logo.png';
 import { StudentNav } from '../../layouts/StudentLayout';
-import { LECTURE_SUBJECTS, LECTURE_SUBJECT_ORDER } from './lectureSubjects';
+import { LECTURE_SUBJECTS, LECTURE_SUBJECT_ORDER, subjectTheme } from './lectureSubjects';
 import './Concepts.css'; // 개념 설명과 같은 카탈로그 디자인(cp-*)을 그대로 재사용
 import './LectureList.css';
 
@@ -112,7 +112,7 @@ export default function LectureList() {
 
   const [tab, setTab] = useState<string>(() => {
     const t = searchParams.get('subject');
-    if (t && LECTURE_SUBJECTS[t]) return t;
+    if (t) return t; // 알려진 6과목뿐 아니라 '일반' 등 어떤 과목 딥링크도 허용(없으면 빈 탭·무해)
     return '전체';
   });
   const [rows, setRows] = useState<LectureItem[] | null>(null);
@@ -137,10 +137,22 @@ export default function LectureList() {
   const total = rows?.length ?? 0;
   const watched = (rows ?? []).filter((l) => watchState(l) === 'done').length;
 
+  // 화면에 실제 있는 과목만 동적으로 — 하드코딩 6과목만 그리면 코스 subject가 '일반'(코스 중심
+  // 전환 기본값)·성인 인강 카테고리처럼 그 밖이면 코스·수강신청이 통째로 안 보인다(사용자 제보).
+  // 순서: 알려진 6과목(있는 것만) 먼저, 그다음 그 외 과목을 이름순으로.
+  const presentSubjects = (() => {
+    const set = new Set<string>();
+    for (const c of courses) if (c.subject) set.add(c.subject);
+    for (const l of rows ?? []) if (l.subject) set.add(l.subject);
+    const known = LECTURE_SUBJECT_ORDER.filter((s) => set.has(s));
+    const extra = [...set].filter((s) => !LECTURE_SUBJECTS[s]).sort();
+    return [...known, ...extra];
+  })();
+
   const tabDefs = [{ key: '전체', icon: 'ph-fill ph-squares-four' }].concat(
-    LECTURE_SUBJECT_ORDER.map((sub) => ({ key: sub, icon: LECTURE_SUBJECTS[sub].icon })),
+    presentSubjects.map((sub) => ({ key: sub, icon: subjectTheme(sub).icon })),
   );
-  const visibleSubjects = tab === '전체' ? LECTURE_SUBJECT_ORDER : [tab];
+  const visibleSubjects = tab === '전체' ? presentSubjects : [tab];
 
   const goWatch = (id: string) => navigate(PATHS.STUDENT_LECTURE, { state: { id } });
 
@@ -279,7 +291,7 @@ export default function LectureList() {
           <div className="cp-tabsrow">
             {tabDefs.map((t) => {
               const active = tab === t.key;
-              const c = t.key === '전체' ? '#ea5443' : LECTURE_SUBJECTS[t.key].color;
+              const c = t.key === '전체' ? '#ea5443' : subjectTheme(t.key).color;
               return (
                 <button
                   key={t.key}
@@ -313,7 +325,7 @@ export default function LectureList() {
 
         {state === 'ready' &&
           visibleSubjects.map((sub) => {
-            const s = LECTURE_SUBJECTS[sub];
+            const s = subjectTheme(sub);
             // 과목 → 강사별 코스 → 강의. 코스가 하나도 없으면 '기타' 그룹 하나로 떨어진다.
             const groups = courseGroupsForSubject(sub, rows ?? [], courses);
             const subjTotal = groups.reduce((n, g) => n + g.lectures.length, 0);
