@@ -657,8 +657,8 @@ export default function MyRecords() {
               </defs>
               {GRID_LINES.map((g) => (
                 <g key={g}>
-                  <line x1={padL} y1={Y(g)} x2={CW - padR} y2={Y(g)} stroke="#F1EAE1" strokeWidth={1} />
-                  <text x={padL - 7} y={Y(g) + 3} textAnchor="end" fontSize={10} fontWeight={700} fill="#C2B9AD">
+                  <line x1={padL} y1={Y(g)} x2={CW - padR} y2={Y(g)} stroke="var(--line)" strokeWidth={1} />
+                  <text x={padL - 7} y={Y(g) + 3} textAnchor="end" fontSize={10} fontWeight={700} fill="var(--ink-3)">
                     {g}
                   </text>
                 </g>
@@ -668,7 +668,7 @@ export default function MyRecords() {
                 y1={accAvgY}
                 x2={CW - padR}
                 y2={accAvgY}
-                stroke="#FFB43C"
+                stroke="var(--warn)"
                 strokeWidth={1.5}
                 strokeDasharray="5 4"
               />
@@ -692,18 +692,18 @@ export default function MyRecords() {
                       textAnchor="middle"
                       fontSize={11}
                       fontWeight={800}
-                      fill={last ? '#ea5443' : clr}
+                      fill={last ? 'var(--brand)' : clr}
                     >
                       {v}%
                     </text>
-                    <circle cx={X(i)} cy={Y(v)} r={last ? 6 : 4.5} fill={last ? '#ea5443' : clr} stroke="#fff" strokeWidth={2} />
+                    <circle cx={X(i)} cy={Y(v)} r={last ? 6 : 4.5} fill={last ? 'var(--brand)' : clr} stroke="var(--surface)" strokeWidth={2} />
                     <text
                       x={X(i)}
                       y={CH - 8}
                       textAnchor="middle"
                       fontSize={10.5}
                       fontWeight={700}
-                      fill={last ? '#ea5443' : '#B0A79B'}
+                      fill={last ? 'var(--brand)' : 'var(--ink-3)'}
                     >
                       {ACC_LABELS[i]}
                     </text>
@@ -716,7 +716,7 @@ export default function MyRecords() {
             {acc.map((v, i) => (
               <div key={i} className="mr-sess">
                 <div className="mr-sesslabel">{ACC_LABELS[i]}</div>
-                <div className="mr-sessval" style={{ color: i === lastI ? '#ea5443' : clr }}>
+                <div className="mr-sessval" style={{ color: i === lastI ? 'var(--brand)' : clr }}>
                   {v}%
                 </div>
               </div>
