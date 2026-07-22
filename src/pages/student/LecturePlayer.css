@@ -298,6 +298,14 @@
   padding: 18px;
   overflow-y: auto;
 }
+/* 작은(창모드) 플레이어에서 짧은 16:9 셸을 게이트가 넘쳐 정답·제출 버튼이 스크롤 아래로
+   밀리던 문제(2026-07-22) — 전체화면이 아닐 땐 게이트를 뷰포트 전체 모달로 띄워 스크롤
+   없이 문제·보기·제출이 한눈에 들어오게 한다. 전체화면일 땐 셸이 곧 화면(충분히 큼)이라
+   그대로 셸 안(absolute)에 채운다. */
+.lp-shell:not(:fullscreen) .lp-gate {
+  position: fixed;
+  z-index: 60;
+}
 .lp-gatecard {
   width: min(560px, 100%);
   background: var(--surface);
