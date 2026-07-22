@@ -817,12 +817,12 @@ function LectureFormModal({
      판독 실패 시 입력란은 그대로 열어둬 수동 입력으로 진행할 수 있게 한다
      (ffprobe 등 서버 의존성 없이 처리 — 서버는 양수 검증만). */
   const pickFile = (f: File | null) => {
-    // 서버로 보내기 전에 여기서 먼저 거른다 — 500MB 초과·영상 아님을 즉시 명확히 알려,
-    // 업로드 도중 413/400으로 애매하게 실패하는 걸 막는다(MAX_UPLOAD_BYTES=500_000_000과 맞춤).
+    // 서버로 보내기 전에 여기서 먼저 거른다 — 5GB 초과·영상 아님을 즉시 명확히 알려,
+    // 업로드 도중 413/400으로 애매하게 실패하는 걸 막는다(백엔드 MAX_UPLOAD_BYTES=5GB와 맞춤).
     if (f) {
-      const MAX_UPLOAD_BYTES = 500_000_000; // 백엔드 한도와 동일
+      const MAX_UPLOAD_BYTES = 5 * 1024 * 1024 * 1024; // 백엔드 한도와 동일(5GB)
       if (f.size > MAX_UPLOAD_BYTES) {
-        setErr(`영상이 너무 커요(${humanSize(f.size)}) — 최대 500MB까지 올릴 수 있어요. 더 짧게 자르거나 화질(해상도·비트레이트)을 낮춰 다시 올려주세요.`);
+        setErr(`영상이 너무 커요(${humanSize(f.size)}) — 최대 5GB까지 올릴 수 있어요. 더 짧게 자르거나 화질(해상도·비트레이트)을 낮춰 다시 올려주세요.`);
         return;
       }
       const okExt = /\.(mp4|webm)$/i.test(f.name);
@@ -928,7 +928,7 @@ function LectureFormModal({
         // 응답 없이 끊김 — 업로드 중이었다면 대개 용량 초과나 네트워크 문제
         msg =
           progress != null
-            ? '업로드가 중간에 끊겼어요 — 영상이 너무 크거나(최대 500MB) 네트워크가 불안정할 수 있어요. 파일 크기와 연결을 확인하고 다시 시도하세요.'
+            ? '업로드가 중간에 끊겼어요 — 영상이 너무 크거나(최대 5GB) 네트워크가 불안정할 수 있어요. 파일 크기와 연결을 확인하고 다시 시도하세요.'
             : '서버에 연결하지 못했어요 — 네트워크를 확인하고 다시 시도하세요.';
       } else if (err?.code === 'ECONNABORTED') {
         msg = '업로드 시간이 초과됐어요 — 파일이 크면 오래 걸릴 수 있어요. 연결이 빠른 곳에서 다시 시도하세요.';
@@ -995,7 +995,7 @@ function LectureFormModal({
                   <>
                     <i className="ph-fill ph-upload-simple lu-drop-ico" />
                     <b>영상을 여기로 끌어다 놓거나 클릭해서 선택하세요</b>
-                    <span className="lu-drop-sub">MP4 · WebM · 최대 500MB</span>
+                    <span className="lu-drop-sub">MP4 · WebM · 최대 5GB</span>
                   </>
                 ) : (
                   <>
