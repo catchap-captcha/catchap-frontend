@@ -8,7 +8,6 @@ import { PATHS } from '../../routes/paths';
 import { ROLE_HOME } from '../../routes/roleRoutes';
 import './LoginPage.css';
 import PasswordInput from '../../components/common/PasswordInput';
-import ThemeToggle from '../../components/common/ThemeToggle';
 
 // 제품 전환: 기관/교사(0717)·학부모(0718) 로그인 탭·가입 흐름은 전부 제거됐다 —
 // 남은 것은 학생(학습자) 단일 흐름. 종전 코드는 git 이력 참고.
@@ -466,7 +465,7 @@ export default function LoginPage() {
 
   return (
     <div className="lg-root">
-      <ThemeToggle className="theme-toggle--fixed" />
+      {/* 테마 토글은 App의 GlobalThemeToggle(로그인 전 전역 고정)이 담당 — 중복 제거 */}
       {/* LEFT BRAND PANEL */}
       <div className="lg-left">
         <div className="lg-left-deco">
