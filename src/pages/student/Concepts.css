@@ -832,3 +832,7 @@ animation: cpFloat 4.5s ease-in-out infinite;
 [data-theme='dark'] .cp-cardband { background: var(--surface-2) !important; }
 [data-theme='dark'] .cp-cardchip { background: var(--surface-2) !important; }
 [data-theme='dark'] .cp-secicon { background: var(--surface-2) !important; }
+
+/* 다크모드 — 스티키 탭 바 배경이 라이트 크림(rgba 255,248,240)이라 다크에서 밝은 바로 보인다.
+   라이트에선 페이지 배경과 같아 안 보였음. 다크에선 페이지 배경(var(--bg))에 맞춘다. */
+[data-theme='dark'] .cp-tabsrow { background: var(--bg); }
