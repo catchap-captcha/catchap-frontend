@@ -48,7 +48,7 @@
   font-size: 13px;
   min-width: 0;
 }
-.lp-crumb-sep { font-size: 10px; color: #cfc5b6; }
+.lp-crumb-sep { font-size: 10px; color: var(--ink-3); }
 .lp-crumb-link { color: var(--ink-2); text-decoration: none; }
 .lp-crumb-link:hover { color: var(--brand); }
 .lp-crumb-cur {
@@ -552,7 +552,7 @@
   font-family: inherit;
 }
 .lp-tocitem:last-child { border-bottom: none; }
-.lp-tocitem:hover { background: #fbf7f1; }
+.lp-tocitem:hover { background: var(--surface-2); }
 .lp-toc-cur { background: color-mix(in srgb, var(--lp-c, var(--brand)) 9%, var(--surface)); }
 .lp-toc-cur:hover { background: color-mix(in srgb, var(--lp-c, var(--brand)) 12%, var(--surface)); }
 .lp-tocnum {

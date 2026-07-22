@@ -820,3 +820,8 @@ animation: cpFloat 4.5s ease-in-out infinite;
   .cp-sheetbody { padding: 22px 20px 24px; }
   .cp-overlay { padding: 14px; }
 }
+
+/* 다크모드 — cp-root의 밝은 크림 그라데이션 배경을 걷어내 다크에서 튀지 않게(라이트는 장식 유지). */
+[data-theme='dark'] .cp-root {
+  background: var(--bg);
+}

@@ -81,14 +81,14 @@ function ExamCard({
     >
       <span
         className="ll-examicon"
-        style={{ background: passed ? '#dff6ee' : locked ? '#f4efe6' : soft, color: passed ? '#17b08c' : locked ? '#a89d8e' : color }}
+        style={{ background: passed ? 'var(--ok-soft)' : locked ? 'var(--surface-2)' : soft, color: passed ? 'var(--ok)' : locked ? 'var(--ink-3)' : color }}
       >
         <i className={passed ? (perfect ? 'ph-fill ph-crown' : 'ph-fill ph-seal-check') : locked ? 'ph-fill ph-lock-simple' : 'ph-fill ph-exam'} />
       </span>
       <span className="ll-exambody">
         <b className="ll-examtitle">
           수료 시험
-          {passed && <span className="ll-exambadge" style={{ background: perfect ? '#fff3d6' : '#dff6ee', color: perfect ? '#e08a00' : '#17b08c' }}>
+          {passed && <span className="ll-exambadge" style={{ background: perfect ? 'var(--warn-soft)' : 'var(--ok-soft)', color: perfect ? 'var(--warn-ink)' : 'var(--ok)' }}>
             {perfect ? '완벽 통과' : '수료'}
           </span>}
         </b>
@@ -197,7 +197,7 @@ export default function LectureList() {
           ) : (
             <span
               className="cp-cardbadge"
-              style={{ background: '#fff', color: s.color, boxShadow: `0 6px 12px -6px ${s.color}` }}
+              style={{ background: 'var(--surface)', color: s.color, boxShadow: `0 6px 12px -6px ${s.color}` }}
             >
               새 강의
             </span>
