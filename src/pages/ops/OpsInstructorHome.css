@@ -247,3 +247,22 @@
   background: var(--brand-soft); color: var(--brand-ink); font-weight: 700; font-size: 11.5px;
   padding: 5px 10px; border-radius: 7px; white-space: nowrap;
 }
+
+/* 표본 검수 — 검수 대기 문항 무작위 표본 (문제은행 2단계) */
+.ih-sample-list { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.ih-sample-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface);
+}
+.ih-sample-main { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.ih-sample-prompt {
+  font-weight: 700; font-size: 13.5px; color: var(--ink);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.ih-sample-lec { font-size: 11.5px; font-weight: 600; color: var(--ink-3); }
+.ih-verdict {
+  flex-shrink: 0; font-weight: 700; font-size: 11px; padding: 3px 9px; border-radius: 999px; white-space: nowrap;
+}
+.ih-verdict--captcha { background: var(--ok-soft); color: var(--ok-ink); }
+.ih-verdict--bank { background: var(--surface-2); color: var(--ink-2); }
+.ih-verdict--discard { background: var(--danger-soft); color: var(--danger-ink); }

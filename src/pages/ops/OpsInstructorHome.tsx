@@ -120,6 +120,41 @@ export default function OpsInstructorHome() {
                 </Link>
               </section>
 
+              {/* 표본 검수 — 검수 대기 문항 무작위 표본으로 생성 품질을 빠르게 점검(문제은행 2단계) */}
+              {data.review_sample.length > 0 && (
+                <section className="ih-card ih-card--wide">
+                  <div className="ih-card-head">
+                    <i className="ph-bold ph-list-magnifying-glass" />
+                    <h2 className="ih-card-title">표본 검수</h2>
+                  </div>
+                  <p className="ih-card-sub">
+                    검수 대기 문항 중 무작위 표본이에요 — 강의마다 안 들어가도 생성 품질을 빠르게 확인하세요.
+                  </p>
+                  <ul className="ih-sample-list">
+                    {data.review_sample.map((q) => (
+                      <li key={q.question_id} className="ih-sample-row">
+                        <div className="ih-sample-main">
+                          <span className="ih-sample-prompt">{q.prompt}</span>
+                          <span className="ih-sample-lec">{q.lecture_title}</span>
+                        </div>
+                        {q.suggested_placement && (
+                          <span className={`ih-verdict ih-verdict--${q.suggested_placement}`}>
+                            {q.suggested_placement === 'captcha'
+                              ? '확인 문항 적합'
+                              : q.suggested_placement === 'bank'
+                                ? '은행 적합'
+                                : '불량 의심'}
+                          </span>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                  <Link className="ih-cta" to={PATHS.OPS_LECTURES}>
+                    강의 관리에서 검수 <i className="ph-bold ph-arrow-right" />
+                  </Link>
+                </section>
+              )}
+
               {/* 이해도 — 강의별 확인문항 통과율(각 강의마다). 강의마다 문항이 다르므로 강의 단위. */}
               <section className="ih-card">
                 <div className="ih-card-head">

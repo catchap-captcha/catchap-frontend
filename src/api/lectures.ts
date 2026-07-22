@@ -228,6 +228,15 @@ export interface InstructorDashboard {
   draft_lecture_questions: number;
   draft_exam_questions: number;
   draft_by_lecture: { lecture_id: string; title: string; draft_count: number }[];
+  // 표본 검수 — 검수 대기 문항 무작위 표본(생성 품질 점검용)
+  review_sample: {
+    question_id: string;
+    lecture_id: string;
+    lecture_title: string;
+    prompt: string;
+    suggested_placement: 'bank' | 'captcha' | 'discard' | null;
+    solver_passed: boolean | null;
+  }[];
   lectures_without_checkpoint: number; // 활성 확인문항 0개 = 시청 검증 없는 강의
   active_learners: number; // 내 강의를 학습한 distinct 학생
   completed_watches: number; // 강의 완주 건수
