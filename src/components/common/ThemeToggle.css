@@ -25,8 +25,12 @@
 /* 셸(상단바/사이드바)이 없는 화면(로그인·공개 페이지)용 — 우상단 고정 */
 .theme-toggle--fixed {
   position: fixed;
-  top: 18px;
+  top: 16px;
   right: 18px;
-  z-index: 50;
+  /* 공개 페이지의 상단 네비 바보다 위에 떠야 가려지지 않는다(로그인 버튼보다 더 우측이라
+     겹치지 않음). 로그인 전 모든 화면에서 항상 보이게 z-index를 충분히 높인다. */
+  z-index: 300;
   box-shadow: var(--shadow-sm);
+  background: var(--surface);
+  border: 1px solid var(--line);
 }
