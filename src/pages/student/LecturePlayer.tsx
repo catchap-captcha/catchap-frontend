@@ -88,6 +88,8 @@ export default function LecturePlayer() {
   const [toast, setToast] = useState<string | null>(null);
   const [hbWarn, setHbWarn] = useState(false); // 하트비트 저장 실패(네트워크) — 정직한 경고 배너
   const [tab, setTab] = useState<'list' | 'materials' | 'notes' | 'reviews'>('list');
+  // 유휴 자동 숨김 — 재생 중 마우스가 멈추면 컨트롤 바(+상단 태그)를 감춘다(표준 플레이어 동작).
+  const [idle, setIdle] = useState(false);
 
   /* 캡차 게이트 */
   const [gate, setGate] = useState<{ cp: number } | null>(null);
@@ -96,6 +98,7 @@ export default function LecturePlayer() {
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const shellRef = useRef<HTMLDivElement | null>(null); // 전체화면 대상(플레이어 카드)
+  const idleTimerRef = useRef<number | null>(null); // 유휴 컨트롤 숨김 타이머
   const gateHostRef = useRef<HTMLDivElement | null>(null);
   const sessionTokenRef = useRef<string | null>(null);
   const hadOwnSessionRef = useRef(false); // 이 탭에서 발급받은 세션이 있었나(강의 전환 시 자동 이어받기 판단)
@@ -442,6 +445,8 @@ export default function LecturePlayer() {
   };
   const onEnded = () => {
     setPlaying(false);
+    setIdle(false); // 종료 시 컨트롤 복원('pause' 이벤트가 항상 오진 않음)
+    if (idleTimerRef.current) window.clearTimeout(idleTimerRef.current);
     void sendBeat(); // 마지막 위치 확정
   };
   const onVideoError = () => {
@@ -457,6 +462,23 @@ export default function LecturePlayer() {
     if (v.paused) v.play().catch(() => setOverlay({ kind: 'videoError' }));
     else v.pause();
   };
+
+  /** 마우스 활동 시 컨트롤을 보이고, 재생 중이면 2.6초 뒤 다시 숨긴다.
+   *  만료 시점에 실제 재생 중인지(video.paused)로 판단해 일시정지·게이트 중엔 계속 보이게 한다. */
+  const bumpActivity = () => {
+    setIdle(false);
+    if (idleTimerRef.current) window.clearTimeout(idleTimerRef.current);
+    idleTimerRef.current = window.setTimeout(() => {
+      if (videoRef.current && !videoRef.current.paused) setIdle(true);
+    }, 2600);
+  };
+  // 언마운트 시 유휴 타이머 정리
+  useEffect(
+    () => () => {
+      if (idleTimerRef.current) window.clearTimeout(idleTimerRef.current);
+    },
+    [],
+  );
 
   const setRate = (r: number) => {
     const v = videoRef.current;
@@ -577,9 +599,14 @@ export default function LecturePlayer() {
         <div className="lp-left">
           {/* ===== 플레이어 ===== */}
           <div
-            className="lp-shell"
+            className={`lp-shell${idle ? ' lp-shell--idle' : ''}`}
             ref={shellRef}
             style={{ '--lp-c': theme.color } as CSSProperties}
+            onMouseMove={bumpActivity}
+            onMouseLeave={() => {
+              // 재생 중 커서가 플레이어를 벗어나면 즉시 숨긴다
+              if (videoRef.current && !videoRef.current.paused) setIdle(true);
+            }}
           >
             <span className="lp-shell-tag">
               <i className="ph-fill ph-video-camera" />
@@ -606,8 +633,14 @@ export default function LecturePlayer() {
                     return;
                   }
                   setPlaying(true);
+                  bumpActivity(); // 재생 시작 시 유휴 숨김 타이머 가동
                 }}
-                onPause={() => setPlaying(false)}
+                onPause={() => {
+                  // 일시정지·정지면 컨트롤을 항상 보이게(유휴 해제 + 타이머 취소)
+                  setPlaying(false);
+                  setIdle(false);
+                  if (idleTimerRef.current) window.clearTimeout(idleTimerRef.current);
+                }}
                 disablePictureInPicture
                 onEnded={onEnded}
                 onError={onVideoError}

@@ -167,6 +167,22 @@
   padding: 20px 16px 14px;
   background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.55));
 }
+
+/* 유휴 자동 숨김 — 재생 중 마우스가 멈추면(.lp-shell--idle를 JS가 부여) 컨트롤 바와 상단
+   태그를 페이드 아웃하고 커서를 감춘다. 마우스가 움직이면 즉시 되돌아온다. */
+.lp-controls,
+.lp-shell-tag {
+  transition: opacity 0.25s ease;
+}
+.lp-shell--idle .lp-controls,
+.lp-shell--idle .lp-shell-tag {
+  opacity: 0;
+  pointer-events: none;
+}
+.lp-shell--idle,
+.lp-shell--idle .lp-video {
+  cursor: none;
+}
 .lp-scrub {
   -webkit-appearance: none;
   appearance: none;
