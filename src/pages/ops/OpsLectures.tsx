@@ -530,6 +530,8 @@ export default function OpsLectures() {
                           <i className="ph-bold ph-dots-six-vertical" />
                         </span>
                       )}
+                      {/* 순서 번호 — 목록이 목차순이라 idx+1이 곧 '몇 강'. 강사가 순서를 한눈에 본다 */}
+                      <span className="op-lect-orderno" title="강의 순서">{idx + 1}강</span>
                       <b>{lec.title}</b>
                       <small className="op-aimodel-desc">
                         {lec.video_ext} · {fmtBytes(lec.video_bytes)}
@@ -794,7 +796,9 @@ function LectureFormModal({
     try {
       const created = await lectureApi.opsCourseCreate({ title }); // 코스 중심: 과목 안 보냄(서버 기본 '일반')
       onCoursesChanged(); // 부모 코스 목록 갱신 → select에 새 코스가 나타난다
-      setForm((f) => ({ ...f, course_id: created.id })); // 새 코스로 자동 배정
+      // ★새 코스로 배정하면서 강의 과목도 그 코스의 과목(기본 '일반')으로 맞춘다 — 안 맞추면
+      // 서버가 '코스 과목(일반) ≠ 강의 과목' 400으로 업로드를 막아, 코스 추가가 조용히 실패했다.
+      setForm((f) => ({ ...f, course_id: created.id, subject: created.subject }));
       setNewCourse(null);
     } catch (e) {
       setCourseErr(errorDetail(e, '코스를 만들지 못했어요.'));
@@ -961,10 +965,14 @@ function LectureFormModal({
           </button>
         </div>
         <div className="op-form-grid">
+          {!editing && (
+            <div className="op-form-section op-form-span2">
+              <i className="ph-bold ph-number-circle-one" /> 강의 영상
+            </div>
+          )}
           {/* ① 영상 — 먼저 올려야 길이가 자동으로 잡힌다 */}
           {!editing && (
             <div className="ox-field op-form-span2">
-              강의 영상
               <div
                 className={`lu-drop${dragOver ? ' lu-drop--over' : ''}${file ? ' lu-drop--has' : ''}`}
                 onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
@@ -1019,11 +1027,17 @@ function LectureFormModal({
             </label>
           )}
 
+          <div className="op-form-section op-form-span2">
+            <i className="ph-bold ph-number-circle-two" /> 강의 정보
+          </div>
           {/* ② 기본 정보 */}
           <label className="ox-field op-form-span2">
             강의 제목
-            <input value={form.title} onChange={(e) => set('title')(e.target.value)} placeholder="예: 깊이 있게 읽어요(1)" />
+            <input value={form.title} onChange={(e) => set('title')(e.target.value)} placeholder="예: 1강 · 오리엔테이션" />
           </label>
+          <div className="op-form-section op-form-span2">
+            <i className="ph-bold ph-number-circle-three" /> 코스와 순서
+          </div>
           {/* Phase 1(코스 중심): 과목 선택 제거 — 코스를 고르면 그 코스의 과목이 자동 적용된다.
               미분류면 기본 과목으로 둔다(DB 컬럼·은행 정합 유지). 코스가 최상위 단위. */}
           <label className="ox-field op-form-span2">
@@ -1096,7 +1110,7 @@ function LectureFormModal({
           <label className="ox-field op-form-span2">
             강의 소개
             <span className="lu-help">학생 화면에 보이는 한 줄 소개예요</span>
-            <input value={form.description} onChange={(e) => set('description')(e.target.value)} placeholder="예: 글의 짜임과 중심 문장을 배워요" />
+            <input value={form.description} onChange={(e) => set('description')(e.target.value)} placeholder="예: 이 강의에서 배우는 핵심 내용을 한 줄로" />
           </label>
 
           {/* ③ 시청 확인 안내 — 확인이 뜨는 시점은 간격 설정이 아니라 문항 등록에서 지정한다 */}
