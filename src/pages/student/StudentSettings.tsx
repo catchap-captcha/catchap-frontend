@@ -1,10 +1,12 @@
-import { useState, type CSSProperties } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
 import { useAuth } from '../../hooks/useAuth';
 import { useStudentSettings } from '../../stores/studentSettingsStore';
 import { useTheme } from '../../hooks/useTheme';
 import { playSfx } from '../../utils/feedback';
+import { profileColor } from '../../utils/profileColor';
+import { lectureApi } from '../../api/lectures';
 import './StudentSettings.css';
 import { StudentNav } from '../../layouts/StudentLayout';
 
@@ -77,10 +79,18 @@ export default function StudentSettings() {
   const { theme, setTheme } = useTheme();
   const [logoutOpen, setLogoutOpen] = useState(false);
 
-  const name = (me?.name ?? '하은').trim() || '하은';
-  const school = me?.organization_name ?? '햇살초등학교';
-  const level = me?.student?.level ?? 7;
-  const age = me?.student?.age ?? 7; // /auth/me student.age 실데이터
+  const name = (me?.name ?? '학습자').trim() || '학습자';
+  const age = me?.student?.age ?? null; // /auth/me student.age 실데이터
+  // 가입 이메일 — 이메일 가입 학생은 student_login_id가 이메일이다(학교 경유는 로그인 아이디).
+  const email = me?.student?.student_login_id ?? me?.email ?? '';
+  // 수강 코스 수 — /courses의 enrolled 플래그로 센다(별도 엔드포인트 없이 재사용).
+  const [courseCount, setCourseCount] = useState<number | null>(null);
+  useEffect(() => {
+    lectureApi
+      .courses()
+      .then((cs) => setCourseCount(cs.filter((c) => c.enrolled).length))
+      .catch(() => setCourseCount(null));
+  }, []);
 
   const persist = (next: StudentSettingsData) => update(next);
 
@@ -129,14 +139,23 @@ export default function StudentSettings() {
       <div className="st-main">
         {/* PROFILE */}
         <div className="st-profile">
-          <div className="st-avatar">{name.charAt(0)}</div>
+          <div className="st-avatar" style={{ background: profileColor(me?.id) }}>
+            {name.charAt(0)}
+          </div>
           <div className="st-profileinfo">
-            <div className="st-profilename">{name} · {age}세</div>
+            <div className="st-profilename">
+              {name}
+              {age != null ? ` · ${age}세` : ''}
+            </div>
             <div className="st-profilesub">
-              {school} · 학습 레벨 {level}
+              {email}
+              {courseCount != null ? ` · 수강 코스 ${courseCount}개` : ''}
             </div>
           </div>
-          {/* 아바타 꾸미기(상점) 은퇴(0718) — 버튼 제거 */}
+          {/* 이름·나이 수정 — 프로필 수정 페이지로 이동 */}
+          <button className="st-editbtn" onClick={() => navigate(PATHS.STUDENT_PROFILE_EDIT)}>
+            <i className="ph-bold ph-pencil-simple" /> 수정
+          </button>
         </div>
 
         {/* SECTION: 화면 & 눈 건강 */}

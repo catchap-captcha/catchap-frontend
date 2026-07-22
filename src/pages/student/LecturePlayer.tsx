@@ -564,13 +564,16 @@ export default function LecturePlayer() {
           <i className="ph-fill ph-lock-simple" />
           <p>이 강의는 <b>수강신청</b>을 해야 볼 수 있어요.</p>
           <p className="lp-enroll-sub">수강신청하면 이 코스의 모든 강의를 바로 볼 수 있어요(무료·언제든 취소 가능).</p>
-          <button className="lp-enroll-btn" onClick={enrollAndEnter} disabled={enrolling}>
-            <i className="ph-bold ph-plus-circle" />
-            {enrolling ? '수강신청 중…' : '수강신청하고 바로 보기'}
-          </button>
-          <Link to={PATHS.STUDENT_LECTURES} className="lp-errback">
-            강의 목록으로
-          </Link>
+          {/* 세로 배치 — '수강신청하고 바로 보기' 아래에 '강의 목록으로' */}
+          <div className="lp-enroll-actions">
+            <button className="lp-enroll-btn" onClick={enrollAndEnter} disabled={enrolling}>
+              <i className="ph-bold ph-plus-circle" />
+              {enrolling ? '수강신청 중…' : '수강신청하고 바로 보기'}
+            </button>
+            <Link to={PATHS.STUDENT_LECTURES} className="lp-errback">
+              강의 목록으로
+            </Link>
+          </div>
         </div>
       </div>
     );

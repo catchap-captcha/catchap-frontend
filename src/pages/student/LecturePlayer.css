@@ -668,3 +668,10 @@
 }
 .lp-enroll-btn:hover { background: var(--brand-strong); }
 .lp-enroll-btn:disabled { opacity: 0.6; cursor: default; }
+/* 게이트 버튼 세로 배치 — '수강신청하고 바로 보기' 아래 '강의 목록으로' */
+.lp-enroll-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}

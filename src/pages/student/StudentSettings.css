@@ -51,13 +51,39 @@
   align-items: center;
   justify-content: center;
   font-family: var(--font-display); font-weight: 800;
-  color: var(--surface);
+  color: #fff; /* 프로필 색(단색 팔레트) 위 흰색 이니셜 — 라·다크 공통 대비 */
   font-size: 22px;
 }
 
 .st-profileinfo {
   flex: 1;
+  min-width: 0;
 }
+.st-profileinfo .st-profilesub {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 프로필 수정 버튼 — 이름·나이 수정 페이지로 이동 */
+.st-editbtn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink-2);
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 8px 14px;
+  border-radius: 9px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+.st-editbtn:hover { border-color: var(--ink-3); color: var(--ink); }
+.st-editbtn i { font-size: 15px; }
 
 .st-profilename {
   font-family: var(--font-display); font-weight: 800;

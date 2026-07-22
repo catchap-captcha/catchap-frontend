@@ -35,6 +35,7 @@ export const PATHS = {
   STUDENT_SEARCH: '/student/search',
   STUDENT_NOTIFICATIONS: '/student/notifications',
   STUDENT_SETTINGS: '/student/settings',
+  STUDENT_PROFILE_EDIT: '/student/profile/edit', // 프로필(이름·나이) 수정
 
   // 학부모 콘솔 — 제품 전환(2026-07-18)으로 은퇴. 미성년 동의는 학생 가입 게이트가 담당.
 

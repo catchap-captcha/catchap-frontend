@@ -1,10 +1,11 @@
-import { useMemo, useState, type CSSProperties, type ReactNode } from 'react';
+import { useState, type CSSProperties, type ReactNode } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { PATHS } from '../routes/paths';
 import { useAuth } from '../hooks/useAuth';
 import { useUnreadNotifications } from '../hooks/useUnreadNotifications';
 import ScreenTimeReminder from '../components/motion/ScreenTimeReminder';
 import ThemeToggle from '../components/common/ThemeToggle';
+import { profileColor } from '../utils/profileColor';
 import './StudentLayout.css';
 
 /**
@@ -13,35 +14,6 @@ import './StudentLayout.css';
  * 걷어내고, 시청→연습→복습→수료 흐름에 맞춰 홈·강의·문제은행·나의 기록으로 구성한다.
  */
 export type StudentNavKey = 'home' | 'lectures' | 'all' | 'records';
-
-interface AvatarState {
-  bgCss: string;
-  hasHat: boolean;
-  hatIcon: string;
-  hatColor: string;
-}
-
-/** 아바타 캐시 키 — 계정별로 분리. 전역 키('catchap_avatar')는 같은 브라우저에서
- * 다른 학생이 로그인하면 이전 학생이 꾸민 아바타가 보이는 교차 노출이 있었다. */
-export function avatarCacheKey(userId: string | undefined | null): string {
-  return userId ? `catchap_avatar:${userId}` : 'catchap_avatar';
-}
-
-function readAvatar(userId: string | undefined | null): AvatarState {
-  let a: Record<string, unknown> = {};
-  try {
-    // 내 계정 키만 읽는다 — 구 전역 키는 누구 것인지 알 수 없어 폴백하지 않는다(기본값 사용).
-    a = JSON.parse(localStorage.getItem(avatarCacheKey(userId)) || '{}');
-  } catch {
-    /* 파싱 실패 시 기본값 */
-  }
-  return {
-    bgCss: typeof a.bgCss === 'string' && a.bgCss ? a.bgCss : 'linear-gradient(135deg,#FFC24B,#FF8A5B)',
-    hasHat: !!a.hasHat,
-    hatIcon: typeof a.hatIcon === 'string' ? a.hatIcon : '',
-    hatColor: typeof a.hatColor === 'string' && a.hatColor ? a.hatColor : '#ea5443',
-  };
-}
 
 // 성인화(2026-07-20): '개념 설명'(초등 커리큘럼) 은퇴, '강의' 추가
 const ROUTE_ACTIVE: Record<string, StudentNavKey> = {
@@ -63,8 +35,6 @@ export function StudentNav({
   const { me, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  // me 로딩 후 내 계정 키로 다시 읽는다 — 첫 렌더(me 없음)는 기본 아바타.
-  const avatar = useMemo<AvatarState>(() => readAvatar(me?.id), [me?.id]);
   const [menuOpen, setMenuOpen] = useState(false); // 모바일 햄버거 메뉴 열림 상태
   const unread = useUnreadNotifications(); // 서버 read_at 기준 — 재로그인해도 유지
 
@@ -142,7 +112,7 @@ export function StudentNav({
             onMouseLeave={() => setProfileOpen(false)}
           >
             <Link to={PATHS.STUDENT_SETTINGS} title="설정" className="sl-profile">
-              <div className="sl-avatar" style={{ background: avatar.bgCss }}>
+              <div className="sl-avatar" style={{ background: profileColor(me?.id) }}>
                 <span className="sl-avatarinitial">{name.charAt(0)}</span>
               </div>
               <span className="sl-profilename">{name}</span>
