@@ -29,7 +29,8 @@ const SUBJECT_COLOR: Record<string, string> = {
 const ORDER = ['국어', '영어', '수학', '과학', '사회', '생활'];
 
 /** 전체학습(숙련 축) 과목×챕터별 정답률 차트 — 학생/학부모 공용.
- * 미학습=빈 막대, 표본<5=흐림, 잠금=빗금, 5단계 진행=막대 아래 도트. 챕터 많으면 가로 스크롤. */
+ * 미학습=빈 막대, 표본<5=흐림, 5단계 진행=막대 아래 도트. 챕터 많으면 가로 스크롤.
+ * (주간 달력 잠금 폐지 2026-07-22 — 전 챕터 상시 개방이라 '잠금' 표시는 제거) */
 export default function ChapterAccuracyChart({ subjects }: { subjects: SubjectStat[] }) {
   const ordered = useMemo(
     () => [...(subjects || [])].sort((a, b) => ORDER.indexOf(a.subject) - ORDER.indexOf(b.subject)),
@@ -67,7 +68,7 @@ export default function ChapterAccuracyChart({ subjects }: { subjects: SubjectSt
         </div>
         <div className="cac-badges">
           <span className="cac-badge cac-badge-soft">
-            열린 {cur.unlocked_chapters} / 전체 {cur.max_chapters} 챕터
+            전체 {cur.max_chapters}개 챕터
           </span>
         </div>
       </div>
@@ -77,15 +78,13 @@ export default function ChapterAccuracyChart({ subjects }: { subjects: SubjectSt
           <div className="cac-chart" style={{ '--cac-color': color } as React.CSSProperties}>
             {cur.chapters.map((c) => {
               const h = c.accuracy != null ? Math.max(4, c.accuracy) : 0;
-              const cls = !c.unlocked
-                ? 'cac-bar cac-bar-lock'
-                : c.total === 0
+              const cls =
+                c.total === 0
                   ? 'cac-bar cac-bar-empty'
                   : c.low_sample
                     ? 'cac-bar cac-bar-low'
                     : 'cac-bar';
-              const label =
-                !c.unlocked ? '🔒' : c.total === 0 ? '·' : c.low_sample ? `${c.total}개` : `${c.accuracy}`;
+              const label = c.total === 0 ? '·' : c.low_sample ? `${c.total}개` : `${c.accuracy}`;
               return (
                 <div key={c.no} className="cac-col" title={`${c.no}챕터 · ${c.title}${c.total ? ` · ${c.total}문제` : ' · 아직'}`}>
                   <span className="cac-val">{label}</span>
@@ -113,7 +112,6 @@ export default function ChapterAccuracyChart({ subjects }: { subjects: SubjectSt
       <div className="cac-legend">
         <span><i className="cac-lg" style={{ background: color }} /> 정답률</span>
         <span><i className="cac-lg cac-lg-low" /> 표본 적음</span>
-        <span><i className="cac-lg cac-lg-lock" /> 잠금</span>
         <span><i className="cac-lg cac-lg-empty" /> 아직</span>
       </div>
     </div>
