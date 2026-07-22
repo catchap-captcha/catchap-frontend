@@ -72,6 +72,78 @@
   margin-top: 2px;
 }
 
+/* 프로필 수정 버튼 — 우측 정렬 고스트 버튼 */
+.st-profileedit {
+  margin-left: auto;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink);
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 13.5px;
+  padding: 9px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.st-profileedit:hover {
+  border-color: var(--brand);
+  color: var(--brand-ink);
+}
+
+.st-profileedit i {
+  font-size: 15px;
+}
+
+/* 프로필 수정 모달 — 좌측 정렬 폼(공용 st-popup 위에) */
+.st-editpopup {
+  text-align: left;
+}
+
+.st-editpopup .st-popicon,
+.st-editpopup .st-poptitle,
+.st-editpopup .st-poptext {
+  text-align: center;
+}
+
+.st-editlabel {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 14px 0 7px;
+}
+
+.st-editinput {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 14.5px;
+  background: var(--bg);
+  color: var(--ink);
+  outline: none;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.st-editinput:focus {
+  border-color: var(--brand);
+  background: var(--surface);
+}
+
+.st-editerr {
+  margin: 12px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--danger);
+}
+
 /* SECTION CARD — handoff: 흰 카드 1px 테두리·14px radius, 그림자 없음 */
 .st-card {
   background: var(--surface);

@@ -1,4 +1,4 @@
-import { useMemo, useState, type CSSProperties, type ReactNode } from 'react';
+import { useState, type CSSProperties, type ReactNode } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { PATHS } from '../routes/paths';
 import { useAuth } from '../hooks/useAuth';
@@ -14,33 +14,28 @@ import './StudentLayout.css';
  */
 export type StudentNavKey = 'home' | 'lectures' | 'all' | 'records';
 
-interface AvatarState {
-  bgCss: string;
-  hasHat: boolean;
-  hatIcon: string;
-  hatColor: string;
-}
+/** 계정별 고정 단색 아바타 배경 — 같은 사용자는 어디서나(상단바·설정) 같은 색.
+ * 가입자마다 다르되(id/이름 해시) 차분한 단색 팔레트에서 하나를 고른다.
+ * 가운데엔 이름 첫 글자(성)를 흰색으로 얹는다. */
+const AVATAR_PALETTE = [
+  '#64748b', // slate(회색)
+  '#0ea5e9', // sky(하늘색)
+  '#14b8a6', // teal
+  '#10b981', // green
+  '#8b5cf6', // violet
+  '#ec4899', // pink
+  '#f59e0b', // amber
+  '#ef4444', // red
+  '#6366f1', // indigo
+  '#0d9488', // deep teal
+];
 
-/** 아바타 캐시 키 — 계정별로 분리. 전역 키('catchap_avatar')는 같은 브라우저에서
- * 다른 학생이 로그인하면 이전 학생이 꾸민 아바타가 보이는 교차 노출이 있었다. */
-export function avatarCacheKey(userId: string | undefined | null): string {
-  return userId ? `catchap_avatar:${userId}` : 'catchap_avatar';
-}
-
-function readAvatar(userId: string | undefined | null): AvatarState {
-  let a: Record<string, unknown> = {};
-  try {
-    // 내 계정 키만 읽는다 — 구 전역 키는 누구 것인지 알 수 없어 폴백하지 않는다(기본값 사용).
-    a = JSON.parse(localStorage.getItem(avatarCacheKey(userId)) || '{}');
-  } catch {
-    /* 파싱 실패 시 기본값 */
-  }
-  return {
-    bgCss: typeof a.bgCss === 'string' && a.bgCss ? a.bgCss : 'linear-gradient(135deg,#FFC24B,#FF8A5B)',
-    hasHat: !!a.hasHat,
-    hatIcon: typeof a.hatIcon === 'string' ? a.hatIcon : '',
-    hatColor: typeof a.hatColor === 'string' && a.hatColor ? a.hatColor : '#ea5443',
-  };
+export function avatarColor(seed: string | undefined | null): string {
+  const s = (seed ?? '').trim();
+  if (!s) return AVATAR_PALETTE[0];
+  let h = 0;
+  for (let i = 0; i < s.length; i += 1) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+  return AVATAR_PALETTE[h % AVATAR_PALETTE.length];
 }
 
 // 성인화(2026-07-20): '개념 설명'(초등 커리큘럼) 은퇴, '강의' 추가
@@ -63,8 +58,6 @@ export function StudentNav({
   const { me, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  // me 로딩 후 내 계정 키로 다시 읽는다 — 첫 렌더(me 없음)는 기본 아바타.
-  const avatar = useMemo<AvatarState>(() => readAvatar(me?.id), [me?.id]);
   const [menuOpen, setMenuOpen] = useState(false); // 모바일 햄버거 메뉴 열림 상태
   const unread = useUnreadNotifications(); // 서버 read_at 기준 — 재로그인해도 유지
 
@@ -142,7 +135,7 @@ export function StudentNav({
             onMouseLeave={() => setProfileOpen(false)}
           >
             <Link to={PATHS.STUDENT_SETTINGS} title="설정" className="sl-profile">
-              <div className="sl-avatar" style={{ background: avatar.bgCss }}>
+              <div className="sl-avatar" style={{ background: avatarColor(me?.id ?? name) }}>
                 <span className="sl-avatarinitial">{name.charAt(0)}</span>
               </div>
               <span className="sl-profilename">{name}</span>

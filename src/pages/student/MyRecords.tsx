@@ -447,7 +447,7 @@ export default function MyRecords() {
               <i className="ph-fill ph-chart-line-up" />
             </span>
             <div>
-              <h1 className="mr-title">{name}이의 성장 기록</h1>
+              <h1 className="mr-title">{name}님의 학습 기록</h1>
               <p className="mr-subtitle">배운 강의·풀어 온 문제·수료한 코스를 한눈에 볼 수 있어요</p>
             </div>
           </div>

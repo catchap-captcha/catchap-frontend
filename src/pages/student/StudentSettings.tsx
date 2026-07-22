@@ -5,8 +5,9 @@ import { useAuth } from '../../hooks/useAuth';
 import { useStudentSettings } from '../../stores/studentSettingsStore';
 import { useTheme } from '../../hooks/useTheme';
 import { playSfx } from '../../utils/feedback';
+import { studentApi } from '../../api/students';
 import './StudentSettings.css';
-import { StudentNav } from '../../layouts/StudentLayout';
+import { StudentNav, avatarColor } from '../../layouts/StudentLayout';
 
 /**
  * handoff `CatChap 설정.dc.html` 포팅.
@@ -69,7 +70,7 @@ const LINK_ROWS = [
 const FONT_LABELS = ['작게', '보통', '크게'];
 
 export default function StudentSettings() {
-  const { me, logout } = useAuth();
+  const { me, logout, reloadMe } = useAuth();
   const navigate = useNavigate();
   // 전역 설정 스토어 — 변경 즉시 화면 효과 적용(눈보호/다크/모션/색약/글자크기) + 서버 저장
   const { settings, update } = useStudentSettings();
@@ -78,9 +79,46 @@ export default function StudentSettings() {
   const [logoutOpen, setLogoutOpen] = useState(false);
 
   const name = (me?.name ?? '하은').trim() || '하은';
-  const school = me?.organization_name ?? '햇살초등학교';
-  const level = me?.student?.level ?? 7;
   const age = me?.student?.age ?? 7; // /auth/me student.age 실데이터
+
+  // 프로필(이름·나이) 수정 — 수정 버튼 → 모달에서 저장(studentApi.updateProfile) 후 me 갱신
+  const [editOpen, setEditOpen] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [editAge, setEditAge] = useState('');
+  const [editSaving, setEditSaving] = useState(false);
+  const [editErr, setEditErr] = useState('');
+
+  const openEdit = () => {
+    setEditName(me?.name ?? '');
+    setEditAge(String(me?.student?.age ?? ''));
+    setEditErr('');
+    setEditOpen(true);
+  };
+
+  const saveProfile = async () => {
+    const nextName = editName.trim();
+    const nextAge = Number(editAge);
+    if (!nextName) {
+      setEditErr('이름을 입력해 주세요.');
+      return;
+    }
+    if (!Number.isFinite(nextAge) || nextAge < 1 || nextAge > 120) {
+      setEditErr('나이를 올바르게 입력해 주세요.');
+      return;
+    }
+    setEditSaving(true);
+    setEditErr('');
+    try {
+      await studentApi.updateProfile({ name: nextName, age: nextAge });
+      await reloadMe();
+      setEditOpen(false);
+    } catch (e) {
+      const detail = (e as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
+      setEditErr(typeof detail === 'string' && detail ? detail : '저장에 실패했어요. 잠시 후 다시 시도해 주세요.');
+    } finally {
+      setEditSaving(false);
+    }
+  };
 
   const persist = (next: StudentSettingsData) => update(next);
 
@@ -127,16 +165,19 @@ export default function StudentSettings() {
       <StudentNav />
 
       <div className="st-main">
-        {/* PROFILE */}
+        {/* PROFILE — 이름·나이만 노출, 수정 버튼으로 편집 */}
         <div className="st-profile">
-          <div className="st-avatar">{name.charAt(0)}</div>
-          <div className="st-profileinfo">
-            <div className="st-profilename">{name} · {age}세</div>
-            <div className="st-profilesub">
-              {school} · 학습 레벨 {level}
-            </div>
+          <div className="st-avatar" style={{ background: avatarColor(me?.id ?? name) }}>
+            {name.charAt(0)}
           </div>
-          {/* 아바타 꾸미기(상점) 은퇴(0718) — 버튼 제거 */}
+          <div className="st-profileinfo">
+            <div className="st-profilename">{name}</div>
+            <div className="st-profilesub">{age}세</div>
+          </div>
+          <button type="button" className="st-profileedit" onClick={openEdit}>
+            <i className="ph-bold ph-pencil-simple" />
+            수정
+          </button>
         </div>
 
         {/* SECTION: 화면 & 눈 건강 */}
@@ -240,6 +281,51 @@ export default function StudentSettings() {
               <button className="st-confirm" onClick={confirmLogout}>
                 <i className="ph-fill ph-check-circle" />
                 확인
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* PROFILE EDIT POPUP — 이름·나이 수정 */}
+      {editOpen && (
+        <div className="st-overlay" onClick={() => !editSaving && setEditOpen(false)}>
+          <div className="st-popup st-editpopup" onClick={(e) => e.stopPropagation()}>
+            <div className="st-popicon">
+              <i className="ph-fill ph-user-circle" />
+            </div>
+            <h2 className="st-poptitle">프로필 수정</h2>
+            <p className="st-poptext">이름과 나이를 수정할 수 있어요.</p>
+
+            <label className="st-editlabel">이름</label>
+            <input
+              className="st-editinput"
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+              placeholder="이름"
+              maxLength={20}
+            />
+
+            <label className="st-editlabel">나이</label>
+            <input
+              className="st-editinput"
+              type="number"
+              min={1}
+              max={120}
+              value={editAge}
+              onChange={(e) => setEditAge(e.target.value)}
+              placeholder="나이"
+            />
+
+            {editErr && <p className="st-editerr">{editErr}</p>}
+
+            <div className="st-popbtns">
+              <button className="st-cancel" disabled={editSaving} onClick={() => setEditOpen(false)}>
+                취소
+              </button>
+              <button className="st-confirm" disabled={editSaving} onClick={saveProfile}>
+                <i className="ph-fill ph-check-circle" />
+                {editSaving ? '저장 중…' : '저장'}
               </button>
             </div>
           </div>
