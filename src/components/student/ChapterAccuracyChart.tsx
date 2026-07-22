@@ -28,7 +28,7 @@ const SUBJECT_COLOR: Record<string, string> = {
 };
 const ORDER = ['국어', '영어', '수학', '과학', '사회', '생활'];
 
-/** 전체학습(숙련 축) 과목×챕터별 정답률 차트 — 학생/학부모 공용.
+/** 전체학습(숙련 축) 과목×챕터별 정답률 차트 — 학생 기록용(학부모 콘솔은 2026-07-18 은퇴).
  * 미학습=빈 막대, 표본<5=흐림, 5단계 진행=막대 아래 도트. 챕터 많으면 가로 스크롤.
  * (주간 달력 잠금 폐지 2026-07-22 — 전 챕터 상시 개방이라 '잠금' 표시는 제거) */
 export default function ChapterAccuracyChart({ subjects }: { subjects: SubjectStat[] }) {

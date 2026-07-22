@@ -729,7 +729,7 @@ export default function MyRecords() {
         </div>
       </section>
 
-      {/* 두 축 — 습관 추세 + 숙련(주차별 정답률) */}
+      {/* 두 축 — 습관 추세 + 숙련(챕터별 정답률) */}
       {(habit?.days.some((d) => d.accuracy != null) ||
         chapStats.some((s) => s.chapters?.some((c) => c.total > 0))) && (
         <section className="mr-section mr-twoaxis">
@@ -741,7 +741,7 @@ export default function MyRecords() {
           )}
           {chapStats.some((s) => s.chapters?.some((c) => c.total > 0)) && (
             <div className="mr-card">
-              <h3 className="mr-h3">문제은행 · 주차별 정답률</h3>
+              <h3 className="mr-h3">문제은행 · 챕터별 정답률</h3>
               <ChapterAccuracyChart subjects={chapStats} />
             </div>
           )}

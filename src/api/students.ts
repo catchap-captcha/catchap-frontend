@@ -9,7 +9,7 @@ export const studentApi = {
   progress: (subject?: string) =>
     client.get<any>('/students/me/progress', { params: { subject } }).then((r) => r.data),
 
-  /** 전체학습 주간 챕터 — 과목별 챕터/5단계 진행/달력 잠금(월요일 해제). 오늘의퀴즈와 분리된 학습 축 */
+  /** 전체학습 챕터 — 과목별 챕터/5단계 진행. 달력 잠금은 폐지(2026-07-22, 전 챕터 개방). 오늘의퀴즈와 분리된 학습 축 */
   chapters: (subject?: string) =>
     client.get<any>('/students/me/chapters', { params: { subject } }).then((r) => r.data),
   /** 챕터 한 단계(2문항) 발급 — stage 미지정 시 이어하기(다음 미완료 단계) */
