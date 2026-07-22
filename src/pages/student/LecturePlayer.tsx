@@ -66,6 +66,11 @@ export default function LecturePlayer() {
   const [meta, setMeta] = useState<LectureDetail | null>(null);
   const [phase, setPhase] = useState<'loading' | 'ready' | 'error'>('loading');
   const [errMsg, setErrMsg] = useState('');
+  // 수강신청 게이트 — 코스 강의를 미신청 상태로 열면 서버가 403(not_enrolled)을 준다.
+  // 그 코스 id를 담아 '수강신청하고 바로 보기' 화면을 띄운다(에러 대신 행동 유도).
+  const [notEnrolled, setNotEnrolled] = useState<string | null>(null);
+  const [enrolling, setEnrolling] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0); // 수강신청 후 강의 로드를 다시 트리거
   const [overlay, setOverlay] = useState<Overlay | null>(null);
   const [streamSrc, setStreamSrc] = useState<string | null>(null);
 
@@ -142,6 +147,7 @@ export default function LecturePlayer() {
     // 강의 전환 시 상태 리셋
     setMeta(null);
     setPhase('loading');
+    setNotEnrolled(null);
     setOverlay(null);
     setStreamSrc(null);
     setGate(null);
@@ -190,6 +196,14 @@ export default function LecturePlayer() {
         }
       } catch (e) {
         if (!on) return;
+        // 수강신청 게이트 — 미신청(403 not_enrolled)이면 에러 대신 수강신청 유도 화면으로
+        const resp = (e as {
+          response?: { status?: number; data?: { detail?: { reason?: string; course_id?: string } } };
+        })?.response;
+        if (resp?.status === 403 && resp.data?.detail?.reason === 'not_enrolled') {
+          setNotEnrolled(resp.data.detail.course_id ?? '');
+          return;
+        }
         setPhase('error');
         setErrMsg(errorDetail(e, '강의를 불러오지 못했어요.'));
       }
@@ -197,7 +211,24 @@ export default function LecturePlayer() {
     return () => {
       on = false;
     };
-  }, [lectureId, applySession]);
+  }, [lectureId, applySession, reloadKey]);
+
+  // 수강신청하고 바로 이 강의로 — 신청 성공 후 로드를 다시 트리거(게이트 통과)
+  const enrollAndEnter = async () => {
+    if (!notEnrolled || enrolling) return;
+    setEnrolling(true);
+    try {
+      await lectureApi.enrollCourse(notEnrolled);
+      setNotEnrolled(null);
+      setPhase('loading');
+      setReloadKey((k) => k + 1);
+    } catch (e) {
+      setPhase('error');
+      setErrMsg(errorDetail(e, '수강신청에 실패했어요. 잠시 후 다시 시도해 주세요.'));
+    } finally {
+      setEnrolling(false);
+    }
+  };
 
   /* ---- 하트비트 ---- */
   const openGate = useCallback((cp: number) => {
@@ -501,6 +532,27 @@ export default function LecturePlayer() {
   const name = (me?.name ?? '학생').trim() || '학생';
 
   const numToc = (r: LectureItem, i: number) => (r.order_no > 0 ? r.order_no : i + 1);
+
+  // 수강신청 게이트 — 미신청 상태로 코스 강의를 열면 여기로. 신청하면 바로 이 강의로 들어간다.
+  if (notEnrolled) {
+    return (
+      <div className="lp-root">
+        <TopBar subject={subject} title="강의실" name={name} />
+        <div className="lp-errwrap">
+          <i className="ph-fill ph-lock-simple" />
+          <p>이 강의는 <b>수강신청</b>을 해야 볼 수 있어요.</p>
+          <p className="lp-enroll-sub">수강신청하면 이 코스의 모든 강의를 바로 볼 수 있어요(무료·언제든 취소 가능).</p>
+          <button className="lp-enroll-btn" onClick={enrollAndEnter} disabled={enrolling}>
+            <i className="ph-bold ph-plus-circle" />
+            {enrolling ? '수강신청 중…' : '수강신청하고 바로 보기'}
+          </button>
+          <Link to={PATHS.STUDENT_LECTURES} className="lp-errback">
+            강의 목록으로
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   if (phase === 'error') {
     return (

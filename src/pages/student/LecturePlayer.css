@@ -633,3 +633,28 @@
      .lp-gate는 fullscreen 서브트리(.lp-shell 자식) 안이라 그대로 보인다. */
   .lp-gate { position: fixed; z-index: 60; }
 }
+
+/* 수강신청 게이트 — 미신청 코스 강의를 열었을 때 */
+.lp-enroll-sub {
+  font-size: 13.5px;
+  color: var(--ink-3);
+  font-weight: 500;
+  margin: -4px 0 4px;
+}
+.lp-enroll-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: none;
+  cursor: pointer;
+  background: var(--brand);
+  color: var(--on-brand);
+  font-family: var(--font-display), 'Pretendard', sans-serif;
+  font-weight: 800;
+  font-size: 15px;
+  padding: 12px 22px;
+  border-radius: 12px;
+  margin-bottom: 4px;
+}
+.lp-enroll-btn:hover { background: var(--brand-ink, var(--brand)); }
+.lp-enroll-btn:disabled { opacity: 0.6; cursor: default; }
