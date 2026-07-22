@@ -3384,6 +3384,41 @@ function QuestionsModal({
           </div>
         )}
 
+        {/* 검토 가이드 — 강사가 '무엇을·어디로' 하는지 한눈에(실무 리뷰 UI: 자동판정→권장행동).
+            접이식이라 익숙해지면 접어둘 수 있다. */}
+        {!isOps && items !== null && items.length > 0 && (
+          <details className="op-lect-guide2" open>
+            <summary>
+              <i className="ph-fill ph-question" /> 이 화면 사용법 — 문항을 어떻게 처리하나요?
+            </summary>
+            <div className="op-lect-guide2-body">
+              <p>
+                AI가 만든 문항은 <b>‘검수 대기’</b> 상태예요(아직 학생에게 안 떠요). 각 문항의 AI
+                판정 배지를 보고 아래 중 하나를 하세요:
+              </p>
+              <ul>
+                <li>
+                  <span className="op-sys-status op-sys-status--ok"><i className="ph-bold ph-shield-check" /> 캡차 적합</span>
+                  <b>‘공개하기’</b> → 학생 강의에 출제되는 <b>시청 검증 문항(강의 캡차)</b>이 돼요. 강의를 봐야 풀려요.
+                </li>
+                <li>
+                  <span className="op-sys-status op-sys-status--warn"><i className="ph-bold ph-brain" /> 은행 적합</span>
+                  <b>‘지식 은행으로’</b> → 봇도 상식으로 푸니 시청 검증엔 부적합. 전체학습 지식 은행으로 보내요.
+                </li>
+                <li>
+                  <span className="op-sys-status op-sys-status--no"><i className="ph-bold ph-warning" /> 불량 의심</span>
+                  <b>‘수정’ 또는 ‘삭제’</b> → 자막을 줘도 AI가 못 푼 문항(정답 오류·모호 의심)이에요.
+                </li>
+              </ul>
+              <p className="op-lect-guide2-foot">
+                <i className="ph-bold ph-lightbulb" /> 정리하면 — <b>공개하기 = 강의 캡차로 출제</b>,
+                <b> 지식 은행으로 = 별도 학습 문제로 보관</b>. 두 곳은 서로 다른 목적지라, 은행으로
+                보낸 문항은 강의 캡차로 승인할 필요가 없어요.
+              </p>
+            </div>
+          </details>
+        )}
+
         <div className="op-lect-qlist">
           {items === null && <div className="op-logrow">불러오는 중…</div>}
           {items !== null && items.length === 0 && !loadErr && (
@@ -3429,10 +3464,13 @@ function QuestionsModal({
                     <i className="ph-bold ph-rewind" /> {fmtMMSS(q.content_start_sec)}부터 다시
                   </span>
                 )}
-                <span className={`op-sys-status op-sys-status--${q.status === 'active' ? 'ok' : 'warn'}`}>
-                  {q.status === 'active' ? '공개' : 'draft'}
+                <span
+                  className={`op-sys-status op-sys-status--${q.status === 'active' ? 'ok' : 'warn'}`}
+                  title={q.status === 'active' ? '학생 강의에 출제되는 중이에요' : '아직 학생에게 안 떠요 — 공개해야 출제돼요'}
+                >
+                  {q.status === 'active' ? '공개 중' : '검수 대기'}
                 </span>
-                <span className="op-sys-status op-sys-status--neutral">{q.source === 'llm' ? 'AI' : '수동'}</span>
+                <span className="op-sys-status op-sys-status--neutral">{q.source === 'llm' ? 'AI 생성' : '직접 작성'}</span>
                 {/* 자기검증(2번째 LLM) 배지 — 봇 저항성 판정으로 배치를 돕는다(3분류).
                     판정 근거는 suggested_placement. 왜 3분류인지는 배지 title에 요약. */}
                 {q.suggested_placement === 'captcha' && (
@@ -3490,12 +3528,41 @@ function QuestionsModal({
                   ))}
                 </div>
                 {q.explain && <small className="op-aimodel-desc">해설: {q.explain}</small>}
+                {/* 권장 행동 — AI 판정(suggested_placement)을 강사가 바로 할 일로 번역(쉬운 말).
+                    이미 공개/은행배치된 건 안내를 생략(할 일 없음). */}
+                {!isOps && q.status !== 'active' && !q.bank_placed && (
+                  q.suggested_placement === 'captcha' ? (
+                    <div className="op-lect-rec op-lect-rec--ok">
+                      <i className="ph-fill ph-shield-check" />
+                      <span><b>시청 검증에 적합해요.</b> ‘공개하기’를 누르면 강의 {fmtMMSS(q.position_sec)} 지점에서 이 문항이 출제돼요(강의를 봐야 답할 수 있어요).</span>
+                    </div>
+                  ) : q.suggested_placement === 'bank' ? (
+                    <div className="op-lect-rec op-lect-rec--warn">
+                      <i className="ph-fill ph-brain" />
+                      <span><b>봇도 상식으로 풀어요</b> — 시청 검증엔 부적합해요(안 보고도 통과). ‘지식 은행으로’ 보내 전체학습에 쓰세요.</span>
+                    </div>
+                  ) : q.suggested_placement === 'discard' ? (
+                    <div className="op-lect-rec op-lect-rec--no">
+                      <i className="ph-fill ph-warning" />
+                      <span><b>불량 의심.</b> 자막을 줘도 AI가 못 풀었어요(정답 오류·모호 의심). ‘수정’으로 고치거나 ‘삭제’하세요.</span>
+                    </div>
+                  ) : (
+                    <div className="op-lect-rec op-lect-rec--neutral">
+                      <i className="ph-fill ph-info" />
+                      <span>검토한 뒤 <b>공개</b>(강의에 출제)하거나 <b>지식 은행</b>으로 보내세요.</span>
+                    </div>
+                  )
+                )}
               </div>
               {!isOps && (
               <div className="op-lect-actions">
                 {q.status === 'draft' && (
-                  <button className="op-btn op-btn--approve" onClick={() => approve(q)}>
-                    승인
+                  <button
+                    className="op-btn op-btn--approve"
+                    onClick={() => approve(q)}
+                    title="이 문항을 학생 강의에 출제해요(공개=시청 검증 문항으로 확정). 되돌리려면 수정에서 '검수 대기'로 바꾸면 돼요."
+                  >
+                    <i className="ph-bold ph-check-circle" /> 공개하기
                   </button>
                 )}
                 {/* 은행 배치 — 자기검증 '은행 적합'(상식) 문항의 재활용 경로. 이미 배치되면
@@ -3509,10 +3576,10 @@ function QuestionsModal({
                   q.suggested_placement === 'bank' && (
                     <button
                       className="op-btn op-btn--reject"
-                      title="이 문항을 전체학습 지식 은행으로 보냅니다(캡차에는 부적합 — 상식으로 풀림). 형식은 서버가 변환해요."
+                      title="이 문항을 전체학습 지식 은행으로 보냅니다(강의 캡차에는 부적합 — 상식으로 풀림). 형식은 서버가 변환해요."
                       onClick={() => toBank(q)}
                     >
-                      은행으로
+                      <i className="ph-bold ph-brain" /> 지식 은행으로
                     </button>
                   )
                 )}
