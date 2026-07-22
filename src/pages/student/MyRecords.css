@@ -1,23 +1,25 @@
-/* CatChap 나의기록 — handoff `CatChap 나의기록.dc.html` 원본 inline style 그대로 */
+/* CatChap 나의 기록 — handoff `CatChap 나의 기록.dc.html` 변수/플랫 스타일 정렬.
+   검증 결과: 기존 주석("원본 inline style 그대로")은 사실과 달랐음 — 페이지 배경에
+   radial-gradient 2겹, 진행바/완료 카드에 linear-gradient 3곳이 남아 있던 리뉴얼 이전
+   "말랑한" 톤의 잔재였다. 이번에 flat var(--bg) 배경, 1px var(--line) 테두리,
+   8-14px 반경, 그림자 없는 정적 카드로 정리했다. 통계 아이콘 칩·과목별 색상(mastery/
+   accuracy 차트/최근 기록 아이콘)은 API가 내려주는 데이터 색상(기능)이라 그대로 뒀다.*/
 
 .mr-root {
   min-height: 100vh;
-  background:
-    radial-gradient(1200px 600px at 82% -8%, var(--brand-soft) 0%, rgba(255, 233, 214, 0) 60%),
-    radial-gradient(900px 500px at 5% 10%, var(--info-soft) 0%, rgba(230, 240, 255, 0) 55%),
-    var(--bg);
+  background: var(--bg);
   padding-bottom: 60px;
 }
 
 .mr-section {
-  max-width: 1200px;
-  margin: 18px auto 0;
-  padding: 0 24px;
+  max-width: 1080px;
+  margin: 16px auto 0;
+  padding: 0 28px;
 }
 
 /* HEADER */
 .mr-header {
-  margin: 26px auto 0;
+  margin: 40px auto 0;
 }
 
 .mr-headrow {
@@ -35,81 +37,79 @@
 }
 
 .mr-headicon {
-  width: 44px;
-  height: 44px;
-  border-radius: 14px;
-  background: var(--ok-soft);
-  color: var(--ok);
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  color: var(--ink);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .mr-headicon i {
-  font-size: 26px;
+  font-size: 24px;
 }
 
 .mr-title {
   font-family: var(--font-display); font-weight: 800;
-  font-size: 32px;
+  font-size: 28px;
   color: var(--ink);
-  margin: 0;
-  letter-spacing: -0.5px;
+  margin: 0 0 4px;
+  letter-spacing: -0.03em;
 }
 
 .mr-subtitle {
-  margin: 4px 0 0;
+  margin: 0;
   color: var(--ink-3);
-  font-weight: 600;
-  font-size: 14px;
+  font-weight: 500;
+  font-size: 14.5px;
 }
 
 .mr-reportbtn {
-  border: 2px solid var(--brand-soft);
+  border: 1px solid var(--line-strong);
   background: var(--surface);
-  color: var(--brand);
-  font-weight: 800;
-  font-size: 14px;
-  padding: 12px 18px;
-  border-radius: 14px;
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 13.5px;
+  padding: 10px 16px;
+  border-radius: 9px;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  min-height: 46px;
+  min-height: 44px;
+  transition: border-color 0.15s ease, background 0.15s ease;
 }
 
 .mr-reportbtn:hover {
+  border-color: var(--ink-3);
   background: var(--surface-2);
 }
 
 .mr-reportbtn i {
-  font-size: 18px;
+  font-size: 16px;
 }
 
 /* STAT ROW */
-.mr-stats {
-  margin: 22px auto 0;
-}
-
 .mr-statgrid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
+  gap: 14px;
 }
 
 .mr-stat {
   background: var(--surface);
-  border: 2px solid var(--line);
-  border-radius: 22px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
   padding: 20px;
-  box-shadow: 0 14px 30px -24px rgba(180, 120, 90, 0.5);
 }
 
 .mr-staticon {
-  width: 46px;
-  height: 46px;
-  border-radius: 14px;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -117,7 +117,7 @@
 }
 
 .mr-staticon i {
-  font-size: 25px;
+  font-size: 22px;
 }
 
 .mr-staticon-fire {
@@ -147,7 +147,7 @@
 
 .mr-statval {
   font-family: var(--font-display); font-weight: 800;
-  font-size: 32px;
+  font-size: 30px;
   color: var(--ink);
   line-height: 1;
 }
@@ -173,25 +173,25 @@
 .mr-row2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 18px;
+  gap: 16px;
 }
 
 .mr-card {
   background: var(--surface);
-  border: 2px solid var(--line);
-  border-radius: 24px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
   padding: 24px;
-  box-shadow: 0 14px 30px -24px rgba(180, 120, 90, 0.5);
 }
 
 .mr-h3 {
   font-family: var(--font-display); font-weight: 800;
   font-size: 19px;
+  letter-spacing: -0.02em;
   color: var(--ink);
   margin: 0;
 }
 
-/* 최근 4주 학습량 */
+/* 코스 수료 현황 카드 헤더 */
 .mr-weekhead {
   display: flex;
   justify-content: space-between;
@@ -208,48 +208,7 @@
   border-radius: 20px;
 }
 
-.mr-bars {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 12px;
-  height: 170px;
-}
-
-.mr-barcol {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 9px;
-  height: 100%;
-  justify-content: flex-end;
-}
-
-.mr-barval {
-  font-size: 11px;
-  font-weight: 800;
-  color: var(--ink-3);
-}
-
-.mr-bar {
-  width: 100%;
-  background: linear-gradient(180deg, var(--brand-soft), var(--warn));
-  border-radius: 10px;
-  transition: height 0.5s ease;
-}
-
-.mr-bar-now {
-  background: linear-gradient(180deg, var(--brand), var(--brand));
-}
-
-.mr-barlabel {
-  font-size: 11.5px;
-  font-weight: 700;
-  color: var(--ink-3);
-}
-
-/* 7월 학습 달력 */
+/* 학습 달력 */
 .mr-calhead {
   display: flex;
   justify-content: space-between;
@@ -346,7 +305,7 @@
   border: 2px solid var(--warn);
 }
 
-/* 놀이별 실력 */
+/* 과목별 실력 */
 .mr-mhead {
   display: flex;
   justify-content: space-between;
@@ -366,7 +325,7 @@
 .mr-goaltick {
   width: 2px;
   height: 14px;
-  background: rgba(90, 82, 72, 0.45);
+  background: var(--line-strong);
 }
 
 .mr-mlist {
@@ -434,7 +393,7 @@
 .mr-mbar {
   position: relative;
   height: 12px;
-  background: var(--surface);
+  background: var(--surface-3);
   border-radius: 20px;
   overflow: hidden;
 }
@@ -450,7 +409,7 @@
   bottom: 0;
   left: 80%;
   width: 2px;
-  background: rgba(90, 82, 72, 0.45);
+  background: var(--line-strong);
 }
 
 .mr-msolved {
@@ -515,20 +474,30 @@
 
 .mr-tab {
   cursor: pointer;
-  font-family: 'Pretendard', sans-serif;
+  font-family: inherit;
   font-weight: 700;
   font-size: 12.5px;
   padding: 7px 13px;
-  border-radius: 20px;
-  border: 2px solid var(--line);
+  border-radius: 9px;
+  border: 1px solid var(--line-strong);
   background: var(--surface);
-  color: var(--ink-3);
+  color: var(--ink-2);
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.mr-tab:hover {
+  border-color: var(--ink-3);
+  color: var(--ink);
 }
 
 .mr-tab-on {
   font-weight: 800;
-  border: 2px solid transparent;
+  border: 1px solid transparent;
   color: var(--on-brand);
+}
+
+.mr-tab-on:hover {
+  border: 1px solid transparent;
 }
 
 .mr-chartwrap {
@@ -570,8 +539,8 @@
   display: flex;
   align-items: flex-start;
   gap: 9px;
-  background: var(--surface);
-  border-radius: 16px;
+  background: var(--surface-2);
+  border-radius: 14px;
   padding: 14px 15px;
 }
 
@@ -598,20 +567,6 @@
   margin-bottom: 18px;
 }
 
-.mr-badgelink {
-  text-decoration: none;
-  font-weight: 800;
-  font-size: 13.5px;
-  color: var(--brand);
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.mr-badgelink i {
-  font-size: 13px;
-}
-
 .mr-alist {
   display: flex;
   flex-direction: column;
@@ -623,15 +578,15 @@
   align-items: center;
   gap: 14px;
   padding: 13px 16px;
-  background: var(--surface);
-  border-radius: 16px;
+  background: var(--surface-2);
+  border-radius: 14px;
 }
 
 .mr-acticon {
   flex-shrink: 0;
   width: 44px;
   height: 44px;
-  border-radius: 14px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -684,58 +639,14 @@
   white-space: nowrap;
 }
 
-/* ===== 정제(polish): 액션 버튼 hover 부상 + 탄력 눌림 (배경색 불변, 그림자/모션만) ===== */
-.mr-reportbtn {
-  transition:
-    transform 0.2s cubic-bezier(0.34, 1.2, 0.5, 1),
-    box-shadow 0.2s ease,
-    filter 0.2s ease;
-}
-.mr-reportbtn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 5px 12px -6px rgba(255, 90, 77, 0.28);
-}
-.mr-reportbtn:active {
-  transform: translateY(0) scale(0.97);
-  box-shadow: 0 2px 6px -4px rgba(255, 90, 77, 0.28);
-  transition-duration: 0.09s;
-}
-@media (prefers-reduced-motion: reduce) {
-  .mr-reportbtn { transition: none; }
-  .mr-reportbtn:hover, .mr-reportbtn:active { transform: none; }
-}
-
-
-/* ===== 엘리베이션: 카드 질감 고급화 (레이어드 웜 섀도우) ===== */
-.mr-card {
-  box-shadow:
-    0 1px 3px rgba(58, 51, 64, 0.05),
-    0 16px 34px -20px rgba(90, 60, 55, 0.2);
-}
-.mr-card {
-  transition:
-    box-shadow 0.28s ease,
-    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
-}
-.mr-card:hover {
-  transform: translateY(-3px);
-  box-shadow:
-    0 2px 6px rgba(58, 51, 64, 0.06),
-    0 24px 44px -22px rgba(90, 60, 55, 0.26);
-}
-@media (prefers-reduced-motion: reduce) {
-  .mr-card { transition: none; }
-  .mr-card:hover { transform: none; }
-}
-
 /* ===== 모바일 반응형 (레이아웃만 조정) ===== */
 @media (max-width: 768px) {
-  .mr-section { padding: 0 16px; }
+  .mr-section { padding: 0 18px; }
   .mr-statgrid { grid-template-columns: repeat(2, 1fr); }
   .mr-row2 { grid-template-columns: 1fr; }
 }
 @media (max-width: 480px) {
-  .mr-section { padding: 0 13px; }
+  .mr-section { padding: 0 14px; }
   .mr-statgrid { grid-template-columns: 1fr; }
   .mr-card { padding: 20px; }
 }
@@ -757,7 +668,7 @@
 }
 .mr-comp-empty i {
   font-size: 34px;
-  color: #cdbfae;
+  color: var(--ink-3);
 }
 .mr-comp-empty p {
   margin: 0;
@@ -771,8 +682,8 @@
   align-items: center;
   gap: 6px;
   border: none;
-  border-radius: 12px;
-  background: var(--warn);
+  border-radius: 9px;
+  background: var(--brand);
   color: var(--on-brand);
   font-family: var(--font-display); font-weight: 800;
   font-size: 13.5px;
@@ -780,15 +691,7 @@
   cursor: pointer;
 }
 .mr-comp-cta:hover {
-  filter: brightness(1.05);
-}
-
-.mr-complist {
-  display: flex;
-  flex-direction: column;
-  gap: 9px;
-  max-height: 260px;
-  overflow-y: auto;
+  background: var(--brand-strong);
 }
 
 /* 수료 완료 / 진행 중 / 잠김 — 라벨 붙은 칸으로 구분. 칸마다 기본 4개 + '더 보기'라
@@ -816,7 +719,7 @@
   cursor: pointer;
 }
 .mr-compmore:hover {
-  color: var(--warn);
+  color: var(--brand-ink);
 }
 .mr-compgroup {
   display: flex;
@@ -831,14 +734,14 @@
   font-size: 12.5px;
   color: var(--ink-2);
   padding-bottom: 2px;
-  border-bottom: 2px solid var(--line);
+  border-bottom: 1px solid var(--line);
 }
 .mr-compgrouphead i {
   font-size: 15px;
 }
 .mr-compgroupn {
   margin-left: auto;
-  background: var(--surface);
+  background: var(--surface-2);
   color: var(--ink-3);
   font-size: 11px;
   font-weight: 800;
@@ -857,7 +760,7 @@
   color: var(--info);
 }
 .mr-compicon--locked {
-  background: var(--surface);
+  background: var(--surface-2);
   color: var(--ink-3);
 }
 .mr-compbadge--progress {
@@ -865,7 +768,7 @@
   color: var(--info);
 }
 .mr-compbadge--locked {
-  background: var(--surface);
+  background: var(--surface-2);
   color: var(--ink-3);
 }
 .mr-comp {
@@ -874,20 +777,19 @@
   gap: 11px;
   width: 100%;
   text-align: left;
-  border: 2px solid var(--line);
+  border: 1px solid var(--line);
   border-radius: 14px;
   background: var(--surface);
   padding: 11px 13px;
   cursor: pointer;
-  transition: transform 0.14s, box-shadow 0.14s;
+  transition: border-color 0.15s ease;
 }
 .mr-comp:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 22px -16px rgba(60, 90, 140, 0.4);
+  border-color: var(--line-strong);
 }
 .mr-comp--perfect {
   border-color: var(--line);
-  background: linear-gradient(120deg, var(--surface), var(--warn-soft));
+  background: var(--warn-soft);
 }
 .mr-compicon {
   flex-shrink: 0;
