@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, type NavigateFunction } from 'react-router-dom';
+import { useNavigate, useSearchParams, type NavigateFunction } from 'react-router-dom';
 import StudentLayout from '../../layouts/StudentLayout';
 import DemoBadge from '../../components/common/DemoBadge';
 import { useAuth } from '../../hooks/useAuth';
@@ -323,9 +323,22 @@ function mapRecords(d: any, prev: RecordsData): Partial<RecordsData> {
   return out;
 }
 
+// 나의 기록 상단 탭 — 긴 스크롤을 요약/수료/통계로 분할(0723). ?tab= 쿼리로 링크·뒤로가기 친화.
+type RecTab = 'summary' | 'completion' | 'stats';
+const REC_TABS: { key: RecTab; label: string; icon: string }[] = [
+  { key: 'summary', label: '요약', icon: 'ph-fill ph-gauge' },
+  { key: 'completion', label: '수료 현황', icon: 'ph-fill ph-seal-check' },
+  { key: 'stats', label: '학습 통계', icon: 'ph-fill ph-chart-bar' },
+];
+
 export default function MyRecords() {
   const { me } = useAuth();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const recTabRaw = searchParams.get('tab') as RecTab | null;
+  const recTab: RecTab = REC_TABS.some((t) => t.key === recTabRaw) ? (recTabRaw as RecTab) : 'summary';
+  const setRecTab = (t: RecTab) =>
+    setSearchParams(t === 'summary' ? {} : { tab: t }, { replace: false });
   const [data, setData] = useState<RecordsData>(FALLBACK);
   const [demo, setDemo] = useState(false); // 시도 기록이 없어 전부 데모값이면 true
   const [subject, setSubject] = useState('전체');
@@ -458,7 +471,22 @@ export default function MyRecords() {
         </div>
       </section>
 
-      {/* STAT ROW */}
+      {/* 상단 탭 — 긴 스크롤을 요약/수료/통계로 분할 */}
+      <div className="mr-rectabs">
+        {REC_TABS.map((t) => (
+          <button
+            key={t.key}
+            className={`mr-rectab${recTab === t.key ? ' mr-rectab-on' : ''}`}
+            onClick={() => setRecTab(t.key)}
+          >
+            <i className={t.icon} />
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {/* ===== 요약 탭 ===== */}
+      {recTab === 'summary' && (
       <section className="mr-section mr-stats">
         <div className="mr-statgrid">
           <div className="mr-stat">
@@ -508,9 +536,13 @@ export default function MyRecords() {
         </div>
       </section>
 
+      )}
+
+      {/* ===== 수료 현황 탭 ===== */}
       {/* 코스 수료 현황 + 학습 달력 ROW — 재중심화: 워치볼륨 막대 대신 '해낸 것 + 남은 것'을
           수료 완료/진행 중/잠김 칸으로 나눠 한눈에(사용자 결정 0719). 칸마다 기본 4개 +
           '더 보기'라 코스가 많아도 스크롤에 묻히지 않는다. --start = 펼쳐도 달력과 안 어긋남 */}
+      {recTab === 'completion' && (
       <section className="mr-section mr-row2 mr-row2--start">
         <div className="mr-card">
           <div className="mr-weekhead">
@@ -580,6 +612,11 @@ export default function MyRecords() {
         </div>
       </section>
 
+      )}
+
+      {/* ===== 학습 통계 탭 ===== */}
+      {recTab === 'stats' && (
+        <>
       {/* CATEGORY MASTERY + ACCURACY */}
       <section className="mr-section mr-row2">
         <div className="mr-card">
@@ -747,8 +784,11 @@ export default function MyRecords() {
           )}
         </section>
       )}
+        </>
+      )}
 
-      {/* RECENT ACTIVITY */}
+      {/* ===== 요약 탭: 최근 학습 기록 ===== */}
+      {recTab === 'summary' && (
       <section className="mr-section mr-recent">
         <div className="mr-card">
           <div className="mr-rhead">
@@ -772,6 +812,7 @@ export default function MyRecords() {
           </div>
         </div>
       </section>
+      )}
     </StudentLayout>
   );
 }
