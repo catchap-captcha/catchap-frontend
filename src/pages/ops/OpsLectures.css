@@ -1050,3 +1050,17 @@
   font-weight: 800;
   vertical-align: middle;
 }
+
+/* 코스 수강 인원(강사 운영 지표) — 코스 목록의 '강의' 칸 아래 작은 보조 표기.
+   학생 화면엔 노출하지 않고(작은 수는 역효과) 강사 콘솔에만 보인다(0723 사용자 결정). */
+.op-course-enrolled {
+  display: block;
+  margin-top: 3px;
+  color: var(--ink-3);
+  font-weight: 700;
+  font-size: 11.5px;
+}
+.op-course-enrolled i {
+  font-size: 12px;
+  margin-right: 2px;
+}

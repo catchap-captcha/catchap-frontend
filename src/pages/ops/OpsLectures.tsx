@@ -1522,7 +1522,12 @@ function CoursesModal({
                 {c.description ? <small className="op-aimodel-desc">{c.description}</small> : null}
               </span>
               <span>{c.category ?? '—'}</span>
-              <span>{c.lecture_count}개</span>
+              <span>
+                {c.lecture_count}개
+                <small className="op-course-enrolled">
+                  <i className="ph-fill ph-users" /> 수강 {c.enrolled_count ?? 0}명
+                </small>
+              </span>
               <span>
                 <span
                   className={`op-sys-status op-sys-status--${c.status === 'active' ? 'ok' : 'warn'}`}
