@@ -94,80 +94,78 @@ export default function StudentHome() {
 
   const goWatch = (id: string) => navigate(PATHS.STUDENT_LECTURE, { state: { id } });
 
+  // 시간대 인사 라벨(복제본 랩의 '오후 학습' eyebrow 이식) — 지어낸 값이 아니라 현재 시각 기준.
+  const hour = new Date().getHours();
+  const daypart = hour < 12 ? '오전' : hour < 18 ? '오후' : '저녁';
+
   return (
     <StudentLayout className="sh-root" active="home">
-      {/* ===== 인사 + 이어보기 ===== */}
-      <section className="sh2-hero">
+      {/* ===== 인사 + 벤토(이어보기 히어로 2×2 + 스탯) — 복제본 랩 레이아웃 이식 ===== */}
+      <section className="sh2-top">
         <div className="sh2-hero-head">
+          <p className="sh2-eyebrow">{daypart} 학습</p>
           <h1 className="sh2-greet">안녕하세요, {name}님</h1>
           <p className="sh2-sub">듣던 강의를 이어서 학습해요.</p>
         </div>
 
-        {state === 'ready' && continueLec ? (
-          <div className="sh2-continue">
-            <CourseCover
-              seed={continueLec.course_id || continueLec.id}
-              label={continueLec.title || continueLec.subject}
-              size="sm"
-              className="sh2-continue-cover"
-            />
-            <div className="sh2-continue-info">
-              <span className="sh2-continue-tag">
-                <i className="ph-fill ph-play-circle" />
-                {continueLec.progress?.status === 'watching' ? '이어보기' : '다음 강의'}
-              </span>
-              <h2 className="sh2-continue-title">{continueLec.title}</h2>
-              <span className="sh2-continue-meta">
-                {continueLec.subject}
-                {continueLec.question_count > 0 && ` · 확인문항 ${continueLec.question_count}개`}
-              </span>
-            </div>
-            <button className="sh2-continue-btn" onClick={() => goWatch(continueLec.id)}>
-              <i className="ph-bold ph-play" /> 이어서 보기
-            </button>
-          </div>
-        ) : state === 'ready' ? (
-          <div className="sh2-continue sh2-continue--empty">
-            <div className="sh2-continue-info">
-              <h2 className="sh2-continue-title">수강 중인 강의가 없어요</h2>
-              <span className="sh2-continue-meta">강의 목록에서 학습을 시작해 보세요.</span>
-            </div>
-            <button
-              className="sh2-continue-btn"
-              onClick={() => navigate(PATHS.STUDENT_LECTURES)}
-            >
-              강의 둘러보기
-            </button>
-          </div>
-        ) : null}
-      </section>
+        {state === 'ready' && (
+          <div className="sh2-bento">
+            {continueLec ? (
+              <button className="sh2-bento-hero" onClick={() => goWatch(continueLec.id)}>
+                <div className="sh2-bento-cover">
+                  <CourseCover
+                    seed={continueLec.course_id || continueLec.id}
+                    label={continueLec.title || continueLec.subject}
+                    size="md"
+                    className="sh2-bento-coverimg"
+                  />
+                  <span className="sh2-bento-tag">
+                    <i className="ph-fill ph-play-circle" />
+                    {continueLec.progress?.status === 'watching' ? '이어보기' : '다음 강의'}
+                  </span>
+                  <span className="sh2-bento-play"><i className="ph-fill ph-play" /></span>
+                </div>
+                <div className="sh2-bento-info">
+                  <div className="sh2-bento-title">{continueLec.title}</div>
+                  <div className="sh2-bento-meta">
+                    {continueLec.subject}
+                    {continueLec.question_count > 0 && ` · 확인문항 ${continueLec.question_count}개`}
+                  </div>
+                </div>
+              </button>
+            ) : (
+              <div className="sh2-bento-hero sh2-bento-hero--empty">
+                <div className="sh2-bento-info">
+                  <div className="sh2-bento-title">수강 중인 강의가 없어요</div>
+                  <div className="sh2-bento-meta">강의 목록에서 학습을 시작해 보세요.</div>
+                  <button
+                    className="sh2-continue-btn"
+                    onClick={() => navigate(PATHS.STUDENT_LECTURES)}
+                  >
+                    강의 둘러보기
+                  </button>
+                </div>
+              </div>
+            )}
 
-      {/* ===== 학습 요약 ===== */}
-      {state === 'ready' && (
-        <section className="sh2-kpis">
-          <div className="sh2-kpi">
-            <span className="sh2-kpi-chip"><i className="ph-fill ph-stack" /></span>
-            <div className="sh2-kpi-body">
-              <span className="sh2-kpi-num"><CountUp value={enrolledCount} /></span>
-              <span className="sh2-kpi-lb">수강 코스</span>
+            <div className="sh2-stat">
+              <span className="sh2-stat-chip"><i className="ph-fill ph-stack" /></span>
+              <span className="sh2-stat-num"><CountUp value={enrolledCount} /></span>
+              <span className="sh2-stat-lb">수강 코스</span>
+            </div>
+            <div className="sh2-stat">
+              <span className="sh2-stat-chip"><i className="ph-fill ph-check-circle" /></span>
+              <span className="sh2-stat-num"><CountUp value={doneCount} /></span>
+              <span className="sh2-stat-lb">완주 강의</span>
+            </div>
+            <div className="sh2-stat sh2-stat--wide">
+              <span className="sh2-stat-chip"><i className="ph-fill ph-seal-check" /></span>
+              <span className="sh2-stat-num"><CountUp value={completedCourses} /></span>
+              <span className="sh2-stat-lb">수료 코스</span>
             </div>
           </div>
-          <div className="sh2-kpi">
-            <span className="sh2-kpi-chip"><i className="ph-fill ph-check-circle" /></span>
-            <div className="sh2-kpi-body">
-              <span className="sh2-kpi-num"><CountUp value={doneCount} /></span>
-              <span className="sh2-kpi-lb">완주 강의</span>
-            </div>
-          </div>
-          <div className="sh2-kpi">
-            <span className="sh2-kpi-chip"><i className="ph-fill ph-seal-check" /></span>
-            <div className="sh2-kpi-body">
-              <span className="sh2-kpi-num"><CountUp value={completedCourses} /></span>
-              <span className="sh2-kpi-lb">수료 코스</span>
-            </div>
-          </div>
-        </section>
-      )}
+        )}
+      </section>
 
       {/* ===== 이어서 학습 레일 ===== */}
       {state === 'ready' && watchingLecs.length > 0 && (

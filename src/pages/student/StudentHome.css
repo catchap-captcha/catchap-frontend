@@ -72,6 +72,65 @@
 .sh2-greet { font-family: var(--font-display); font-weight: 700; font-size: 34px; color: var(--ink); margin: 0; letter-spacing: -0.03em; line-height: 1.1; }
 .sh2-sub { margin: 8px 0 0; color: var(--ink-2); font-weight: 400; font-size: 17px; letter-spacing: -0.01em; }
 
+/* ===== 벤토(복제본 랩 이식): 이어보기 히어로 2×2 + 스탯 카드 ===== */
+.sh2-top { max-width: 980px; margin: 0 auto; padding: 40px 24px 0; }
+.sh2-eyebrow { color: var(--brand); font-weight: 600; font-size: 15px; margin: 0 0 6px; letter-spacing: -0.01em; }
+.sh2-bento { margin-top: 24px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.sh2-bento > * { min-width: 0; }
+
+.sh2-bento-hero {
+  grid-column: span 2; grid-row: span 2; min-height: 288px;
+  border: 0.5px solid var(--line); border-radius: var(--ap-r-lg); background: var(--surface);
+  overflow: hidden; box-shadow: var(--ap-shadow);
+  display: flex; flex-direction: column; cursor: pointer; text-align: left; padding: 0;
+  font-family: inherit; color: inherit;
+  transition: transform 0.5s var(--ap-spring), box-shadow 0.4s var(--ap-ease);
+}
+.sh2-bento-hero:hover { transform: translateY(-4px); box-shadow: var(--ap-shadow-hi); }
+@media (prefers-reduced-motion: reduce) { .sh2-bento-hero:hover { transform: none; } }
+.sh2-bento-cover { position: relative; flex: 1; min-height: 168px; }
+.sh2-bento-coverimg.cover--md { width: 100%; height: 100%; border-radius: 0; aspect-ratio: auto; }
+.sh2-bento-tag {
+  position: absolute; top: 16px; left: 16px; z-index: 2;
+  display: inline-flex; align-items: center; gap: 6px;
+  color: #fff; font-size: 12.5px; font-weight: 600;
+  background: rgba(0, 0, 0, 0.28); padding: 5px 11px; border-radius: 980px;
+}
+.sh2-bento-play {
+  position: absolute; inset: 0; margin: auto; z-index: 2;
+  width: 62px; height: 62px; border-radius: 50%;
+  background: rgba(255, 255, 255, 0.24); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  display: grid; place-items: center; color: #fff; font-size: 24px;
+}
+.sh2-bento-info { padding: 20px 22px; }
+.sh2-bento-title { font-family: var(--font-display); font-weight: 700; font-size: 21px; letter-spacing: -0.02em; color: var(--ink); }
+.sh2-bento-meta { color: var(--ink-2); font-size: 14px; margin-top: 4px; }
+.sh2-bento-hero--empty { justify-content: center; align-items: flex-start; padding: 28px; cursor: default; }
+.sh2-bento-hero--empty:hover { transform: none; box-shadow: var(--ap-shadow); }
+.sh2-bento-hero--empty .sh2-bento-info { padding: 0; }
+.sh2-bento-hero--empty .sh2-continue-btn { margin-top: 16px; }
+
+.sh2-stat {
+  border: 0.5px solid var(--line); border-radius: var(--ap-r); background: var(--surface);
+  box-shadow: var(--ap-shadow); padding: 20px 22px;
+  display: flex; flex-direction: column; justify-content: center;
+  transition: transform 0.5s var(--ap-spring), box-shadow 0.4s var(--ap-ease);
+}
+.sh2-stat:hover { transform: translateY(-4px); box-shadow: var(--ap-shadow-hi); }
+@media (prefers-reduced-motion: reduce) { .sh2-stat:hover { transform: none; } }
+.sh2-stat--wide { grid-column: span 2; }
+.sh2-stat-chip { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 11px; background: color-mix(in srgb, var(--brand) 12%, transparent); color: var(--brand); font-size: 19px; margin-bottom: 12px; }
+.sh2-stat-num { font-family: var(--font-display); font-weight: 700; font-size: 34px; line-height: 1; letter-spacing: -0.03em; color: var(--ink); }
+.sh2-stat-lb { color: var(--ink-2); font-size: 14px; margin-top: 7px; font-weight: 500; }
+
+@media (max-width: 720px) {
+  .sh2-top { padding: 28px 18px 0; }
+  .sh2-bento { grid-template-columns: 1fr 1fr; }
+  .sh2-bento-hero { grid-column: span 2; grid-row: auto; min-height: 240px; }
+  .sh2-stat--wide { grid-column: span 2; }
+  .sh2-stat-num { font-size: 28px; }
+}
+
 .sh2-continue {
   display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
   background: var(--ap-glass);
