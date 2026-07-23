@@ -2870,9 +2870,9 @@ function QuestionsModal({
 
   const generate = async () => {
     const n = Number(genN);
-    if (!Number.isInteger(n) || n < 1 || n > 10) {
+    if (!Number.isInteger(n) || n < 1 || n > 20) {
       setBannerOk(false);
-      setBanner('생성 개수는 1~10 사이 정수예요.');
+      setBanner('생성 개수는 1~20 사이 정수예요.');
       return;
     }
     setGenerating(true);
@@ -2972,11 +2972,11 @@ function QuestionsModal({
                   <input
                     type="number"
                     min={1}
-                    max={10}
+                    max={20}
                     value={genN}
                     onChange={(e) => setGenN(e.target.value)}
                     className="op-lect-gen-n"
-                    aria-label="AI로 만들 문항 개수 (1~10)"
+                    aria-label="AI로 만들 문항 개수 (1~20)"
                   />
                   개
                 </label>
