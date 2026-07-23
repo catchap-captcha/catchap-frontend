@@ -516,41 +516,27 @@
   .ll-card:hover { transform: none; }
 }
 
-/* 썸네일 — 코스별 결정적 커버 그라데이션 + CatMark 워터마크 + 재생 아이콘 */
+/* 썸네일 — 앱 전체와 일관된 CourseCover(비비드 메시 + 모노그램). 복제본 랩 커버 룩 */
 .ll-thumb {
   position: relative;
   aspect-ratio: 16 / 9;
-  background: linear-gradient(135deg, var(--cover-from, #4a4750), var(--cover-to, #24222a));
-  display: flex;
-  align-items: center;
-  justify-content: center;
   overflow: hidden;
 }
-.ll-thumb > i.ph-play {
-  position: relative;
-  z-index: 1;
-  color: rgba(255, 255, 255, 0.95);
-  font-size: 30px;
-  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.25));
-}
-.ll-thumb-cat {
+.ll-thumb-cover.cover--md {
   position: absolute;
-  right: -10px;
-  bottom: -12px;
-  color: #fff;
-  opacity: 0.18 !important;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+  aspect-ratio: auto;
   z-index: 0;
-}
-/* 카드 hover 시 재생 아이콘 살짝 확대 */
-.ll-card:hover .ll-thumb > i.ph-play { transform: scale(1.12); transition: transform 0.2s ease; }
-@media (prefers-reduced-motion: reduce) {
-  .ll-card:hover .ll-thumb > i.ph-play { transform: none; }
 }
 
 .ll-badge {
   position: absolute;
   top: 10px;
   left: 10px;
+  z-index: 1;
   font-size: 11px;
   font-weight: 700;
   color: #fff;
@@ -558,6 +544,7 @@
   padding: 3px 9px;
   border-radius: 6px;
 }
+.ll-time { z-index: 1; }
 
 .ll-time {
   position: absolute;
