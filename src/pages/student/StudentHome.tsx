@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import StudentLayout from '../../layouts/StudentLayout';
 import { PATHS } from '../../routes/paths';
 import { useAuth } from '../../hooks/useAuth';
-import { lectureApi, type LectureItem, type StudentCourse } from '../../api/lectures';
+import { lectureApi, thumbnailSrc, type LectureItem, type StudentCourse } from '../../api/lectures';
 import CourseCover from '../../components/course/CourseCover';
 import CountUp from '../../components/motion/CountUp';
 import './StudentHome.css';
@@ -116,6 +116,7 @@ export default function StudentHome() {
                   <CourseCover
                     seed={continueLec.course_id || continueLec.id}
                     label={continueLec.title || continueLec.subject}
+                    imageUrl={thumbnailSrc(continueLec.thumbnail_url)}
                     size="md"
                     className="sh2-bento-coverimg"
                   />
@@ -181,6 +182,7 @@ export default function StudentHome() {
                 <CourseCover
                   seed={l.course_id || l.id}
                   label={l.title}
+                  imageUrl={thumbnailSrc(l.thumbnail_url)}
                   size="md"
                   className="sh2-railcover"
                 />
@@ -215,6 +217,7 @@ export default function StudentHome() {
                 <CourseCover
                   seed={c.id}
                   label={c.title || c.subject}
+                  imageUrl={thumbnailSrc(c.thumbnail_url)}
                   size="md"
                   className="sh2-railcover"
                 />
@@ -259,6 +262,7 @@ export default function StudentHome() {
                   <CourseCover
                     seed={c.id}
                     label={c.title || c.subject}
+                    imageUrl={thumbnailSrc(c.thumbnail_url)}
                     size="md"
                     className="sh2-course-cover"
                   />

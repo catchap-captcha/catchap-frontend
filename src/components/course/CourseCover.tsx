@@ -12,11 +12,15 @@ export default function CourseCover({
   label,
   size = 'md',
   className,
+  imageUrl,
 }: {
   seed: string;
   label?: string;
   size?: 'sm' | 'md' | 'lg';
   className?: string;
+  /** 실제 썸네일(절대 URL — 호출부에서 thumbnailSrc로 변환해 넘긴다). 있으면 이미지를 커버에
+   *  꽉 차게 깔고, 없으면 아래 생성 커버(그라데이션+모노그램)로 폴백한다. */
+  imageUrl?: string | null;
 }) {
   const art = courseCover(seed, label);
   return (
@@ -25,8 +29,14 @@ export default function CourseCover({
       style={{ ['--cover-from' as string]: art.from, ['--cover-to' as string]: art.to }}
       aria-hidden="true"
     >
-      <CatMark size={size === 'sm' ? 34 : 72} variant="ghost" whiskers={false} className="cover-cat" />
-      <span className="cover-mono">{art.monogram}</span>
+      {imageUrl ? (
+        <img src={imageUrl} alt="" className="cover-img" loading="lazy" />
+      ) : (
+        <>
+          <CatMark size={size === 'sm' ? 34 : 72} variant="ghost" whiskers={false} className="cover-cat" />
+          <span className="cover-mono">{art.monogram}</span>
+        </>
+      )}
     </div>
   );
 }

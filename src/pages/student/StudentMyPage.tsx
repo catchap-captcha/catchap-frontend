@@ -3,7 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
 import { useAuth } from '../../hooks/useAuth';
 import { studentApi } from '../../api/students';
-import { lectureApi, type StudentCourse } from '../../api/lectures';
+import { lectureApi, thumbnailSrc, type StudentCourse } from '../../api/lectures';
 import { StudentNav } from '../../layouts/StudentLayout';
 import { profileColor } from '../../utils/profileColor';
 import { useStudentSettings } from '../../stores/studentSettingsStore';
@@ -287,7 +287,7 @@ export default function StudentMyPage() {
                   <ul className="mp-courselist">
                     {courses.map((c) => (
                       <li key={c.id} className="mp-course">
-                        <CourseCover seed={c.id} label={c.title || c.subject} size="sm" />
+                        <CourseCover seed={c.id} label={c.title || c.subject} imageUrl={thumbnailSrc(c.thumbnail_url)} size="sm" />
                         <div className="mp-course-main">
                           <span className="mp-course-title">{c.title}</span>
                           <span className="mp-course-sub">

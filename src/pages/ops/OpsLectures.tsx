@@ -13,6 +13,7 @@ import {
   type OpsTrashLecture,
   type TranscriptStatus,
   type TranscriptSegment,
+  thumbnailSrc,
 } from '../../api/lectures';
 import OpsNav from '../../components/ops/OpsNav';
 import { useAuth } from '../../hooks/useAuth';
@@ -776,6 +777,21 @@ function LectureFormModal({
       : EMPTY_FORM,
   );
   const [file, setFile] = useState<File | null>(null);
+  // 영상 썸네일(선택) — 새로 고른 파일 + 미리보기(신규는 blob:, 없으면 기존 강의 썸네일).
+  const existingThumb = editing?.thumbnail_url ? thumbnailSrc(editing.thumbnail_url) ?? null : null;
+  const [thumbFile, setThumbFile] = useState<File | null>(null);
+  const [thumbPreview, setThumbPreview] = useState<string | null>(existingThumb);
+  const thumbBlobRef = useRef<string | null>(null); // 현재 미리보기 blob URL(정리 대상)
+  const pickThumb = (f: File | null) => {
+    if (thumbBlobRef.current) URL.revokeObjectURL(thumbBlobRef.current); // 이전 blob 정리(누수 방지)
+    thumbBlobRef.current = f ? URL.createObjectURL(f) : null;
+    setThumbPreview(f ? thumbBlobRef.current : existingThumb); // 취소하면 기존 썸네일(있으면)로 되돌림
+    setThumbFile(f);
+  };
+  // 언마운트 시 남은 blob 미리보기 정리
+  useEffect(() => () => {
+    if (thumbBlobRef.current) URL.revokeObjectURL(thumbBlobRef.current);
+  }, []);
   const [err, setErr] = useState('');
   const [saving, setSaving] = useState(false);
   const [progress, setProgress] = useState<number | null>(null);
@@ -880,6 +896,8 @@ function LectureFormModal({
           // 과목을 바꾸면 changeSubject가 안 맞는 코스를 미리 해제하므로 서버 과목불일치 400은 안 난다.
           course_id: form.course_id || null,
         });
+        // 썸네일을 새로 골랐으면 메타 수정 후 올린다(목록 재조회로 새 thumbnail_url 반영).
+        if (thumbFile) await lectureApi.opsUploadThumbnail(editing.id, thumbFile);
         onSaved('강의 정보를 수정했어요.');
       } else {
         const fd = new FormData();
@@ -899,6 +917,8 @@ function LectureFormModal({
           },
           abortRef.current.signal,
         );
+        // 영상 생성 직후 썸네일(선택)을 올린다 — 아래 목록 재조회에 새 thumbnail_url이 실린다.
+        if (thumbFile) await lectureApi.opsUploadThumbnail(created.id, thumbFile);
         // 성공 표기는 목록 재조회로 실재 확인 후에만 — 업로드 응답만 믿지 않는다.
         // 재조회 자체가 실패한 경우는 '업로드 실패'로 오표기하지 않는다(재업로드 유도 →
         // 중복 강의 생성 위험) — 완료됐을 수 있음을 정직하게 안내한다.
@@ -1029,6 +1049,32 @@ function LectureFormModal({
               />
             </label>
           )}
+
+          {/* 영상 썸네일(선택) — 없으면 학생 화면이 자동 커버(모노그램)를 쓴다. 영상 근처에 둔다. */}
+          <label className="ox-field op-form-span2">
+            영상 썸네일 (선택) — 없으면 자동 커버 사용
+            <span className="lu-help">학생 화면 강의 카드에 보이는 대표 이미지예요. 권장 16:9.</span>
+            <div className="lu-thumb-row">
+              {thumbPreview && (
+                <img
+                  src={thumbPreview}
+                  alt="썸네일 미리보기"
+                  className="lu-thumb-preview"
+                  style={{ width: 160, aspectRatio: '16 / 9', objectFit: 'cover', borderRadius: 8, display: 'block' }}
+                />
+              )}
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => pickThumb(e.target.files?.[0] ?? null)}
+              />
+              {thumbFile && (
+                <button type="button" className="op-btn op-btn--soft" onClick={() => pickThumb(null)}>
+                  <i className="ph-bold ph-x" /> 선택 취소
+                </button>
+              )}
+            </div>
+          </label>
 
           <div className="op-form-section op-form-span2">
             <i className="ph-bold ph-number-circle-two" /> 강의 정보

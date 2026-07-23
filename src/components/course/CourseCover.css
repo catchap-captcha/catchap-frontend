@@ -23,6 +23,18 @@
   border-radius: var(--r);
 }
 
+/* 실제 썸네일 이미지 — 있으면 생성 커버(그라데이션·패턴·모노그램) 위를 꽉 채워 덮는다.
+   컨테이너(.cover)는 이미 position:relative라 inset:0로 정확히 맞물린다. */
+.cover-img {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
 /* 미세 패턴 오버레이 — 흰색 저알파로 그라데이션 위에 질감 부여 */
 .cover::before {
   content: '';

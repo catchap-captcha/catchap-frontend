@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
-import { lectureApi, type LectureItem, type StudentCourse } from '../../api/lectures';
+import { lectureApi, thumbnailSrc, type LectureItem, type StudentCourse } from '../../api/lectures';
 import ScreenTimeReminder from '../../components/motion/ScreenTimeReminder';
 import { StudentNav } from '../../layouts/StudentLayout';
 import { categoryTheme, formatClock } from './lectureSubjects';
@@ -215,6 +215,7 @@ export default function LectureList() {
           <CourseCover
             seed={l.course_id || l.id}
             label={l.title}
+            imageUrl={thumbnailSrc(l.thumbnail_url)}
             size="md"
             className="ll-thumb-cover"
           />
@@ -442,6 +443,7 @@ export default function LectureList() {
                                   <CourseCover
                                     seed={g.course?.id || g.key}
                                     label={g.title}
+                                    imageUrl={thumbnailSrc(g.course?.thumbnail_url)}
                                     size="sm"
                                     className="ll-coursecover"
                                   />

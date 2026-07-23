@@ -13,6 +13,11 @@ import { client } from './client';
 export const API_ORIGIN =
   (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? 'http://localhost:8000';
 
+/** 썸네일 등 백엔드가 주는 상대경로(`/api/v1/...`)를 <img src>용 절대 URL로. 이미 http면 그대로,
+ *  없으면 undefined(호출부에서 폴백 커버 유지). thumbnail_url이 origin-상대라 API_ORIGIN만 붙인다. */
+export const thumbnailSrc = (url?: string | null): string | undefined =>
+  url ? (url.startsWith('http') ? url : API_ORIGIN + url) : undefined;
+
 export interface LectureProgress {
   watched_max_sec: number;
   next_checkpoint_sec: number | null;
@@ -31,6 +36,9 @@ export interface LectureItem {
   duration_sec: number;
   question_count: number;
   progress: LectureProgress | null; // null = 아직 시작 안 함
+  /** 영상 썸네일 서빙 URL(상대경로 `/api/v1/lectures/{id}/thumbnail?v=...`, thumbnailSrc로 절대화).
+   *  null이면 자동 커버(CourseCover) 폴백. */
+  thumbnail_url?: string | null;
 }
 
 /** 학생용 코스 — 활성 코스 + 강사 실명 + 활성 강의 수. GET /courses. */
@@ -44,6 +52,8 @@ export interface StudentCourse {
   order_no: number;
   instructor_name: string | null;
   lecture_count: number;
+  /** 코스 대표 썸네일 서빙 URL(상대경로, thumbnailSrc로 절대화). null이면 자동 커버 폴백. */
+  thumbnail_url?: string | null;
   /** 수강신청 여부 — true면 '내 코스'(수강 중, '수강 취소' 노출), false면 '수강신청' 버튼 */
   enrolled?: boolean;
   /** 코스 Q(3단계-b) — 이 코스 강의에서 은행에 배치된 문항 수(총). 0이면 배지 숨김 */
@@ -125,6 +135,8 @@ export interface OpsLecture {
   /** 소속 코스 id — null이면 미분류(코스 도입 전 강의 또는 코스에서 뺀 강의) */
   course_id: string | null;
   created_at: string | null;
+  /** 영상 썸네일 서빙 URL(상대경로, thumbnailSrc로 절대화). null이면 아직 미등록(자동 커버). */
+  thumbnail_url?: string | null;
 }
 
 /** 휴지통 항목 — 삭제된(복구 가능) 강의. days_left = 자동 완전삭제까지 남은 일수
@@ -528,6 +540,16 @@ export const lectureApi = {
       course_id: string | null;
     }>,
   ) => client.put<OpsLecture>(`/ops/lectures/${lectureId}`, body).then((r) => r.data),
+
+  /** 영상 썸네일 업로드(multipart, field 'file') — 강의 대표 이미지. 갱신된 강의 행(thumbnail_url 포함) 반환.
+   *  코스 대표 썸네일은 소속 강의 썸네일에서 백엔드가 유도한다(별도 코스 업로드 없음). */
+  opsUploadThumbnail: (lectureId: string, file: File) => {
+    const fd = new FormData();
+    fd.append('file', file);
+    return client
+      .post<OpsLecture>(`/ops/lectures/${lectureId}/thumbnail`, fd)
+      .then((r) => r.data);
+  },
 
   /** 강의 삭제 = 휴지통으로 이동(복구 가능). 파일·문항·전사 모두 보존되고 30일 뒤 자동 완전삭제. */
   opsDelete: (lectureId: string) =>

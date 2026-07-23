@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams, type NavigateFunction } from 'react-route
 import StudentLayout from '../../layouts/StudentLayout';
 import { useAuth } from '../../hooks/useAuth';
 import { studentApi } from '../../api/students';
-import { lectureApi, type StudentCourse } from '../../api/lectures';
+import { lectureApi, thumbnailSrc, type StudentCourse } from '../../api/lectures';
 import { PATHS } from '../../routes/paths';
 import ChapterAccuracyChart, { type SubjectStat } from '../../components/student/ChapterAccuracyChart';
 import HabitTrendLine, { type HabitDay } from '../../components/student/HabitTrendLine';
@@ -134,7 +134,7 @@ function CompCard({ c, navigate }: { c: StudentCourse; navigate: NavigateFunctio
     const perfect = ex.perfect;
     return (
       <button className={`mr-comp${perfect ? ' mr-comp--perfect' : ''}`} onClick={go}>
-        <CourseCover seed={c.id} label={c.title || c.subject} size="sm" className="mr-compcover" />
+        <CourseCover seed={c.id} label={c.title || c.subject} imageUrl={thumbnailSrc(c.thumbnail_url)} size="sm" className="mr-compcover" />
         <span className="mr-compbody">
           <span className="mr-comptitle">{c.title}</span>
           <span className="mr-compmeta">
@@ -151,7 +151,7 @@ function CompCard({ c, navigate }: { c: StudentCourse; navigate: NavigateFunctio
   if (ex.available) {
     return (
       <button className="mr-comp mr-comp--progress" onClick={go}>
-        <CourseCover seed={c.id} label={c.title || c.subject} size="sm" className="mr-compcover" />
+        <CourseCover seed={c.id} label={c.title || c.subject} imageUrl={thumbnailSrc(c.thumbnail_url)} size="sm" className="mr-compcover" />
         <span className="mr-compbody">
           <span className="mr-comptitle">{c.title}</span>
           <span className="mr-compmeta">
@@ -164,7 +164,7 @@ function CompCard({ c, navigate }: { c: StudentCourse; navigate: NavigateFunctio
   }
   return (
     <button className="mr-comp mr-comp--locked" onClick={go}>
-      <CourseCover seed={c.id} label={c.title || c.subject} size="sm" className="mr-compcover mr-compcover--locked" />
+      <CourseCover seed={c.id} label={c.title || c.subject} imageUrl={thumbnailSrc(c.thumbnail_url)} size="sm" className="mr-compcover mr-compcover--locked" />
       <span className="mr-compbody">
         <span className="mr-comptitle">{c.title}</span>
         <span className="mr-compmeta">
