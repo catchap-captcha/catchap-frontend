@@ -1,4 +1,8 @@
-/* 설정 페이지 — 키 카드 2장 + 흐름 안내. OpsApproval.css의 공통(op-page/op-main/op-btn) 위에 얹는다 */
+/* 설정 페이지 — 키 카드 2장 + 흐름 안내. OpsApproval.css의 공통(op-page/op-main/op-btn) 위에 얹는다.
+   2026-07-23 "애플 디자인 이식": OpsLlm*(모델/키/프롬프트) 페이지가 .op-root(OpsApproval.css)와
+   함께 import하므로 애플 뉴트럴+블루 토큰을 상속한다(별도 토큰 블록 불필요). 코드 배경·아이콘·
+   단계 번호 등 브랜드 액센트는 자동으로 블루가 되고, 카드/입력 머티리얼도 토큰으로 재해석된다.
+   ★보존: 키 설정 상태 칩(설정됨=초록/미설정=빨강)·출처 배지(로컬=빨강/서버=초록)·경고(주황). */
 
 .ops-set-flow {
   display: flex;
@@ -36,7 +40,7 @@
   font-weight: 800;
 }
 .ops-set-chip--ok { background: #e5f6ee; color: var(--ok-ink); }
-.ops-set-chip--off { background: #fff1ef; color: var(--brand-ink); }
+.ops-set-chip--off { background: #fff1ef; color: var(--danger); }
 .ops-set-desc { margin: 8px 0 0; font-size: 13px; color: var(--ink-2); font-weight: 600; line-height: 1.6; }
 .ops-set-src { margin: 6px 0 0; font-size: 12px; color: var(--ink-3); font-weight: 700; }
 .ops-set-src--bad { color: #d15448; }

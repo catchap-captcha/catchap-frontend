@@ -1,7 +1,12 @@
 /* 운영 콘솔 · 감사 로그 — 핸드오프 소스: CatChap 감사 로그.dc.html
  * OpsApproval.css(공용, 구코랄·둥근·그라디언트 스타일) 위에 얹혀, 이 페이지(.ops-auditlog) 안의
  * 공용 클래스(필터바/로그 표/페이지네이션/미리보기 모달)만 플랫 핸드오프 톤으로 덮어쓴다.
- * (OpsApproval.css는 다른 운영 페이지와 공유되므로 직접 수정하지 않음) */
+ * (OpsApproval.css는 다른 운영 페이지와 공유되므로 직접 수정하지 않음)
+ *
+ * 2026-07-23 애플 머티리얼 이식: 애플 뉴트럴+블루 토큰은 OpsApproval.css가 공용 .op-root에 이미
+ * 스코프 오버라이드해 상속되므로 중복 선언하지 않는다. 여기서는 로그 표·미리보기 모달을 플랫
+ * 핸드오프에서 애플 머티리얼(0.5px 헤어라인·큰 라운드·애플 소프트 섀도우)로 올린다.
+ * ★감사로그 행위 아이콘 의미색(ok/no/warn/neutral)·상태색은 그대로 보존한다. */
 
 .ops-auditlog.op-root { background: var(--bg); }
 
@@ -36,9 +41,9 @@
 /* ── 로그 표 ── */
 .ops-auditlog .op-logcard {
   background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  box-shadow: none;
+  border: 0.5px solid var(--line);
+  border-radius: 18px;
+  box-shadow: var(--op-shadow);
 }
 .ops-auditlog .op-loghead {
   background: var(--bg);
@@ -87,8 +92,8 @@
 .ops-auditlog .op-bh-overlay { background: var(--overlay); }
 .ops-auditlog .op-formmodal {
   background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 16px;
+  border: 0.5px solid var(--line);
+  border-radius: 20px;
   box-shadow: var(--shadow-lg);
 }
 .ops-auditlog .op-bh-modal-h { border-bottom: 1px solid var(--line); color: var(--ink); }

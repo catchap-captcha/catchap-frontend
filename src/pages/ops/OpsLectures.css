@@ -1,4 +1,8 @@
-/* 강의 관리 — OpsApproval.css(op-*) 공용 위에 얹는 페이지 전용 스타일 */
+/* 강의 관리 — OpsApproval.css(op-*) 공용 위에 얹는 페이지 전용 스타일.
+   2026-07-23 "애플 디자인 이식": .op-root(OpsApproval.css)의 애플 뉴트럴+블루 토큰을 상속하는
+   오버레이라 별도 토큰 블록 불필요. 이 파일에선 하드코딩 웜 섀도우→쿨, 코랄 포커스/드래그
+   액센트→블루로 정제하고, 코랄(--brand)을 '위험/경고 데이터'로 쓰던 곳은 의미색(빨강/노랑)으로
+   고정한다. ★보존: 정답 표시(초록)·통과율 저조(빨강)·경고(노랑)·업로드 진행바 등 의미/데이터색. */
 
 .op-lect-grid {
   display: grid;
@@ -8,7 +12,7 @@
 }
 .op-lect-dim { color: var(--ink-3); }
 .op-lect-actions { display: inline-flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
-.op-lect-danger { color: var(--brand-strong) !important; }
+.op-lect-danger { color: var(--danger) !important; }
 
 /* 헤더 우측 버튼 묶음(코스 관리 + 강의 업로드) */
 .op-lect-headbtns { display: inline-flex; gap: 8px; flex-wrap: wrap; align-items: center; }
@@ -33,7 +37,7 @@
   background: var(--surface);
   border: 1.5px solid var(--line);
   border-radius: 18px;
-  box-shadow: 0 1px 2px rgba(58, 51, 64, 0.04), 0 14px 30px -24px rgba(90, 60, 55, 0.22);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03), 0 14px 30px -24px rgba(0, 0, 0, 0.15);
   margin: 0 0 16px;
   overflow: hidden;
 }
@@ -85,7 +89,7 @@
 .op-lect-draggable { cursor: grab; }
 .op-lect-draggable:active { cursor: grabbing; }
 .op-lect-dragging { opacity: 0.45; }
-.op-lect-draghandle { color: #c9bda9; margin-right: 6px; cursor: grab; vertical-align: middle; }
+.op-lect-draghandle { color: var(--ink-3); margin-right: 6px; cursor: grab; vertical-align: middle; }
 .op-lect-draghandle:hover { color: var(--ink-2); }
 .op-lect-movebtns { display: inline-flex; flex-direction: column; gap: 2px; margin-right: 2px; }
 .op-lect-movebtn { padding: 2px 6px !important; line-height: 1; }
@@ -102,7 +106,7 @@
 /* 업로드 진행률 */
 .op-lect-progress { margin-top: 12px; display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 12.5px; color: var(--ink-2); }
 .op-lect-progress-track { flex: 1; height: 8px; border-radius: 999px; background: var(--line); overflow: hidden; }
-.op-lect-progress-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--warn), var(--brand)); transition: width 0.2s ease; }
+.op-lect-progress-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--brand-strong), var(--brand)); transition: width 0.2s ease; }
 
 /* 문항/자료 모달 */
 /* op-formmodal의 max-width:560px를 반드시 함께 풀어야 넓은 폭이 실제로 적용된다.
@@ -132,7 +136,7 @@
   padding: 9px 11px; font-size: 12.5px; font-family: ui-monospace, monospace; line-height: 1.6;
   color: var(--ink); resize: vertical;
 }
-.op-lect-tr-paste textarea:focus { outline: 2px solid #ffd0c8; border-color: var(--brand); }
+.op-lect-tr-paste textarea:focus { outline: 2px solid var(--brand-soft); border-color: var(--brand); }
 .op-lect-tr-paste-act { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
 .op-lect-tr-paste-act .op-btn { padding: 8px 16px; font-size: 13px; }
 
@@ -281,7 +285,7 @@
   padding: 10px 12px;
   border-radius: 12px;
   background: var(--warn-soft);
-  color: var(--brand-ink);
+  color: var(--warn-ink);
   font-weight: 700;
   font-size: 13px;
 }
@@ -298,7 +302,7 @@
   transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
 }
 .op-lect-qform .ox-field > input::placeholder,
-.op-lect-qform .ox-field > textarea::placeholder { color: #c2b4a2; font-weight: 500; }
+.op-lect-qform .ox-field > textarea::placeholder { color: var(--ink-3); font-weight: 500; }
 .op-lect-qform .ox-field > input:focus,
 .op-lect-qform .ox-field > textarea:focus {
   outline: none; border-color: var(--brand); background: var(--surface); box-shadow: 0 0 0 3px var(--brand-soft);
@@ -348,7 +352,7 @@
   transition: border-color 0.15s, background 0.15s;
 }
 .lu-drop:hover { border-color: var(--ink-3); background: var(--surface); }
-.lu-drop--over { border-color: #2563eb; background: var(--surface); }
+.lu-drop--over { border-color: var(--brand); background: var(--surface); }
 .lu-drop--has { border-style: solid; border-color: var(--line); background: var(--surface); }
 .lu-drop b { font-size: 14px; color: var(--info-ink); word-break: break-all; }
 .lu-drop-ico { font-size: 30px; color: var(--ink-3); }
@@ -363,7 +367,7 @@
   margin: 2px 0 4px;
 }
 /* 입력 중 실시간 범위 경고(고정 시점이 0초·영상 밖일 때) — 제출 전에 미리 알린다 */
-.lu-help--bad { color: var(--brand-strong); font-weight: 700; }
+.lu-help--bad { color: var(--danger); font-weight: 700; }
 
 /* ── 문항 이미지 첨부 (강사용) ─────────────────────────────
    강의 화면 캡처를 문제·보기에 붙인다 — 텍스트 보기는 상식으로 찍히지만
@@ -387,7 +391,7 @@
 }
 .lu-imgdrop i { font-size: 20px; color: var(--ink-3); }
 .lu-imgdrop:hover { border-color: var(--ink-3); background: var(--surface); }
-.lu-imgdrop--over { border-color: #2563eb; background: var(--surface); }
+.lu-imgdrop--over { border-color: var(--brand); background: var(--surface); }
 .lu-imgdrop--off { cursor: default; opacity: 0.75; }
 .lu-imgdrop--off:hover { border-color: #cbd5e1; background: var(--surface); }
 
@@ -453,7 +457,7 @@
 }
 .lu-imgbtn:hover:not(:disabled) { border-color: var(--ink-3); background: var(--surface); }
 .lu-imgbtn:disabled { opacity: 0.55; cursor: default; }
-.lu-imgbtn--danger { color: var(--brand-strong); }
+.lu-imgbtn--danger { color: var(--danger); }
 .lu-imgbtn-busy { font-size: 10px; font-weight: 700; }
 .lu-optimg { display: inline-flex; align-items: center; gap: 4px; flex: none; }
 .lu-optimg img {
@@ -592,7 +596,7 @@
   padding: 2px 7px;
   border-radius: 6px;
   background: var(--surface);
-  color: var(--brand-ink);
+  color: var(--danger);
   font-size: 11px;
   font-weight: 700;
   white-space: nowrap;
@@ -692,7 +696,7 @@
 .op-exam-tag--past_exam { background: #fff1e0; color: var(--warn); }
 .op-exam-tag--lecture { background: var(--info-soft); color: var(--info); }
 .op-exam-tag--llm { background: var(--ok-soft); color: var(--ok); }
-.op-exam-tag--draft { background: #f4efe6; color: var(--ink-3); }
+.op-exam-tag--draft { background: var(--surface-2); color: var(--ink-3); }
 
 /* ===== 코스 시험 지표(대시보드) ===== */
 /* 요약 KPI 밴드 — 응시·수료·수료율·완벽 통과 */
@@ -739,8 +743,8 @@
 .op-exam-pass-sub { font-weight: 700; opacity: 0.75; }
 .op-exam-pass--ok { background: var(--ok-soft); color: var(--ok-ink); }
 .op-exam-pass--mid { background: #fff3d9; color: var(--warn-ink); }
-.op-exam-pass--low { background: #ffe2df; color: var(--brand-ink); }
-.op-exam-qstat-b { background: #f1eee8; color: var(--warn-ink); }
+.op-exam-pass--low { background: #ffe2df; color: var(--danger); }
+.op-exam-qstat-b { background: var(--surface-2); color: var(--warn-ink); }
 
 /* 오답 선택지 분석(distractor analysis) — 틀린 학생이 고른 보기 */
 .op-exam-distractors {

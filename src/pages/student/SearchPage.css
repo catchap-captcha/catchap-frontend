@@ -1,4 +1,22 @@
-/* handoff `CatChap 검색.dc.html` — 리뉴얼 플랫 디자인에 정렬 (접두사 sp-) */
+/* handoff `CatChap 검색.dc.html` — 2026-07-23 애플 디자인 이식(정공법·CSS만).
+   .sp-root에 애플 뉴트럴+블루 토큰을 스코프 오버라이드(전역 theme.css 불변). 클래스명·레이아웃 불변.
+   태그 의미색(과목/게임/기타=info/warn ink)은 전역값 그대로 둔다. */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+.sp-root {
+  --font-display: 'SF Pro Display', 'SF Pro Text', 'Inter', -apple-system, system-ui, sans-serif;
+  --bg: #f5f5f7; --surface: #ffffff; --surface-2: #f5f5f7;
+  --ink: #1d1d1f; --ink-2: #6e6e73; --ink-3: #86868b;
+  --line: rgba(0, 0, 0, 0.08); --line-strong: rgba(0, 0, 0, 0.14);
+  --brand: #0071e3; --brand-strong: #0077ed; --brand-soft: rgba(0, 113, 227, 0.12); --brand-ink: #0071e3; --on-brand: #fff;
+  font-family: 'SF Pro Text', 'Inter', -apple-system, system-ui, sans-serif; letter-spacing: -0.01em; -webkit-font-smoothing: antialiased;
+}
+[data-theme='dark'] .sp-root {
+  --bg: #000; --surface: #1c1c1e; --surface-2: #0a0a0a; --ink: #f5f5f7; --ink-2: #aeaeb2; --ink-3: #8e8e93;
+  --line: rgba(255, 255, 255, 0.1); --line-strong: rgba(255, 255, 255, 0.18);
+  --brand: #0a84ff; --brand-strong: #409cff; --brand-soft: rgba(10, 132, 255, 0.18); --brand-ink: #409cff;
+}
 
 .sp-root {
   min-height: 100vh;
@@ -29,9 +47,9 @@
 
 .sp-input {
   width: 100%;
-  border: 1px solid var(--line-strong);
+  border: 0.5px solid var(--line-strong);
   background: var(--surface);
-  border-radius: 14px;
+  border-radius: 16px;
   padding: 17px 46px 17px 50px;
   font-size: 15.5px;
   color: var(--ink);
@@ -109,7 +127,7 @@
 
 .sp-cardtitle {
   font-family: var(--font-display);
-  font-weight: 800;
+  font-weight: 700;
   font-size: 16px;
   letter-spacing: -0.02em;
   color: var(--ink);
@@ -127,18 +145,21 @@
   align-items: center;
   gap: 11px;
   background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 12px;
+  border: 0.5px solid var(--line);
+  border-radius: 14px;
   padding: 15px 16px;
   color: var(--ink);
   text-decoration: none;
   font-family: var(--font);
   font-weight: 700;
   font-size: 14px;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.02), 0 8px 24px -12px rgba(0, 0, 0, 0.14);
+  transition: transform 0.4s cubic-bezier(0.34, 1.4, 0.5, 1), border-color 0.2s ease;
 }
 
 .sp-popchip:hover {
   border-color: var(--line-strong);
+  transform: translateY(-2px);
 }
 
 .sp-popicon {
@@ -180,7 +201,7 @@
 
 .sp-recenttitle {
   font-family: var(--font-display);
-  font-weight: 800;
+  font-weight: 700;
   font-size: 16px;
   letter-spacing: -0.02em;
   color: var(--ink);
@@ -288,14 +309,17 @@
   align-items: center;
   gap: 14px;
   background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 12px;
+  border: 0.5px solid var(--line);
+  border-radius: 16px;
   padding: 16px 18px;
   color: var(--ink);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.02), 0 8px 24px -12px rgba(0, 0, 0, 0.14);
+  transition: transform 0.4s cubic-bezier(0.34, 1.4, 0.5, 1), border-color 0.2s ease;
 }
 
 .sp-result:hover {
   border-color: var(--line-strong);
+  transform: translateY(-2px);
 }
 
 .sp-resulticon {
@@ -391,7 +415,7 @@
 
 .sp-notitle {
   font-family: var(--font-display);
-  font-weight: 800;
+  font-weight: 700;
   font-size: 18px;
   color: var(--ink);
   margin: 0 0 6px;

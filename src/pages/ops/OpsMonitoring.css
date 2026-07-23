@@ -1,4 +1,10 @@
-/* 서버 모니터링 — op-* 콘솔 톤(디자인 토큰) */
+/* 서버 모니터링 — 2026-07-23 "애플 디자인 이식(머티리얼 정렬)".
+   애플 토큰(뉴트럴+블루·쿨 배경·애플 소프트 섀도우 --op-shadow)은 공용 OpsApproval.css가
+   이미 .op-root에 스코프 오버라이드한다(tsx가 OpsApproval.css를 먼저 import). 여기서는
+   토큰 블록을 재선언하지 않고 패널/카드를 애플 소프트 섀도우로 정렬하고 큰 숫자를 다듬는다.
+   ★게이지·차트 데이터색 절대 보존: CPU/메모리/디스크/GPU 사용률 게이지의 정상/경고/위험
+    = var(--ok/--warn/--danger)(초록/노랑/빨강), 추이 라인 CPU/메모리/GPU 및 임계 경보(danger),
+    신선도 배지(ok/warn) 색은 그대로 둔다. GPU 보라(#8b6bff)도 데이터색이라 유지. */
 
 /* LLM 사용량 패널 */
 .mon-llm {
@@ -6,7 +12,7 @@
   border: 1px solid var(--line);
   border-radius: var(--r);
   padding: 20px 22px;
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--op-shadow);
   margin-bottom: 20px;
 }
 .mon-llm-head {
@@ -50,10 +56,11 @@
   gap: 4px;
 }
 .mon-llm-num {
-  font-family: var(--font-display); font-weight: 800;
+  font-family: var(--font-display); font-weight: 700;
   font-size: 24px;
   color: var(--ink);
   line-height: 1;
+  letter-spacing: -0.03em;
 }
 .mon-llm-lb {
   font-size: 12px;
@@ -101,7 +108,7 @@
   border: 1px solid var(--line);
   border-radius: var(--r);
   padding: 18px 20px;
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--op-shadow);
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -224,8 +231,9 @@
   color: var(--ink-2);
 }
 .mon-metric-val {
-  font-family: var(--font-display); font-weight: 800;
+  font-family: var(--font-display); font-weight: 700;
   font-size: 15px;
+  letter-spacing: -0.02em;
 }
 .mon-metric-sub {
   font-size: 11.5px;
@@ -311,7 +319,9 @@
   stroke-linejoin: round;
   stroke-linecap: round;
 }
-.mon-line--cpu { stroke: var(--brand); }
+/* CPU 시리즈는 원본 코랄 유지 — .op-root 애플 블루 오버라이드로 var(--brand)가 블루가 되면
+   MEM(info 블루) 선과 색이 충돌한다. 차트 데이터색은 보존 규칙에 따라 하드코딩으로 고정. */
+.mon-line--cpu { stroke: #ea5443; }
 .mon-line--mem { stroke: var(--info); }
 .mon-line--gpu { stroke: #8b6bff; }
 .mon-trend-legend {
@@ -334,7 +344,7 @@
   height: 3px;
   border-radius: 2px;
 }
-.mon-lg--cpu::before { background: var(--brand); }
+.mon-lg--cpu::before { background: #ea5443; }
 .mon-lg--mem::before { background: var(--info); }
 .mon-lg--gpu::before { background: #8b6bff; }
 .mon-trend-span {
@@ -388,7 +398,7 @@
 }
 .mon-card--alert {
   border-color: var(--danger);
-  box-shadow: 0 0 0 1px var(--danger), var(--shadow-md);
+  box-shadow: 0 0 0 1px var(--danger), var(--op-shadow);
 }
 .mon-card-badges {
   display: flex;

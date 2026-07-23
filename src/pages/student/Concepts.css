@@ -1,4 +1,23 @@
-/* 개념설명 — handoff `CatChap 개념설명.dc.html` 원본 그대로 (접두사 cp-) */
+/* 개념설명 — 2026-07-23 애플 디자인 이식(정공법·CSS만). 접두사 cp-.
+   .cp-root에 애플 뉴트럴+블루 토큰을 스코프 오버라이드(전역 theme.css 불변). 클래스명·레이아웃 불변.
+   자체 전체화면 루트(.cp-nav 내장)라 파일 끝에 body:has(.cp-root) 뷰포트 쿨 폴백을 둔다.
+   정답=초록(--ok)·분류(과목) 색은 의미색이라 그대로 둔다. */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+.cp-root {
+  --font-display: 'SF Pro Display', 'SF Pro Text', 'Inter', -apple-system, system-ui, sans-serif;
+  --bg: #f5f5f7; --surface: #ffffff; --surface-2: #f5f5f7;
+  --ink: #1d1d1f; --ink-2: #6e6e73; --ink-3: #86868b;
+  --line: rgba(0, 0, 0, 0.08); --line-strong: rgba(0, 0, 0, 0.14);
+  --brand: #0071e3; --brand-strong: #0077ed; --brand-soft: rgba(0, 113, 227, 0.12); --brand-ink: #0071e3; --on-brand: #fff;
+  font-family: 'SF Pro Text', 'Inter', -apple-system, system-ui, sans-serif; letter-spacing: -0.01em; -webkit-font-smoothing: antialiased;
+}
+[data-theme='dark'] .cp-root {
+  --bg: #000; --surface: #1c1c1e; --surface-2: #0a0a0a; --ink: #f5f5f7; --ink-2: #aeaeb2; --ink-3: #8e8e93;
+  --line: rgba(255, 255, 255, 0.1); --line-strong: rgba(255, 255, 255, 0.18);
+  --brand: #0a84ff; --brand-strong: #409cff; --brand-soft: rgba(10, 132, 255, 0.18); --brand-ink: #409cff;
+}
 
 /* rotate는 비트맵 마스코트를 매 프레임 리샘플링해 번져 보임 → 이동만 남김 */
 @keyframes cpFloat {
@@ -55,12 +74,8 @@
 
 .cp-root {
   min-height: 100vh;
-  background:
-    radial-gradient(1100px 560px at 84% -8%, #ffefdd 0%, rgba(255, 239, 221, 0) 60%),
-    radial-gradient(900px 520px at 4% 6%, var(--info-soft) 0%, rgba(234, 241, 255, 0) 55%),
-    #fff8f0;
+  background: var(--bg);
   padding-bottom: 72px;
-  font-family: 'Pretendard', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -69,9 +84,13 @@
   position: sticky;
   top: 0;
   z-index: 60;
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(12px);
-  border-bottom: 2px solid var(--line);
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: saturate(180%) blur(24px);
+  -webkit-backdrop-filter: saturate(180%) blur(24px);
+  border-bottom: 0.5px solid var(--line);
+}
+[data-theme='dark'] .cp-nav {
+  background: rgba(28, 28, 30, 0.6);
 }
 
 .cp-navinner {
@@ -164,10 +183,10 @@
 .cp-hero {
   position: relative;
   overflow: hidden;
-  border-radius: 30px;
+  border-radius: 24px;
   background: linear-gradient(120deg, var(--warn-soft) 0%, var(--brand-soft) 52%, var(--info-soft) 100%);
   padding: 30px 34px;
-  box-shadow: 0 22px 44px -26px rgba(200, 150, 110, 0.5);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.02), 0 8px 24px -12px rgba(0, 0, 0, 0.14);
   display: flex;
   align-items: center;
   gap: 26px;
@@ -207,11 +226,11 @@
 }
 
 .cp-herotitle {
-  font-family: var(--font-display); font-weight: 800;
+  font-family: var(--font-display); font-weight: 700;
   font-size: 34px;
   color: var(--brand-ink);
   margin: 14px 0 8px;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.02em;
 }
 
 .cp-herodesc {
@@ -314,8 +333,9 @@ animation: cpFloat 4.5s ease-in-out infinite;
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
-  background: rgba(255, 248, 240, 0.85);
-  backdrop-filter: blur(8px);
+  background: rgba(245, 245, 247, 0.85);
+  backdrop-filter: saturate(180%) blur(12px);
+  -webkit-backdrop-filter: saturate(180%) blur(12px);
   padding: 6px 0;
 }
 
@@ -331,13 +351,13 @@ animation: cpFloat 4.5s ease-in-out infinite;
   border-radius: 16px;
   min-height: 40px;
   transition: transform 0.12s;
-  border: 2px solid var(--line);
+  border: 0.5px solid var(--line);
   background: var(--surface);
   color: var(--ink-3);
 }
 
 .cp-tab.cp-tab-on {
-  border: 2px solid transparent;
+  border: 0.5px solid transparent;
   color: var(--on-brand);
   background: var(--cp-c);
   box-shadow: 0 10px 20px -10px var(--cp-c);
@@ -373,11 +393,11 @@ animation: cpFloat 4.5s ease-in-out infinite;
 }
 
 .cp-sectitle {
-  font-family: var(--font-display); font-weight: 800;
+  font-family: var(--font-display); font-weight: 700;
   font-size: 23px;
   color: var(--ink);
   margin: 0;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.02em;
 }
 
 .cp-secsub {
@@ -397,9 +417,9 @@ animation: cpFloat 4.5s ease-in-out infinite;
   position: relative;
   overflow: hidden;
   background: var(--surface);
-  border: 2px solid var(--line);
-  border-radius: 24px;
-  box-shadow: 0 14px 30px -24px rgba(180, 120, 90, 0.5);
+  border: 0.5px solid var(--line);
+  border-radius: 22px;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.02), 0 8px 24px -12px rgba(0, 0, 0, 0.14);
   cursor: pointer;
   transition:
     transform 0.18s,
@@ -472,7 +492,7 @@ animation: cpFloat 4.5s ease-in-out infinite;
 }
 
 .cp-cardname {
-  font-family: var(--font-display); font-weight: 800;
+  font-family: var(--font-display); font-weight: 700;
   font-size: 18px;
   color: var(--ink);
   line-height: 1.2;
@@ -617,11 +637,11 @@ animation: cpFloat 4.5s ease-in-out infinite;
 }
 
 .cp-sheettitle {
-  font-family: var(--font-display); font-weight: 800;
+  font-family: var(--font-display); font-weight: 700;
   font-size: 26px;
   color: var(--ink);
   margin: 0 0 8px;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.02em;
 }
 
 .cp-sheetsummary {
@@ -650,8 +670,8 @@ animation: cpFloat 4.5s ease-in-out infinite;
   align-items: flex-start;
   gap: 11px;
   background: var(--surface);
-  border: 1.5px solid var(--line);
-  border-radius: 15px;
+  border: 0.5px solid var(--line);
+  border-radius: 16px;
   padding: 13px 15px;
 }
 
@@ -721,7 +741,7 @@ animation: cpFloat 4.5s ease-in-out infinite;
 
 .cp-sheetback {
   flex-shrink: 0;
-  border: 2px solid var(--line);
+  border: 0.5px solid var(--line);
   background: var(--surface);
   color: var(--ink-2);
   font-weight: 800;
@@ -769,11 +789,11 @@ animation: cpFloat 4.5s ease-in-out infinite;
 }
 .cp-quizbtn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 5px 12px -6px rgba(255, 90, 77, 0.28);
+  box-shadow: 0 5px 12px -6px color-mix(in srgb, var(--brand) 40%, transparent);
 }
 .cp-quizbtn:active {
   transform: translateY(0) scale(0.97);
-  box-shadow: 0 2px 6px -4px rgba(255, 90, 77, 0.28);
+  box-shadow: 0 2px 6px -4px color-mix(in srgb, var(--brand) 40%, transparent);
   transition-duration: 0.09s;
 }
 @media (prefers-reduced-motion: reduce) {
@@ -782,22 +802,22 @@ animation: cpFloat 4.5s ease-in-out infinite;
 }
 
 
-/* ===== 엘리베이션: 카드 질감 고급화 (레이어드 웜 섀도우) ===== */
+/* ===== 엘리베이션: 카드 질감 고급화 (애플 중성 소프트 섀도우) ===== */
 .cp-card {
   box-shadow:
-    0 1px 3px rgba(58, 51, 64, 0.05),
-    0 16px 34px -20px rgba(90, 60, 55, 0.2);
+    0 1px 1px rgba(0, 0, 0, 0.02),
+    0 8px 24px -12px rgba(0, 0, 0, 0.14);
 }
 .cp-card {
   transition:
-    box-shadow 0.28s ease,
-    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+    box-shadow 0.4s ease,
+    transform 0.5s cubic-bezier(0.34, 1.4, 0.5, 1);
 }
 .cp-card:hover {
-  transform: translateY(-3px);
+  transform: translateY(-4px);
   box-shadow:
-    0 2px 6px rgba(58, 51, 64, 0.06),
-    0 24px 44px -22px rgba(90, 60, 55, 0.26);
+    0 2px 4px rgba(0, 0, 0, 0.04),
+    0 26px 50px -20px rgba(0, 0, 0, 0.24);
 }
 @media (prefers-reduced-motion: reduce) {
   .cp-card { transition: none; }
@@ -836,3 +856,7 @@ animation: cpFloat 4.5s ease-in-out infinite;
 /* 다크모드 — 스티키 탭 바 배경이 라이트 크림(rgba 255,248,240)이라 다크에서 밝은 바로 보인다.
    라이트에선 페이지 배경과 같아 안 보였음. 다크에선 페이지 배경(var(--bg))에 맞춘다. */
 [data-theme='dark'] .cp-tabsrow { background: var(--bg); }
+
+/* 자체 전체화면 루트 — 뷰포트(body) 배경도 애플 쿨 그레이로(상단 여백·오버스크롤에 웜 톤 방지). */
+body:has(.cp-root) { background: #f5f5f7; }
+[data-theme='dark'] body:has(.cp-root) { background: #000; }

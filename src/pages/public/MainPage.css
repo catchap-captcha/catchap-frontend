@@ -1,7 +1,53 @@
-/* CatChap 랜딩 — handoff `CatChap 랜딩.dc.html` */
+/* CatChap 랜딩 — 2026-07-23 애플 디자인 이식(정공법·CSS만).
+   왜 이 방식: 전역 theme.css(웜 코랄)는 그대로 두고 .mn-page에 애플 뉴트럴+블루 토큰을
+   "스코프 오버라이드"한다 → 이 페이지의 var(--bg)/var(--surface)/var(--ink)/var(--brand)가
+   애플 쿨 그레이·SF 타이포·블루로 해석된다(다른 페이지·JSX·클래스명 무변경).
+   보존: 로고 마스코트(png) 코랄, 성공=초록(--ok)·오류=빨강(--danger) 의미색. */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 .mn-page {
+  --font-display: 'SF Pro Display', 'SF Pro Text', 'Inter', -apple-system, system-ui, sans-serif;
+  --bg: #f5f5f7;
+  --surface: #ffffff;
+  --surface-2: #f5f5f7;
+  --ink: #1d1d1f;
+  --ink-2: #6e6e73;
+  --ink-3: #86868b;
+  --line: rgba(0, 0, 0, 0.08);
+  --line-strong: rgba(0, 0, 0, 0.14);
+  --brand: #0071e3;
+  --brand-strong: #0077ed;
+  --brand-soft: rgba(0, 113, 227, 0.12);
+  --brand-ink: #0071e3;
+  --on-brand: #ffffff;
+  --mn-glass: rgba(255, 255, 255, 0.72);
+  --ap-shadow: 0 1px 1px rgba(0, 0, 0, 0.02), 0 8px 24px -12px rgba(0, 0, 0, 0.14);
+  --ap-shadow-hi: 0 2px 4px rgba(0, 0, 0, 0.04), 0 26px 50px -20px rgba(0, 0, 0, 0.24);
+  --ap-ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --ap-spring: cubic-bezier(0.34, 1.4, 0.5, 1);
+
   background: var(--bg);
+  font-family: 'SF Pro Text', 'Inter', -apple-system, system-ui, sans-serif;
+  letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased;
+}
+[data-theme='dark'] .mn-page {
+  --bg: #000000;
+  --surface: #1c1c1e;
+  --surface-2: #0a0a0a;
+  --ink: #f5f5f7;
+  --ink-2: #aeaeb2;
+  --ink-3: #8e8e93;
+  --line: rgba(255, 255, 255, 0.1);
+  --line-strong: rgba(255, 255, 255, 0.18);
+  --brand: #0a84ff;
+  --brand-strong: #409cff;
+  --brand-soft: rgba(10, 132, 255, 0.18);
+  --brand-ink: #409cff;
+  --mn-glass: rgba(28, 28, 30, 0.6);
+  --ap-shadow: 0 8px 24px -12px rgba(0, 0, 0, 0.6);
+  --ap-shadow-hi: 0 26px 50px -18px rgba(0, 0, 0, 0.85);
 }
 
 /* NAV */
@@ -750,4 +796,84 @@
   .mn-how-row {
     grid-template-columns: 1fr;
   }
+}
+
+/* ── 애플 머티리얼 이식(2026-07-23): 쿨 글래스 내비 · 소프트 카드 · pill CTA · 블루→퍼플 히어로 액센트 ── */
+.mn-nav {
+  background: var(--mn-glass);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border-bottom: 0.5px solid var(--line);
+}
+.mn-nav-link:hover,
+.mn-contact-link:hover { background: var(--surface-2); }
+.mn-login-link { border: 0.5px solid var(--line-strong); border-radius: 980px; }
+
+.mn-hero-badge { border: 0.5px solid var(--line); box-shadow: var(--ap-shadow); }
+.mn-hero-title { font-weight: 700; }
+/* 히어로 강조 문구 — 애플 블루→퍼플 그라데이션 텍스트 */
+.mn-hero-title-accent {
+  background: linear-gradient(120deg, var(--brand), #5e5ce6);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+[data-theme='dark'] .mn-hero-title-accent {
+  background: linear-gradient(120deg, var(--brand), #7d7aff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.mn-hero-cta,
+.mn-hero-cta-secondary {
+  border-radius: 980px;
+  transition: transform 0.2s var(--ap-spring), background 0.2s var(--ap-ease), border-color 0.2s var(--ap-ease);
+}
+.mn-hero-cta { box-shadow: 0 8px 20px -10px color-mix(in srgb, var(--brand) 80%, transparent); }
+.mn-hero-cta:hover { transform: scale(1.03); }
+.mn-hero-cta:active { transform: scale(0.97); }
+.mn-hero-cta-secondary { border: 0.5px solid var(--line-strong); }
+.mn-hero-cta-secondary:hover { transform: scale(1.03); }
+
+.mn-preview-card { border: 0.5px solid var(--line); border-radius: 24px; box-shadow: var(--ap-shadow-hi); }
+.mn-preview-quiz { border: 0.5px solid var(--line); border-radius: 14px; }
+.mn-hero-chip { border: 0.5px solid var(--line); border-radius: 14px; box-shadow: var(--ap-shadow); }
+
+.mn-vp-card,
+.mn-role-card {
+  border: 0.5px solid var(--line);
+  border-radius: 22px;
+  box-shadow: var(--ap-shadow);
+  transition: transform 0.4s var(--ap-spring), box-shadow 0.4s var(--ap-ease);
+}
+.mn-vp-card:hover,
+.mn-role-card:hover { transform: translateY(-4px); box-shadow: var(--ap-shadow-hi); }
+.mn-vp-icon,
+.mn-role-icon { border-radius: 14px; }
+
+.mn-games,
+.mn-how { border-color: var(--line); }
+.mn-game-card,
+.mn-step-card {
+  border: 0.5px solid var(--line);
+  border-radius: 18px;
+  box-shadow: var(--ap-shadow);
+  transition: transform 0.4s var(--ap-spring), box-shadow 0.4s var(--ap-ease), border-color 0.2s var(--ap-ease);
+}
+.mn-game-card:hover,
+.mn-step-card:hover { transform: translateY(-4px); box-shadow: var(--ap-shadow-hi); border-color: var(--line-strong); }
+.mn-game-icon,
+.mn-step-icon { border: 0.5px solid var(--line); border-radius: 13px; }
+
+/* 웜 브라운 푸터 → 애플 쿨 다크 */
+.mn-footer { background: #1d1d1f; }
+[data-theme='dark'] .mn-footer { background: #0a0a0a; border-top: 0.5px solid var(--line); }
+
+@media (prefers-reduced-motion: reduce) {
+  .mn-vp-card:hover,
+  .mn-role-card:hover,
+  .mn-game-card:hover,
+  .mn-step-card:hover,
+  .mn-hero-cta:hover,
+  .mn-hero-cta-secondary:hover { transform: none; }
 }

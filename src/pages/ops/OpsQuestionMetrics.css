@@ -1,4 +1,9 @@
-/* 문항 지표 — 문제은행 노출수·정답률 (op-* 셸 재사용 + qm-* 전용) */
+/* 문항 지표 — 문제은행 노출수·정답률 (op-* 셸 재사용 + qm-* 전용)
+ *
+ * 2026-07-23 애플 머티리얼 이식: 이 페이지는 공용 .op-root 아래에 렌더되어 애플 뉴트럴+블루 토큰을
+ * OpsApproval.css에서 그대로 상속한다(중복 선언 금지). 여기서는 요약 카드·표를 애플 머티리얼
+ * (0.5px 헤어라인·큰 라운드·애플 소프트 섀도우 var(--op-shadow))로 올리고, 재시도 버튼에 스프링을 준다.
+ * ★정답률 바 색(hard=빨강·easy=노랑·ok=초록·low=회색)·상태 플래그 배지·요약 강조색은 데이터/의미색이라 불변. */
 
 /* ===== 요약 카드 ===== */
 .qm-summary {
@@ -9,12 +14,13 @@
 }
 .qm-sumcard {
   background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 12px;
+  border: 0.5px solid var(--line);
+  border-radius: 16px;
   padding: 14px 16px;
   display: flex;
   flex-direction: column;
   gap: 4px;
+  box-shadow: var(--op-shadow);
 }
 .qm-sumval {
   font-family: var(--font-display);
@@ -83,10 +89,11 @@
 
 /* ===== 테이블 ===== */
 .qm-tablewrap {
-  border: 1px solid var(--line);
-  border-radius: 12px;
+  border: 0.5px solid var(--line);
+  border-radius: 16px;
   overflow: hidden;
   background: var(--surface);
+  box-shadow: var(--op-shadow);
 }
 .qm-table {
   width: 100%;
@@ -185,7 +192,7 @@
 .qm-retry {
   margin-left: 10px;
   border: none;
-  border-radius: 8px;
+  border-radius: 11px;
   padding: 6px 14px;
   background: var(--brand);
   color: var(--on-brand);
@@ -193,5 +200,8 @@
   font-weight: 700;
   font-size: 13px;
   cursor: pointer;
+  box-shadow: 0 8px 18px -10px color-mix(in srgb, var(--brand) 78%, transparent);
+  transition: transform 0.2s cubic-bezier(0.34, 1.4, 0.5, 1), background 0.2s ease, box-shadow 0.2s ease;
 }
-.qm-retry:hover { background: var(--brand-strong); }
+.qm-retry:hover { background: var(--brand-strong); transform: translateY(-1px); box-shadow: 0 12px 26px -10px color-mix(in srgb, var(--brand) 78%, transparent); }
+.qm-retry:active { transform: scale(0.98); }

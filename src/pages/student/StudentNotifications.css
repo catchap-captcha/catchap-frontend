@@ -1,9 +1,27 @@
-/* handoff `CatChap 알림.dc.html` 리뉴얼(플랫) 정렬 — 접두사 nt- */
+/* handoff `CatChap 알림.dc.html` — 2026-07-23 애플 디자인 이식(정공법·CSS만).
+   .nt-root에 애플 뉴트럴+블루 토큰을 스코프 오버라이드(전역 theme.css 불변). 클래스명·레이아웃 불변.
+   알림 카테고리 아이콘색(인라인 var(--c))은 의미색이라 그대로 둔다. */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+.nt-root {
+  --font-display: 'SF Pro Display', 'SF Pro Text', 'Inter', -apple-system, system-ui, sans-serif;
+  --bg: #f5f5f7; --surface: #ffffff; --surface-2: #f5f5f7;
+  --ink: #1d1d1f; --ink-2: #6e6e73; --ink-3: #86868b;
+  --line: rgba(0, 0, 0, 0.08); --line-strong: rgba(0, 0, 0, 0.14);
+  --brand: #0071e3; --brand-strong: #0077ed; --brand-soft: rgba(0, 113, 227, 0.12); --brand-soft-line: rgba(0, 113, 227, 0.24); --brand-ink: #0071e3; --on-brand: #fff;
+}
+[data-theme='dark'] .nt-root {
+  --bg: #000; --surface: #1c1c1e; --surface-2: #0a0a0a; --ink: #f5f5f7; --ink-2: #aeaeb2; --ink-3: #8e8e93;
+  --line: rgba(255, 255, 255, 0.1); --line-strong: rgba(255, 255, 255, 0.18);
+  --brand: #0a84ff; --brand-strong: #409cff; --brand-soft: rgba(10, 132, 255, 0.18); --brand-soft-line: rgba(10, 132, 255, 0.30); --brand-ink: #409cff;
+}
 
 .nt-root {
   min-height: 100vh;
   background: var(--bg);
-  font-family: 'Pretendard', system-ui, sans-serif;
+  font-family: 'SF Pro Text', 'Inter', -apple-system, system-ui, sans-serif;
+  letter-spacing: -0.01em;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -32,13 +50,14 @@
 .nt-headicon {
   width: 48px;
   height: 48px;
-  border-radius: 12px;
+  border-radius: 14px;
   background: var(--surface);
-  border: 1px solid var(--line);
+  border: 0.5px solid var(--line);
   color: var(--ink);
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.02), 0 8px 24px -12px rgba(0, 0, 0, 0.14);
 }
 
 .nt-headicon i {
@@ -47,11 +66,11 @@
 
 .nt-title {
   font-family: var(--font-display);
-  font-weight: 800;
+  font-weight: 700;
   font-size: 28px;
   color: var(--ink);
   margin: 0 0 4px;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.02em;
 }
 
 .nt-sub {
@@ -150,10 +169,13 @@
   align-items: flex-start;
   gap: 13px;
   padding: 16px 18px;
-  border-radius: 12px;
-  border: 1px solid var(--line);
+  border-radius: 16px;
+  border: 0.5px solid var(--line);
   cursor: pointer;
   transition: background 0.12s;
+}
+.nt-card--read {
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.02), 0 8px 24px -12px rgba(0, 0, 0, 0.14);
 }
 
 .nt-card--unread {
@@ -250,19 +272,20 @@
 .nt-emptyicon {
   width: 72px;
   height: 72px;
-  border-radius: 16px;
+  border-radius: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 34px;
   color: var(--ink-3);
   background: var(--surface);
-  border: 1px solid var(--line);
+  border: 0.5px solid var(--line);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.02), 0 8px 24px -12px rgba(0, 0, 0, 0.14);
 }
 
 .nt-emptytitle {
   font-family: var(--font-display);
-  font-weight: 800;
+  font-weight: 700;
   font-size: 20px;
   color: var(--ink);
   margin: 0 0 8px;
@@ -285,15 +308,23 @@
   border: none;
   background: var(--brand);
   color: var(--on-brand);
-  font-family: 'Pretendard', sans-serif;
-  font-weight: 700;
+  font-family: inherit;
+  font-weight: 600;
   font-size: 14px;
-  padding: 11px 20px;
-  border-radius: 10px;
+  padding: 12px 22px;
+  border-radius: 980px;
+  transition: background 0.2s ease, transform 0.2s cubic-bezier(0.34, 1.4, 0.5, 1);
 }
 
 .nt-emptycta:hover {
   background: var(--brand-strong);
+  transform: scale(1.03);
+}
+.nt-emptycta:active {
+  transform: scale(0.97);
+}
+@media (prefers-reduced-motion: reduce) {
+  .nt-emptycta:hover, .nt-emptycta:active { transform: none; }
 }
 
 .nt-emptycta i {

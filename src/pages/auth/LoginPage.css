@@ -1,5 +1,9 @@
 /* 로그인/회원가입 — handoff: CatChap 로그인.dc.html (값 원본 그대로) */
 
+/* 애플 디자인 이식(2026-07-23): 폰트 임포트(파일당 1회). 블루 액센트는 이미 .lg-root에 있고,
+   여기에 애플 쿨 뉴트럴 스코프(SF·--bg/--surface/--ink/--line)를 병합한다(전역 theme.css 불변). */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
 /* rotate는 비트맵 로고를 매 프레임 리샘플링해 흰/빨강 경계가 번져 보임 → 이동만 남김 */
 @keyframes lgFloat {
   0%,
@@ -51,6 +55,9 @@
   grid-template-columns: 1fr 1fr;
   background: var(--bg);
   font-size: 16px;
+  font-family: 'SF Pro Text', 'Inter', -apple-system, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.01em;
   /* 복제본(디자인 랩) 정렬(2026-07-23): 코랄 → 애플 블루 액센트 스코프 오버라이드.
      로그인 폼 버튼·링크·포커스가 랩과 같은 블루가 되도록(전역 theme.css 불변). */
   --brand: #0071e3;
@@ -58,12 +65,31 @@
   --brand-ink: #0071e3;
   --brand-soft: rgba(0, 113, 227, 0.12);
   --on-brand: #ffffff;
+  /* 애플 쿨 뉴트럴 스코프(SF·회색 캔버스·리파인드 라인). Pretendard 하드코딩 폼 필드는 그대로 두어
+     한글 렌더 보존, 제목(var(--font-display))만 SF로. */
+  --font-display: 'SF Pro Display', 'SF Pro Text', 'Inter', -apple-system, system-ui, sans-serif;
+  --bg: #f5f5f7;
+  --surface: #ffffff;
+  --surface-2: #f5f5f7;
+  --ink: #1d1d1f;
+  --ink-2: #6e6e73;
+  --ink-3: #86868b;
+  --line: rgba(0, 0, 0, 0.08);
+  --line-strong: rgba(0, 0, 0, 0.14);
 }
 [data-theme='dark'] .lg-root {
   --brand: #0a84ff;
   --brand-strong: #409cff;
   --brand-ink: #409cff;
   --brand-soft: rgba(10, 132, 255, 0.18);
+  --bg: #000000;
+  --surface: #1c1c1e;
+  --surface-2: #0a0a0a;
+  --ink: #f5f5f7;
+  --ink-2: #aeaeb2;
+  --ink-3: #8e8e93;
+  --line: rgba(255, 255, 255, 0.1);
+  --line-strong: rgba(255, 255, 255, 0.18);
 }
 
 /* ===== LEFT BRAND PANEL — 복제본 랩식 블루→퍼플 시네마틱 히어로 ===== */
@@ -348,7 +374,7 @@
   width: 100%;
   border: 1px solid var(--line-strong);
   background: var(--bg);
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 13px 14px 13px 40px;
   font-size: 14.5px;
   font-weight: 500;
@@ -553,7 +579,7 @@
   font-family: var(--font-display); font-weight: 700;
   font-size: 15.5px;
   padding: 14px;
-  border-radius: 10px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -581,7 +607,7 @@
   font-family: var(--font-display); font-weight: 700;
   font-size: 15px;
   padding: 13px;
-  border-radius: 10px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1821,7 +1847,7 @@
 .lg-cap-mono {
   font-size: 11px;
   font-weight: 600;
-  color: #c7bbad;
+  color: var(--ink-3);
   font-family: monospace;
 }
 
@@ -2184,7 +2210,7 @@
 .lg-input:focus {
   border-color: var(--brand);
   background: var(--surface);
-  box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.08);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--brand) 12%, transparent);
 }
 .lg-field:focus-within .lg-field-icon,
 .lg-field-grow:focus-within .lg-field-icon {
@@ -2228,11 +2254,11 @@
 }
 
 
-/* ===== 엘리베이션: 카드 질감 고급화 (레이어드 웜 섀도우) ===== */
+/* ===== 엘리베이션: 카드 질감 고급화 (애플 쿨 뉴트럴 레이어드 섀도우) ===== */
 .lg-cap-card {
   box-shadow:
-    0 1px 3px rgba(58, 51, 64, 0.05),
-    0 16px 34px -20px rgba(90, 60, 55, 0.2);
+    0 1px 3px rgba(0, 0, 0, 0.05),
+    0 16px 34px -20px rgba(0, 0, 0, 0.2);
 }
 .lg-cap-card {
   transition:
@@ -2242,8 +2268,8 @@
 .lg-cap-card:hover {
   transform: translateY(-3px);
   box-shadow:
-    0 2px 6px rgba(58, 51, 64, 0.06),
-    0 24px 44px -22px rgba(90, 60, 55, 0.26);
+    0 2px 6px rgba(0, 0, 0, 0.06),
+    0 24px 44px -22px rgba(0, 0, 0, 0.26);
 }
 @media (prefers-reduced-motion: reduce) {
   .lg-cap-card { transition: none; }
@@ -2309,3 +2335,7 @@
     flex-wrap: wrap;
   }
 }
+
+/* 전체화면 캔버스 — 뷰포트(body) 배경도 애플 쿨 그레이(오버스크롤·여백 웜톤 제거) */
+body:has(.lg-root) { background: #f5f5f7; }
+[data-theme='dark'] body:has(.lg-root) { background: #000000; }

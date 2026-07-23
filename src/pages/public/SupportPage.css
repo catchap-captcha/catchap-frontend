@@ -1,8 +1,50 @@
-/* CatChap 고객지원 — handoff `CatChap 고객지원.dc.html` */
+/* CatChap 고객지원 — 2026-07-23 애플 디자인 이식(정공법·CSS만).
+   .sp-page에 애플 뉴트럴+블루 토큰 스코프 오버라이드(전역 theme.css 불변·JSX/클래스명 무변경).
+   보존: 성공=초록(--ok)·오류=빨강(--danger, .sp-form-error) 의미색. */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 .sp-page {
+  --font-display: 'SF Pro Display', 'SF Pro Text', 'Inter', -apple-system, system-ui, sans-serif;
+  --bg: #f5f5f7;
+  --surface: #ffffff;
+  --surface-2: #f5f5f7;
+  --ink: #1d1d1f;
+  --ink-2: #6e6e73;
+  --ink-3: #86868b;
+  --line: rgba(0, 0, 0, 0.08);
+  --line-strong: rgba(0, 0, 0, 0.14);
+  --brand: #0071e3;
+  --brand-strong: #0077ed;
+  --brand-soft: rgba(0, 113, 227, 0.12);
+  --brand-ink: #0071e3;
+  --on-brand: #ffffff;
+  --ap-shadow: 0 1px 1px rgba(0, 0, 0, 0.02), 0 8px 24px -12px rgba(0, 0, 0, 0.14);
+  --ap-shadow-hi: 0 2px 4px rgba(0, 0, 0, 0.04), 0 26px 50px -20px rgba(0, 0, 0, 0.24);
+  --ap-ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --ap-spring: cubic-bezier(0.34, 1.4, 0.5, 1);
+
   min-height: 100vh;
   background: var(--bg);
+  font-family: 'SF Pro Text', 'Inter', -apple-system, system-ui, sans-serif;
+  letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased;
+}
+[data-theme='dark'] .sp-page {
+  --bg: #000000;
+  --surface: #1c1c1e;
+  --surface-2: #0a0a0a;
+  --ink: #f5f5f7;
+  --ink-2: #aeaeb2;
+  --ink-3: #8e8e93;
+  --line: rgba(255, 255, 255, 0.1);
+  --line-strong: rgba(255, 255, 255, 0.18);
+  --brand: #0a84ff;
+  --brand-strong: #409cff;
+  --brand-soft: rgba(10, 132, 255, 0.18);
+  --brand-ink: #409cff;
+  --ap-shadow: 0 8px 24px -12px rgba(0, 0, 0, 0.6);
+  --ap-shadow-hi: 0 26px 50px -18px rgba(0, 0, 0, 0.85);
 }
 
 /* NAV */
@@ -636,4 +678,59 @@
   .sp-main {
     grid-template-columns: 1fr;
   }
+}
+
+/* ── 애플 머티리얼 이식(2026-07-23): 쿨 글래스 내비 · 소프트 카드 · pill 버튼 ── */
+.sp-nav {
+  background: color-mix(in srgb, var(--surface) 82%, transparent);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border-bottom: 0.5px solid var(--line);
+}
+.sp-contact-link:hover { background: var(--surface-2); }
+.sp-login-link { border: 0.5px solid var(--line-strong); border-radius: 980px; }
+
+.sp-hero { border-bottom: 0.5px solid var(--line); }
+.sp-hero-badge { border: 0.5px solid var(--line); box-shadow: var(--ap-shadow); }
+.sp-hero-title { font-weight: 700; }
+.sp-search-input { border: 0.5px solid var(--line-strong); border-radius: 14px; }
+.sp-hero-chip { border: 0.5px solid var(--line); }
+
+.sp-cat-card {
+  border: 0.5px solid var(--line);
+  border-radius: 18px;
+  box-shadow: var(--ap-shadow);
+  transition: transform 0.4s var(--ap-spring), box-shadow 0.4s var(--ap-ease), border-color 0.2s var(--ap-ease);
+}
+.sp-cat-card:hover { transform: translateY(-4px); box-shadow: var(--ap-shadow-hi); border-color: var(--line-strong); }
+.sp-cat-icon { border: 0.5px solid var(--line); border-radius: 13px; }
+.sp-cat-name,
+.sp-faq-title,
+.sp-contact-title,
+.sp-hours-title { font-weight: 700; }
+
+.sp-faq-item,
+.sp-contact-card,
+.sp-hours-card {
+  border: 0.5px solid var(--line);
+  border-radius: 16px;
+  box-shadow: var(--ap-shadow);
+}
+
+.sp-input,
+.sp-select,
+.sp-textarea { border: 0.5px solid var(--line-strong); border-radius: 12px; }
+.sp-reset-btn { border: 0.5px solid var(--line-strong); border-radius: 980px; }
+.sp-submit-btn {
+  border-radius: 980px;
+  box-shadow: 0 8px 20px -10px color-mix(in srgb, var(--brand) 80%, transparent);
+  transition: transform 0.2s var(--ap-spring), background 0.2s var(--ap-ease);
+}
+.sp-submit-btn:hover:not(:disabled) { transform: scale(1.02); }
+.sp-submit-btn:active:not(:disabled) { transform: scale(0.98); }
+
+@media (prefers-reduced-motion: reduce) {
+  .sp-cat-card:hover,
+  .sp-submit-btn:hover:not(:disabled),
+  .sp-submit-btn:active:not(:disabled) { transform: none; }
 }
