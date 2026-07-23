@@ -1,8 +1,51 @@
-/* CatChap 수료 시험 — handoff `CatChap 수료 시험.dc.html` */
+/* CatChap 수료 시험 — 2026-07-23 "애플 디자인 이식(정공법)".
+   왜 이 파일만 바꾸나: CourseExam.tsx(JSX·데이터 훅·lectureApi 배선)는 그대로 두고 이 CSS만
+   애플 스타일로 정제했다. 클래스명(ce-*)을 1:1 유지하므로 실데이터·기능은 불변, 룩앤필만 바뀐다.
+   어떻게: .ce-root에 애플 디자인 토큰(SF 타이포·애플 그레이 캔버스·리파인드 뉴트럴·큰 라디우스·
+   레이어드 소프트 섀도우)을 "스코프 오버라이드"한다 → ce-* 규칙이 쓰는 var(--ink)/var(--surface)
+   /var(--line) 등이 이 페이지에서만 애플 값으로 해석된다(전역 theme.css 불변 = 다른 페이지 무영향).
+   브랜드 코랄(var(--brand))·정오답 의미색(--ok 초록/--brand·--warn 등)은 유지 → 채점 의미 보존. */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
 .ce-root {
+  /* ── 애플 디자인 토큰 (이 페이지 스코프) ── */
+  --font-display: 'SF Pro Display', 'SF Pro Text', 'Inter', -apple-system, system-ui, sans-serif;
+  --bg: #f5f5f7;
+  --surface: #ffffff;
+  --surface-2: #f5f5f7;
+  --ink: #1d1d1f;
+  --ink-2: #6e6e73;
+  --ink-3: #86868b;
+  --line: rgba(0, 0, 0, 0.08);
+  --line-strong: rgba(0, 0, 0, 0.14);
+  --ap-ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --ap-spring: cubic-bezier(0.34, 1.4, 0.5, 1);
+  --ap-shadow: 0 1px 1px rgba(0, 0, 0, 0.02), 0 8px 24px -12px rgba(0, 0, 0, 0.14);
+  --ap-shadow-hi: 0 2px 4px rgba(0, 0, 0, 0.04), 0 26px 50px -20px rgba(0, 0, 0, 0.24);
+  --ap-r-lg: 24px;
+  --ap-r: 20px;
+  --ap-r-sm: 16px;
+
   min-height: 100vh;
   background: var(--bg);
   padding-bottom: 64px;
+  font-family: 'SF Pro Text', 'Inter', -apple-system, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  letter-spacing: -0.01em;
+}
+[data-theme='dark'] .ce-root {
+  --bg: #000000;
+  --surface: #1c1c1e;
+  --surface-2: #0a0a0a;
+  --ink: #f5f5f7;
+  --ink-2: #aeaeb2;
+  --ink-3: #8e8e93;
+  --line: rgba(255, 255, 255, 0.1);
+  --line-strong: rgba(255, 255, 255, 0.18);
+  --ap-shadow: 0 8px 24px -12px rgba(0, 0, 0, 0.6);
+  --ap-shadow-hi: 0 26px 50px -18px rgba(0, 0, 0, 0.85);
 }
 
 .ce-wrap {
@@ -30,13 +73,14 @@
   align-items: center;
   gap: 8px;
   background: var(--surface);
-  border: 1px solid var(--line);
+  border: 0.5px solid var(--line);
   color: var(--brand-ink);
-  border-radius: 14px;
+  border-radius: var(--ap-r-sm);
   padding: 12px 16px;
   font-weight: 700;
   font-size: 13.5px;
   margin-bottom: 16px;
+  box-shadow: var(--ap-shadow);
 }
 
 .ce-empty {
@@ -47,11 +91,11 @@
 }
 
 .ce-title {
-  font-family: var(--font-display); font-weight: 800;
+  font-family: var(--font-display); font-weight: 700;
   font-size: 24px;
   color: var(--ink);
   margin: 0;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.02em;
   display: inline-flex;
   align-items: center;
   gap: 10px;
@@ -70,16 +114,17 @@
 /* ===== INTRO 카드 ===== */
 .ce-introcard {
   background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 16px;
+  border: 0.5px solid var(--line);
+  border-radius: var(--ap-r-lg);
   padding: 40px 32px;
   text-align: center;
+  box-shadow: var(--ap-shadow);
 }
 .ce-introicon {
   width: 72px;
   height: 72px;
   margin: 0 auto 16px;
-  border-radius: 16px;
+  border-radius: var(--ap-r-sm);
   background: var(--brand-soft);
   color: var(--brand);
   display: flex;
@@ -152,14 +197,14 @@
 .ce-progressbar {
   height: 12px;
   background: var(--line);
-  border-radius: 20px;
+  border-radius: 999px;
   overflow: hidden;
 }
 .ce-progressfill {
   height: 100%;
   background: var(--brand);
-  border-radius: 20px;
-  transition: width 0.4s ease;
+  border-radius: 999px;
+  transition: width 1s var(--ap-ease);
 }
 
 /* ===== 버튼 ===== */
@@ -169,15 +214,15 @@
   justify-content: center;
   gap: 8px;
   border: none;
-  border-radius: 11px;
-  font-family: var(--font-display); font-weight: 700;
+  border-radius: 980px;
+  font-family: var(--font-display); font-weight: 600;
   font-size: 14.5px;
   padding: 13px 24px;
   cursor: pointer;
   text-decoration: none;
   min-height: 50px;
   margin-top: 20px;
-  transition: background 0.15s, border-color 0.15s;
+  transition: transform 0.2s var(--ap-spring), background 0.2s var(--ap-ease), border-color 0.2s var(--ap-ease);
 }
 .ce-btn i {
   font-size: 18px;
@@ -185,13 +230,18 @@
 .ce-btn--primary {
   background: var(--brand);
   color: var(--on-brand);
+  box-shadow: 0 8px 20px -10px color-mix(in srgb, var(--brand) 80%, transparent);
 }
 .ce-btn--primary:hover {
   background: var(--brand-strong);
+  transform: scale(1.02);
+}
+.ce-btn--primary:active {
+  transform: scale(0.98);
 }
 .ce-btn--ghost {
   background: var(--surface);
-  border: 1px solid var(--line-strong);
+  border: 0.5px solid var(--line-strong);
   color: var(--ink);
 }
 .ce-btn--ghost:hover {
@@ -205,7 +255,7 @@
 /* 수료증 다운로드 — 주 동작(완벽 도전·다음 회차)과 구분되는 보조 강조 */
 .ce-btn--soft {
   background: var(--surface);
-  border: 1px solid var(--line-strong);
+  border: 0.5px solid var(--line-strong);
   color: var(--ok-ink);
 }
 .ce-btn--soft:hover {
@@ -227,13 +277,14 @@
 .ce-answered {
   flex-shrink: 0;
   background: var(--surface);
-  border: 1px solid var(--line);
+  border: 0.5px solid var(--line);
   color: var(--ink-2);
-  font-weight: 700;
+  font-weight: 600;
   font-size: 13px;
   padding: 7px 14px;
   border-radius: 999px;
   white-space: nowrap;
+  box-shadow: var(--ap-shadow);
 }
 
 .ce-qlist {
@@ -244,9 +295,10 @@
 .ce-qcard,
 .ce-rcard {
   background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 14px;
+  border: 0.5px solid var(--line);
+  border-radius: var(--ap-r);
   padding: 22px 24px;
+  box-shadow: var(--ap-shadow);
 }
 .ce-rcard {
   padding: 20px 22px;
@@ -262,9 +314,9 @@
   width: 26px;
   height: 26px;
   flex-shrink: 0;
-  border-radius: 8px;
+  border-radius: 9px;
   background: var(--ink);
-  color: var(--on-brand);
+  color: var(--surface);
   font-weight: 700;
   font-size: 13px;
   display: flex;
@@ -283,7 +335,7 @@
   font-weight: 700;
   font-size: 11px;
   padding: 3px 9px;
-  border-radius: 6px;
+  border-radius: 999px;
 }
 .ce-source {
   display: inline-flex;
@@ -299,22 +351,23 @@
   color: var(--ink);
   margin: 0 0 16px;
   line-height: 1.5;
+  letter-spacing: -0.01em;
 }
 /* 이미지 문항 — 프롬프트 이미지(문제 그림)·보기 이미지(그림 보기) */
 .ce-qimg {
   display: block;
   max-width: 100%;
   max-height: 320px;
-  border-radius: 12px;
-  border: 1px solid var(--line);
+  border-radius: var(--ap-r-sm);
+  border: 0.5px solid var(--line);
   margin: 0 0 14px;
 }
 .ce-optimg {
   flex-shrink: 0;
   max-width: 84px;
   max-height: 64px;
-  border-radius: 8px;
-  border: 1px solid var(--line);
+  border-radius: 10px;
+  border: 0.5px solid var(--line);
   object-fit: cover;
 }
 .ce-opts {
@@ -328,24 +381,28 @@
   gap: 11px;
   width: 100%;
   text-align: left;
-  border: 1px solid var(--line-strong);
+  border: 0.5px solid var(--line-strong);
   background: var(--surface);
-  border-radius: 10px;
-  padding: 12px 15px;
+  border-radius: 14px;
+  padding: 13px 16px;
   cursor: pointer;
   font-size: 14.5px;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--ink);
-  transition: border-color 0.14s, background 0.14s;
+  transition: border-color 0.2s var(--ap-ease), background 0.2s var(--ap-ease);
 }
 .ce-opt:hover {
   border-color: var(--ink-3);
+  background: var(--surface-2);
 }
 .ce-opt--on {
   border-color: var(--brand);
   background: var(--brand-soft);
   color: var(--ink);
-  font-weight: 800;
+  font-weight: 600;
+}
+.ce-opt--on:hover {
+  background: var(--brand-soft);
 }
 .ce-optmark {
   flex-shrink: 0;
@@ -380,11 +437,12 @@
 /* ===== RESULT ===== */
 .ce-hero {
   background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 16px;
+  border: 0.5px solid var(--line);
+  border-radius: var(--ap-r-lg);
   padding: 30px 28px;
   text-align: center;
   margin-bottom: 22px;
+  box-shadow: var(--ap-shadow);
 }
 .ce-hero .ce-title {
   display: block;
@@ -402,8 +460,9 @@
 .ce-hero--pass {
   background: linear-gradient(135deg, #443f39, #37322d);
   border: none;
-  border-radius: 18px;
+  border-radius: var(--ap-r-lg);
   padding: 36px 28px;
+  box-shadow: var(--ap-shadow-hi);
 }
 .ce-heroseal {
   width: 60px;
@@ -482,19 +541,19 @@
   display: flex;
   align-items: center;
   gap: 11px;
-  border: 1px solid var(--line);
+  border: 0.5px solid var(--line);
   background: var(--surface);
-  border-radius: 10px;
-  padding: 11px 14px;
+  border-radius: 14px;
+  padding: 12px 15px;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--ink);
 }
 .ce-ropt--answer {
   border-color: var(--ok);
   background: var(--ok-soft);
   color: var(--ok-ink);
-  font-weight: 800;
+  font-weight: 700;
 }
 .ce-ropt--wrong {
   border-color: var(--brand);
@@ -530,8 +589,8 @@
   display: flex;
   gap: 8px;
   margin-top: 13px;
-  background: var(--bg);
-  border-radius: 10px;
+  background: var(--surface-2);
+  border-radius: 12px;
   padding: 12px 14px;
   font-size: 13px;
   line-height: 1.6;

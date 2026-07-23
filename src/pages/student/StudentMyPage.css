@@ -1,8 +1,49 @@
-/* 통합 마이페이지 = 계정 허브(좌측 사이드바 탭). 디자인 토큰만 사용(다크 대응). */
+/* 통합 마이페이지 = 계정 허브(좌측 사이드바 탭) — 2026-07-23 "애플 디자인 이식(정공법)".
+   왜 이 파일만: StudentMyPage.tsx(JSX·데이터 훅)와 백엔드 배선은 그대로 두고 이 CSS만
+   애플 스타일로 정제한다. 클래스명(mp-*)을 1:1 유지하므로 실데이터·기능은 불변, 룩앤필만
+   애플 그레이드로 바뀐다. 방식은 StudentHome.css와 동일 — .mp-root에 애플 디자인 토큰을
+   "스코프 오버라이드"해 mp-* 규칙이 쓰는 var(--ink)/var(--surface)/var(--line) 등이 이
+   페이지에서만 애플 값으로 해석된다(전역 theme.css 불변). 브랜드 코랄(var(--brand))은 유지
+   = 액센트 보존. 다크는 [data-theme='dark'] .mp-root 로 애플 다크 값을 다시 얹는다. */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
 .mp-root {
+  --font-display: 'SF Pro Display', 'SF Pro Text', 'Inter', -apple-system, system-ui, sans-serif;
+  --bg: #f5f5f7;
+  --surface: #ffffff;
+  --surface-2: #f5f5f7;
+  --ink: #1d1d1f;
+  --ink-2: #6e6e73;
+  --ink-3: #86868b;
+  --line: rgba(0, 0, 0, 0.08);
+  --line-strong: rgba(0, 0, 0, 0.14);
+  --ap-ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --ap-spring: cubic-bezier(0.34, 1.4, 0.5, 1);
+  --ap-shadow: 0 1px 1px rgba(0, 0, 0, 0.02), 0 8px 24px -12px rgba(0, 0, 0, 0.14);
+  --ap-shadow-hi: 0 2px 4px rgba(0, 0, 0, 0.04), 0 26px 50px -20px rgba(0, 0, 0, 0.24);
+  --ap-r-lg: 22px;
+  --ap-r: 18px;
+  --ap-r-sm: 14px;
+
   min-height: 100vh;
   background: var(--bg);
   color: var(--ink);
+  font-family: 'SF Pro Text', 'Inter', -apple-system, system-ui, sans-serif;
+  letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased;
+}
+[data-theme='dark'] .mp-root {
+  --bg: #000000;
+  --surface: #1c1c1e;
+  --surface-2: #0a0a0a;
+  --ink: #f5f5f7;
+  --ink-2: #aeaeb2;
+  --ink-3: #8e8e93;
+  --line: rgba(255, 255, 255, 0.1);
+  --line-strong: rgba(255, 255, 255, 0.18);
+  --ap-shadow: 0 8px 24px -12px rgba(0, 0, 0, 0.6);
+  --ap-shadow-hi: 0 26px 50px -18px rgba(0, 0, 0, 0.85);
 }
 /* 허브 — 좌측 사이드바 + 우측 콘텐츠 패널 */
 .mp-hub {
@@ -22,9 +63,10 @@
   flex-direction: column;
   gap: 6px;
   background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 16px;
+  border: 0.5px solid var(--line);
+  border-radius: var(--ap-r-lg);
   padding: 16px 14px;
+  box-shadow: var(--ap-shadow);
 }
 .mp-side-user {
   display: flex;
@@ -49,8 +91,10 @@
   min-width: 0;
 }
 .mp-side-name {
-  font-weight: 800;
+  font-family: var(--font-display);
+  font-weight: 700;
   font-size: 14px;
+  letter-spacing: -0.01em;
   color: var(--ink);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -78,25 +122,26 @@
   background: transparent;
   color: var(--ink-2);
   font-family: inherit;
-  font-weight: 700;
+  font-weight: 500;
   font-size: 14px;
   padding: 11px 12px;
-  border-radius: 10px;
+  border-radius: 11px;
   cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
+  transition: background 0.15s var(--ap-ease), color 0.15s var(--ap-ease);
 }
 .mp-tab i {
   font-size: 18px;
   color: var(--ink-3);
 }
 .mp-tab:hover {
-  background: var(--surface-2);
+  background: color-mix(in srgb, var(--ink) 5%, transparent);
   color: var(--ink);
 }
 .mp-tab-on,
 .mp-tab-on:hover {
   background: var(--brand-soft);
   color: var(--brand-ink);
+  font-weight: 600;
 }
 .mp-tab-on i {
   color: var(--brand-ink);
@@ -109,22 +154,23 @@
   text-align: left;
   border: none;
   background: transparent;
-  color: var(--danger-ink);
+  color: #ff3b30;
   font-family: inherit;
-  font-weight: 700;
+  font-weight: 600;
   font-size: 14px;
   padding: 11px 12px;
-  border-radius: 10px;
+  border-radius: 11px;
   cursor: pointer;
   margin-top: 6px;
   border-top: 1px solid var(--line);
   padding-top: 14px;
+  transition: background 0.15s var(--ap-ease);
 }
 .mp-logout i {
   font-size: 18px;
 }
 .mp-logout:hover {
-  background: color-mix(in srgb, var(--danger-ink) 10%, transparent);
+  background: color-mix(in srgb, #ff3b30 10%, transparent);
 }
 /* 콘텐츠 패널 */
 .mp-panel {
@@ -172,8 +218,8 @@
   align-items: center;
   gap: 16px;
   background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 16px;
+  border: 0.5px solid var(--line);
+  border-radius: var(--ap-r-lg);
   padding: 20px 22px;
 }
 /* 브랜드 서명 — 헤더 우측에 흐린 CatMark 워터마크 */
@@ -204,7 +250,8 @@
 .mp-name {
   font-family: var(--font-display);
   font-size: 20px;
-  font-weight: 800;
+  font-weight: 700;
+  letter-spacing: -0.02em;
   color: var(--ink);
 }
 .mp-sub {
@@ -220,27 +267,34 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 9px 16px;
-  border-radius: 10px;
-  border: 1px solid var(--line-strong);
+  padding: 9px 18px;
+  border-radius: 980px;
+  border: 0.5px solid var(--line-strong);
   background: transparent;
   color: var(--ink-2);
   font-size: 13.5px;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
+  transition: transform 0.2s var(--ap-spring), background 0.2s var(--ap-ease),
+    border-color 0.2s var(--ap-ease), color 0.2s var(--ap-ease);
 }
 .mp-editbtn:hover {
   background: var(--brand-soft);
   border-color: var(--brand);
   color: var(--brand-ink);
+  transform: scale(1.03);
+}
+.mp-editbtn:active {
+  transform: scale(0.98);
 }
 
 /* 카드 공통 */
 .mp-card {
   background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 16px;
+  border: 0.5px solid var(--line);
+  border-radius: var(--ap-r-lg);
   padding: 20px 22px;
+  box-shadow: var(--ap-shadow);
 }
 .mp-card-head {
   display: flex;
@@ -251,7 +305,8 @@
 .mp-card-title {
   font-family: var(--font-display);
   font-size: 15.5px;
-  font-weight: 800;
+  font-weight: 700;
+  letter-spacing: -0.02em;
   color: var(--ink);
   margin: 0;
 }
@@ -289,18 +344,18 @@
   align-items: center;
   gap: 14px;
   padding: 12px 14px;
-  border-radius: 12px;
-  background: var(--bg);
-  border: 1px solid var(--line);
+  border-radius: var(--ap-r-sm);
+  background: var(--surface-2);
+  border: 0.5px solid var(--line);
   transition:
-    transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
+    transform 0.4s var(--ap-spring),
+    border-color 0.2s var(--ap-ease),
+    box-shadow 0.4s var(--ap-ease);
 }
 .mp-course:hover {
-  transform: translateY(-2px);
+  transform: translateY(-3px);
   border-color: var(--brand-soft-line);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--ap-shadow-hi);
 }
 @media (prefers-reduced-motion: reduce) {
   .mp-course:hover {
@@ -390,33 +445,37 @@
   align-items: center;
   gap: 8px;
   padding: 13px 16px;
-  border-radius: 12px;
-  border: 1px solid var(--line);
-  background: var(--bg);
+  border-radius: var(--ap-r-sm);
+  border: 0.5px solid var(--line);
+  background: var(--surface-2);
   color: var(--ink-2);
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 600;
   text-decoration: none;
   cursor: pointer;
   text-align: left;
+  transition: transform 0.4s var(--ap-spring), border-color 0.2s var(--ap-ease),
+    background 0.2s var(--ap-ease), box-shadow 0.4s var(--ap-ease);
 }
 .mp-link i {
   color: var(--brand-ink);
   font-size: 18px;
 }
 .mp-link:hover {
-  border-color: var(--brand);
+  border-color: var(--brand-soft-line);
   background: var(--brand-soft);
+  transform: translateY(-3px);
+  box-shadow: var(--ap-shadow-hi);
 }
 .mp-link--danger {
-  color: var(--danger-ink, #c2453a);
+  color: #ff3b30;
 }
 .mp-link--danger i {
-  color: var(--danger-ink, #c2453a);
+  color: #ff3b30;
 }
 .mp-link--danger:hover {
-  border-color: var(--danger-ink, #c2453a);
-  background: color-mix(in srgb, var(--danger-ink, #c2453a) 10%, transparent);
+  border-color: #ff3b30;
+  background: color-mix(in srgb, #ff3b30 10%, transparent);
 }
 
 @media (max-width: 560px) {
