@@ -111,7 +111,7 @@ export function StudentNav({
             onMouseEnter={() => setProfileOpen(true)}
             onMouseLeave={() => setProfileOpen(false)}
           >
-            <Link to={PATHS.STUDENT_SETTINGS} title="설정" className="sl-profile">
+            <Link to={PATHS.STUDENT_MYPAGE} title="마이페이지" className="sl-profile">
               <div className="sl-avatar" style={{ background: profileColor(me?.id) }}>
                 <span className="sl-avatarinitial">{name.charAt(0)}</span>
               </div>

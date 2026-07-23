@@ -33,6 +33,7 @@ const SearchPage = lazy(() => import('../pages/student/SearchPage'));
 const StudentNotifications = lazy(() => import('../pages/student/StudentNotifications'));
 const StudentSettings = lazy(() => import('../pages/student/StudentSettings'));
 const ProfileEdit = lazy(() => import('../pages/student/ProfileEdit'));
+const StudentMyPage = lazy(() => import('../pages/student/StudentMyPage'));
 
 // 학부모 콘솔 — 제품 전환(2026-07-18)으로 은퇴. 미성년 동의는 가입 게이트(guardian_email)가 담당.
 
@@ -107,6 +108,7 @@ export default function AppRoutes() {
           <Route path={PATHS.STUDENT_NOTIFICATIONS} element={<StudentNotifications />} />
           <Route path={PATHS.STUDENT_SETTINGS} element={<StudentSettings />} />
           <Route path={PATHS.STUDENT_PROFILE_EDIT} element={<ProfileEdit />} />
+          <Route path={PATHS.STUDENT_MYPAGE} element={<StudentMyPage />} />
         </Route>
 
         {/* 학교(교사/기관) 콘솔 — 제품 전환으로 제거(19페이지). 기존 계정의 로그인

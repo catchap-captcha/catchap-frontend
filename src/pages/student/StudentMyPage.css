@@ -1,0 +1,259 @@
+/* 통합 마이페이지 — 프로필 + 학습 요약 + 수강 코스 + 계정. 디자인 토큰만 사용(다크 대응). */
+.mp-root {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--ink);
+}
+.mp-main {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 28px 20px 64px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* 프로필 헤더 */
+.mp-profile {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 20px 22px;
+}
+.mp-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-size: 28px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+.mp-profileinfo {
+  flex: 1;
+  min-width: 0;
+}
+.mp-name {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--ink);
+}
+.mp-sub {
+  margin-top: 4px;
+  font-size: 13.5px;
+  color: var(--ink-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mp-editbtn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--line-strong);
+  background: transparent;
+  color: var(--ink-2);
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.mp-editbtn:hover {
+  background: var(--brand-soft);
+  border-color: var(--brand);
+  color: var(--brand-ink);
+}
+
+/* 카드 공통 */
+.mp-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 20px 22px;
+}
+.mp-card-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.mp-card-title {
+  font-family: var(--font-display);
+  font-size: 15.5px;
+  font-weight: 800;
+  color: var(--ink);
+  margin: 0;
+}
+.mp-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--brand-ink);
+  text-decoration: none;
+}
+.mp-more:hover {
+  text-decoration: underline;
+}
+
+/* 학습 요약 */
+.mp-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+.mp-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 8px;
+  border-radius: 12px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+}
+.mp-stat-num {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--brand-ink);
+  line-height: 1;
+}
+.mp-stat-lbl {
+  font-size: 12px;
+  color: var(--ink-3);
+}
+
+/* 수강 코스 */
+.mp-courselist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.mp-course {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+}
+.mp-course-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.mp-course-title {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mp-course-sub {
+  font-size: 12.5px;
+  color: var(--ink-3);
+}
+.mp-course-go {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--brand-ink);
+  text-decoration: none;
+}
+.mp-course-go:hover {
+  text-decoration: underline;
+}
+.mp-badge {
+  flex-shrink: 0;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 800;
+}
+.mp-badge--done {
+  background: var(--brand-soft);
+  color: var(--brand-strong);
+}
+.mp-empty {
+  margin: 0;
+  padding: 8px 0;
+  font-size: 13.5px;
+  color: var(--ink-3);
+}
+.mp-inlink {
+  color: var(--brand-ink);
+  font-weight: 700;
+  text-decoration: none;
+}
+.mp-inlink:hover {
+  text-decoration: underline;
+}
+
+/* 계정 바로가기 */
+.mp-links {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+.mp-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--ink-2);
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  text-align: left;
+}
+.mp-link i {
+  color: var(--brand-ink);
+  font-size: 18px;
+}
+.mp-link:hover {
+  border-color: var(--brand);
+  background: var(--brand-soft);
+}
+.mp-link--danger {
+  color: var(--danger-ink, #c2453a);
+}
+.mp-link--danger i {
+  color: var(--danger-ink, #c2453a);
+}
+.mp-link--danger:hover {
+  border-color: var(--danger-ink, #c2453a);
+  background: color-mix(in srgb, var(--danger-ink, #c2453a) 10%, transparent);
+}
+
+@media (max-width: 560px) {
+  .mp-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .mp-links {
+    grid-template-columns: 1fr;
+  }
+}
