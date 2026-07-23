@@ -949,3 +949,7 @@
 /* 확인문항 오답 메시지는 애플 레드 */
 .lp-root .lp-gatewrong { color:#ff3b30; }
 [data-theme='dark'] .lp-root .lp-gatewrong { color:#ff453a; }
+
+/* 웜 크림 캐스트 제거 — 플레이어는 자체 상단바(공유 내비 미사용)라 .lp-root로 직접 스코프 */
+body:has(.lp-root) { background: #f5f5f7; }
+[data-theme='dark'] body:has(.lp-root) { background: #000000; }

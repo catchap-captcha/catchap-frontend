@@ -42,6 +42,12 @@
   --sl-hover: rgba(255, 255, 255, 0.08);
 }
 
+/* 웜 크림 캐스트 제거(복제본=쿨 그레이) — 학생 화면에선 뷰포트(body) 배경도 애플 쿨 그레이로.
+   왜 body냐: body 배경이 뷰포트 캔버스로 전파돼 상단 여백·오버스크롤에 전역 웜 톤이 비쳤다.
+   :has(.sl-navbar)로 공유 내비가 있는 학생 페이지에서만 적용 → 강사·운영 콘솔(웜 브랜드) 무관. */
+body:has(.sl-navbar) { background: #f5f5f7; }
+[data-theme='dark'] body:has(.sl-navbar) { background: #000000; }
+
 /* 플로팅 pill (랩 .ap-nav) */
 .sl-navinner {
   width: min(1080px, calc(100% - 32px));
