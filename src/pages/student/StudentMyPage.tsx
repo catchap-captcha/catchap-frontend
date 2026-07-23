@@ -159,6 +159,9 @@ export default function StudentMyPage() {
                     <span className="mp-course-sub">
                       {c.instructor_name ? `${c.instructor_name} 선생님 · ` : ''}
                       {c.lecture_count}강
+                      {(c.enrolled_count ?? 0) > 0
+                        ? ` · ${c.enrolled_count!.toLocaleString()}명 수강`
+                        : ''}
                     </span>
                   </div>
                   {c.exam?.passed ? (

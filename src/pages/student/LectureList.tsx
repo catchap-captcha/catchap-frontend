@@ -455,6 +455,12 @@ export default function LectureList() {
                                       <i className="ph-fill ph-chalkboard-teacher" /> {g.instructor} 선생님
                                     </span>
                                   )}
+                                  {(g.course?.enrolled_count ?? 0) > 0 && (
+                                    <span className="ll-courseenrolled">
+                                      <i className="ph-fill ph-users" />{' '}
+                                      {g.course!.enrolled_count!.toLocaleString()}명 수강
+                                    </span>
+                                  )}
                                 </>
                               ) : (
                                 <h3 className="ll-coursetitle ll-coursetitle--none">기타 강의</h3>

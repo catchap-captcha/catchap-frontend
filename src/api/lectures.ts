@@ -46,6 +46,8 @@ export interface StudentCourse {
   lecture_count: number;
   /** 수강신청 여부 — true면 '내 코스'(수강 중, '수강 취소' 노출), false면 '수강신청' 버튼 */
   enrolled?: boolean;
+  /** 총 수강 인원(소셜 증거) — 카드에 'N명 수강' 표기 */
+  enrolled_count?: number;
   /** 코스 Q(3단계-b) — 이 코스 강의에서 은행에 배치된 문항 수(총). 0이면 배지 숨김 */
   bank_question_count?: number;
   /** 그중 이 학생이 완주한 강의의 문항 수 — >0이면 '이 코스 문제 풀기' 버튼,

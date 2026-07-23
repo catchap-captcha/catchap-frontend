@@ -225,6 +225,9 @@ export default function StudentHome() {
                   <span className="sh2-railmeta">
                     {c.instructor_name ? `${c.instructor_name} 강사 · ` : ''}
                     {c.lecture_count}강
+                    {(c.enrolled_count ?? 0) > 0
+                      ? ` · ${c.enrolled_count!.toLocaleString()}명 수강`
+                      : ''}
                   </span>
                 </div>
               </button>
@@ -269,8 +272,14 @@ export default function StudentHome() {
                     {passed && <span className="sh2-course-done">수료 완료</span>}
                   </div>
                   <h3 className="sh2-course-title">{c.title}</h3>
-                  {c.instructor_name && (
-                    <span className="sh2-course-inst">{c.instructor_name} 강사</span>
+                  {(c.instructor_name || (c.enrolled_count ?? 0) > 0) && (
+                    <span className="sh2-course-inst">
+                      {c.instructor_name ? `${c.instructor_name} 강사` : ''}
+                      {c.instructor_name && (c.enrolled_count ?? 0) > 0 ? ' · ' : ''}
+                      {(c.enrolled_count ?? 0) > 0
+                        ? `${c.enrolled_count!.toLocaleString()}명 수강`
+                        : ''}
+                    </span>
                   )}
                   <div className="sh2-course-progress">
                     <div className="sh2-course-bar">
