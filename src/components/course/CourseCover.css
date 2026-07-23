@@ -1,0 +1,88 @@
+/* 코스 생성 커버 아트 — 그라데이션 + 패턴 + CatMark 워터마크 + 모노그램. */
+.cover {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--r-sm);
+  background: linear-gradient(135deg, var(--cover-from), var(--cover-to));
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  isolation: isolate;
+}
+.cover--sm {
+  width: 56px;
+  height: 56px;
+}
+.cover--md {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+}
+.cover--lg {
+  width: 100%;
+  aspect-ratio: 21 / 9;
+  border-radius: var(--r);
+}
+
+/* 미세 패턴 오버레이 — 흰색 저알파로 그라데이션 위에 질감 부여 */
+.cover::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.5;
+}
+.cover--pat0::before {
+  /* 도트 그리드 */
+  background-image: radial-gradient(rgba(255, 255, 255, 0.5) 1px, transparent 1.4px);
+  background-size: 12px 12px;
+  opacity: 0.28;
+}
+.cover--pat1::before {
+  /* 대각선 */
+  background-image: repeating-linear-gradient(
+    -45deg,
+    rgba(255, 255, 255, 0.14) 0 2px,
+    transparent 2px 12px
+  );
+}
+.cover--pat2::before {
+  /* 격자 */
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.12) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.12) 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+
+/* CatMark 워터마크 — 우하단에 흐리게 겹쳐 브랜드 서명 */
+.cover-cat {
+  position: absolute;
+  right: -6px;
+  bottom: -8px;
+  color: #fff;
+  opacity: 0.16 !important;
+  z-index: 1;
+}
+.cover--sm .cover-cat {
+  right: -4px;
+  bottom: -5px;
+}
+
+/* 대표 글자 */
+.cover-mono {
+  position: relative;
+  z-index: 2;
+  color: #fff;
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.18);
+}
+.cover--sm .cover-mono {
+  font-size: 24px;
+}
+.cover--md .cover-mono {
+  font-size: 46px;
+}
+.cover--lg .cover-mono {
+  font-size: 58px;
+}

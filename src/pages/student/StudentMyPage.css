@@ -15,6 +15,8 @@
 
 /* 프로필 헤더 */
 .mp-profile {
+  position: relative;
+  overflow: hidden;
   display: flex;
   align-items: center;
   gap: 16px;
@@ -22,6 +24,16 @@
   border: 1px solid var(--line);
   border-radius: 16px;
   padding: 20px 22px;
+}
+/* 브랜드 서명 — 헤더 우측에 흐린 CatMark 워터마크 */
+.mp-profile-cat {
+  position: absolute;
+  right: -18px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--brand);
+  opacity: 0.08 !important;
+  pointer-events: none;
 }
 .mp-avatar {
   width: 64px;
@@ -105,32 +117,11 @@
   text-decoration: underline;
 }
 
-/* 학습 요약 */
+/* 학습 요약 — 타일은 StatTile 컴포넌트(.stt)가 그린다 */
 .mp-stats {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 12px;
-}
-.mp-stat {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  padding: 14px 8px;
-  border-radius: 12px;
-  background: var(--bg);
-  border: 1px solid var(--line);
-}
-.mp-stat-num {
-  font-family: var(--font-display);
-  font-size: 22px;
-  font-weight: 800;
-  color: var(--brand-ink);
-  line-height: 1;
-}
-.mp-stat-lbl {
-  font-size: 12px;
-  color: var(--ink-3);
 }
 
 /* 수강 코스 */
@@ -145,11 +136,25 @@
 .mp-course {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 14px 16px;
+  gap: 14px;
+  padding: 12px 14px;
   border-radius: 12px;
   background: var(--bg);
   border: 1px solid var(--line);
+  transition:
+    transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+.mp-course:hover {
+  transform: translateY(-2px);
+  border-color: var(--brand-soft-line);
+  box-shadow: var(--shadow-md);
+}
+@media (prefers-reduced-motion: reduce) {
+  .mp-course:hover {
+    transform: none;
+  }
 }
 .mp-course-main {
   flex: 1;
@@ -199,6 +204,20 @@
   padding: 8px 0;
   font-size: 13.5px;
   color: var(--ink-3);
+  line-height: 1.7;
+}
+/* 빈 상태 — CatMark 라인아트로 브랜드 각인 */
+.mp-emptybox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 0 12px;
+  text-align: center;
+}
+.mp-empty-cat {
+  color: var(--ink-3);
+  opacity: 0.75;
 }
 .mp-inlink {
   color: var(--brand-ink);

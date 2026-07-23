@@ -24,6 +24,29 @@ function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: numbe
   ctx.closePath();
 }
 
+// CatMark 머리 실루엣 — 브랜드 서명(components/brand/CatMark.tsx와 동일 경로, 40×40 기준).
+// 캔버스에서 SVG path 문자열을 그대로 쓰려고 Path2D로 감싼다(수료증 워터마크·인장에 재사용).
+const CAT_HEAD_PATH =
+  'M9 5 L15 12 L20 11 L25 12 L31 5 L30 15 C33 26 27 34 20 34 C13 34 7 26 10 15 Z';
+
+/** 캔버스에 CatMark 실루엣을 채워 그린다. cx,cy=중심, size=한 변 px, 원본 40단위를 스케일. */
+function drawCat(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  size: number,
+  color: string,
+  alpha: number,
+) {
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = color;
+  ctx.translate(cx - size / 2, cy - size / 2);
+  ctx.scale(size / 40, size / 40);
+  ctx.fill(new Path2D(CAT_HEAD_PATH));
+  ctx.restore();
+}
+
 export function drawCertificate(d: CertificateData): HTMLCanvasElement {
   const canvas = document.createElement('canvas');
   canvas.width = W;
@@ -157,12 +180,16 @@ export function drawCourseCertificate(d: CourseCertificateData): HTMLCanvasEleme
   roundRect(ctx, 62, 62, W2 - 124, H2 - 124, 10);
   ctx.stroke();
 
+  // 브랜드 서명 워터마크 — 중앙에 CatMark를 아주 흐리게 깔아 '어디서 본 듯함'을 지운다.
+  drawCat(ctx, W2 / 2, H2 / 2 + 40, 620, accent, 0.05);
+
   ctx.textAlign = 'center';
 
-  // 상단 브랜드
+  // 상단 브랜드 — 캣마크 + 워드마크
+  drawCat(ctx, W2 / 2 - 128, 140, 40, '#ea5443', 1);
   ctx.fillStyle = '#ea5443';
   ctx.font = `900 34px ${F}`;
-  ctx.fillText('CatChap · 캣챱', W2 / 2, 150);
+  ctx.fillText('CatChap · 캣챱', W2 / 2 + 16, 150);
 
   // 제목
   ctx.fillStyle = '#20242E';
@@ -248,11 +275,12 @@ export function drawCourseCertificate(d: CourseCertificateData): HTMLCanvasEleme
   ctx.strokeStyle = accent;
   ctx.lineWidth = 4;
   ctx.stroke();
+  drawCat(ctx, sx, sy - 20, 30, accent, 1);
   ctx.fillStyle = accent;
-  ctx.font = `900 30px ${F}`;
-  ctx.fillText('수료', sx, sy - 4);
-  ctx.font = `800 16px ${F}`;
-  ctx.fillText('CatChap', sx, sy + 26);
+  ctx.font = `900 24px ${F}`;
+  ctx.fillText('수료', sx, sy + 10);
+  ctx.font = `800 14px ${F}`;
+  ctx.fillText('CatChap', sx, sy + 30);
 
   // 일련번호(좌하단, 작게)
   ctx.fillStyle = '#A2A8B6';

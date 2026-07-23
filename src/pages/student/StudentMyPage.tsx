@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
 import { useAuth } from '../../hooks/useAuth';
@@ -6,12 +6,18 @@ import { studentApi } from '../../api/students';
 import { lectureApi, type StudentCourse } from '../../api/lectures';
 import { StudentNav } from '../../layouts/StudentLayout';
 import { profileColor } from '../../utils/profileColor';
+import { useRevealOnScroll } from '../../hooks/useRevealOnScroll';
+import StatTile from '../../components/student/StatTile';
+import CourseCover from '../../components/course/CourseCover';
+import CatMark from '../../components/brand/CatMark';
 import './StudentMyPage.css';
 
 /**
  * 통합 마이페이지 — 프로필 + 학습 요약 + 수강 코스 + 계정 바로가기.
- * 상단 프로필 아이콘 클릭 시 여기로(설정에서 승격). 요약은 records().stats, 코스는 courses()의
- * enrolled를 재사용한다. 실패는 삼키지 않고 '—'/빈 상태로 정직하게 노출한다.
+ * 상단 프로필 아이콘 클릭 시 여기로. 요약은 records().stats, 코스는 courses()의 enrolled 재사용.
+ *
+ * 디자인 상향(0723): CatMark 브랜드 서명, 코스 생성 커버아트, 데이터시각화 스탯 타일,
+ * 진입 리빌(useRevealOnScroll)·hover lift 모션을 얹어 범용 대시보드 룩에서 벗어난다.
  */
 // GET /students/me/records 의 stats는 snake_case로 내려온다(MyRecords.mapRecords와 동일 규약).
 // camelCase로 읽으면 전부 undefined가 되므로 원시 키 그대로 받고, 필드별로 '—' 폴백한다.
@@ -32,6 +38,9 @@ export default function StudentMyPage() {
 
   const [stats, setStats] = useState<MyStats | null>(null);
   const [courses, setCourses] = useState<StudentCourse[] | null>(null);
+
+  const rootRef = useRef<HTMLDivElement>(null);
+  useRevealOnScroll(rootRef);
 
   useEffect(() => {
     studentApi
@@ -55,11 +64,12 @@ export default function StudentMyPage() {
   };
 
   return (
-    <div className="mp-root">
+    <div className="mp-root" ref={rootRef}>
       <StudentNav />
-      <div className="mp-main">
+      <div className="mp-main cc-reveal-group">
         {/* 프로필 헤더 */}
         <section className="mp-profile">
+          <CatMark size={132} variant="ghost" className="mp-profile-cat" />
           <div className="mp-avatar" style={{ background: profileColor(me?.id) }}>
             {name.charAt(0)}
           </div>
@@ -87,26 +97,32 @@ export default function StudentMyPage() {
             </Link>
           </div>
           <div className="mp-stats">
-            <div className="mp-stat">
-              <span className="mp-stat-num">{stats?.streak_days ?? '—'}</span>
-              <span className="mp-stat-lbl">연속 학습일</span>
-            </div>
-            <div className="mp-stat">
-              <span className="mp-stat-num">{stats?.total_solved ?? '—'}</span>
-              <span className="mp-stat-lbl">푼 문제</span>
-            </div>
-            <div className="mp-stat">
-              <span className="mp-stat-num">
-                {stats?.avg_accuracy != null ? `${stats.avg_accuracy}%` : '—'}
-              </span>
-              <span className="mp-stat-lbl">평균 정답률</span>
-            </div>
-            <div className="mp-stat">
-              <span className="mp-stat-num">
-                {stats?.total_hours != null ? `${stats.total_hours}시간` : '—'}
-              </span>
-              <span className="mp-stat-lbl">학습 시간</span>
-            </div>
+            <StatTile
+              icon="ph-fill ph-flame"
+              value={stats?.streak_days ?? null}
+              label="연속 학습일"
+              ratio={stats?.streak_days != null ? stats.streak_days / 30 : null}
+            />
+            <StatTile
+              icon="ph-fill ph-check-circle"
+              value={stats?.total_solved ?? null}
+              label="푼 문제"
+              ratio={stats?.total_solved != null ? stats.total_solved / 500 : null}
+            />
+            <StatTile
+              icon="ph-fill ph-target"
+              value={stats?.avg_accuracy ?? null}
+              suffix="%"
+              label="평균 정답률"
+              ratio={stats?.avg_accuracy != null ? stats.avg_accuracy / 100 : null}
+            />
+            <StatTile
+              icon="ph-fill ph-clock"
+              value={stats?.total_hours ?? null}
+              suffix="시간"
+              label="학습 시간"
+              ratio={stats?.total_hours != null ? stats.total_hours / 50 : null}
+            />
           </div>
         </section>
 
@@ -123,16 +139,21 @@ export default function StudentMyPage() {
           {courses == null ? (
             <p className="mp-empty">불러오는 중…</p>
           ) : courses.length === 0 ? (
-            <p className="mp-empty">
-              수강 중인 코스가 없어요.{' '}
-              <Link to={PATHS.STUDENT_LECTURES} className="mp-inlink">
-                강의 둘러보기
-              </Link>
-            </p>
+            <div className="mp-emptybox">
+              <CatMark size={56} variant="line" whiskers className="mp-empty-cat" />
+              <p className="mp-empty">
+                아직 수강 중인 코스가 없어요.
+                <br />
+                <Link to={PATHS.STUDENT_LECTURES} className="mp-inlink">
+                  강의 둘러보기 →
+                </Link>
+              </p>
+            </div>
           ) : (
             <ul className="mp-courselist">
               {courses.map((c) => (
                 <li key={c.id} className="mp-course">
+                  <CourseCover seed={c.id} label={c.subject || c.title} size="sm" />
                   <div className="mp-course-main">
                     <span className="mp-course-title">{c.title}</span>
                     <span className="mp-course-sub">
