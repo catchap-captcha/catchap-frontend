@@ -840,7 +840,10 @@ function LectureFormModal({
     const probe = document.createElement('video');
     probe.preload = 'metadata';
     probe.onloadedmetadata = () => {
-      const d = Math.round(probe.duration);
+      // floor로 저장한다(round 아님) — 재생 중 서버가 받는 위치는 floor(currentTime)이라,
+      // 끝에서 watched_max의 최대치는 floor(video.duration)이다. round면 1006.5s가 1007로 올라가
+      // watched_max(1006)가 duration(1007)에 영영 못 닿아 완주가 안 된다(off-by-one·라이브 버그).
+      const d = Math.floor(probe.duration);
       URL.revokeObjectURL(url);
       if (Number.isFinite(d) && d > 0) {
         setForm((prev) => ({ ...prev, duration_sec: String(d) }));
