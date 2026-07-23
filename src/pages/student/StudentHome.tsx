@@ -4,6 +4,8 @@ import StudentLayout from '../../layouts/StudentLayout';
 import { PATHS } from '../../routes/paths';
 import { useAuth } from '../../hooks/useAuth';
 import { lectureApi, type LectureItem, type StudentCourse } from '../../api/lectures';
+import CourseCover from '../../components/course/CourseCover';
+import CountUp from '../../components/motion/CountUp';
 import './StudentHome.css';
 
 /**
@@ -86,6 +88,12 @@ export default function StudentHome() {
 
         {state === 'ready' && continueLec ? (
           <div className="sh2-continue">
+            <CourseCover
+              seed={continueLec.course_id || continueLec.id}
+              label={continueLec.subject || continueLec.title}
+              size="sm"
+              className="sh2-continue-cover"
+            />
             <div className="sh2-continue-info">
               <span className="sh2-continue-tag">
                 <i className="ph-fill ph-play-circle" />
@@ -121,16 +129,25 @@ export default function StudentHome() {
       {state === 'ready' && (
         <section className="sh2-kpis">
           <div className="sh2-kpi">
-            <span className="sh2-kpi-num">{courses?.length ?? 0}</span>
-            <span className="sh2-kpi-lb">수강 코스</span>
+            <span className="sh2-kpi-chip"><i className="ph-fill ph-stack" /></span>
+            <div className="sh2-kpi-body">
+              <span className="sh2-kpi-num"><CountUp value={courses?.length ?? 0} /></span>
+              <span className="sh2-kpi-lb">수강 코스</span>
+            </div>
           </div>
           <div className="sh2-kpi">
-            <span className="sh2-kpi-num">{doneCount}</span>
-            <span className="sh2-kpi-lb">완주 강의</span>
+            <span className="sh2-kpi-chip"><i className="ph-fill ph-check-circle" /></span>
+            <div className="sh2-kpi-body">
+              <span className="sh2-kpi-num"><CountUp value={doneCount} /></span>
+              <span className="sh2-kpi-lb">완주 강의</span>
+            </div>
           </div>
           <div className="sh2-kpi">
-            <span className="sh2-kpi-num">{completedCourses}</span>
-            <span className="sh2-kpi-lb">수료 코스</span>
+            <span className="sh2-kpi-chip"><i className="ph-fill ph-seal-check" /></span>
+            <div className="sh2-kpi-body">
+              <span className="sh2-kpi-num"><CountUp value={completedCourses} /></span>
+              <span className="sh2-kpi-lb">수료 코스</span>
+            </div>
           </div>
         </section>
       )}
@@ -158,6 +175,12 @@ export default function StudentHome() {
               const examReady = !!c.exam?.available && !passed;
               return (
                 <article key={c.id} className="sh2-course">
+                  <CourseCover
+                    seed={c.id}
+                    label={c.subject || c.title}
+                    size="md"
+                    className="sh2-course-cover"
+                  />
                   <div className="sh2-course-top">
                     <span className="sh2-course-subj">{c.subject}</span>
                     {passed && <span className="sh2-course-done">수료 완료</span>}
