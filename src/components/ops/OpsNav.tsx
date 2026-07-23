@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { useTheme } from '../../hooks/useTheme';
@@ -88,25 +88,6 @@ export default function OpsNav() {
   const groups = isInstructor ? INSTRUCTOR_GROUPS : GROUPS;
   const home = isInstructor ? PATHS.OPS_INSTRUCTOR_HOME : PATHS.OPS_APPROVAL;
 
-  // 접이식 그룹 — 현재 페이지가 속한 그룹만 펼치고 나머지는 접는다(밀도↓). 클릭으로 토글.
-  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
-    const init: Record<string, boolean> = {};
-    let matched = false;
-    for (const g of groups) {
-      const on = g.items.some((i) => itemActive(i, pathname));
-      init[g.key] = on;
-      if (on) matched = true;
-    }
-    if (!matched && groups[0]) init[groups[0].key] = true; // 하위·미매칭 경로는 첫 그룹 펼침
-    return init;
-  });
-  const toggleGroup = (k: string) => setOpenGroups((o) => ({ ...o, [k]: !o[k] }));
-  // 라우트 이동 시 활성 페이지 그룹은 항상 펼쳐 둔다(접힌 그룹으로 이동해도 보이게).
-  useEffect(() => {
-    const active = groups.find((g) => g.items.some((i) => itemActive(i, pathname)));
-    if (active) setOpenGroups((o) => (o[active.key] ? o : { ...o, [active.key]: true }));
-  }, [pathname, groups]);
-
   // 알림 — 콘솔 벨. 안읽음 배지(useUnreadNotifications) + 패널에서 목록·읽음 처리.
   // 문항 자동 생성 완료/실패 알림(비동기 잡)이 여기로 온다(강사가 떠나 있어도 확인).
   const unread = useUnreadNotifications();
@@ -194,39 +175,26 @@ export default function OpsNav() {
         </div>
       </Link>
       <nav className="op-side-menu">
-        {groups.map((g) => {
-          const isOpen = openGroups[g.key] ?? false;
-          return (
-            <div key={g.key} className={'op-side-group' + (isOpen ? ' op-side-group--open' : '')}>
-              <button
-                type="button"
-                className="op-side-grouplabel"
-                onClick={() => toggleGroup(g.key)}
-                aria-expanded={isOpen}
-              >
-                <span>{g.label}</span>
-                <i className="ph-bold ph-caret-down op-side-caret" />
-              </button>
-              <div className="op-side-groupitems">
-                {g.items.map((l) => {
-                  const on = itemActive(l, pathname);
-                  return (
-                  <Link
-                    key={l.to}
-                    to={l.to}
-                    title={l.label}
-                    className={'op-side-link' + (on ? ' op-side-link--on' : '')}
-                    aria-current={on ? 'page' : undefined}
-                  >
-                    <i className={`ph-fill ${l.icon}`} />
-                    <span>{l.label}</span>
-                  </Link>
-                  );
-                })}
-              </div>
-            </div>
-          );
-        })}
+        {groups.map((g) => (
+          <div key={g.key} className="op-side-group">
+            <div className="op-side-grouplabel">{g.label}</div>
+            {g.items.map((l) => {
+              const on = itemActive(l, pathname);
+              return (
+                <Link
+                  key={l.to}
+                  to={l.to}
+                  title={l.label}
+                  className={'op-side-link' + (on ? ' op-side-link--on' : '')}
+                  aria-current={on ? 'page' : undefined}
+                >
+                  <i className={`ph-fill ${l.icon}`} />
+                  <span>{l.label}</span>
+                </Link>
+              );
+            })}
+          </div>
+        ))}
       </nav>
       <div className="op-side-foot">
         {isInstructor ? (
