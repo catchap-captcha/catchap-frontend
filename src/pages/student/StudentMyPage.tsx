@@ -13,12 +13,14 @@ import './StudentMyPage.css';
  * 상단 프로필 아이콘 클릭 시 여기로(설정에서 승격). 요약은 records().stats, 코스는 courses()의
  * enrolled를 재사용한다. 실패는 삼키지 않고 '—'/빈 상태로 정직하게 노출한다.
  */
+// GET /students/me/records 의 stats는 snake_case로 내려온다(MyRecords.mapRecords와 동일 규약).
+// camelCase로 읽으면 전부 undefined가 되므로 원시 키 그대로 받고, 필드별로 '—' 폴백한다.
 interface MyStats {
-  streakDays: number;
-  totalSolved: number;
-  avgAccuracy: number;
-  totalHours: number;
-  totalMinutes: number;
+  streak_days?: number;
+  total_solved?: number;
+  avg_accuracy?: number;
+  total_hours?: number;
+  total_minutes?: number;
 }
 
 export default function StudentMyPage() {
@@ -86,20 +88,22 @@ export default function StudentMyPage() {
           </div>
           <div className="mp-stats">
             <div className="mp-stat">
-              <span className="mp-stat-num">{stats?.streakDays ?? '—'}</span>
+              <span className="mp-stat-num">{stats?.streak_days ?? '—'}</span>
               <span className="mp-stat-lbl">연속 학습일</span>
             </div>
             <div className="mp-stat">
-              <span className="mp-stat-num">{stats?.totalSolved ?? '—'}</span>
+              <span className="mp-stat-num">{stats?.total_solved ?? '—'}</span>
               <span className="mp-stat-lbl">푼 문제</span>
             </div>
             <div className="mp-stat">
-              <span className="mp-stat-num">{stats != null ? `${stats.avgAccuracy}%` : '—'}</span>
+              <span className="mp-stat-num">
+                {stats?.avg_accuracy != null ? `${stats.avg_accuracy}%` : '—'}
+              </span>
               <span className="mp-stat-lbl">평균 정답률</span>
             </div>
             <div className="mp-stat">
               <span className="mp-stat-num">
-                {stats != null ? `${stats.totalHours}시간` : '—'}
+                {stats?.total_hours != null ? `${stats.total_hours}시간` : '—'}
               </span>
               <span className="mp-stat-lbl">학습 시간</span>
             </div>
