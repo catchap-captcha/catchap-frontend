@@ -181,14 +181,13 @@
 
 /* ===== 가로 스크롤 레일 ===== */
 .sh2-rail { max-width: 980px; margin: 44px auto 0; padding: 0 24px; }
+/* 복제본 랩처럼 가로 스크롤 레일 → 반응형 그리드(가로 스크롤 폐지) */
 .sh2-railscroll {
-  display: flex; gap: 16px; overflow-x: auto; padding: 6px 2px 14px;
-  scroll-snap-type: x proximity; scrollbar-width: thin;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(224px, 1fr));
+  gap: 16px; padding: 6px 2px 4px;
 }
-.sh2-railscroll::-webkit-scrollbar { height: 8px; }
-.sh2-railscroll::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 999px; }
 .sh2-railcard {
-  flex: 0 0 244px; scroll-snap-align: start; text-align: left;
+  text-align: left;
   border: 0.5px solid var(--line); border-radius: var(--ap-r);
   background: var(--surface); padding: 0 0 16px; overflow: hidden; cursor: pointer;
   display: flex; flex-direction: column;
