@@ -46,7 +46,7 @@ export default function ProfileEdit() {
     try {
       await studentApi.updateProfile({ name: n, ...(hasAge ? { age: ageNum } : {}) });
       await reloadMe();
-      navigate(PATHS.STUDENT_SETTINGS);
+      navigate(PATHS.STUDENT_MYPAGE);
     } catch {
       setErr('저장에 실패했어요. 잠시 후 다시 시도해 주세요.');
     } finally {
@@ -94,7 +94,7 @@ export default function ProfileEdit() {
             </button>
             <button
               className="pe-btn pe-btn--ghost"
-              onClick={() => navigate(PATHS.STUDENT_SETTINGS)}
+              onClick={() => navigate(PATHS.STUDENT_MYPAGE)}
               disabled={saving}
             >
               취소

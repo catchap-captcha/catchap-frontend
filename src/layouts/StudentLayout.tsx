@@ -117,7 +117,17 @@ export function StudentNav({
               </div>
               <span className="sl-profilename">{name}</span>
             </Link>
+            {/* 실서비스식 빠른 허브 — 마이페이지·나의 기록·설정·로그아웃 */}
             <div className="sl-dropdown" role="menu">
+              <Link to={PATHS.STUDENT_MYPAGE} className="sl-dropitem" role="menuitem" onClick={() => setProfileOpen(false)}>
+                <i className="ph-fill ph-user" /> 마이페이지
+              </Link>
+              <Link to={PATHS.STUDENT_RECORDS} className="sl-dropitem" role="menuitem" onClick={() => setProfileOpen(false)}>
+                <i className="ph-fill ph-chart-line-up" /> 나의 기록
+              </Link>
+              <Link to={`${PATHS.STUDENT_MYPAGE}?tab=account`} className="sl-dropitem" role="menuitem" onClick={() => setProfileOpen(false)}>
+                <i className="ph-fill ph-gear-six" /> 설정
+              </Link>
               <button type="button" className="sl-dropitem sl-dropitem-danger" role="menuitem" onClick={doLogout}>
                 <i className="ph-fill ph-sign-out" /> 로그아웃
               </button>

@@ -31,7 +31,7 @@ const MyRecords = lazy(() => import('../pages/student/MyRecords'));
 const WrongNotes = lazy(() => import('../pages/student/WrongNotes'));
 const SearchPage = lazy(() => import('../pages/student/SearchPage'));
 const StudentNotifications = lazy(() => import('../pages/student/StudentNotifications'));
-const StudentSettings = lazy(() => import('../pages/student/StudentSettings'));
+// 설정 페이지는 마이페이지(계정 허브)의 탭으로 흡수(0723) — 옛 경로는 허브로 리다이렉트.
 const ProfileEdit = lazy(() => import('../pages/student/ProfileEdit'));
 const StudentMyPage = lazy(() => import('../pages/student/StudentMyPage'));
 
@@ -106,7 +106,11 @@ export default function AppRoutes() {
           <Route path={PATHS.STUDENT_WRONG_NOTES} element={<WrongNotes />} />
           <Route path={PATHS.STUDENT_SEARCH} element={<SearchPage />} />
           <Route path={PATHS.STUDENT_NOTIFICATIONS} element={<StudentNotifications />} />
-          <Route path={PATHS.STUDENT_SETTINGS} element={<StudentSettings />} />
+          {/* 설정 → 마이페이지(계정 허브) '계정·개인정보' 탭으로 흡수(북마크 보호 리다이렉트) */}
+          <Route
+            path={PATHS.STUDENT_SETTINGS}
+            element={<Navigate to={`${PATHS.STUDENT_MYPAGE}?tab=account`} replace />}
+          />
           <Route path={PATHS.STUDENT_PROFILE_EDIT} element={<ProfileEdit />} />
           <Route path={PATHS.STUDENT_MYPAGE} element={<StudentMyPage />} />
         </Route>
