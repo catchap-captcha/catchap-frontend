@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
 import { opsApi, type OrgRegRequest, type OpsAdminCredential } from '../../api/ops';
 import OpsNav from '../../components/ops/OpsNav';
+import OpsSubTabs, { ORG_TABS } from '../../components/ops/OpsSubTabs';
 import CountUp from '../../components/motion/CountUp';
 import './OpsApproval.css';
 
@@ -122,6 +123,8 @@ export default function OpsApproval() {
           </div>
           <button className="op-refresh" onClick={load}><i className="ph-bold ph-arrows-clockwise" />새로고침</button>
         </div>
+
+        <OpsSubTabs tabs={ORG_TABS} />
 
         {/* KPI — 각 지표는 담당 섹션으로 바로 이동 (전체 학생 지표는 운영자 범위 밖이라 제거) */}
         <div className="op-kpis">

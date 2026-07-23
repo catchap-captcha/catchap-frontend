@@ -7,6 +7,7 @@ import {
   type BehaviorTraceDetail,
 } from '../../api/ops';
 import OpsNav from '../../components/ops/OpsNav';
+import OpsSubTabs, { BEHAVIOR_TABS } from '../../components/ops/OpsSubTabs';
 import { dateSuffix, downloadCSV } from '../../utils/download';
 import './OpsApproval.css';
 import './OpsBehavior.css';
@@ -356,6 +357,8 @@ export default function OpsBehavior() {
             </button>
           </div>
         </div>
+
+        <OpsSubTabs tabs={BEHAVIOR_TABS} />
 
         {ov && (
           <div className="op-kpis">

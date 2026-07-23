@@ -6,6 +6,7 @@ import {
   type OpsOrgCreateInput,
 } from '../../api/ops';
 import OpsNav from '../../components/ops/OpsNav';
+import OpsSubTabs, { ORG_TABS } from '../../components/ops/OpsSubTabs';
 import './OpsApproval.css';
 
 const STATUS_META: Record<string, { label: string; cls: string }> = {
@@ -212,6 +213,8 @@ export default function OpsOrgs() {
             </button>
           </div>
         </div>
+
+        <OpsSubTabs tabs={ORG_TABS} />
 
         <div className="op-toolbar">
           <div className="op-search">

@@ -3,6 +3,7 @@ import { kstDateString } from '../../utils/format';
 
 import { opsApi, type BehaviorExportPreview } from '../../api/ops';
 import OpsNav from '../../components/ops/OpsNav';
+import OpsSubTabs, { BEHAVIOR_TABS } from '../../components/ops/OpsSubTabs';
 import './OpsApproval.css';
 import './OpsBehaviorExport.css';
 
@@ -105,6 +106,8 @@ export default function OpsBehaviorExport() {
             미리보기
           </button>
         </div>
+
+        <OpsSubTabs tabs={BEHAVIOR_TABS} />
 
         {/* 익명화 안내 */}
         <div className="ox-note">

@@ -19,17 +19,19 @@ import mascot from '../../assets/characters/catchap-logo.png';
  *
  *  강사(instructor)도 같은 사이드바를 쓰되 '내 강의'만 보인다 — 운영 메뉴는 서버가
  *  403으로 막지만, 애초에 링크를 노출하지 않는 것이 콘솔의 예의다. */
-type NavGroup = { key: string; label: string; items: { to: string; icon: string; label: string }[] };
+type NavItem = { to: string; icon: string; label: string; match?: string[] };
+type NavGroup = { key: string; label: string; items: NavItem[] };
 
-/** 실무 콘솔식 접이식(아코디언) 그룹 — 16개 메뉴가 한눈에 안 들어와 스크롤로 새던 것을,
- *  현재 페이지가 속한 그룹만 펼치고 나머지는 접어 밀도를 낮춘다(Linear·Datadog식). */
+/** 실무 콘솔식 접이식(아코디언) 그룹 + 메뉴 병합(2026-07-23) — 16개→10개.
+ *  병합된 항목은 대표 경로(to)로 가고, 형제 페이지는 상단 서브탭(OpsSubTabs)으로 전환한다.
+ *  match: 그 항목을 활성/그룹펼침으로 볼 형제 경로들(서브탭 페이지 포함). */
 const GROUPS: NavGroup[] = [
   {
     key: 'ops',
     label: '운영',
     items: [
-      { to: PATHS.OPS_APPROVAL, icon: 'ph-buildings', label: '기관 승인' },
-      { to: PATHS.OPS_ORGS, icon: 'ph-list-checks', label: '기관 관리' },
+      // 기관 승인 + 기관 관리 → '기관'(승인=탭). 서브탭으로 둘 사이 전환.
+      { to: PATHS.OPS_APPROVAL, icon: 'ph-buildings', label: '기관', match: [PATHS.OPS_ORGS] },
       { to: PATHS.OPS_INSTRUCTORS, icon: 'ph-chalkboard-teacher', label: '강사 관리' },
       { to: PATHS.OPS_INQUIRIES, icon: 'ph-chat-circle-dots', label: '문의 관리' },
     ],
@@ -46,19 +48,16 @@ const GROUPS: NavGroup[] = [
     key: 'ai',
     label: 'AI',
     items: [
-      { to: PATHS.OPS_LLM_MODELS, icon: 'ph-robot', label: '모델' },
-      { to: PATHS.OPS_LLM_KEYS, icon: 'ph-lock-key', label: 'API 키' },
-      { to: PATHS.OPS_LLM_PROMPTS, icon: 'ph-chat-text', label: '프롬프트' },
-      // 기관 콘솔 노출용 표시 카탈로그(실 LLM 호출과 무관) — AI 묶음에 함께 둔다
-      { to: PATHS.OPS_AI_MODELS, icon: 'ph-cpu', label: '모델 카탈로그' },
+      // LLM 모델·API 키·프롬프트 → 'LLM 설정'(탭 3). 모델 카탈로그는 삭제(레거시).
+      { to: PATHS.OPS_LLM_MODELS, icon: 'ph-robot', label: 'LLM 설정', match: [PATHS.OPS_LLM_KEYS, PATHS.OPS_LLM_PROMPTS] },
     ],
   },
   {
     key: 'data',
     label: '데이터 · 시스템',
     items: [
-      { to: PATHS.OPS_BEHAVIOR, icon: 'ph-fingerprint', label: '행동 데이터' },
-      { to: PATHS.OPS_BEHAVIOR_EXPORT, icon: 'ph-export', label: '외부 내보내기' },
+      // 행동 데이터 + 외부 내보내기 → '행동 데이터'(내보내기=탭).
+      { to: PATHS.OPS_BEHAVIOR, icon: 'ph-fingerprint', label: '행동 데이터', match: [PATHS.OPS_BEHAVIOR_EXPORT] },
       { to: PATHS.OPS_LOGS, icon: 'ph-scroll', label: '감사 로그' },
       { to: PATHS.OPS_API_KEYS, icon: 'ph-key', label: 'API 발급' },
       { to: PATHS.OPS_MONITORING, icon: 'ph-gauge', label: '모니터링' },
@@ -77,6 +76,9 @@ const INSTRUCTOR_GROUPS: NavGroup[] = [
   },
 ];
 
+/** 병합 항목은 대표 경로(to)뿐 아니라 형제 서브탭 경로(match)에서도 활성으로 본다. */
+const itemActive = (l: NavItem, path: string) => path === l.to || !!l.match?.includes(path);
+
 export default function OpsNav() {
   const { pathname } = useLocation();
   const { me, logout } = useAuth();
@@ -91,7 +93,7 @@ export default function OpsNav() {
     const init: Record<string, boolean> = {};
     let matched = false;
     for (const g of groups) {
-      const on = g.items.some((i) => i.to === pathname);
+      const on = g.items.some((i) => itemActive(i, pathname));
       init[g.key] = on;
       if (on) matched = true;
     }
@@ -101,7 +103,7 @@ export default function OpsNav() {
   const toggleGroup = (k: string) => setOpenGroups((o) => ({ ...o, [k]: !o[k] }));
   // 라우트 이동 시 활성 페이지 그룹은 항상 펼쳐 둔다(접힌 그룹으로 이동해도 보이게).
   useEffect(() => {
-    const active = groups.find((g) => g.items.some((i) => i.to === pathname));
+    const active = groups.find((g) => g.items.some((i) => itemActive(i, pathname)));
     if (active) setOpenGroups((o) => (o[active.key] ? o : { ...o, [active.key]: true }));
   }, [pathname, groups]);
 
@@ -206,18 +208,21 @@ export default function OpsNav() {
                 <i className="ph-bold ph-caret-down op-side-caret" />
               </button>
               <div className="op-side-groupitems">
-                {g.items.map((l) => (
+                {g.items.map((l) => {
+                  const on = itemActive(l, pathname);
+                  return (
                   <Link
                     key={l.to}
                     to={l.to}
                     title={l.label}
-                    className={'op-side-link' + (pathname === l.to ? ' op-side-link--on' : '')}
-                    aria-current={pathname === l.to ? 'page' : undefined}
+                    className={'op-side-link' + (on ? ' op-side-link--on' : '')}
+                    aria-current={on ? 'page' : undefined}
                   >
                     <i className={`ph-fill ${l.icon}`} />
                     <span>{l.label}</span>
                   </Link>
-                ))}
+                  );
+                })}
               </div>
             </div>
           );

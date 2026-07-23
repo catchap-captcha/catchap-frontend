@@ -1278,3 +1278,19 @@
    :has(.op-root)로 콘솔 화면에서만 적용 → 학생·공개 페이지 무영향. */
 body:has(.op-root) { background: #f5f5f7; }
 [data-theme='dark'] body:has(.op-root) { background: #000000; }
+
+/* ── 서브탭 (메뉴 병합 2026-07-23) — 한 메뉴 아래 형제 페이지 전환(iOS 세그먼트식) ── */
+.op-subtabs {
+  display: inline-flex; gap: 4px; padding: 4px;
+  background: color-mix(in srgb, var(--ink) 5%, transparent);
+  border-radius: 12px; margin-bottom: 20px;
+}
+.op-subtab {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 15px; border-radius: 9px;
+  font-size: 13.5px; font-weight: 700; color: var(--ink-2);
+  text-decoration: none; transition: background 0.15s, color 0.15s;
+}
+.op-subtab i { font-size: 16px; }
+.op-subtab:hover { color: var(--ink); }
+.op-subtab--on { background: var(--surface); color: var(--brand-strong); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); }
