@@ -60,20 +60,24 @@ export default function StudentHome() {
     [courses],
   );
 
-  // 코스별 진행 — 완주 강의 수 / 전체, 다음(이어볼) 강의
+  // '내 코스' = 실제 수강신청한 코스만. 종전엔 전체 코스를 노출해(enrolled 무시) 미신청 코스도
+  // '내 코스'로 보였고, 추천 레일(미신청)과 같은 화면에서 겹치는 모순이 있었다 → enrolled로 좁힌다.
   const courseCards = useMemo(() => {
     if (!courses || !lectures) return [];
-    return courses.map((c) => {
-      const cl = lectures
-        .filter((l) => l.course_id === c.id)
-        .sort((a, b) => a.order_no - b.order_no);
-      const done = cl.filter((l) => l.progress?.status === 'done').length;
-      const total = cl.length || c.lecture_count;
-      const next = cl.find((l) => l.progress?.status !== 'done') ?? cl[0] ?? null;
-      const pct = total > 0 ? Math.round((done / total) * 100) : 0;
-      return { c, done, total, pct, next };
-    });
+    return courses
+      .filter((c) => c.enrolled)
+      .map((c) => {
+        const cl = lectures
+          .filter((l) => l.course_id === c.id)
+          .sort((a, b) => a.order_no - b.order_no);
+        const done = cl.filter((l) => l.progress?.status === 'done').length;
+        const total = cl.length || c.lecture_count;
+        const next = cl.find((l) => l.progress?.status !== 'done') ?? cl[0] ?? null;
+        const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+        return { c, done, total, pct, next };
+      });
   }, [courses, lectures]);
+  const enrolledCount = useMemo(() => (courses ?? []).filter((c) => c.enrolled).length, [courses]);
 
   // 이어서 학습 레일 — 시청 중(watching)인 강의(발견·재방문 유도). 히어로의 1건과 겹쳐도
   // 여러 개를 가로 스크롤로 노출하는 게 목적(넷플릭스·Coursera '이어보기' 레일 패턴).
@@ -144,7 +148,7 @@ export default function StudentHome() {
           <div className="sh2-kpi">
             <span className="sh2-kpi-chip"><i className="ph-fill ph-stack" /></span>
             <div className="sh2-kpi-body">
-              <span className="sh2-kpi-num"><CountUp value={courses?.length ?? 0} /></span>
+              <span className="sh2-kpi-num"><CountUp value={enrolledCount} /></span>
               <span className="sh2-kpi-lb">수강 코스</span>
             </div>
           </div>
@@ -242,7 +246,9 @@ export default function StudentHome() {
           <div className="sh2-empty">강의를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.</div>
         )}
         {state === 'ready' && courseCards.length === 0 && (
-          <div className="sh2-empty">아직 배정된 코스가 없어요.</div>
+          <div className="sh2-empty">
+            아직 수강 중인 코스가 없어요. 위에서 관심 있는 코스를 시작해 보세요.
+          </div>
         )}
 
         {state === 'ready' && courseCards.length > 0 && (
