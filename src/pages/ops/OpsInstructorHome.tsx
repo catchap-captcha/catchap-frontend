@@ -102,7 +102,7 @@ export default function OpsInstructorHome() {
                   </div>
                 )}
 
-                {data.draft_by_lecture.length > 0 ? (
+                {data.draft_by_lecture?.length > 0 ? (
                   <ul className="ih-lec-list">
                     {data.draft_by_lecture.map((l) => (
                       <li key={l.lecture_id} className="ih-lec-row">
@@ -121,7 +121,7 @@ export default function OpsInstructorHome() {
               </section>
 
               {/* 표본 검수 — 검수 대기 문항 무작위 표본으로 생성 품질을 빠르게 점검(문제은행 2단계) */}
-              {data.review_sample.length > 0 && (
+              {data.review_sample?.length > 0 && (
                 <section className="ih-card ih-card--wide">
                   <div className="ih-card-head">
                     <i className="ph-bold ph-list-magnifying-glass" />
@@ -165,7 +165,7 @@ export default function OpsInstructorHome() {
                   강의 중간 확인문항 통과율이 낮을수록 학생이 그 강의를 어려워해요(강의 보강 대상).
                 </p>
 
-                {data.weak_lectures.length > 0 ? (
+                {data.weak_lectures?.length > 0 ? (
                   <ul className="ih-weak-list">
                     {data.weak_lectures.map((l) => (
                       <li key={l.lecture_id} className="ih-weak-row">
@@ -192,7 +192,7 @@ export default function OpsInstructorHome() {
             </div>
 
             {/* 문항별 — 특정 확인문항이 유독 어렵거나 잘못 만들어졌는지(question_id 계측 후 데이터) */}
-            {data.weak_checkpoint_questions.length > 0 && (
+            {data.weak_checkpoint_questions?.length > 0 && (
               <section className="ih-card ih-card--wide">
                 <div className="ih-card-head">
                   <i className="ph-bold ph-warning-diamond" />
