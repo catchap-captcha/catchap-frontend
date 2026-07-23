@@ -7,7 +7,6 @@ import { playSfx } from '../../utils/feedback';
 import { attachPointerTrace, type PointerTraceRecorder } from '../../utils/pointerTrace';
 import ScreenTimeReminder from '../../components/motion/ScreenTimeReminder';
 import CatchapWidget from '../../components/captcha/CatchapWidget';
-import mascot from '../../assets/characters/catchap-logo.png';
 import './GameScreen.css';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -158,8 +157,8 @@ export default function GameScreen() {
   });
 
   const [subjects, setSubjects] = useState<SubjectPreset[]>(FALLBACK);
-  /* API reward: {have, goal} — 실패 시 REWARDS(have)/5(goal) 유지 */
-  const [rewards, setRewards] = useState<Record<string, { have: number; goal: number }>>(() =>
+  /* API reward: {have, goal} — 디게임화(0723)로 화면 표시는 제거됐고 상태 로드만 유지(값 미사용) */
+  const [, setRewards] = useState<Record<string, { have: number; goal: number }>>(() =>
     Object.fromEntries(Object.entries(REWARDS).map(([k, v]) => [k, { have: v, goal: 5 }])),
   );
   /* API question: {q, hi, pre, post} — 실패 시 원본 QUESTIONS 유지 */
@@ -380,7 +379,7 @@ export default function GameScreen() {
           setGoalView({ done: Math.min(doneNow, g.goal), goal: g.goal });
           if (!g.celebrated && doneNow >= g.goal) {
             g.celebrated = true;
-            setStageBanner(`🎉 오늘 목표 달성! (${g.goal}문제) 연속 학습일이 쌓였어요`);
+            setStageBanner('오늘 목표 달성 — 연속 학습일이 쌓였어요');
             window.setTimeout(() => setStageBanner(null), 3500);
           }
         }
@@ -407,7 +406,7 @@ export default function GameScreen() {
         }
         if (done < CHAPTER_STAGES) {
           // 비방해 전환 표시 후 다음 단계 위젯으로 재마운트 — 학생은 그대로 이어서 푼다
-          setStageBanner(`✨ ${done}단계 완료! ${done + 1}단계로 넘어가요`);
+          setStageBanner(`${done}단계 완료 — ${done + 1}단계로 넘어갑니다`);
           window.setTimeout(() => setStageBanner(null), 2200);
           setCurStage(done + 1);
           return;
@@ -558,22 +557,15 @@ export default function GameScreen() {
     : Math.round(((EDU_SITE_KEY ? skipToday + widgetStats.answered : s.current) / curTotal) * 100);
   const isLast = s.current >= s.total;
 
-  const rewardGoal = rewards[s.key]?.goal ?? 5;
-  const rewardHave = Math.max(0, Math.min(rewardGoal, rewards[s.key]?.have ?? 0));
-  const rewardMsg =
-    rewardHave >= rewardGoal
-      ? '와! 새 스티커를 받았어요 🎉'
-      : `별 ${rewardGoal - rewardHave}개만 더 모으면 새 스티커! 🎁`;
-
   const qd = questions[s.key] ?? { q: '', pre: '', hi: '', post: '' };
 
   const themeVars = {
-    '--gs-solid': s.solid,
-    '--gs-soft': s.soft,
-    '--gs-slot-bg': s.slotBg,
-    '--gs-dash': s.dash,
-    '--gs-mascot-grad': s.mascotGrad,
-    '--gs-prog-grad': s.progGrad,
+    '--gs-solid': '#0071e3',
+    '--gs-soft': '#e8f1fd',
+    '--gs-slot-bg': '#f5f7fa',
+    '--gs-dash': 'rgba(0,113,227,0.28)',
+    '--gs-mascot-grad': 'linear-gradient(160deg,#cfe2ff,#bbd6ff)',
+    '--gs-prog-grad': 'linear-gradient(90deg,#0a84ff,#0071e3)',
   } as CSSProperties;
 
   return (
@@ -623,10 +615,6 @@ export default function GameScreen() {
               </>
             )}
           </div>
-          <div className="gs-scorechip">
-            <i className="ph-fill ph-star" />
-            <span>{s.score}</span>
-          </div>
         </div>
         {/* SUBJECT SWITCHER */}
         <div className="gs-tabs">
@@ -636,7 +624,7 @@ export default function GameScreen() {
                 key={sub.key}
                 onClick={() => setSubjectIdx(i)}
                 className="gs-tab gs-tab-active"
-                style={{ background: sub.solid, boxShadow: `0 8px 16px -8px ${sub.solid}` }}
+                style={{ background: 'var(--brand)', boxShadow: '0 8px 16px -8px var(--brand)' }}
               >
                 <i className={sub.gameIcon} />
                 {sub.key}
@@ -709,7 +697,7 @@ export default function GameScreen() {
               {goalView && (
                 <span className="gs-daybar-goal">
                   오늘 목표 {goalView.done}/{goalView.goal}
-                  {goalView.done >= goalView.goal ? ' 🎉' : ''}
+                  {goalView.done >= goalView.goal ? ' 달성' : ''}
                 </span>
               )}
             </div>
@@ -764,10 +752,9 @@ export default function GameScreen() {
                  '미리 복습하기'는 위젯을 early로 재마운트해 휴면 문항을 이어서 낸다. */
               <div className="gs-bankoverlay">
                 <div className="gs-bankcard">
-                  <span className="gs-bankcard-emoji">🎉</span>
-                  <b className="gs-bankcard-title">오늘 몫을 다 끝냈어요!</b>
+                  <b className="gs-bankcard-title">오늘 분량을 모두 마쳤습니다</b>
                   <p className="gs-bankcard-desc">
-                    복습할 문제도, 틀린 문제도, 새 문제도 지금은 없어요.
+                    복습할 문제도, 틀린 문제도, 새 문제도 지금은 없습니다.
                     {bankDone.nextReviewAt && fmtNextReview(bankDone.nextReviewAt) ? (
                       <>
                         <br />다음 복습: <b>{fmtNextReview(bankDone.nextReviewAt)}</b>
@@ -801,10 +788,9 @@ export default function GameScreen() {
               /* 세트(10문항) 중간 요약 — 무한처럼 느껴지던 플레이에 단위감(계속/그만) */
               <div className="gs-bankoverlay">
                 <div className="gs-bankcard">
-                  <span className="gs-bankcard-emoji">✨</span>
-                  <b className="gs-bankcard-title">{setBreak.set}세트 완료!</b>
+                  <b className="gs-bankcard-title">{setBreak.set}세트 완료</b>
                   <p className="gs-bankcard-desc">
-                    {setBreak.total}문제 중 <b>{setBreak.correct}개</b> 맞혔어요.
+                    {setBreak.total}문제 중 <b>{setBreak.correct}개</b> 맞혔습니다.
                   </p>
                   <div className="gs-bankcard-actions">
                     <button className="gs-bankcard-btn gs-bankcard-btn--sub" onClick={() => goResult(true)}>
@@ -855,14 +841,8 @@ export default function GameScreen() {
 
         {/* SIDE PANEL */}
         <div className="gs-side">
-          <div className="gs-mascotcard">
-            <div className="gs-mascotfloat">
-              <img src={mascot} alt="마스코트" className="gs-mascotimg" />
-            </div>
-            <div className="gs-cheer">{s.cheer}</div>
-          </div>
           <div className="gs-card">
-            <div className="gs-card-title">이번 판 진행</div>
+            <div className="gs-card-title">이번 학습 진행</div>
             <div className="gs-statlist">
               <div className="gs-statrow">
                 <span className="gs-staticon gs-staticon-ok">
@@ -883,26 +863,6 @@ export default function GameScreen() {
                 연속 정답 <span className="gs-statval gs-statval-streak">{EDU_SITE_KEY ? widgetStats.streak : s.streak}</span>
               </div>
             </div>
-          </div>
-
-          <div className="gs-card">
-            <div className="gs-reward-head">
-              <div className="gs-reward-title">다음 보상까지</div>
-              <span className="gs-reward-sticker">
-                <i className="ph-fill ph-gift" />새 스티커
-              </span>
-            </div>
-            <div className="gs-reward-slots">
-              {Array.from({ length: rewardGoal }, (_, i) => (
-                <span
-                  key={i}
-                  className={`gs-reward-slot ${i < rewardHave ? 'gs-reward-slot-on' : 'gs-reward-slot-off'}`}
-                >
-                  <i className="ph-fill ph-star" />
-                </span>
-              ))}
-            </div>
-            <div className="gs-reward-msg">{rewardMsg}</div>
           </div>
         </div>
       </div>
@@ -939,8 +899,7 @@ export default function GameScreen() {
       {quitAsk && (
         <div className="gs-quitpop-back" onClick={() => setQuitAsk(false)}>
           <div className="gs-quitpop" onClick={(e) => e.stopPropagation()}>
-            <div className="gs-quitpop-icon">🏁</div>
-            <div className="gs-quitpop-title">여기서 그만할까요?</div>
+            <div className="gs-quitpop-title">여기서 그만하시겠습니까?</div>
             <div className="gs-quitpop-msg">
               {widgetStats.answered > 0
                 ? `지금까지 푼 ${widgetStats.answered}문제는 저장했어요. 결과를 보고 마칠까요?`

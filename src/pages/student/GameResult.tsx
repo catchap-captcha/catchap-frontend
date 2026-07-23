@@ -5,7 +5,6 @@ import { PATHS } from '../../routes/paths';
 import { useAuth } from '../../hooks/useAuth';
 import { studentApi } from '../../api/students';
 import DemoBadge from '../../components/common/DemoBadge';
-import mascot from '../../assets/characters/catchap-logo.png';
 import './GameResult.css';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -26,31 +25,16 @@ interface ResultEntry {
 
 // TODO(api): studentApi.result() 실패 시 원본 SUBJECTS 하드코딩 데이터 유지
 const FALLBACK: Record<string, ResultEntry> = {
-  '국어': { solid: '#ea5443', soft: '#FFE0DB', cleared: 5, correct: 5, score: '+150', time: '2:40', streak: 5, ai: '글의 속뜻까지 잘 파악했어요! 낱말과 문장을 꼼꼼히 읽는 습관이 멋져요. 다음 단계도 잘 해낼 거예요! 🐾' },
-  '영어': { solid: '#FF922E', soft: '#FFEDD6', cleared: 3, correct: 4, score: '+90', time: '2:10', streak: 3, ai: '영어 문장과 문법을 척척 풀었어요! 단어의 쓰임을 잘 이해했네요. 다음 단계도 잘 해낼 거예요! 🐾' },
-  '수학': { solid: '#17B08C', soft: '#DFF6EE', cleared: 5, correct: 5, score: '+160', time: '3:05', streak: 5, ai: '계산과 도형 문제를 아주 정확하게 풀었어요! 차근차근 따지는 방법이 완벽했어요. 다음 단계도 도전해봐요! 🐾' },
-  '과학': { solid: '#2E7BFF', soft: '#E1EDFF', cleared: 2, correct: 4, score: '+95', time: '2:20', streak: 3, ai: '관찰하고 탐구를 참 잘했어요! 원리를 꼼꼼히 살피는 눈이 멋져요. 다음엔 더 깊은 탐구에 도전해봐요! 🐾' },
-  '사회': { solid: '#8B6BFF', soft: '#EAE2FF', cleared: 1, correct: 4, score: '+80', time: '2:05', streak: 3, ai: '우리 지역과 사회를 잘 이해하고 있네요! 지도와 공공기관 문제를 멋지게 풀었어요. 다음 단계로 가볼까요? 🐾' },
-  '생활': { solid: '#FF6DA6', soft: '#FFE3EF', cleared: 1, correct: 4, score: '+110', time: '2:35', streak: 4, ai: '안전 규칙을 잘 지켰어요! 멈추고, 살피고, 건너기 — 참 잘 기억했어요. 다음 단계도 안전하게! 🐾' },
+  '국어': { solid: '#ea5443', soft: '#FFE0DB', cleared: 5, correct: 5, score: '+150', time: '2:40', streak: 5, ai: '글의 의미를 정확히 파악했습니다. 이 과목의 이해도가 높습니다.' },
+  '영어': { solid: '#FF922E', soft: '#FFEDD6', cleared: 3, correct: 4, score: '+90', time: '2:10', streak: 3, ai: '문장과 문법을 잘 이해했습니다. 틀린 문항만 다시 확인해 보세요.' },
+  '수학': { solid: '#17B08C', soft: '#DFF6EE', cleared: 5, correct: 5, score: '+160', time: '3:05', streak: 5, ai: '계산과 도형 문항을 정확하게 풀었습니다. 이 과목의 이해도가 높습니다.' },
+  '과학': { solid: '#2E7BFF', soft: '#E1EDFF', cleared: 2, correct: 4, score: '+95', time: '2:20', streak: 3, ai: '원리를 잘 이해했습니다. 틀린 문항을 다시 확인해 보세요.' },
+  '사회': { solid: '#8B6BFF', soft: '#EAE2FF', cleared: 1, correct: 4, score: '+80', time: '2:05', streak: 3, ai: '개념을 잘 이해했습니다. 오답을 복습하면 이해도가 올라갑니다.' },
+  '생활': { solid: '#FF6DA6', soft: '#FFE3EF', cleared: 1, correct: 4, score: '+110', time: '2:35', streak: 4, ai: '핵심 내용을 잘 이해했습니다. 오답을 다시 확인해 보세요.' },
 };
 
 /* (은퇴 0719, Q 통합 3단계-c) 학습 지도용 MAP/ORDER/TODAY_DONE 상수 삭제 —
    6과목 완료 지도 카드가 사라지며 소비처가 없어졌다. */
-
-const CONFETTI = [
-  { left: '6%', bg: '#ea5443', delay: '0s' },
-  { left: '14%', bg: '#FFB43C', delay: '.5s' },
-  { left: '22%', bg: '#33C892', delay: '1.1s' },
-  { left: '31%', bg: '#2E7BFF', delay: '.3s' },
-  { left: '39%', bg: '#FF6DA6', delay: '1.6s' },
-  { left: '47%', bg: '#8B6BFF', delay: '.8s' },
-  { left: '55%', bg: '#FFB43C', delay: '.2s' },
-  { left: '63%', bg: '#ea5443', delay: '1.3s' },
-  { left: '71%', bg: '#17B08C', delay: '.6s' },
-  { left: '79%', bg: '#2E7BFF', delay: '1.9s' },
-  { left: '87%', bg: '#FF6DA6', delay: '1s' },
-  { left: '94%', bg: '#FFB43C', delay: '.4s' },
-];
 
 /** GameScreen이 넘겨주는 이번 세션 로컬 집계 — 서버 재조회 없이 정확한 결과 표시 */
 interface SessState {
@@ -226,57 +210,48 @@ export default function GameResult() {
               : 'zero';
   const PERF: Record<string, { title: string; icon: string; color: string; soft: string; ai: string; sub: string; ribbon: string }> = {
     perfect: {
-      title: `완벽해요, ${name}! 다 맞혔어요 🏆`, icon: 'ph-fill ph-trophy', color: '#F0A400', soft: '#FFF3D6',
-      ribbon: '올백 완벽!', sub: '한 문제도 안 틀렸어요! 최고예요.',
-      ai: '우아, 한 문제도 안 틀렸어요! 정말 대단해요. 이 기세로 다음 문제도 도전해봐요! 🏆',
+      title: `${name}님, 전 문항을 맞혔습니다`, icon: 'ph-fill ph-trophy', color: '#17B08C', soft: '#DFF6ED',
+      ribbon: '전 문항 정답', sub: '한 문항도 틀리지 않았어요. 이 과목의 이해도가 높습니다.',
+      ai: '전 문항을 맞혔습니다. 이 과목의 이해도가 높습니다.',
     },
     great: {
-      title: `정말 잘했어요, ${name}! 🎉`, icon: 'ph-fill ph-confetti', color: '#17B08C', soft: '#DFF6ED',
-      ribbon: '아주 잘함!', sub: '거의 다 맞혔어요! 조금만 더 하면 완벽이에요.',
-      ai: '대부분 맞혔어요! 틀린 문제만 다시 보면 금방 완벽해질 거예요. 잘하고 있어요! ✨',
+      title: `${name}님, 수고하셨어요`, icon: 'ph-fill ph-check-circle', color: 'var(--brand-ink)', soft: 'var(--brand-soft)',
+      ribbon: '우수', sub: '대부분 맞혔어요. 틀린 문항만 다시 확인하면 됩니다.',
+      ai: '대부분 맞혔습니다. 틀린 문항만 다시 확인하면 이해도가 높은 수준입니다.',
     },
     good: {
-      title: `잘하고 있어요, ${name}! 👍`, icon: 'ph-fill ph-thumbs-up', color: '#2E7BFF', soft: '#E1EDFF',
-      ribbon: '좋은 출발!', sub: '절반 넘게 맞혔어요! 좋은 출발이에요.',
-      ai: '절반 넘게 맞혔어요! 오답노트로 복습하면 다음엔 더 잘할 수 있어요. 힘내요! 💪',
+      title: `${name}님, 수고하셨어요`, icon: 'ph-fill ph-thumbs-up', color: 'var(--brand-ink)', soft: 'var(--brand-soft)',
+      ribbon: '양호', sub: '절반 이상 맞혔어요. 오답을 복습하면 이해도가 올라갑니다.',
+      ai: '절반 이상 맞혔습니다. 오답 노트로 틀린 문항을 복습해 보세요.',
     },
     try: {
-      title: `좋아요, ${name}! 조금만 더 힘내요 💪`, icon: 'ph-fill ph-fire', color: '#FF922E', soft: '#FFEDD6',
-      ribbon: '다시 도전!', sub: '어려운 문제가 많았죠? 틀린 문제를 다시 보면 쑥 자라요.',
-      ai: '어려운 문제가 많았나 봐요. 괜찮아요! 틀린 문제를 천천히 다시 풀면 실력이 쑥 늘어요. 🐾',
+      title: `${name}님, 수고하셨어요`, icon: 'ph-fill ph-arrow-clockwise', color: 'var(--brand-ink)', soft: 'var(--brand-soft)',
+      ribbon: '복습 필요', sub: '복습이 필요한 문항이 있어요. 오답을 다시 확인해 보세요.',
+      ai: '복습이 필요한 문항이 많습니다. 오답을 다시 확인해 보세요.',
     },
     zero: {
-      title: `괜찮아요, ${name}! 다시 도전해봐요 🐾`, icon: 'ph-fill ph-seal', color: '#FF6DA6', soft: '#FFE3EF',
-      ribbon: '다시 해볼까?', sub: '이번엔 어려웠나 봐요. 실수는 배우는 과정이에요!',
-      ai: '이번엔 어려웠나 봐요. 실수는 배우는 과정이에요! 해설을 보고 다시 풀면 꼭 늘어요. 화이팅! 🌱',
+      title: `${name}님, 수고하셨어요`, icon: 'ph-fill ph-arrow-clockwise', color: 'var(--brand-ink)', soft: 'var(--brand-soft)',
+      ribbon: '복습 필요', sub: '이번엔 정답이 없었어요. 해설을 확인하고 다시 풀어 보세요.',
+      ai: '이번엔 정답이 없었습니다. 해설을 확인한 뒤 다시 풀어 보세요.',
     },
     empty: {
-      title: `다음에 또 만나요, ${name}! 🐾`, icon: 'ph-fill ph-hand-waving', color: s.solid, soft: s.soft,
-      ribbon: '', sub: '아직 푼 문제가 없어요. 다음엔 한 문제라도 함께 풀어봐요!',
-      ai: '이번엔 문제를 풀기 전에 마쳤네요. 괜찮아요! 다음에 한 문제씩 천천히 풀어봐요. 🐾',
+      title: `${name}님, 수고하셨어요`, icon: 'ph-fill ph-hand-waving', color: 'var(--brand-ink)', soft: 'var(--brand-soft)',
+      ribbon: '', sub: '아직 푼 문항이 없어요. 다음에 한 문항씩 풀어 보세요.',
+      ai: '이번엔 문항을 풀기 전에 종료했습니다. 다음에 이어서 풀어 보세요.',
     },
     none: {
-      title: `수고했어요, ${name}! 🎉`, icon: 'ph-fill ph-trophy', color: s.solid, soft: s.soft,
+      title: `${name}님, 수고하셨어요`, icon: 'ph-fill ph-trophy', color: 'var(--brand-ink)', soft: 'var(--brand-soft)',
       ribbon: '', sub: '', ai: s.ai,
     },
   };
   const perfInfo = PERF[perf];
 
-  const themeVars = { '--gr-solid': s.solid, '--gr-soft': s.soft } as CSSProperties;
+  // 결과 화면 액센트는 과목색이 아니라 애플 블루로 통일(다크 시 CSS 토큰이 자동 스왑).
+  const themeVars = { '--gr-solid': 'var(--brand)', '--gr-soft': 'var(--brand-soft)' } as CSSProperties;
 
   return (
     <div className="gr-root" style={themeVars}>
-      {/* CONFETTI */}
-      <div className="gr-confetti-layer">
-        {CONFETTI.map((c, i) => (
-          <span
-            key={i}
-            className="gr-confetti"
-            style={{ left: c.left, background: c.bg, animationDelay: c.delay }}
-          />
-        ))}
-      </div>
-
+      {/* 컨페티 제거(디게임화) — 성인 톤의 담백한 결과 화면 */}
       <div className="gr-content">
         {/* 세션(방금 푼 실기록)도 없고 서버 실집계도 없으면 화면 전체가 예시값 — 데모로 명시.
             (방금 푼 세션 sess가 있으면 표시 수치는 실데이터라 배지를 띄우지 않는다.) */}
@@ -284,7 +259,7 @@ export default function GameResult() {
         {/* HERO */}
         <div className="gr-hero">
           <div className="gr-herochip">
-            <i className={isBank ? 'ph-fill ph-infinity' : 'ph-fill ph-confetti'} />
+            <i className={isBank ? 'ph-fill ph-infinity' : 'ph-fill ph-check-circle'} />
             {isBank
               ? `${subjectKey} ${sess?.chapter ?? ''}주차 연습`
               : isChapter
@@ -297,12 +272,7 @@ export default function GameResult() {
                   }${sess?.replay ? ' · 복습' : ''}`
                 : `${subjectKey} 완료!`}
           </div>
-          <div className="gr-mascotwrap">
-            <img src={mascot} alt="마스코트" className="gr-mascotimg" />
-            <span className="gr-trophy" style={{ background: perfInfo.color }}>
-              <i className={perfInfo.icon} />
-            </span>
-          </div>
+          {/* 마스코트 이미지 제거(디게임화) — 성취 리본으로 결과 상태만 담백하게 표시 */}
           {perfInfo.ribbon && (
             <span className="gr-perfribbon" style={{ background: perfInfo.soft, color: perfInfo.color }}>
               <i className={perfInfo.icon} /> {perfInfo.ribbon}
@@ -314,13 +284,13 @@ export default function GameResult() {
               ? `${sess?.chapter ?? ''}주차 문제를 ${answeredCount}개 풀었어요. 안 푼 문제부터 차근차근, 언제든 이어서 연습할 수 있어요!`
               : isChapter
                 ? sess?.finished
-                  ? `${sess?.chapter}챕터 다섯 단계를 끝까지 해냈어요! 정말 대단해요 🏆`
+                  ? `${sess?.chapter}챕터 다섯 단계를 모두 완료했어요.`
                   : (sess?.lastDoneStage ?? 0) > 0
-                    ? `${sess?.lastDoneStage}단계까지 완료했어요. 다음에 이어서 하면 돼요!`
-                    : '풀던 단계는 다음에 이어서 할 수 있어요!'
+                    ? `${sess?.lastDoneStage}단계까지 완료했어요. 다음에 이어서 하면 됩니다.`
+                    : '풀던 단계는 다음에 이어서 할 수 있어요.'
                 : perf !== 'none'
                   ? perfInfo.sub
-                  : `${subjectKey} 학습을 끝냈어요. 오늘도 한 뼘 더 자랐네요!`}
+                  : `${subjectKey} 학습을 마쳤어요.`}
           </p>
           {isChapter && (
             /* 챕터 5단계 진행 뱃지 — 완료 단계 채움 (bank 무한모드는 미표시) */
@@ -349,10 +319,10 @@ export default function GameResult() {
               {(() => {
                 const now = Math.round((sess.correct / Math.max(1, sess.answered)) * 100);
                 return now > lastAccuracy
-                  ? ' 늘었어요! 🎉'
+                  ? ' 늘었어요.'
                   : now === lastAccuracy
-                    ? ' 지난 기록 그대로예요!'
-                    : ' 다시 도전해봐요!';
+                    ? ' 지난 기록과 같아요.'
+                    : ' 다시 풀어 보세요.';
               })()}
             </div>
           )}
@@ -362,7 +332,7 @@ export default function GameResult() {
         <div className="gr-scorecard">
           <div className="gr-ringwrap">
             <svg width="180" height="180" viewBox="0 0 120 120" className="gr-ringsvg">
-              <circle cx="60" cy="60" r="54" fill="none" stroke="#FFEDE4" strokeWidth="12" />
+              <circle cx="60" cy="60" r="54" fill="none" stroke="var(--brand-soft)" strokeWidth="12" />
               <circle
                 cx="60"
                 cy="60"
@@ -438,7 +408,7 @@ export default function GameResult() {
                   <h3 className="gr-maptitle">{subjectKey} {sess.chapter}챕터 진행</h3>
                   <p className="gr-mapsub">
                     {sess.finished
-                      ? '다섯 단계를 모두 끝냈어요! 🏆'
+                      ? '다섯 단계를 모두 완료했어요.'
                       : `${sess.lastDoneStage}/5단계 완료 — 이어서 하면 돼요`}
                   </p>
                 </div>
@@ -446,12 +416,12 @@ export default function GameResult() {
               <span
                 className="gr-todaybadge"
                 style={{
-                  background: sess.finished ? '#DFF6ED' : s.soft,
-                  color: sess.finished ? '#17B08C' : s.solid,
+                  background: sess.finished ? '#DFF6ED' : 'var(--brand-soft)',
+                  color: sess.finished ? '#17B08C' : 'var(--brand-ink)',
                 }}
               >
                 <i className={sess.finished ? 'ph-fill ph-check-circle' : 'ph-fill ph-flag'} />
-                {sess.finished ? '챕터 완주! 🎉' : `남은 단계 ${5 - sess.lastDoneStage}개`}
+                {sess.finished ? '챕터 완주' : `남은 단계 ${5 - sess.lastDoneStage}개`}
               </span>
             </div>
             <div className="gr-stagerow">
@@ -463,7 +433,7 @@ export default function GameResult() {
                   <div key={no} className="gr-stagenode">
                     <div
                       className={`gr-stagecircle${isDone ? ' gr-stagecircle-done' : isNext ? ' gr-stagecircle-next' : ''}`}
-                      style={isDone ? { background: s.solid, borderColor: s.solid } : isNext ? { borderColor: s.solid, color: s.solid } : {}}
+                      style={isDone ? { background: 'var(--brand)', borderColor: 'var(--brand)' } : isNext ? { borderColor: 'var(--brand)', color: 'var(--brand-ink)' } : {}}
                     >
                       {isDone ? <i className="ph-fill ph-check" /> : no}
                     </div>
@@ -485,8 +455,8 @@ export default function GameResult() {
               <i className="ph-fill ph-robot" />
             </div>
             <div>
-              <div className="gr-ainame">AI 선생님 냥냥이</div>
-              <div className="gr-airole">오늘의 한마디</div>
+              <div className="gr-ainame">AI 학습 피드백</div>
+              <div className="gr-airole">이번 학습 요약</div>
             </div>
           </div>
           {/* AI 한마디도 성적에 맞춰 — 서버 코멘트는 과목별 고정(성적 무반영)이라, 실제로
