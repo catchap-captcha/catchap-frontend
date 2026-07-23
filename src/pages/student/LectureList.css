@@ -235,6 +235,13 @@
 }
 .ll-coursebadge i { font-size: 12px; }
 
+/* 코스 대표 커버(생성 아트) — 헤더에 맞춰 44px로 축소 */
+.ll-coursecover.cover--sm {
+  width: 44px;
+  height: 44px;
+}
+.ll-coursecover .cover-mono { font-size: 20px; }
+
 .ll-coursetitle { margin: 0; font-weight: 700; font-size: 14.5px; color: var(--ink); }
 .ll-coursetitle--none { color: var(--ink-3); font-weight: 600; font-size: 14px; }
 
@@ -329,19 +336,50 @@
   cursor: pointer;
   display: flex;
   flex-direction: column;
-  transition: border-color 0.15s ease;
+  transition:
+    transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
-.ll-card:hover { border-color: var(--line-strong); }
+.ll-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--brand-soft-line);
+  box-shadow: var(--shadow-md);
+}
+@media (prefers-reduced-motion: reduce) {
+  .ll-card:hover { transform: none; }
+}
 
+/* 썸네일 — 코스별 결정적 커버 그라데이션 + CatMark 워터마크 + 재생 아이콘 */
 .ll-thumb {
   position: relative;
   aspect-ratio: 16 / 9;
-  background: #1b1a1f;
+  background: linear-gradient(135deg, var(--cover-from, #4a4750), var(--cover-to, #24222a));
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
 }
-.ll-thumb i { color: rgba(255, 255, 255, 0.85); font-size: 26px; }
+.ll-thumb > i.ph-play {
+  position: relative;
+  z-index: 1;
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 30px;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.25));
+}
+.ll-thumb-cat {
+  position: absolute;
+  right: -10px;
+  bottom: -12px;
+  color: #fff;
+  opacity: 0.18 !important;
+  z-index: 0;
+}
+/* 카드 hover 시 재생 아이콘 살짝 확대 */
+.ll-card:hover .ll-thumb > i.ph-play { transform: scale(1.12); transition: transform 0.2s ease; }
+@media (prefers-reduced-motion: reduce) {
+  .ll-card:hover .ll-thumb > i.ph-play { transform: none; }
+}
 
 .ll-badge {
   position: absolute;

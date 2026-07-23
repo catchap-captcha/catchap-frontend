@@ -5,6 +5,9 @@ import { lectureApi, type LectureItem, type StudentCourse } from '../../api/lect
 import ScreenTimeReminder from '../../components/motion/ScreenTimeReminder';
 import { StudentNav } from '../../layouts/StudentLayout';
 import { categoryTheme, formatClock } from './lectureSubjects';
+import { courseCover } from '../../utils/courseCover';
+import CourseCover from '../../components/course/CourseCover';
+import CatMark from '../../components/brand/CatMark';
 import './LectureList.css';
 
 /** 코스(그룹)별 기본 노출 개수 — 그 이상은 '더보기' 카드로 접는다(목업 동일) */
@@ -174,9 +177,16 @@ export default function LectureList() {
     // 2강·3강처럼 건너뛰어 보인다(정렬 순서는 이미 order_no로 맞춰져 있어 위치가 곧 강 순서).
     const num = i + 1;
     const badgeText = st === 'done' ? '봤어요' : st === 'watching' ? '학습중' : '새 강의';
+    // 썸네일 인프라(Object Storage)가 없어 코스별 결정적 커버로 색을 준다 — 같은 코스 강의는
+    // 같은 색 계열(cohesive), 코스가 없으면 강의 id로. 재생 아이콘은 위에 얹는다.
+    const cov = courseCover(l.course_id || l.id, l.title);
     return (
       <div key={l.id} className="ll-card" onClick={() => goWatch(l.id)}>
-        <div className="ll-thumb">
+        <div
+          className="ll-thumb"
+          style={{ ['--cover-from' as string]: cov.from, ['--cover-to' as string]: cov.to }}
+        >
+          <CatMark size={72} variant="ghost" whiskers={false} className="ll-thumb-cat" />
           <i className="ph-fill ph-play" />
           <span className="ll-badge">{badgeText}</span>
           <span className="ll-time">{formatClock(l.duration_sec)}</span>
@@ -325,6 +335,12 @@ export default function LectureList() {
                             <div className="ll-coursehead">
                               {g.title ? (
                                 <>
+                                  <CourseCover
+                                    seed={g.course?.id || g.key}
+                                    label={g.title}
+                                    size="sm"
+                                    className="ll-coursecover"
+                                  />
                                   <span className="ll-coursebadge">
                                     <i className="ph-fill ph-stack" /> 코스
                                   </span>
