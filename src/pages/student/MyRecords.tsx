@@ -8,6 +8,8 @@ import { lectureApi, type StudentCourse } from '../../api/lectures';
 import { PATHS } from '../../routes/paths';
 import ChapterAccuracyChart, { type SubjectStat } from '../../components/student/ChapterAccuracyChart';
 import HabitTrendLine, { type HabitDay } from '../../components/student/HabitTrendLine';
+import CourseCover from '../../components/course/CourseCover';
+import CatMark from '../../components/brand/CatMark';
 import './MyRecords.css';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -133,9 +135,7 @@ function CompCard({ c, navigate }: { c: StudentCourse; navigate: NavigateFunctio
     const perfect = ex.perfect;
     return (
       <button className={`mr-comp${perfect ? ' mr-comp--perfect' : ''}`} onClick={go}>
-        <span className={`mr-compicon${perfect ? ' mr-compicon--perfect' : ''}`}>
-          <i className={perfect ? 'ph-fill ph-crown' : 'ph-fill ph-seal-check'} />
-        </span>
+        <CourseCover seed={c.id} label={c.title || c.subject} size="sm" className="mr-compcover" />
         <span className="mr-compbody">
           <span className="mr-comptitle">{c.title}</span>
           <span className="mr-compmeta">
@@ -152,7 +152,7 @@ function CompCard({ c, navigate }: { c: StudentCourse; navigate: NavigateFunctio
   if (ex.available) {
     return (
       <button className="mr-comp mr-comp--progress" onClick={go}>
-        <span className="mr-compicon mr-compicon--progress"><i className="ph-fill ph-exam" /></span>
+        <CourseCover seed={c.id} label={c.title || c.subject} size="sm" className="mr-compcover" />
         <span className="mr-compbody">
           <span className="mr-comptitle">{c.title}</span>
           <span className="mr-compmeta">
@@ -165,7 +165,7 @@ function CompCard({ c, navigate }: { c: StudentCourse; navigate: NavigateFunctio
   }
   return (
     <button className="mr-comp mr-comp--locked" onClick={go}>
-      <span className="mr-compicon mr-compicon--locked"><i className="ph-fill ph-lock-simple" /></span>
+      <CourseCover seed={c.id} label={c.title || c.subject} size="sm" className="mr-compcover mr-compcover--locked" />
       <span className="mr-compbody">
         <span className="mr-comptitle">{c.title}</span>
         <span className="mr-compmeta">
@@ -523,7 +523,7 @@ export default function MyRecords() {
             <div className="mr-comp-empty">불러오는 중…</div>
           ) : examCourses.length === 0 ? (
             <div className="mr-comp-empty">
-              <i className="ph-fill ph-seal-check" />
+              <CatMark size={52} variant="line" whiskers className="mr-empty-cat" />
               <p>아직 수료 시험이 있는 코스가 없어요.<br />강의를 완주하고 수료 시험에 도전해 보세요!</p>
               <button className="mr-comp-cta" onClick={() => navigate(PATHS.STUDENT_LECTURES)}>
                 <i className="ph-fill ph-television" /> 강의 보러 가기

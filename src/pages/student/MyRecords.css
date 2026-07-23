@@ -670,6 +670,10 @@
   font-size: 34px;
   color: var(--ink-3);
 }
+.mr-empty-cat {
+  color: var(--ink-3);
+  opacity: 0.75;
+}
 .mr-comp-empty p {
   margin: 0;
   font-size: 13px;
@@ -782,11 +786,24 @@
   background: var(--surface);
   padding: 11px 13px;
   cursor: pointer;
-  transition: border-color 0.15s ease;
+  transition:
+    transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 .mr-comp:hover {
-  border-color: var(--line-strong);
+  transform: translateY(-2px);
+  border-color: var(--brand-soft-line);
+  box-shadow: var(--shadow-md);
 }
+@media (prefers-reduced-motion: reduce) {
+  .mr-comp:hover { transform: none; }
+}
+/* 코스 커버(생성 아트) — 상태 아이콘 자리를 대체(상태는 배지·테두리가 표현) */
+.mr-compcover.cover--sm { width: 40px; height: 40px; border-radius: 11px; }
+.mr-compcover .cover-mono { font-size: 18px; }
+/* 잠긴 코스는 커버를 살짝 탈채도해 '아직 안 열림'을 톤으로도 알린다 */
+.mr-compcover--locked { filter: saturate(0.55) opacity(0.85); }
 .mr-comp--perfect {
   border-color: var(--line);
   background: var(--warn-soft);
