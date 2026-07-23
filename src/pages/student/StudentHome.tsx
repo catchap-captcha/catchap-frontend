@@ -90,7 +90,7 @@ export default function StudentHome() {
           <div className="sh2-continue">
             <CourseCover
               seed={continueLec.course_id || continueLec.id}
-              label={continueLec.subject || continueLec.title}
+              label={continueLec.title || continueLec.subject}
               size="sm"
               className="sh2-continue-cover"
             />
@@ -177,7 +177,7 @@ export default function StudentHome() {
                 <article key={c.id} className="sh2-course">
                   <CourseCover
                     seed={c.id}
-                    label={c.subject || c.title}
+                    label={c.title || c.subject}
                     size="md"
                     className="sh2-course-cover"
                   />

@@ -153,7 +153,7 @@ export default function StudentMyPage() {
             <ul className="mp-courselist">
               {courses.map((c) => (
                 <li key={c.id} className="mp-course">
-                  <CourseCover seed={c.id} label={c.subject || c.title} size="sm" />
+                  <CourseCover seed={c.id} label={c.title || c.subject} size="sm" />
                   <div className="mp-course-main">
                     <span className="mp-course-title">{c.title}</span>
                     <span className="mp-course-sub">
