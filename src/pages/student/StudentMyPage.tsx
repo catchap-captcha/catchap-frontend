@@ -92,11 +92,16 @@ export default function StudentMyPage() {
   const email = me?.student?.student_login_id ?? me?.email ?? '';
 
   const [stats, setStats] = useState<MyStats | null>(null);
+  // 실집계가 없어 서버가 데모(예시)값을 내려주면 demo=true → 가짜 숫자 대신 빈 상태를 보여준다.
+  const [demo, setDemo] = useState(false);
   const [courses, setCourses] = useState<StudentCourse[] | null>(null);
   useEffect(() => {
     studentApi
       .records()
-      .then((d: { stats?: MyStats }) => setStats(d?.stats ?? null))
+      .then((d: { stats?: MyStats; demo?: boolean }) => {
+        setStats(d?.stats ?? null);
+        setDemo(!!d?.demo);
+      })
       .catch(() => setStats(null));
     lectureApi
       .courses()
@@ -211,34 +216,49 @@ export default function StudentMyPage() {
                     자세히 <i className="ph-bold ph-arrow-right" />
                   </Link>
                 </div>
-                <div className="mp-stats">
-                  <StatTile
-                    icon="ph-fill ph-flame"
-                    value={stats?.streak_days ?? null}
-                    label="연속 학습일"
-                    ratio={stats?.streak_days != null ? stats.streak_days / 30 : null}
-                  />
-                  <StatTile
-                    icon="ph-fill ph-check-circle"
-                    value={stats?.total_solved ?? null}
-                    label="푼 문제"
-                    ratio={stats?.total_solved != null ? stats.total_solved / 500 : null}
-                  />
-                  <StatTile
-                    icon="ph-fill ph-target"
-                    value={stats?.avg_accuracy ?? null}
-                    suffix="%"
-                    label="평균 정답률"
-                    ratio={stats?.avg_accuracy != null ? stats.avg_accuracy / 100 : null}
-                  />
-                  <StatTile
-                    icon="ph-fill ph-clock"
-                    value={stats?.total_hours ?? null}
-                    suffix="시간"
-                    label="학습 시간"
-                    ratio={stats?.total_hours != null ? stats.total_hours / 50 : null}
-                  />
-                </div>
+                {demo ? (
+                  <div className="mp-emptybox">
+                    <CatMark size={56} variant="line" whiskers className="mp-empty-cat" />
+                    <p className="mp-empty">
+                      아직 학습 기록이 없어요.
+                      <br />
+                      강의를 듣고 확인 문제를 풀면 학습 요약이 여기에 쌓여요.
+                      <br />
+                      <Link to={PATHS.STUDENT_LECTURES} className="mp-inlink">
+                        강의 시작하기 →
+                      </Link>
+                    </p>
+                  </div>
+                ) : (
+                  <div className="mp-stats">
+                    <StatTile
+                      icon="ph-fill ph-flame"
+                      value={stats?.streak_days ?? null}
+                      label="연속 학습일"
+                      ratio={stats?.streak_days != null ? stats.streak_days / 30 : null}
+                    />
+                    <StatTile
+                      icon="ph-fill ph-check-circle"
+                      value={stats?.total_solved ?? null}
+                      label="푼 문제"
+                      ratio={stats?.total_solved != null ? stats.total_solved / 500 : null}
+                    />
+                    <StatTile
+                      icon="ph-fill ph-target"
+                      value={stats?.avg_accuracy ?? null}
+                      suffix="%"
+                      label="평균 정답률"
+                      ratio={stats?.avg_accuracy != null ? stats.avg_accuracy / 100 : null}
+                    />
+                    <StatTile
+                      icon="ph-fill ph-clock"
+                      value={stats?.total_hours ?? null}
+                      suffix="시간"
+                      label="학습 시간"
+                      ratio={stats?.total_hours != null ? stats.total_hours / 50 : null}
+                    />
+                  </div>
+                )}
               </section>
 
               <section className="mp-card">

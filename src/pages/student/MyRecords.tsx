@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams, type NavigateFunction } from 'react-router-dom';
 import StudentLayout from '../../layouts/StudentLayout';
-import DemoBadge from '../../components/common/DemoBadge';
 import { useAuth } from '../../hooks/useAuth';
 import { studentApi } from '../../api/students';
 import { lectureApi, type StudentCourse } from '../../api/lectures';
@@ -451,7 +450,7 @@ export default function MyRecords() {
 
   return (
     <StudentLayout className="mr-root">
-      <div style={{ padding: '0 16px' }}><DemoBadge show={demo} variant="banner" /></div>
+      {/* 데모 배너 제거(0723) — 실집계 없으면 가짜 데모 대신 아래 빈 상태를 보여준다 */}
       {/* HEADER */}
       <section className="mr-section mr-header">
         <div className="mr-headrow">
@@ -471,6 +470,23 @@ export default function MyRecords() {
         </div>
       </section>
 
+      {/* 실집계가 없어 서버가 데모값을 내려주면(demo) 가짜 통계 대신 빈 상태를 보여준다.
+          아동 게임 잔재(그림찾기·숫자놀이터 등)를 실학습자에게 노출하지 않는다(0723). */}
+      {demo ? (
+        <section className="mr-section">
+          <div className="mr-card mr-emptyhero">
+            <CatMark size={64} variant="line" whiskers className="mr-emptyhero-cat" />
+            <h3 className="mr-h3">아직 학습 기록이 없어요</h3>
+            <p className="mr-emptyhero-sub">
+              강의를 듣고 확인 문제를 풀면 학습 통계·수료 현황이 여기에 쌓여요.
+            </p>
+            <button className="mr-comp-cta" onClick={() => navigate(PATHS.STUDENT_LECTURES)}>
+              <i className="ph-fill ph-television" /> 강의 시작하기
+            </button>
+          </div>
+        </section>
+      ) : (
+      <>
       {/* 상단 탭 — 긴 스크롤을 요약/수료/통계로 분할 */}
       <div className="mr-rectabs">
         {REC_TABS.map((t) => (
@@ -812,6 +828,8 @@ export default function MyRecords() {
           </div>
         </div>
       </section>
+      )}
+      </>
       )}
     </StudentLayout>
   );
