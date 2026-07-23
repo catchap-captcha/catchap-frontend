@@ -90,6 +90,10 @@ export default function LecturePlayer() {
   const [tab, setTab] = useState<'list' | 'materials' | 'notes' | 'reviews'>('list');
   // 유휴 자동 숨김 — 재생 중 마우스가 멈추면 컨트롤 바(+상단 태그)를 감춘다(표준 플레이어 동작).
   const [idle, setIdle] = useState(false);
+  // 강의 노트 — 타임스탬프 메모. 서버 저장 인프라가 없어 이 기기(localStorage)에만 담는다.
+  // 실서비스(인프런·Udemy)의 '강의 노트'를 백엔드 없이 정직하게(개인·로컬 명시) 구현한 것.
+  const [notes, setNotes] = useState<{ id: string; t: number; text: string }[]>([]);
+  const [noteText, setNoteText] = useState('');
 
   /* 캡차 게이트 */
   const [gate, setGate] = useState<{ cp: number } | null>(null);
@@ -546,6 +550,45 @@ export default function LecturePlayer() {
     }
   };
 
+  /* ---- 강의 노트 (localStorage, 강의별) ---- */
+  const notesKey = lectureId ? `catchap:notes:${lectureId}` : '';
+  useEffect(() => {
+    if (!lectureId) return;
+    try {
+      const raw = localStorage.getItem(`catchap:notes:${lectureId}`);
+      const parsed = raw ? JSON.parse(raw) : [];
+      setNotes(Array.isArray(parsed) ? parsed : []);
+    } catch {
+      setNotes([]);
+    }
+    setNoteText('');
+  }, [lectureId]);
+
+  const persistNotes = (next: { id: string; t: number; text: string }[]) => {
+    setNotes(next);
+    try {
+      if (notesKey) localStorage.setItem(notesKey, JSON.stringify(next));
+    } catch {
+      /* 저장 실패(용량 등) — 화면 상태는 유지, 조용히 무시 */
+    }
+  };
+  const addNote = () => {
+    const text = noteText.trim();
+    if (!text) return;
+    const t = Math.floor(videoRef.current?.currentTime ?? curTime);
+    const id = (crypto?.randomUUID?.() ?? `${t}-${text.length}-${notes.length}`);
+    persistNotes([...notes, { id, t, text }].sort((a, b) => a.t - b.t));
+    setNoteText('');
+  };
+  const deleteNote = (id: string) => persistNotes(notes.filter((n) => n.id !== id));
+  // 메모 지점으로 이동 — 본 데(watched_max)까지만(안 본 구간 건너뛰기 가드와 일관)
+  const seekToNote = (t: number) => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.currentTime = Math.min(t, watchedMaxRef.current);
+    showToast('메모 지점으로 이동했어요 🐾');
+  };
+
   /* ================= 렌더 ================= */
   const subject = meta?.subject ?? '국어';
   const theme = LECTURE_SUBJECTS[subject] ?? LECTURE_SUBJECTS['국어'];
@@ -975,12 +1018,73 @@ export default function LecturePlayer() {
             </div>
           )}
 
-          {(tab === 'notes' || tab === 'reviews') && (
+          {tab === 'notes' && (
+            <div className="lp-info">
+              {/* 현재 재생 지점에 메모를 남긴다 — 클릭하면 그 지점으로 돌아가 복습 */}
+              <div className="lp-noteadd">
+                <span className="lp-notenow" style={{ color: theme.color, background: theme.soft }}>
+                  <i className="ph-fill ph-clock" /> {formatClock(curTime)}
+                </span>
+                <input
+                  className="lp-noteinput"
+                  value={noteText}
+                  onChange={(e) => setNoteText(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') addNote();
+                  }}
+                  placeholder="이 지점에 남길 메모를 적어요"
+                  maxLength={200}
+                />
+                <button
+                  className="lp-notebtn"
+                  style={{ background: theme.color }}
+                  onClick={addNote}
+                  disabled={!noteText.trim()}
+                >
+                  <i className="ph-bold ph-plus" /> 기록
+                </button>
+              </div>
+              {notes.length === 0 ? (
+                <div className="lp-tabempty">
+                  <i className="ph-fill ph-pencil-line" />
+                  아직 메모가 없어요. 영상을 보다가 기억할 지점을 기록해 두면, 눌러서 그 지점으로 바로
+                  돌아올 수 있어요.
+                </div>
+              ) : (
+                <ul className="lp-notelist">
+                  {notes.map((n) => (
+                    <li key={n.id} className="lp-note">
+                      <button
+                        className="lp-note-t"
+                        style={{ color: theme.color, background: theme.soft }}
+                        onClick={() => seekToNote(n.t)}
+                        title="이 지점으로 이동"
+                      >
+                        <i className="ph-fill ph-play-circle" /> {formatClock(n.t)}
+                      </button>
+                      <span className="lp-note-text">{n.text}</span>
+                      <button
+                        className="lp-note-del"
+                        onClick={() => deleteNote(n.id)}
+                        aria-label="메모 삭제"
+                      >
+                        <i className="ph-bold ph-trash" />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <p className="lp-note-hint">
+                <i className="ph-fill ph-info" /> 메모는 이 기기(브라우저)에만 저장돼요.
+              </p>
+            </div>
+          )}
+
+          {tab === 'reviews' && (
             <div className="lp-info">
               <div className="lp-tabempty">
-                <i className="ph-fill ph-hammer" />
-                {tab === 'notes' ? '강의 노트는 준비 중이에요.' : '수강 후기는 준비 중이에요.'} 곧
-                만나요 🐾
+                <i className="ph-fill ph-chat-circle-dots" />
+                수강 후기는 준비 중이에요. 곧 만나요 🐾
               </div>
             </div>
           )}
@@ -1056,7 +1160,7 @@ function TopBar({ subject, title, name }: { subject: string; title: string; name
           <span className="lp-crumb-cur">{title}</span>
         </div>
         <div className="lp-topspace" />
-        <Link to={PATHS.STUDENT_SETTINGS} className="lp-profile">
+        <Link to={PATHS.STUDENT_MYPAGE} className="lp-profile">
           <span className="lp-profile-avatar">{name.slice(0, 1)}</span>
           <span className="lp-profile-name">{name}님</span>
         </Link>

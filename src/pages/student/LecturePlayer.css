@@ -499,6 +499,125 @@
 }
 .lp-tabempty i { font-size: 20px; }
 
+/* 강의 노트 — 타임스탬프 메모(로컬 저장) */
+.lp-noteadd {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.lp-notenow {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  padding: 8px 11px;
+  border-radius: 9px;
+  font-weight: 800;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.lp-noteinput {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 13px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 14px;
+  outline: none;
+}
+.lp-noteinput:focus {
+  border-color: var(--line-strong);
+}
+.lp-notebtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 9px;
+  padding: 10px 15px;
+  color: #fff;
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 13.5px;
+  cursor: pointer;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.lp-notebtn:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+.lp-notebtn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.lp-notelist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.lp-note {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: var(--surface-2);
+}
+.lp-note-t {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 7px;
+  padding: 5px 9px;
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+.lp-note-t:hover {
+  filter: brightness(0.96);
+}
+.lp-note-text {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  color: var(--ink);
+  word-break: break-word;
+}
+.lp-note-del {
+  flex-shrink: 0;
+  border: none;
+  background: transparent;
+  color: var(--ink-3);
+  cursor: pointer;
+  padding: 4px;
+  font-size: 15px;
+  border-radius: 6px;
+}
+.lp-note-del:hover {
+  color: var(--danger-ink);
+  background: var(--danger-soft);
+}
+.lp-note-hint {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 14px 0 0;
+  font-size: 12px;
+  color: var(--ink-3);
+}
+
 /* 자료실 */
 .lp-mats { display: flex; flex-direction: column; gap: 10px; }
 .lp-mat {
