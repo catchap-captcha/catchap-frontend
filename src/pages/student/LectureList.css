@@ -1,8 +1,48 @@
-/* CatChap 강의 목록 — handoff `CatChap 강의 목록.dc.html` (jy 중성 인강 디자인) */
+/* CatChap 강의 목록 — 2026-07-23 "애플 디자인 이식(정공법)".
+   왜 이 파일만 바꾸나: LectureList.tsx(JSX·데이터 훅)와 백엔드 배선(lectureApi)은 그대로
+   두고 이 CSS만 애플 스타일로 정제했다. 클래스명(ll-*)을 1:1 유지하므로 화면은 실데이터를
+   그대로 받으면서 룩앤필만 애플 그레이드로 바뀐다(화면 하나씩 안전 배포 — StudentHome과 동일 패턴).
 
+   어떻게: .ll-root에 애플 디자인 토큰(SF 타이포·애플 그레이 캔버스·리파인드 뉴트럴·큰 라디우스·
+   레이어드 소프트 섀도우)을 "스코프 오버라이드"한다 → ll-* 규칙이 쓰는 var(--ink)/var(--surface)
+   /var(--line) 등이 이 페이지에서만 애플 값으로 해석된다(전역 theme.css 불변 = 다른 페이지 무영향).
+   브랜드 코랄(var(--brand))은 유지 → 공유 상단 내비와 조화. 다크 모드는 [data-theme='dark'] .ll-root. */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+/* ── 애플 디자인 토큰 (이 페이지 스코프) ── */
 .ll-root {
+  --font-display: 'SF Pro Display', 'SF Pro Text', 'Inter', -apple-system, system-ui, sans-serif;
+  --bg: #f5f5f7;
+  --surface: #ffffff;
+  --surface-2: #f5f5f7;
+  --ink: #1d1d1f;
+  --ink-2: #6e6e73;
+  --ink-3: #86868b;
+  --line: rgba(0, 0, 0, 0.08);
+  --line-strong: rgba(0, 0, 0, 0.14);
+  --ap-ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --ap-spring: cubic-bezier(0.34, 1.4, 0.5, 1);
+  --ap-shadow: 0 1px 1px rgba(0, 0, 0, 0.02), 0 8px 24px -12px rgba(0, 0, 0, 0.14);
+  --ap-shadow-hi: 0 2px 4px rgba(0, 0, 0, 0.04), 0 26px 50px -20px rgba(0, 0, 0, 0.24);
+
   min-height: 100vh;
   background: var(--bg);
+  font-family: 'SF Pro Text', 'Inter', -apple-system, system-ui, sans-serif;
+  letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased;
+}
+[data-theme='dark'] .ll-root {
+  --bg: #000000;
+  --surface: #1c1c1e;
+  --surface-2: #0a0a0a;
+  --ink: #f5f5f7;
+  --ink-2: #aeaeb2;
+  --ink-3: #8e8e93;
+  --line: rgba(255, 255, 255, 0.1);
+  --line-strong: rgba(255, 255, 255, 0.18);
+  --ap-shadow: 0 8px 24px -12px rgba(0, 0, 0, 0.6);
+  --ap-shadow-hi: 0 26px 50px -18px rgba(0, 0, 0, 0.85);
 }
 
 .ll-container {
@@ -13,9 +53,10 @@
 
 /* ===== HERO ===== */
 .ll-hero {
-  border: 1px solid var(--line);
+  border: 0.5px solid var(--line);
   background: var(--surface);
-  border-radius: 16px;
+  border-radius: 24px;
+  box-shadow: var(--ap-shadow);
   padding: 30px 32px;
   margin-bottom: 24px;
   display: flex;
@@ -48,9 +89,9 @@
 
 .ll-herotitle {
   font-family: var(--font-display);
-  font-weight: 800;
+  font-weight: 700;
   font-size: 28px;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.02em;
   color: var(--ink);
   margin: 0 0 7px;
 }
@@ -72,7 +113,7 @@
 .ll-herostatnum {
   font-family: var(--font-display);
   font-size: 30px;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--ink);
   letter-spacing: -0.02em;
 }
@@ -111,8 +152,9 @@
   margin-bottom: 24px;
   padding: 10px 12px;
   background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 12px;
+  border: 0.5px solid var(--line);
+  border-radius: 16px;
+  box-shadow: var(--ap-shadow);
 }
 .ll-search {
   display: flex;
@@ -121,9 +163,14 @@
   flex: 1;
   min-width: 200px;
   padding: 8px 12px;
-  border-radius: 9px;
+  border-radius: 12px;
   background: var(--bg);
-  border: 1px solid var(--line);
+  border: 0.5px solid var(--line);
+  transition: box-shadow 0.2s var(--ap-ease), border-color 0.2s var(--ap-ease);
+}
+.ll-search:focus-within {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--brand) 12%, transparent);
 }
 .ll-search i {
   color: var(--ink-3);
@@ -165,17 +212,18 @@
   flex-wrap: wrap;
 }
 .ll-chip {
-  border: 1px solid var(--line-strong);
+  border: 0.5px solid var(--line-strong);
   background: var(--surface);
   color: var(--ink-2);
   font-family: inherit;
-  font-weight: 700;
+  font-weight: 600;
   font-size: 12.5px;
   padding: 8px 13px;
-  border-radius: var(--r-pill);
+  border-radius: 980px;
   cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  transition: background 0.15s var(--ap-ease), color 0.15s var(--ap-ease), border-color 0.15s var(--ap-ease), transform 0.2s var(--ap-spring);
 }
+.ll-chip:active { transform: scale(0.96); }
 .ll-chip:hover {
   border-color: var(--brand);
   color: var(--brand-ink);
@@ -187,14 +235,14 @@
   color: var(--brand-ink);
 }
 .ll-sort {
-  border: 1px solid var(--line-strong);
+  border: 0.5px solid var(--line-strong);
   background: var(--surface);
   color: var(--ink-2);
   font-family: inherit;
-  font-weight: 700;
+  font-weight: 600;
   font-size: 12.5px;
   padding: 8px 12px;
-  border-radius: 9px;
+  border-radius: 12px;
   cursor: pointer;
 }
 .ll-filterreset {
@@ -217,17 +265,18 @@
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  border: 1px solid var(--line-strong);
+  border: 0.5px solid var(--line-strong);
   cursor: pointer;
   font-family: inherit;
-  font-weight: 700;
+  font-weight: 600;
   font-size: 13.5px;
   padding: 9px 15px;
-  border-radius: 9px;
+  border-radius: 980px;
   background: var(--surface);
   color: var(--ink-2);
-  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  transition: background 0.15s var(--ap-ease), color 0.15s var(--ap-ease), border-color 0.15s var(--ap-ease), transform 0.2s var(--ap-spring);
 }
+.ll-tab:active { transform: scale(0.96); }
 
 .ll-tab:hover {
   border-color: var(--ink-3);
@@ -252,7 +301,7 @@
   justify-content: center;
   gap: 8px;
   padding: 32px 20px;
-  border-radius: 12px;
+  border-radius: 16px;
   background: var(--surface);
   border: 1px dashed var(--line-strong);
   color: var(--ink-2);
@@ -265,16 +314,18 @@
 .ll-retry {
   margin-left: 8px;
   border: none;
-  border-radius: 999px;
+  border-radius: 980px;
   padding: 8px 16px;
   background: var(--brand);
   color: var(--on-brand);
-  font-weight: 700;
+  font-weight: 600;
   font-size: 13px;
   cursor: pointer;
   font-family: inherit;
+  transition: transform 0.2s var(--ap-spring), background 0.2s var(--ap-ease);
 }
-.ll-retry:hover { background: var(--brand-strong); }
+.ll-retry:hover { background: var(--brand-strong); transform: scale(1.03); }
+.ll-retry:active { transform: scale(0.97); }
 
 /* ===== SECTIONS (분류) ===== */
 .ll-section {
@@ -291,9 +342,10 @@
 .ll-secicon {
   width: 42px;
   height: 42px;
-  border-radius: 11px;
+  border-radius: 13px;
   background: var(--surface);
-  border: 1px solid var(--line);
+  border: 0.5px solid var(--line);
+  box-shadow: var(--ap-shadow);
   color: var(--ink);
   display: flex;
   align-items: center;
@@ -304,7 +356,7 @@
 
 .ll-sectitle {
   font-family: var(--font-display);
-  font-weight: 800;
+  font-weight: 700;
   font-size: 19px;
   letter-spacing: -0.02em;
   color: var(--ink);
@@ -329,8 +381,9 @@
   margin-bottom: 14px;
   padding: 11px 15px;
   background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 11px;
+  border: 0.5px solid var(--line);
+  border-radius: 16px;
+  box-shadow: var(--ap-shadow);
 }
 
 .ll-coursebadge {
@@ -379,23 +432,24 @@
   align-items: center;
   gap: 5px;
   border: none;
-  border-radius: 8px;
-  padding: 7px 13px;
+  border-radius: 980px;
+  padding: 7px 14px;
   font-family: inherit;
-  font-weight: 700;
+  font-weight: 600;
   font-size: 12.5px;
   color: var(--on-brand);
   background: var(--brand);
   cursor: pointer;
-  transition: background 0.15s ease, opacity 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  transition: background 0.15s var(--ap-ease), opacity 0.15s var(--ap-ease), border-color 0.15s var(--ap-ease), color 0.15s var(--ap-ease), transform 0.2s var(--ap-spring);
 }
 .ll-enroll i { font-size: 14px; }
-.ll-enroll:hover { background: var(--brand-strong); }
+.ll-enroll:hover { background: var(--brand-strong); transform: scale(1.03); }
+.ll-enroll:active { transform: scale(0.97); }
 .ll-enroll:disabled { opacity: 0.55; cursor: default; }
 .ll-enroll--on {
   background: var(--surface-2);
   color: var(--ink-2);
-  border: 1px solid var(--line-strong);
+  border: 0.5px solid var(--line-strong);
 }
 .ll-enroll--on:hover {
   background: var(--surface-2);
@@ -409,17 +463,18 @@
   align-items: center;
   gap: 5px;
   border: none;
-  border-radius: 8px;
-  padding: 7px 13px;
+  border-radius: 980px;
+  padding: 7px 14px;
   font-family: inherit;
-  font-weight: 700;
+  font-weight: 600;
   font-size: 12.5px;
   color: var(--on-brand);
   background: var(--brand);
   cursor: pointer;
-  transition: background 0.15s ease;
+  transition: background 0.15s var(--ap-ease), transform 0.2s var(--ap-spring);
 }
-.ll-course-qbtn:hover { background: var(--brand-strong); }
+.ll-course-qbtn:hover { background: var(--brand-strong); transform: scale(1.03); }
+.ll-course-qbtn:active { transform: scale(0.97); }
 .ll-course-qbtn i { font-size: 14px; }
 
 .ll-course-qlock {
@@ -441,21 +496,21 @@
 
 .ll-card {
   background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 13px;
+  border: 0.5px solid var(--line);
+  border-radius: 20px;
   overflow: hidden;
   cursor: pointer;
   display: flex;
   flex-direction: column;
+  box-shadow: var(--ap-shadow);
   transition:
-    transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
+    transform 0.5s var(--ap-spring),
+    border-color 0.2s var(--ap-ease),
+    box-shadow 0.4s var(--ap-ease);
 }
 .ll-card:hover {
-  transform: translateY(-3px);
-  border-color: var(--brand-soft-line);
-  box-shadow: var(--shadow-md);
+  transform: translateY(-4px);
+  box-shadow: var(--ap-shadow-hi);
 }
 @media (prefers-reduced-motion: reduce) {
   .ll-card:hover { transform: none; }
@@ -589,7 +644,7 @@
 /* 더보기 카드 */
 .ll-more {
   border: 1px dashed var(--line-strong);
-  border-radius: 13px;
+  border-radius: 20px;
   background: transparent;
   min-height: 200px;
   display: flex;
@@ -608,11 +663,11 @@
 .ll-more-icon {
   width: 40px;
   height: 40px;
-  border-radius: 10px;
+  border-radius: 12px;
   display: grid;
   place-items: center;
   background: var(--surface);
-  border: 1px solid var(--line);
+  border: 0.5px solid var(--line);
   color: var(--ink-2);
   font-size: 18px;
 }
@@ -629,11 +684,11 @@
   margin-top: 14px;
   padding: 15px 18px;
   border: 1px dashed var(--line-strong);
-  border-radius: 12px;
+  border-radius: 16px;
   background: var(--surface);
   cursor: pointer;
   font-family: inherit;
-  transition: border-color 0.15s ease;
+  transition: border-color 0.15s var(--ap-ease), box-shadow 0.3s var(--ap-ease);
 }
 .ll-examcard:hover { border-color: var(--warn); }
 .ll-examcard--passed {
@@ -646,7 +701,7 @@
   flex-shrink: 0;
   width: 40px;
   height: 40px;
-  border-radius: 10px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
