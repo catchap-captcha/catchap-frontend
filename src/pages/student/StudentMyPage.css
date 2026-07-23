@@ -486,3 +486,7 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ── 애플 랩 정렬(2026-07-23): 액센트 코랄→애플 블루 (복제본 우선·로고 마크만 코랄) ── */
+.mp-root { --brand:#0071e3; --brand-strong:#0077ed; --brand-soft:rgba(0,113,227,0.12); --brand-ink:#0071e3; --brand-soft-line:rgba(0,113,227,0.24); --on-brand:#ffffff; }
+[data-theme='dark'] .mp-root { --brand:#0a84ff; --brand-strong:#409cff; --brand-soft:rgba(10,132,255,0.18); --brand-ink:#409cff; --brand-soft-line:rgba(10,132,255,0.30); }

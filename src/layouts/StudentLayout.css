@@ -1,32 +1,32 @@
-/* 학생 공통 상단 NAV — 2026-07-23 "애플 디자인 이식".
-   전 학생 페이지가 쓰는 공유 내비라 이 파일 하나로 모든 학생 화면 상단이 애플화된다.
-   JSX(StudentLayout.tsx)·클래스명(sl-*)은 그대로 두고 CSS만 프로스티드 애플 톱바로 재작성.
-   .sl-navbar에 애플 뉴트럴 토큰(SF 타이포·리파인드 뉴트럴·헤어라인)을 스코프 오버라이드해
-   전역 theme.css 불변. 브랜드 코랄(var(--brand))은 로고 마크·벨 도트에만 남겨 아이덴티티 유지. */
+/* 학생 공통 상단 NAV — 2026-07-23 "복제본(디자인 랩) 우선 정렬".
+   랩의 시그니처인 플로팅 글래스 pill 내비로 재작성(종전 풀폭 프로스티드 톱바 → 랩 우선).
+   JSX(StudentLayout.tsx)·클래스명(sl-*)은 그대로 두고 CSS만 재구성:
+   - .sl-navbar는 투명 스티키 래퍼, .sl-navinner가 중앙에 떠 있는 둥근 pill(랩 .ap-nav 이식).
+   - 로고 도트만 코랄(브랜드 마크), 나머지 액센트는 애플 블루. 로고 부제는 랩에 맞춰 숨김.
+   - 프로필은 랩처럼 아바타 원형만(이름 pill 숨김). 아바타 색은 profileColor 유지.
+   .sl-navbar에 애플 뉴트럴+블루 토큰 스코프 오버라이드(전역 theme.css 불변). */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 .sl-navbar {
-  /* 애플 토큰 스코프 */
+  /* 애플 토큰 스코프 (뉴트럴 + 블루 액센트) */
   --font-display: 'SF Pro Display', 'SF Pro Text', 'Inter', -apple-system, system-ui, sans-serif;
   --ink: #1d1d1f;
   --ink-2: #6e6e73;
   --ink-3: #86868b;
   --line: rgba(0, 0, 0, 0.08);
   --surface: #ffffff;
-  --sl-glass: rgba(250, 250, 252, 0.72);
+  --brand: #0071e3;
+  --brand-strong: #0077ed;
+  --sl-glass: rgba(255, 255, 255, 0.72);
   --sl-hover: rgba(0, 0, 0, 0.05);
-  --sl-active: rgba(0, 0, 0, 0.07);
   --sl-ease: cubic-bezier(0.4, 0, 0.2, 1);
   --sl-spring: cubic-bezier(0.34, 1.4, 0.5, 1);
 
   position: sticky;
   top: 0;
-  z-index: 60;
-  background: var(--sl-glass);
-  backdrop-filter: saturate(180%) blur(24px);
-  -webkit-backdrop-filter: saturate(180%) blur(24px);
-  border-bottom: 0.5px solid var(--line);
+  z-index: 100;
+  background: transparent;
   font-family: 'SF Pro Text', 'Inter', -apple-system, system-ui, sans-serif;
   letter-spacing: -0.01em;
 }
@@ -36,39 +36,48 @@
   --ink-3: #8e8e93;
   --line: rgba(255, 255, 255, 0.1);
   --surface: #1c1c1e;
-  --sl-glass: rgba(22, 22, 24, 0.72);
+  --brand: #0a84ff;
+  --brand-strong: #409cff;
+  --sl-glass: rgba(28, 28, 30, 0.6);
   --sl-hover: rgba(255, 255, 255, 0.08);
-  --sl-active: rgba(255, 255, 255, 0.12);
 }
 
+/* 플로팅 pill (랩 .ap-nav) */
 .sl-navinner {
-  max-width: 1120px;
-  margin: 0 auto;
-  padding: 10px 22px;
+  width: min(1080px, calc(100% - 32px));
+  margin: 14px auto 0;
+  height: 58px;
+  padding: 0 12px 0 18px;
+  border-radius: 22px;
   display: flex;
   align-items: center;
   gap: 22px;
+  background: var(--sl-glass);
+  backdrop-filter: saturate(180%) blur(24px);
+  -webkit-backdrop-filter: saturate(180%) blur(24px);
+  border: 0.5px solid var(--line);
+  box-shadow: 0 10px 34px -14px rgba(0, 0, 0, 0.22);
 }
 
 .sl-logo {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
-/* 로고 마크 — 코랄 배지(브랜드) + 애플 라디우스 */
+/* 로고 도트 — 코랄(브랜드 마크)만 유지 */
 .sl-logobadge {
-  width: 34px;
-  height: 34px;
-  border-radius: 10px;
-  background: var(--brand);
-  color: var(--on-brand);
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  background: linear-gradient(135deg, #ff5a5f, #ff375f);
+  color: #fff;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: 18px;
+  font-size: 13px;
   line-height: 1;
   flex-shrink: 0;
 }
@@ -76,52 +85,43 @@
 .sl-logotext {
   display: flex;
   flex-direction: column;
-  line-height: 1.1;
+  line-height: 1;
 }
 
-/* 워드마크 — 애플식으로 잉크 컬러(마크만 코랄) */
 .sl-logotitle {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 19px;
+  font-size: 17px;
   color: var(--ink);
   letter-spacing: -0.02em;
 }
 
+/* 랩 로고엔 부제가 없다 — 숨겨 pill을 콤팩트하게 */
 .sl-logosub {
-  font-size: 11px;
-  color: var(--ink-3);
-  font-weight: 400;
-  margin-top: 2px;
-  letter-spacing: -0.005em;
+  display: none;
 }
 
 .sl-menu {
   display: flex;
   align-items: center;
-  gap: 2px;
-  margin-left: 10px;
+  gap: 22px;
+  margin-left: 6px;
 }
 
 .sl-navlink {
   text-decoration: none;
-  font-size: 14.5px;
-  padding: 8px 14px;
-  border-radius: 10px;
+  font-size: 14px;
   font-weight: 500;
   color: var(--ink-2);
-  transition: color 0.2s var(--sl-ease), background 0.2s var(--sl-ease);
+  transition: color 0.2s var(--sl-ease);
 }
 
 .sl-navlink.sl-active {
   font-weight: 600;
   color: var(--ink);
-  background: var(--sl-active);
 }
 
-.sl-navlink:hover,
-.sl-navlink.sl-active:hover {
-  background: var(--sl-hover);
+.sl-navlink:hover {
   color: var(--ink);
 }
 
@@ -129,12 +129,12 @@
   margin-left: auto;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .sl-iconbtn {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border: none;
   border-radius: 50%;
   background: transparent;
@@ -153,7 +153,7 @@
 }
 
 .sl-iconbtn i {
-  font-size: 19px;
+  font-size: 17px;
 }
 
 .sl-bell {
@@ -162,8 +162,8 @@
 
 .sl-belldot {
   position: absolute;
-  top: 7px;
-  right: 8px;
+  top: 5px;
+  right: 6px;
   width: 8px;
   height: 8px;
   background: var(--brand);
@@ -171,24 +171,22 @@
   border: 2px solid var(--sl-glass);
 }
 
+/* 프로필 — 랩처럼 아바타 원형만 (이름 pill 제거) */
 .sl-profile {
   text-decoration: none;
   display: flex;
   align-items: center;
-  gap: 9px;
-  background: var(--surface);
-  border: 0.5px solid var(--line);
-  padding: 4px 13px 4px 5px;
-  border-radius: 980px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  background: transparent;
+  border: none;
+  padding: 0;
+  box-shadow: none;
   cursor: pointer;
-  margin-left: 4px;
-  transition: transform 0.2s var(--sl-spring), box-shadow 0.2s var(--sl-ease);
+  margin-left: 2px;
+  transition: transform 0.2s var(--sl-spring);
 }
 
 .sl-profile:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 16px -8px rgba(0, 0, 0, 0.22);
+  transform: scale(1.06);
 }
 
 .sl-avatar {
@@ -218,18 +216,16 @@
   filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.15));
 }
 
+/* 이름은 랩 스타일에 맞춰 숨김 */
 .sl-profilename {
-  font-weight: 600;
-  font-size: 13.5px;
-  color: var(--ink);
-  letter-spacing: -0.01em;
+  display: none;
 }
 
-/* ── 햄버거 버튼: 데스크톱 숨김, 모바일 노출 ── */
+/* ── 햄버거: 데스크톱 숨김, 모바일 노출 ── */
 .sl-burger {
   display: none;
-  width: 40px;
-  height: 40px;
+  width: 34px;
+  height: 34px;
   border: none;
   border-radius: 50%;
   background: transparent;
@@ -239,7 +235,6 @@
   align-items: center;
   justify-content: center;
   gap: 5px;
-  margin-left: auto;
   transition: background 0.2s var(--sl-ease);
 }
 
@@ -249,7 +244,7 @@
 
 .sl-burger span {
   display: block;
-  width: 19px;
+  width: 18px;
   height: 2px;
   border-radius: 2px;
   background: var(--ink-2);
@@ -271,41 +266,38 @@
 /* ── 태블릿/모바일 (≤768px) ── */
 @media (max-width: 768px) {
   .sl-navinner {
-    padding: 9px 16px;
+    width: calc(100% - 20px);
+    margin: 10px auto 0;
+    height: 54px;
+    padding: 0 10px 0 14px;
     gap: 12px;
   }
 
-  .sl-logosub {
-    display: none;
-  }
-
-  .sl-logoimg {
-    width: 34px;
-    height: 34px;
-  }
-
   .sl-logotitle {
-    font-size: 18px;
+    font-size: 16px;
   }
 
   .sl-burger {
     display: flex;
+    order: 3;
   }
 
+  /* 메뉴: pill 아래로 떨어지는 글래스 패널 */
   .sl-menu {
     position: absolute;
-    top: 100%;
+    top: calc(100% + 8px);
     left: 0;
     right: 0;
     flex-direction: column;
     align-items: stretch;
     gap: 2px;
     margin-left: 0;
-    padding: 10px 14px 16px;
+    padding: 10px 14px 14px;
+    border-radius: 20px;
     background: var(--sl-glass);
     backdrop-filter: saturate(180%) blur(24px);
     -webkit-backdrop-filter: saturate(180%) blur(24px);
-    border-bottom: 0.5px solid var(--line);
+    border: 0.5px solid var(--line);
     box-shadow: 0 16px 34px -16px rgba(0, 0, 0, 0.3);
     display: none;
   }
@@ -315,9 +307,13 @@
   }
 
   .sl-navlink {
-    padding: 13px 16px;
+    padding: 12px 14px;
     font-size: 16px;
     border-radius: 12px;
+  }
+
+  .sl-navlink:hover {
+    background: var(--sl-hover);
   }
 
   .sl-logo {
@@ -327,55 +323,23 @@
   .sl-right {
     margin-left: auto;
     order: 2;
-    gap: 4px;
-  }
-
-  .sl-burger {
-    margin-left: 0;
-    order: 3;
-  }
-
-  .sl-profilename {
-    display: none;
-  }
-
-  .sl-iconbtn {
-    width: 38px;
-    height: 38px;
+    gap: 6px;
   }
 }
 
-/* ── 작은 폰 (≤480px) ── */
 @media (max-width: 480px) {
   .sl-navinner {
-    padding: 8px 12px;
     gap: 8px;
   }
-
   .sl-logotitle {
-    font-size: 17px;
+    font-size: 15px;
   }
-
-  .sl-logoimg {
-    width: 32px;
-    height: 32px;
-  }
-
   .sl-right {
-    gap: 3px;
-  }
-
-  .sl-iconbtn {
-    width: 36px;
-    height: 36px;
-  }
-
-  .sl-profile {
-    padding: 4px;
+    gap: 4px;
   }
 }
 
-/* ── 프로필 드롭다운 — 애플 카드(글래스·소프트 섀도우) ── */
+/* ── 프로필 드롭다운 — 애플 카드 ── */
 .sl-profilewrap {
   position: relative;
   display: inline-flex;
@@ -395,7 +359,7 @@
 .sl-dropdown {
   position: absolute;
   right: 0;
-  top: calc(100% + 10px);
+  top: calc(100% + 12px);
   min-width: 184px;
   background: var(--surface);
   border: 0.5px solid var(--line);
@@ -404,15 +368,15 @@
   padding: 7px;
   display: none;
   flex-direction: column;
-  z-index: 70;
+  z-index: 110;
 }
 .sl-dropdown::before {
   content: '';
   position: absolute;
-  top: -12px;
+  top: -14px;
   left: 0;
   right: 0;
-  height: 12px;
+  height: 14px;
 }
 .sl-profilewrap-open .sl-dropdown {
   display: flex;

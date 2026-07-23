@@ -621,3 +621,19 @@
     width: 100%;
   }
 }
+
+/* ── 애플 랩 정렬(2026-07-23): 액센트 코랄→애플 블루 (복제본 우선·로고 마크만 코랄) ── */
+.ce-root { --brand:#0071e3; --brand-strong:#0077ed; --brand-soft:rgba(0,113,227,0.12); --brand-ink:#0071e3; --brand-soft-line:rgba(0,113,227,0.24); --on-brand:#ffffff; }
+[data-theme='dark'] .ce-root { --brand:#0a84ff; --brand-strong:#409cff; --brand-soft:rgba(10,132,255,0.18); --brand-ink:#409cff; --brand-soft-line:rgba(10,132,255,0.30); }
+
+/* 오답 의미색은 애플 레드(블루 액센트와 구분) */
+.ce-root .ce-ropt--wrong { border-color:#ff3b30; background:rgba(255,59,48,0.10); color:#ff3b30; }
+.ce-root .ce-ropt--wrong .ce-optmark { color:#ff3b30; }
+.ce-root .ce-rcard--no .ce-rlabel { color:#ff3b30; }
+.ce-root .ce-rnum--no { background:rgba(255,59,48,0.10); color:#ff3b30; }
+.ce-root .ce-picktag { background:rgba(255,59,48,0.10); color:#ff3b30; }
+[data-theme='dark'] .ce-root .ce-ropt--wrong { border-color:#ff453a; background:rgba(255,69,58,0.16); color:#ff453a; }
+[data-theme='dark'] .ce-root .ce-ropt--wrong .ce-optmark,
+[data-theme='dark'] .ce-root .ce-rcard--no .ce-rlabel,
+[data-theme='dark'] .ce-root .ce-rnum--no,
+[data-theme='dark'] .ce-root .ce-picktag { color:#ff453a; }
