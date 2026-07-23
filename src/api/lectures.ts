@@ -423,6 +423,21 @@ export interface OpsLectureMaterial {
   created_at?: string | null;
 }
 
+/** 강의 수강 후기 — 목록 + 요약(평균·개수·별점 분포) + 내 후기 */
+export interface LectureReviewItem {
+  id: string;
+  rating: number;
+  text: string;
+  author: string; // 가명(nickname)
+  created_at: string | null;
+  mine: boolean;
+}
+export interface LectureReviewsData {
+  summary: { count: number; avg: number; dist: Record<string, number> };
+  mine: { rating: number; text: string } | null;
+  reviews: LectureReviewItem[];
+}
+
 export const lectureApi = {
   /* ================= 학생 ================= */
   list: (subject?: string) =>
@@ -474,6 +489,15 @@ export const lectureApi = {
         responseType: 'blob',
       })
       .then((r) => r),
+
+  /* ================= 수강 후기 ================= */
+  reviews: (lectureId: string) =>
+    client.get<LectureReviewsData>(`/lectures/${lectureId}/reviews`).then((r) => r.data),
+  /** 내 후기 작성/수정(upsert) — 수강생만(서버 403 not_enrolled) */
+  upsertReview: (lectureId: string, body: { rating: number; text: string }) =>
+    client.post<{ ok: boolean }>(`/lectures/${lectureId}/reviews`, body).then((r) => r.data),
+  deleteReview: (lectureId: string) =>
+    client.delete<{ ok: boolean }>(`/lectures/${lectureId}/reviews/mine`).then((r) => r.data),
 
   /* ================= 운영자 ================= */
   opsList: () => client.get<OpsLecture[]>('/ops/lectures').then((r) => r.data),

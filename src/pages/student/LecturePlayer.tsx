@@ -9,6 +9,7 @@ import {
   type HeartbeatState,
   type LectureDetail,
   type LectureItem,
+  type LectureReviewsData,
   type LectureSession,
 } from '../../api/lectures';
 import { getFreshAccessToken } from '../../api/client';
@@ -94,6 +95,12 @@ export default function LecturePlayer() {
   // 실서비스(인프런·Udemy)의 '강의 노트'를 백엔드 없이 정직하게(개인·로컬 명시) 구현한 것.
   const [notes, setNotes] = useState<{ id: string; t: number; text: string }[]>([]);
   const [noteText, setNoteText] = useState('');
+  // 수강 후기 — 서버 저장(lecture_reviews). 별점+텍스트, 수강생만 작성(upsert).
+  const [reviews, setReviews] = useState<LectureReviewsData | null>(null);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [myRating, setMyRating] = useState(0);
+  const [myReviewText, setMyReviewText] = useState('');
+  const [submittingReview, setSubmittingReview] = useState(false);
 
   /* 캡차 게이트 */
   const [gate, setGate] = useState<{ cp: number } | null>(null);
@@ -589,6 +596,51 @@ export default function LecturePlayer() {
     showToast('메모 지점으로 이동했어요 🐾');
   };
 
+  /* ---- 수강 후기 ---- */
+  const loadReviews = useCallback(async () => {
+    if (!lectureId) return;
+    setReviewsLoading(true);
+    try {
+      const d = await lectureApi.reviews(lectureId);
+      setReviews(d);
+      setMyRating(d.mine?.rating ?? 0);
+      setMyReviewText(d.mine?.text ?? '');
+    } catch {
+      setReviews(null);
+    } finally {
+      setReviewsLoading(false);
+    }
+  }, [lectureId]);
+  // 후기 탭을 열면(또는 강의 바뀐 채 후기 탭이면) 목록을 불러온다
+  useEffect(() => {
+    if (tab === 'reviews') void loadReviews();
+  }, [tab, loadReviews]);
+
+  const submitReview = async () => {
+    if (!myRating || submittingReview) return;
+    setSubmittingReview(true);
+    try {
+      await lectureApi.upsertReview(lectureId, { rating: myRating, text: myReviewText.trim() });
+      showToast('후기를 남겼어요 🐾');
+      await loadReviews();
+    } catch (e) {
+      showToast(errorDetail(e, '후기를 저장하지 못했어요. 잠시 후 다시 시도해 주세요.'));
+    } finally {
+      setSubmittingReview(false);
+    }
+  };
+  const deleteMyReview = async () => {
+    try {
+      await lectureApi.deleteReview(lectureId);
+      setMyRating(0);
+      setMyReviewText('');
+      await loadReviews();
+      showToast('후기를 삭제했어요');
+    } catch (e) {
+      showToast(errorDetail(e, '후기를 삭제하지 못했어요.'));
+    }
+  };
+
   /* ================= 렌더 ================= */
   const subject = meta?.subject ?? '국어';
   const theme = LECTURE_SUBJECTS[subject] ?? LECTURE_SUBJECTS['국어'];
@@ -1082,10 +1134,100 @@ export default function LecturePlayer() {
 
           {tab === 'reviews' && (
             <div className="lp-info">
-              <div className="lp-tabempty">
-                <i className="ph-fill ph-chat-circle-dots" />
-                수강 후기는 준비 중이에요. 곧 만나요 🐾
-              </div>
+              {reviewsLoading && !reviews ? (
+                <div className="lp-tabempty">
+                  <i className="ph-fill ph-hourglass-medium" /> 후기를 불러오는 중…
+                </div>
+              ) : (
+                <>
+                  {/* 요약 — 평균 별점 + 개수 + 분포 */}
+                  <div className="lp-revsummary">
+                    <div className="lp-revavg">
+                      <span className="lp-revavg-num" style={{ color: theme.color }}>
+                        {reviews && reviews.summary.count > 0 ? reviews.summary.avg.toFixed(1) : '—'}
+                      </span>
+                      <Stars value={Math.round(reviews?.summary.avg ?? 0)} color={theme.color} />
+                      <span className="lp-revcount">후기 {reviews?.summary.count ?? 0}개</span>
+                    </div>
+                    {reviews && reviews.summary.count > 0 && (
+                      <div className="lp-revdist">
+                        {[5, 4, 3, 2, 1].map((s) => {
+                          const c = reviews.summary.dist[String(s)] ?? 0;
+                          const pct = reviews.summary.count ? (c / reviews.summary.count) * 100 : 0;
+                          return (
+                            <div key={s} className="lp-revdistrow">
+                              <span className="lp-revdistlabel">{s}점</span>
+                              <span className="lp-revdistbar">
+                                <span
+                                  className="lp-revdistfill"
+                                  style={{ width: `${pct}%`, background: theme.color }}
+                                />
+                              </span>
+                              <span className="lp-revdistn">{c}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 내 후기 작성/수정 */}
+                  <div className="lp-revform">
+                    <div className="lp-revform-head">
+                      <span className="lp-revform-title">
+                        {reviews?.mine ? '내 후기 수정' : '이 강의 후기 남기기'}
+                      </span>
+                      <Stars value={myRating} onChange={setMyRating} color={theme.color} interactive />
+                    </div>
+                    <textarea
+                      className="lp-revtext"
+                      value={myReviewText}
+                      onChange={(e) => setMyReviewText(e.target.value)}
+                      placeholder="이 강의는 어땠나요? 다른 학습자에게 도움이 될 후기를 남겨요. (선택)"
+                      maxLength={1000}
+                      rows={3}
+                    />
+                    <div className="lp-revform-actions">
+                      {reviews?.mine && (
+                        <button className="lp-revdel" onClick={deleteMyReview}>
+                          <i className="ph-bold ph-trash" /> 삭제
+                        </button>
+                      )}
+                      <button
+                        className="lp-revsubmit"
+                        style={{ background: theme.color }}
+                        onClick={submitReview}
+                        disabled={!myRating || submittingReview}
+                      >
+                        {submittingReview ? '저장 중…' : reviews?.mine ? '후기 수정' : '후기 등록'}
+                      </button>
+                    </div>
+                    {!myRating && <p className="lp-revhint">별점을 선택하면 후기를 남길 수 있어요.</p>}
+                  </div>
+
+                  {/* 후기 목록 */}
+                  {reviews && reviews.reviews.length > 0 ? (
+                    <ul className="lp-revlist">
+                      {reviews.reviews.map((r) => (
+                        <li key={r.id} className={`lp-rev${r.mine ? ' lp-rev--mine' : ''}`}>
+                          <div className="lp-rev-top">
+                            <span className="lp-rev-author">{r.author}</span>
+                            {r.mine && <span className="lp-rev-mine">내 후기</span>}
+                            <Stars value={r.rating} color={theme.color} small />
+                            <span className="lp-rev-date">{fmtReviewDate(r.created_at)}</span>
+                          </div>
+                          {r.text && <p className="lp-rev-text">{r.text}</p>}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <div className="lp-tabempty">
+                      <i className="ph-fill ph-chat-circle-dots" />
+                      아직 후기가 없어요. 첫 후기를 남겨보세요!
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           )}
         </div>
@@ -1135,6 +1277,53 @@ export default function LecturePlayer() {
       </div>
     </div>
   );
+}
+
+/** 별점 표시/입력 — interactive면 클릭으로 1~5 선택, 아니면 읽기 전용(반올림 채움). */
+function Stars({
+  value,
+  onChange,
+  color,
+  interactive,
+  small,
+}: {
+  value: number;
+  onChange?: (v: number) => void;
+  color?: string;
+  interactive?: boolean;
+  small?: boolean;
+}) {
+  return (
+    <span className={`lp-stars${small ? ' lp-stars--sm' : ''}${interactive ? ' lp-stars--btn' : ''}`}>
+      {[1, 2, 3, 4, 5].map((s) => {
+        const on = s <= value;
+        const cls = on ? 'ph-fill ph-star' : 'ph-bold ph-star';
+        if (interactive) {
+          return (
+            <button
+              key={s}
+              type="button"
+              className="lp-star"
+              style={on ? { color } : undefined}
+              onClick={() => onChange?.(s)}
+              aria-label={`${s}점`}
+            >
+              <i className={cls} />
+            </button>
+          );
+        }
+        return <i key={s} className={cls} style={on ? { color } : undefined} />;
+      })}
+    </span>
+  );
+}
+
+/** 후기 날짜 — ISO → 'YYYY.MM.DD' (실패 시 빈 문자열) */
+function fmtReviewDate(iso: string | null): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
 }
 
 /** 강의실 상단 바 — 목업의 슬림 헤더(← 학습 홈 / 로고 / 경로 / 프로필) */
