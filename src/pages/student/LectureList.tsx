@@ -117,6 +117,12 @@ export default function LectureList() {
   const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading');
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
+  // 탐색 레이어(0723) — 그룹 목록을 '탐색 가능한 카탈로그'로: 검색어·시청상태 필터·정렬.
+  // 별점/난이도 같은 없는 데이터는 만들지 않고, 이미 있는 값(제목·시청상태·길이)으로만 만든다.
+  const [query, setQuery] = useState('');
+  const [watchFilter, setWatchFilter] = useState<'all' | 'new' | 'watching' | 'done'>('all');
+  const [sortBy, setSortBy] = useState<'default' | 'short' | 'long' | 'title'>('default');
+
   const load = () => {
     setState('loading');
     // 강의와 코스를 함께 불러온다 — 코스는 분류→강사별 코스→강의 그룹의 상위 메타.
@@ -133,6 +139,31 @@ export default function LectureList() {
 
   const total = rows?.length ?? 0;
   const watched = (rows ?? []).filter((l) => watchState(l) === 'done').length;
+
+  // 검색어·시청상태로 거르고 정렬한다. 정렬은 새 배열로(원본 order_no 순서 보존 — '강 번호' 계산용).
+  const q = query.trim().toLowerCase();
+  const filtersActive = q !== '' || watchFilter !== 'all' || sortBy !== 'default';
+  const applyFilters = (lects: LectureItem[]): LectureItem[] => {
+    let out = lects;
+    if (q)
+      out = out.filter(
+        (l) =>
+          (l.title ?? '').toLowerCase().includes(q) ||
+          (l.description ?? '').toLowerCase().includes(q),
+      );
+    if (watchFilter !== 'all') out = out.filter((l) => watchState(l) === watchFilter);
+    if (sortBy === 'short') out = [...out].sort((a, b) => (a.duration_sec ?? 0) - (b.duration_sec ?? 0));
+    else if (sortBy === 'long') out = [...out].sort((a, b) => (b.duration_sec ?? 0) - (a.duration_sec ?? 0));
+    else if (sortBy === 'title') out = [...out].sort((a, b) => (a.title ?? '').localeCompare(b.title ?? '', 'ko'));
+    return out;
+  };
+  const resetFilters = () => {
+    setQuery('');
+    setWatchFilter('all');
+    setSortBy('default');
+  };
+  // 필터 적용 후 전체 매칭 강의 수(빈 상태·결과 수 표기용)
+  const matchCount = applyFilters(rows ?? []).length;
 
   // 과목 은퇴(0722) — 학교식 6과목 대신 코스의 '분류(category)'로 브라우징한다. 화면에 실제
   // 있는 분류만 동적으로 묶고, 코스 없이 올린 강의가 있으면 '기타'를 맨 뒤에 붙인다.
@@ -275,6 +306,70 @@ export default function LectureList() {
           })}
         </div>
 
+        {/* 검색·필터·정렬 툴바 — 그룹 목록을 탐색 가능한 카탈로그로 */}
+        {state === 'ready' && (
+          <div className="ll-toolbar">
+            <div className="ll-search">
+              <i className="ph-bold ph-magnifying-glass" />
+              <input
+                type="search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="강의 제목·설명 검색"
+                aria-label="강의 검색"
+              />
+              {query && (
+                <button className="ll-search-clear" onClick={() => setQuery('')} aria-label="검색어 지우기">
+                  <i className="ph-bold ph-x" />
+                </button>
+              )}
+            </div>
+            <div className="ll-filterchips" role="group" aria-label="시청 상태 필터">
+              {([
+                ['all', '전체'],
+                ['new', '새 강의'],
+                ['watching', '학습 중'],
+                ['done', '봤어요'],
+              ] as const).map(([key, label]) => (
+                <button
+                  key={key}
+                  className={`ll-chip${watchFilter === key ? ' ll-chip-on' : ''}`}
+                  onClick={() => setWatchFilter(key)}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            <select
+              className="ll-sort"
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+              aria-label="정렬"
+            >
+              <option value="default">코스 순서</option>
+              <option value="short">짧은 순</option>
+              <option value="long">긴 순</option>
+              <option value="title">제목순</option>
+            </select>
+            {filtersActive && (
+              <button className="ll-filterreset" onClick={resetFilters}>
+                <i className="ph-bold ph-arrow-counter-clockwise" /> 초기화
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* 필터 결과 전무 — 정직한 빈 상태 */}
+        {state === 'ready' && filtersActive && matchCount === 0 && (
+          <div className="ll-state">
+            <i className="ph-fill ph-magnifying-glass" />
+            조건에 맞는 강의가 없어요.
+            <button className="ll-retry" onClick={resetFilters}>
+              필터 초기화
+            </button>
+          </div>
+        )}
+
         {state === 'loading' && (
           <div className="ll-state">
             <i className="ph-fill ph-hourglass-medium" />
@@ -297,7 +392,11 @@ export default function LectureList() {
             // 분류(category) → 강사별 코스 → 강의. '기타'엔 코스 없는 강의가 모인다.
             const groups = courseGroupsForCategory(sub, rows ?? [], courses);
             const subjTotal = groups.reduce((n, g) => n + g.lectures.length, 0);
+            const subjMatch = filtersActive
+              ? groups.reduce((n, g) => n + applyFilters(g.lectures).length, 0)
+              : subjTotal;
             if (subjTotal === 0 && tab === '전체') return null; // 전체 탭에선 빈 분류 생략
+            if (filtersActive && subjMatch === 0) return null; // 필터 결과 없는 분류 숨김
             return (
               <section key={sub} className="ll-section">
                 <div className="ll-sechead">
@@ -307,8 +406,10 @@ export default function LectureList() {
                   <div>
                     <h2 className="ll-sectitle">{sub}</h2>
                     <p className="ll-secsub">
-                      {subjTotal}강
-                      {groups.some((g) => g.title) ? ` · 코스 ${groups.filter((g) => g.title).length}개` : ''}
+                      {filtersActive ? `${subjMatch}강 검색됨` : `${subjTotal}강`}
+                      {!filtersActive && groups.some((g) => g.title)
+                        ? ` · 코스 ${groups.filter((g) => g.title).length}개`
+                        : ''}
                     </p>
                   </div>
                 </div>
@@ -323,9 +424,13 @@ export default function LectureList() {
                     // (코스 없는 분류는 카드만 평면 노출) 어색한 라벨을 피한다.
                     const hasCourses = groups.some((g) => g.title);
                     return groups.map((g) => {
+                      // 코스 안 원래 순서(강 번호)를 보존 — 필터/정렬해도 'N강'은 원래 위치로 표시
+                      const numMap = new Map(g.lectures.map((l, idx) => [l.id, idx + 1]));
+                      const gl = applyFilters(g.lectures);
+                      if (gl.length === 0) return null; // 필터 결과 없는 코스 숨김
                       const showAll = !!expanded[g.key];
-                      const shown = showAll ? g.lectures : g.lectures.slice(0, VISIBLE_PER_GROUP);
-                      const hidden = g.lectures.length - shown.length;
+                      const shown = showAll ? gl : gl.slice(0, VISIBLE_PER_GROUP);
+                      const hidden = gl.length - shown.length;
                       const showHead = !!g.title || hasCourses;
                       return (
                         <div key={g.key} className="ll-coursegroup">
@@ -354,7 +459,9 @@ export default function LectureList() {
                               ) : (
                                 <h3 className="ll-coursetitle ll-coursetitle--none">기타 강의</h3>
                               )}
-                              <span className="ll-coursecount">{g.lectures.length}강</span>
+                              <span className="ll-coursecount">
+                                {filtersActive ? `${gl.length}/${g.lectures.length}강` : `${g.lectures.length}강`}
+                              </span>
                               {/* 수강신청/취소 — 무료 자유 신청(진행 이력은 취소해도 보존).
                                   실제 코스(g.course)가 있는 그룹에만 노출한다(미분류 '기타 강의' 제외). */}
                               {g.course &&
@@ -403,7 +510,7 @@ export default function LectureList() {
                             </div>
                           )}
                         <div className="ll-grid">
-                          {shown.map((l, i) => renderCard(l, i))}
+                          {shown.map((l) => renderCard(l, (numMap.get(l.id) ?? 1) - 1))}
                           {hidden > 0 && (
                             <button
                               className="ll-more"

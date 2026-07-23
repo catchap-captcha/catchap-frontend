@@ -99,7 +99,118 @@
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
-  margin-bottom: 26px;
+  margin-bottom: 14px;
+}
+
+/* ===== 검색·필터·정렬 툴바 ===== */
+.ll-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+  padding: 10px 12px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.ll-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 200px;
+  padding: 8px 12px;
+  border-radius: 9px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+}
+.ll-search i {
+  color: var(--ink-3);
+  font-size: 15px;
+  flex-shrink: 0;
+}
+.ll-search input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--ink);
+}
+.ll-search input::placeholder {
+  color: var(--ink-3);
+}
+.ll-search input::-webkit-search-cancel-button {
+  display: none;
+}
+.ll-search-clear {
+  display: grid;
+  place-items: center;
+  border: none;
+  background: transparent;
+  color: var(--ink-3);
+  cursor: pointer;
+  padding: 2px;
+  font-size: 14px;
+}
+.ll-search-clear:hover {
+  color: var(--ink);
+}
+.ll-filterchips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.ll-chip {
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink-2);
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 12.5px;
+  padding: 8px 13px;
+  border-radius: var(--r-pill);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.ll-chip:hover {
+  border-color: var(--brand);
+  color: var(--brand-ink);
+}
+.ll-chip-on,
+.ll-chip-on:hover {
+  background: var(--brand-soft);
+  border-color: var(--brand);
+  color: var(--brand-ink);
+}
+.ll-sort {
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink-2);
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 12.5px;
+  padding: 8px 12px;
+  border-radius: 9px;
+  cursor: pointer;
+}
+.ll-filterreset {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: none;
+  background: transparent;
+  color: var(--ink-3);
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+.ll-filterreset:hover {
+  color: var(--brand-ink);
 }
 
 .ll-tab {

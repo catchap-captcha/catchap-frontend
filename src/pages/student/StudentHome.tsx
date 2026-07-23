@@ -75,6 +75,19 @@ export default function StudentHome() {
     });
   }, [courses, lectures]);
 
+  // 이어서 학습 레일 — 시청 중(watching)인 강의(발견·재방문 유도). 히어로의 1건과 겹쳐도
+  // 여러 개를 가로 스크롤로 노출하는 게 목적(넷플릭스·Coursera '이어보기' 레일 패턴).
+  const watchingLecs = useMemo(
+    () => (lectures ?? []).filter((l) => l.progress?.status === 'watching'),
+    [lectures],
+  );
+  // 추천(둘러보기) 레일 — 아직 신청 안 한 코스. 별점·인기 데이터가 없어 알고리즘을 지어내지 않고
+  // '미신청 코스'라는 정직한 기준으로만 노출한다. 전부 신청했으면 레일을 숨긴다.
+  const discoverCourses = useMemo(
+    () => (courses ?? []).filter((c) => !c.enrolled),
+    [courses],
+  );
+
   const goWatch = (id: string) => navigate(PATHS.STUDENT_LECTURE, { state: { id } });
 
   return (
@@ -148,6 +161,70 @@ export default function StudentHome() {
               <span className="sh2-kpi-num"><CountUp value={completedCourses} /></span>
               <span className="sh2-kpi-lb">수료 코스</span>
             </div>
+          </div>
+        </section>
+      )}
+
+      {/* ===== 이어서 학습 레일 ===== */}
+      {state === 'ready' && watchingLecs.length > 0 && (
+        <section className="sh2-rail">
+          <div className="sh2-sec-head">
+            <h2 className="sh2-sec-title">
+              <i className="ph-fill ph-play-circle" /> 이어서 학습
+            </h2>
+          </div>
+          <div className="sh2-railscroll">
+            {watchingLecs.map((l) => (
+              <button key={l.id} className="sh2-railcard" onClick={() => goWatch(l.id)}>
+                <CourseCover
+                  seed={l.course_id || l.id}
+                  label={l.title}
+                  size="md"
+                  className="sh2-railcover"
+                />
+                <div className="sh2-railbody">
+                  <span className="sh2-railtitle">{l.title}</span>
+                  <span className="sh2-railmeta">{l.subject}</span>
+                </div>
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ===== 추천(둘러보기) 레일 — 미신청 코스 ===== */}
+      {state === 'ready' && discoverCourses.length > 0 && (
+        <section className="sh2-rail">
+          <div className="sh2-sec-head">
+            <h2 className="sh2-sec-title">
+              <i className="ph-fill ph-compass" /> 이런 코스는 어때요
+            </h2>
+            <button className="sh2-sec-more" onClick={() => navigate(PATHS.STUDENT_LECTURES)}>
+              전체 보기 <i className="ph-bold ph-arrow-right" />
+            </button>
+          </div>
+          <div className="sh2-railscroll">
+            {discoverCourses.map((c) => (
+              <button
+                key={c.id}
+                className="sh2-railcard"
+                onClick={() => navigate(PATHS.STUDENT_LECTURES)}
+              >
+                <CourseCover
+                  seed={c.id}
+                  label={c.title || c.subject}
+                  size="md"
+                  className="sh2-railcover"
+                />
+                <div className="sh2-railbody">
+                  <span className="sh2-railtitle">{c.title}</span>
+                  <span className="sh2-railmeta">
+                    {c.instructor_name ? `${c.instructor_name} 강사 · ` : ''}
+                    {c.lecture_count}강
+                  </span>
+                </div>
+              </button>
+            ))}
           </div>
         </section>
       )}
