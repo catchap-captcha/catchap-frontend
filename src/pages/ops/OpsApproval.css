@@ -82,20 +82,50 @@
 }
 .op-side-logo { width: 38px; height: 38px; border-radius: 50%; }
 .op-side-name {
-  font-family: var(--font-display); font-weight: 800;
-  font-size: 19px;
-  color: var(--brand);
+  font-family: var(--font-display); font-weight: 700;
+  font-size: 18px;
+  color: var(--ink);
+  letter-spacing: -0.02em;
   line-height: 1;
 }
 .op-side-sub { font-size: 11px; color: var(--ink-3); font-weight: 700; margin-top: 3px; }
 .op-side-menu { flex: 1; overflow-y: auto; padding: 10px 10px 12px; scrollbar-width: thin; }
-.op-side-group { margin-bottom: 12px; }
+/* 접이식 그룹(아코디언) — 메뉴 밀도를 낮춰 한눈에 들어오게 */
+.op-side-group { margin-bottom: 4px; }
 .op-side-grouplabel {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: none;
+  background: none;
+  font-family: inherit;
+  cursor: pointer;
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--ink-3);
   letter-spacing: 0.06em;
-  padding: 6px 8px 4px;
+  text-transform: uppercase;
+  padding: 9px 8px 7px;
+  border-radius: 8px;
+  transition: color 0.15s;
+}
+.op-side-grouplabel:hover { color: var(--ink-2); }
+.op-side-caret { font-size: 10px; opacity: 0.65; transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
+.op-side-group--open .op-side-caret { transform: rotate(180deg); }
+.op-side-groupitems {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition: max-height 0.28s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
+}
+.op-side-group--open .op-side-groupitems { max-height: 360px; opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+  .op-side-groupitems { transition: none; }
+  .op-side-caret { transition: none; }
 }
 .op-side-link {
   display: flex;

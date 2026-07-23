@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { useTheme } from '../../hooks/useTheme';
@@ -19,8 +19,13 @@ import mascot from '../../assets/characters/catchap-logo.png';
  *
  *  강사(instructor)도 같은 사이드바를 쓰되 '내 강의'만 보인다 — 운영 메뉴는 서버가
  *  403으로 막지만, 애초에 링크를 노출하지 않는 것이 콘솔의 예의다. */
-const GROUPS: { label: string; items: { to: string; icon: string; label: string }[] }[] = [
+type NavGroup = { key: string; label: string; items: { to: string; icon: string; label: string }[] };
+
+/** 실무 콘솔식 접이식(아코디언) 그룹 — 16개 메뉴가 한눈에 안 들어와 스크롤로 새던 것을,
+ *  현재 페이지가 속한 그룹만 펼치고 나머지는 접어 밀도를 낮춘다(Linear·Datadog식). */
+const GROUPS: NavGroup[] = [
   {
+    key: 'ops',
     label: '운영',
     items: [
       { to: PATHS.OPS_APPROVAL, icon: 'ph-buildings', label: '기관 승인' },
@@ -30,6 +35,7 @@ const GROUPS: { label: string; items: { to: string; icon: string; label: string 
     ],
   },
   {
+    key: 'lecture',
     label: '강의',
     items: [
       { to: PATHS.OPS_LECTURES, icon: 'ph-video-camera', label: '강의 관리' },
@@ -37,36 +43,32 @@ const GROUPS: { label: string; items: { to: string; icon: string; label: string 
     ],
   },
   {
-    // LLM 전용 그룹 — 종전엔 실 LLM 설정(모델 선택·API 키·프롬프트)이 범용 '설정' 한 페이지에
-    // 묻혀 찾기 힘들었다. 문항 생성과 밀접하므로 '강의' 다음에 두고 셋으로 나눈다(사용자 요청).
-    label: 'LLM',
+    key: 'ai',
+    label: 'AI',
     items: [
       { to: PATHS.OPS_LLM_MODELS, icon: 'ph-robot', label: '모델' },
       { to: PATHS.OPS_LLM_KEYS, icon: 'ph-lock-key', label: 'API 키' },
       { to: PATHS.OPS_LLM_PROMPTS, icon: 'ph-chat-text', label: '프롬프트' },
+      // 기관 콘솔 노출용 표시 카탈로그(실 LLM 호출과 무관) — AI 묶음에 함께 둔다
+      { to: PATHS.OPS_AI_MODELS, icon: 'ph-cpu', label: '모델 카탈로그' },
     ],
   },
   {
-    label: '데이터',
+    key: 'data',
+    label: '데이터 · 시스템',
     items: [
       { to: PATHS.OPS_BEHAVIOR, icon: 'ph-fingerprint', label: '행동 데이터' },
       { to: PATHS.OPS_BEHAVIOR_EXPORT, icon: 'ph-export', label: '외부 내보내기' },
       { to: PATHS.OPS_LOGS, icon: 'ph-scroll', label: '감사 로그' },
-    ],
-  },
-  {
-    label: '시스템',
-    items: [
       { to: PATHS.OPS_API_KEYS, icon: 'ph-key', label: 'API 발급' },
-      // 기관 콘솔 노출용 표시 카탈로그(실 LLM 호출과 무관) — 위 'LLM > 모델'과 구분되게 라벨 명확화
-      { to: PATHS.OPS_AI_MODELS, icon: 'ph-cpu', label: '모델 카탈로그' },
       { to: PATHS.OPS_MONITORING, icon: 'ph-gauge', label: '모니터링' },
     ],
   },
 ];
 
-const INSTRUCTOR_GROUPS: typeof GROUPS = [
+const INSTRUCTOR_GROUPS: NavGroup[] = [
   {
+    key: 'instructor',
     label: '강사',
     items: [
       { to: PATHS.OPS_INSTRUCTOR_HOME, icon: 'ph-squares-four', label: '홈' },
@@ -83,6 +85,25 @@ export default function OpsNav() {
   const isInstructor = me?.role === 'instructor';
   const groups = isInstructor ? INSTRUCTOR_GROUPS : GROUPS;
   const home = isInstructor ? PATHS.OPS_INSTRUCTOR_HOME : PATHS.OPS_APPROVAL;
+
+  // 접이식 그룹 — 현재 페이지가 속한 그룹만 펼치고 나머지는 접는다(밀도↓). 클릭으로 토글.
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
+    const init: Record<string, boolean> = {};
+    let matched = false;
+    for (const g of groups) {
+      const on = g.items.some((i) => i.to === pathname);
+      init[g.key] = on;
+      if (on) matched = true;
+    }
+    if (!matched && groups[0]) init[groups[0].key] = true; // 하위·미매칭 경로는 첫 그룹 펼침
+    return init;
+  });
+  const toggleGroup = (k: string) => setOpenGroups((o) => ({ ...o, [k]: !o[k] }));
+  // 라우트 이동 시 활성 페이지 그룹은 항상 펼쳐 둔다(접힌 그룹으로 이동해도 보이게).
+  useEffect(() => {
+    const active = groups.find((g) => g.items.some((i) => i.to === pathname));
+    if (active) setOpenGroups((o) => (o[active.key] ? o : { ...o, [active.key]: true }));
+  }, [pathname, groups]);
 
   // 알림 — 콘솔 벨. 안읽음 배지(useUnreadNotifications) + 패널에서 목록·읽음 처리.
   // 문항 자동 생성 완료/실패 알림(비동기 잡)이 여기로 온다(강사가 떠나 있어도 확인).
@@ -171,23 +192,36 @@ export default function OpsNav() {
         </div>
       </Link>
       <nav className="op-side-menu">
-        {groups.map((g) => (
-          <div key={g.label} className="op-side-group">
-            <div className="op-side-grouplabel">{g.label}</div>
-            {g.items.map((l) => (
-              <Link
-                key={l.to}
-                to={l.to}
-                title={l.label}
-                className={'op-side-link' + (pathname === l.to ? ' op-side-link--on' : '')}
-                aria-current={pathname === l.to ? 'page' : undefined}
+        {groups.map((g) => {
+          const isOpen = openGroups[g.key] ?? false;
+          return (
+            <div key={g.key} className={'op-side-group' + (isOpen ? ' op-side-group--open' : '')}>
+              <button
+                type="button"
+                className="op-side-grouplabel"
+                onClick={() => toggleGroup(g.key)}
+                aria-expanded={isOpen}
               >
-                <i className={`ph-fill ${l.icon}`} />
-                <span>{l.label}</span>
-              </Link>
-            ))}
-          </div>
-        ))}
+                <span>{g.label}</span>
+                <i className="ph-bold ph-caret-down op-side-caret" />
+              </button>
+              <div className="op-side-groupitems">
+                {g.items.map((l) => (
+                  <Link
+                    key={l.to}
+                    to={l.to}
+                    title={l.label}
+                    className={'op-side-link' + (pathname === l.to ? ' op-side-link--on' : '')}
+                    aria-current={pathname === l.to ? 'page' : undefined}
+                  >
+                    <i className={`ph-fill ${l.icon}`} />
+                    <span>{l.label}</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          );
+        })}
       </nav>
       <div className="op-side-foot">
         {isInstructor ? (
