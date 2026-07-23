@@ -781,12 +781,31 @@ function LectureFormModal({
   const existingThumb = editing?.thumbnail_url ? thumbnailSrc(editing.thumbnail_url) ?? null : null;
   const [thumbFile, setThumbFile] = useState<File | null>(null);
   const [thumbPreview, setThumbPreview] = useState<string | null>(existingThumb);
+  const [thumbRemoved, setThumbRemoved] = useState(false); // '썸네일 제거' 후 — 기존 미리보기로 되돌리지 않게
   const thumbBlobRef = useRef<string | null>(null); // 현재 미리보기 blob URL(정리 대상)
   const pickThumb = (f: File | null) => {
     if (thumbBlobRef.current) URL.revokeObjectURL(thumbBlobRef.current); // 이전 blob 정리(누수 방지)
     thumbBlobRef.current = f ? URL.createObjectURL(f) : null;
-    setThumbPreview(f ? thumbBlobRef.current : existingThumb); // 취소하면 기존 썸네일(있으면)로 되돌림
+    if (f) setThumbRemoved(false); // 새로 고르면 제거 상태 해제
+    // 취소하면 기존 썸네일로 되돌림(단 이미 제거했으면 빈 상태 유지)
+    setThumbPreview(f ? thumbBlobRef.current : thumbRemoved ? null : existingThumb);
     setThumbFile(f);
+  };
+  // 썸네일만 제거 — 서버 파일까지 삭제(강의는 유지, 다시 자동 커버). 즉시 반영.
+  const removeThumb = async () => {
+    if (!editing) return;
+    try {
+      await lectureApi.opsDeleteThumbnail(editing.id);
+      if (thumbBlobRef.current) {
+        URL.revokeObjectURL(thumbBlobRef.current);
+        thumbBlobRef.current = null;
+      }
+      setThumbFile(null);
+      setThumbPreview(null);
+      setThumbRemoved(true);
+    } catch {
+      setErr('썸네일 제거에 실패했어요. 잠시 후 다시 시도해 주세요.');
+    }
   };
   // 언마운트 시 남은 blob 미리보기 정리
   useEffect(() => () => {
@@ -1071,6 +1090,11 @@ function LectureFormModal({
               {thumbFile && (
                 <button type="button" className="op-btn op-btn--soft" onClick={() => pickThumb(null)}>
                   <i className="ph-bold ph-x" /> 선택 취소
+                </button>
+              )}
+              {editing?.thumbnail_url && !thumbFile && !thumbRemoved && (
+                <button type="button" className="op-btn op-btn--soft" onClick={removeThumb}>
+                  <i className="ph-bold ph-trash" /> 썸네일 제거
                 </button>
               )}
             </div>

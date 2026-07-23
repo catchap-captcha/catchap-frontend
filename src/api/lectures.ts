@@ -551,6 +551,10 @@ export const lectureApi = {
       .then((r) => r.data);
   },
 
+  /** 썸네일만 제거 — 강의는 유지하고 대표 이미지만 없앤다(서버 파일도 삭제 → 다시 자동 커버). */
+  opsDeleteThumbnail: (lectureId: string) =>
+    client.delete<OpsLecture>(`/ops/lectures/${lectureId}/thumbnail`).then((r) => r.data),
+
   /** 강의 삭제 = 휴지통으로 이동(복구 가능). 파일·문항·전사 모두 보존되고 30일 뒤 자동 완전삭제. */
   opsDelete: (lectureId: string) =>
     client.delete<{ ok: boolean }>(`/ops/lectures/${lectureId}`).then((r) => r.data),
