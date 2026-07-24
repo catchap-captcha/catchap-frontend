@@ -1,0 +1,32 @@
+/* ForestCaptcha — 로그인 캡차 iframe 래퍼 */
+.fc-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+}
+.fc-iframe {
+  width: 100%;
+  height: clamp(360px, calc(100dvh - 180px), 720px);
+  border: none;
+  border-radius: 18px;
+  background: var(--surface);
+  display: block;
+  box-shadow: 0 8px 24px -14px rgba(60, 90, 40, 0.4);
+}
+.fc-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.35);
+  color: var(--on-brand);
+  font-size: 14px;
+  cursor: pointer;
+}
+.fc-close:hover {
+  background: rgba(0, 0, 0, 0.55);
+}
