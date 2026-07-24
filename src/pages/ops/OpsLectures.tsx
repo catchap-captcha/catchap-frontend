@@ -2532,6 +2532,11 @@ function QuestionsModal({
   const [genPhase, setGenPhase] = useState<string | null>(null); // 생성 중 세부 단계 라벨용
   // 고급 설정(되감기 지점) 펼침 여부 — 대개 자동이라 기본 접어 폼을 단순하게(초심자 부담↓).
   const [showAdvanced, setShowAdvanced] = useState(false);
+  // '이 화면 사용법' 접힘 상태를 기억한다(localStorage) — 처음엔 펼쳐 안내하되, 익숙해진 강사가
+  // 한 번 접으면 다음 방문에도 접힌 채로(재방문 시 길지 않게). 사용자 요청.
+  const [guideOpen, setGuideOpen] = useState(() => {
+    try { return localStorage.getItem('catchap_qguide_collapsed') !== '1'; } catch { return true; }
+  });
   const changedRef = useRef(false);
   // 생성 폴링 활성 플래그 — 모달이 닫히면(unmount) false로 만들어 폴링 루프를 멈춘다
   // (잡은 서버에서 계속되고, 다시 열면 초안이 보인다). setState-after-unmount 방지.
@@ -3555,7 +3560,15 @@ function QuestionsModal({
         {/* 검토 가이드 — 강사가 '무엇을·어디로' 하는지 한눈에(실무 리뷰 UI: 자동판정→권장행동).
             접이식이라 익숙해지면 접어둘 수 있다. */}
         {!isOps && items !== null && items.length > 0 && (
-          <details className="op-lect-guide2" open>
+          <details
+            className="op-lect-guide2"
+            open={guideOpen}
+            onToggle={(e) => {
+              const open = (e.currentTarget as HTMLDetailsElement).open;
+              setGuideOpen(open);
+              try { localStorage.setItem('catchap_qguide_collapsed', open ? '0' : '1'); } catch { /* localStorage 불가 무시 */ }
+            }}
+          >
             <summary>
               <i className="ph-fill ph-question" /> 이 화면 사용법 — 문항을 어떻게 처리하나요?
             </summary>
@@ -3765,7 +3778,7 @@ function QuestionsModal({
                     </button>
                   )
                 )}
-                <button className="op-btn op-btn--reject" onClick={() => openEdit(q)}>
+                <button className="op-btn op-btn--soft" onClick={() => openEdit(q)}>
                   수정
                 </button>
                 <button className="op-btn op-btn--reject op-lect-danger" onClick={() => remove(q)}>
