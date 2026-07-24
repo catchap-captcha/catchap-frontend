@@ -3111,7 +3111,7 @@ function QuestionsModal({
         ) : (
           <>
             <div className="op-lect-qtools">
-              <button className="op-btn op-btn--approve" onClick={() => { setErr(''); setShowAdvanced(false); setForm(emptyQ()); }}>
+              <button className="op-btn op-btn--soft" onClick={() => { setErr(''); setShowAdvanced(false); setForm(emptyQ()); }}>
                 <i className="ph-bold ph-plus" />
                 문항 추가
               </button>
@@ -3130,7 +3130,7 @@ function QuestionsModal({
                   개
                 </label>
                 <button
-                  className="op-btn op-btn--reject"
+                  className="op-btn op-btn--approve"
                   disabled={generating}
                   onClick={generate}
                   title="자막(없으면 강의 소리를 자막으로 자동 변환)을 바탕으로 확인 문항 초안을 AI가 만들어요"
