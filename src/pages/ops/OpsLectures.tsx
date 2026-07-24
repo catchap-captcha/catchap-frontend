@@ -811,6 +811,45 @@ function LectureFormModal({
   useEffect(() => () => {
     if (thumbBlobRef.current) URL.revokeObjectURL(thumbBlobRef.current);
   }, []);
+
+  // ── 썸네일 드래그드롭 + 영상 프레임 캡처 ──
+  const [thumbDragOver, setThumbDragOver] = useState(false);
+  const [captureOpen, setCaptureOpen] = useState(false);
+  const [videoUrl, setVideoUrl] = useState<string | null>(null); // 선택한 로컬 영상 blob(캡처용)
+  const captureVideoRef = useRef<HTMLVideoElement | null>(null);
+  // 선택한 영상 파일로 blob URL 생성(같은 오리진이라 canvas 오염 없음 → toBlob 가능)
+  useEffect(() => {
+    if (!file) {
+      setVideoUrl(null);
+      setCaptureOpen(false);
+      return;
+    }
+    const u = URL.createObjectURL(file);
+    setVideoUrl(u);
+    return () => URL.revokeObjectURL(u);
+  }, [file]);
+  // 현재 영상 프레임을 캡처해 썸네일(jpeg)로 — 강사가 이미지 파일 없이 대표 장면을 바로 뽑는다.
+  const captureFrame = () => {
+    const v = captureVideoRef.current;
+    if (!v || !v.videoWidth) return;
+    const c = document.createElement('canvas');
+    c.width = v.videoWidth;
+    c.height = v.videoHeight;
+    const ctx = c.getContext('2d');
+    if (!ctx) return;
+    ctx.drawImage(v, 0, 0, c.width, c.height);
+    c.toBlob(
+      (blob) => {
+        if (!blob) return;
+        const f = new File([blob], `frame-${Math.floor(v.currentTime)}s.jpg`, { type: 'image/jpeg' });
+        pickThumb(f);
+        setCaptureOpen(false);
+      },
+      'image/jpeg',
+      0.9,
+    );
+  };
+
   const [err, setErr] = useState('');
   const [saving, setSaving] = useState(false);
   const [progress, setProgress] = useState<number | null>(null);
@@ -1069,9 +1108,10 @@ function LectureFormModal({
             </label>
           )}
 
-          {/* 영상 썸네일(선택) — 없으면 학생 화면이 자동 커버(모노그램)를 쓴다. 영상 근처에 둔다. */}
-          <label className="ox-field op-form-span2">
-            영상 썸네일 (선택) — 없으면 자동 커버 사용
+          {/* 영상 썸네일(선택) — 없으면 학생 화면이 자동 커버(모노그램). 강사 편의: 이미지 드래그드롭 +
+              선택한 영상에서 프레임을 바로 캡처해 썸네일로(이미지 파일 없이도 대표 장면 지정). */}
+          <div className="ox-field op-form-span2">
+            <span className="lu-thumb-lb">영상 썸네일 (선택) — 없으면 자동 커버 사용</span>
             <span className="lu-help">학생 화면 강의 카드에 보이는 대표 이미지예요. 권장 16:9.</span>
             <div className="lu-thumb-row">
               {thumbPreview && (
@@ -1079,26 +1119,62 @@ function LectureFormModal({
                   src={thumbPreview}
                   alt="썸네일 미리보기"
                   className="lu-thumb-preview"
-                  style={{ width: 160, aspectRatio: '16 / 9', objectFit: 'cover', borderRadius: 8, display: 'block' }}
+                  style={{ width: 200, aspectRatio: '16 / 9', objectFit: 'cover', borderRadius: 10, display: 'block' }}
                 />
               )}
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => pickThumb(e.target.files?.[0] ?? null)}
-              />
-              {thumbFile && (
-                <button type="button" className="op-btn op-btn--soft" onClick={() => pickThumb(null)}>
-                  <i className="ph-bold ph-x" /> 선택 취소
-                </button>
-              )}
-              {editing?.thumbnail_url && !thumbFile && !thumbRemoved && (
-                <button type="button" className="op-btn op-btn--soft" onClick={removeThumb}>
-                  <i className="ph-bold ph-trash" /> 썸네일 제거
-                </button>
-              )}
+              <div className="lu-thumb-side">
+                <label
+                  className={`lu-drop lu-drop--img${thumbDragOver ? ' lu-drop--over' : ''}`}
+                  onDragOver={(e) => { e.preventDefault(); setThumbDragOver(true); }}
+                  onDragLeave={() => setThumbDragOver(false)}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    setThumbDragOver(false);
+                    const f = e.dataTransfer.files?.[0];
+                    if (f?.type.startsWith('image/')) pickThumb(f);
+                  }}
+                >
+                  <input
+                    type="file"
+                    accept="image/*"
+                    hidden
+                    onChange={(e) => pickThumb(e.target.files?.[0] ?? null)}
+                  />
+                  <i className="ph-fill ph-image lu-drop-ico" />
+                  <b>이미지를 끌어다 놓거나 클릭</b>
+                  <span className="lu-drop-sub">JPG · PNG · WebP</span>
+                </label>
+                <div className="lu-thumb-btns">
+                  {videoUrl && (
+                    <button type="button" className="op-btn op-btn--soft" onClick={() => setCaptureOpen((o) => !o)}>
+                      <i className="ph-bold ph-film-strip" /> {captureOpen ? '캡처 닫기' : '영상에서 캡처'}
+                    </button>
+                  )}
+                  {thumbFile && (
+                    <button type="button" className="op-btn op-btn--soft" onClick={() => pickThumb(null)}>
+                      <i className="ph-bold ph-x" /> 선택 취소
+                    </button>
+                  )}
+                  {editing?.thumbnail_url && !thumbFile && !thumbRemoved && (
+                    <button type="button" className="op-btn op-btn--soft" onClick={removeThumb}>
+                      <i className="ph-bold ph-trash" /> 썸네일 제거
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
-          </label>
+            {captureOpen && videoUrl && (
+              <div className="lu-capture">
+                <video ref={captureVideoRef} src={videoUrl} controls className="lu-capture-video" />
+                <div className="lu-capture-foot">
+                  <span className="lu-drop-sub">원하는 장면에서 멈추고 아래 버튼을 누르세요.</span>
+                  <button type="button" className="op-btn op-btn--approve" onClick={captureFrame}>
+                    <i className="ph-bold ph-camera" /> 이 장면을 썸네일로
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
 
           <div className="op-form-section op-form-span2">
             <i className="ph-bold ph-number-circle-two" /> 강의 정보

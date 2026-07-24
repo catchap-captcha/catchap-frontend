@@ -1068,3 +1068,16 @@
   font-size: 12px;
   margin-right: 2px;
 }
+
+/* ── 썸네일 업로더(2026-07-24 강사 편의) — 이미지 드래그드롭 존 + 영상 프레임 캡처 ── */
+.lu-thumb-lb { font-weight: 700; font-size: 13px; color: var(--ink); }
+.lu-thumb-row { display: flex; gap: 14px; align-items: flex-start; flex-wrap: wrap; margin-top: 4px; }
+.lu-thumb-preview { flex-shrink: 0; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12); }
+.lu-thumb-side { display: flex; flex-direction: column; gap: 8px; min-width: 240px; flex: 1; }
+.lu-drop--img { padding: 16px; gap: 4px; cursor: pointer; }
+.lu-drop--img .lu-drop-ico { font-size: 22px; }
+.lu-drop--img b { font-size: 13px; }
+.lu-thumb-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+.lu-capture { margin-top: 12px; border: 0.5px solid var(--line); border-radius: 12px; padding: 12px; background: var(--surface-2); }
+.lu-capture-video { width: 100%; max-height: 340px; border-radius: 10px; background: #000; display: block; }
+.lu-capture-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
