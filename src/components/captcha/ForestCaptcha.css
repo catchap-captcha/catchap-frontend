@@ -1,32 +1,278 @@
-/* ForestCaptcha — 로그인 캡차 iframe 래퍼 */
+/* =============================================================================
+ * ForestCaptcha — object-drag 확인 문항 위젯
+ *
+ * 왜 이렇게: 로그인 팝업 안에서 렌더되므로 컴팩트해야 한다. 색·형태·그림자는 전부
+ * theme.css 토큰(var(--...))만 참조해 라이트/다크가 자동으로 맞물리게 한다(생 hex 금지).
+ * 액센트는 앱 전역 브랜드(코랄, --brand)로 통일해 로그인 화면 톤과 어긋나지 않게 한다.
+ * ========================================================================== */
+
 .fc-wrap {
   position: relative;
   width: 100%;
-  max-width: 900px;
+  max-width: 460px;
   margin: 0 auto;
 }
-.fc-iframe {
-  width: 100%;
-  height: clamp(360px, calc(100dvh - 180px), 720px);
-  border: none;
-  border-radius: 18px;
+
+.fc-card {
   background: var(--surface);
-  display: block;
-  box-shadow: 0 8px 24px -14px rgba(60, 90, 40, 0.4);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+}
+
+/* ---- 헤더: 배지 + 안내 문구 + 액션 ---- */
+.fc-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg-tint);
+}
+.fc-head-title {
+  min-width: 0;
+}
+.fc-badge {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: var(--r-pill);
+  background: var(--brand-soft);
+  color: var(--brand-ink);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.fc-instruction {
+  margin: 8px 0 0;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--ink);
+}
+.fc-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.fc-text-btn {
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink-2);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 10px;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+}
+.fc-text-btn:hover:not(:disabled) {
+  color: var(--ink);
+  border-color: var(--ink-3);
+}
+.fc-text-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
 }
 .fc-close {
-  position: absolute;
-  top: 8px;
-  right: 8px;
+  display: grid;
+  place-items: center;
   width: 28px;
   height: 28px;
   border: none;
-  border-radius: 8px;
-  background: rgba(0, 0, 0, 0.35);
-  color: var(--on-brand);
+  border-radius: var(--r-sm);
+  background: var(--surface-3);
+  color: var(--ink-2);
   font-size: 14px;
   cursor: pointer;
 }
 .fc-close:hover {
-  background: rgba(0, 0, 0, 0.55);
+  background: var(--line-strong);
+  color: var(--ink);
+}
+
+/* ---- 이미지 스테이지 ---- */
+.fc-stage {
+  position: relative;
+  width: 100%;
+  max-height: 300px;
+  margin: 0 auto;
+  overflow: hidden;
+  background: var(--surface-3);
+  touch-action: none;
+  user-select: none;
+}
+.fc-bg {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  pointer-events: none;
+}
+
+/* 정답존 — 배경 위 목표 상자. 히트 판정만, 포인터는 통과. */
+.fc-dropzone {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  border: 2px dashed var(--brand);
+  border-radius: var(--r-sm);
+  background: color-mix(in srgb, var(--brand) 12%, transparent);
+  pointer-events: none;
+  transition: background 0.15s ease, box-shadow 0.15s ease;
+}
+.fc-dropzone.armed {
+  background: color-mix(in srgb, var(--brand) 22%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 28%, transparent);
+}
+.fc-dropzone-label {
+  padding: 2px 8px;
+  border-radius: var(--r-pill);
+  background: var(--brand);
+  color: var(--on-brand);
+  font-size: 11px;
+  font-weight: 700;
+  pointer-events: none;
+}
+
+/* 드래그 가능한 객체 마커 */
+.fc-object {
+  position: absolute;
+  padding: 0;
+  border: 2px solid color-mix(in srgb, var(--brand) 70%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--surface) 55%, transparent);
+  overflow: hidden;
+  cursor: grab;
+  touch-action: none;
+  box-shadow: var(--shadow-sm);
+}
+.fc-object:hover {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 22%, transparent);
+}
+.fc-object:active {
+  cursor: grabbing;
+}
+.fc-object img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  pointer-events: none;
+}
+
+/* 드래그 고스트 — 포인터를 따라오는 미리보기 */
+.fc-ghost {
+  position: fixed;
+  z-index: 1000;
+  width: 72px;
+  max-height: 72px;
+  object-fit: contain;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  filter: drop-shadow(0 8px 10px rgba(0, 0, 0, 0.45));
+}
+
+/* ---- 푸터: 선택 칩 + 제출 ---- */
+.fc-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--line);
+}
+.fc-selected {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+.fc-selected-hint {
+  font-size: 12px;
+  color: var(--ink-3);
+}
+.fc-chip {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  padding: 3px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+  cursor: pointer;
+}
+.fc-chip img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+}
+.fc-chip-x {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--surface);
+  font-size: 12px;
+  line-height: 1;
+}
+.fc-chip:disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+
+.fc-primary {
+  flex-shrink: 0;
+  min-height: 40px;
+  padding: 0 18px;
+  border: 1px solid var(--brand);
+  border-radius: var(--r-sm);
+  background: var(--brand);
+  color: var(--on-brand);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.fc-primary:hover:not(:disabled) {
+  background: var(--brand-strong);
+  border-color: var(--brand-strong);
+}
+.fc-primary:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+/* ---- 로딩/에러 플레이스홀더 ---- */
+.fc-placeholder {
+  display: grid;
+  place-items: center;
+  min-height: 160px;
+  padding: 24px;
+}
+.fc-spinner {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 3px solid var(--line-strong);
+  border-top-color: var(--brand);
+  animation: fc-spin 0.8s linear infinite;
+}
+@keyframes fc-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fc-spinner {
+    animation-duration: 2s;
+  }
 }
