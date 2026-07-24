@@ -3770,7 +3770,7 @@ function QuestionsModal({
                   q.status === 'draft' &&
                   q.suggested_placement === 'bank' && (
                     <button
-                      className="op-btn op-btn--reject"
+                      className="op-btn op-btn--soft"
                       title="이 문항을 전체학습 문제 은행으로 보냅니다(확인 문항에는 부적합 — 상식으로 풀림). 형식은 서버가 변환해요."
                       onClick={() => toBank(q)}
                     >
