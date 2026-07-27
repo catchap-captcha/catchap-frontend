@@ -107,6 +107,9 @@
   touch-action: none;
   user-select: none;
   line-height: 0; /* img 아래 baseline 여백 제거 — 무대가 사진보다 커지지 않게 */
+  /* 전수 검사에서 bbox가 사진 밖으로 나가는 객체가 34건(최대 3.1%) 있었다. 히트 영역이
+     사진 경계 밖까지 뻗으면 사진이 아닌 자리에서도 객체가 집힌다. 사진 밖은 잘라낸다. */
+  overflow: hidden;
 }
 .fc-bg {
   display: block;
