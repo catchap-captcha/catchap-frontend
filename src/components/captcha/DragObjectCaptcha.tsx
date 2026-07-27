@@ -62,6 +62,32 @@ type VerifyResult = VerifySuccess | VerifyFailure;
 
 type Phase = 'loading' | 'ready' | 'verifying' | 'success' | 'error';
 
+/**
+ * 서버 행동 분석에 보내는 이벤트. 서버(drag_captcha_service.summarize)가 인식하는 type은
+ * challenge_loaded · pointer_down · drag_start · pointer_move · drop · object_removed 이고,
+ * x/y는 0~1 정규화 좌표여야 한다(백엔드 스키마 Field(ge=0, le=1)).
+ *
+ * ★왜 꼭 보내야 하나: 예전엔 events를 빈 배열로 보냈는데, 그러면 서버가 move_count<3(+15)와
+ * reaction=None(+12)으로 정답을 맞혀도 기본 27점을 매긴다. step_up 임계가 30이라 10분 내
+ * 챌린지 4회(+5)나 IP당 1분 5회(+5) 같은 정상 사용 패턴만 겹쳐도 30을 넘어 "추가 인증 필요"로
+ * 정답이 거절됐다. 실제 이벤트를 보내면 그 27점이 사라지고, 동시에 봇 판별(경로 곡률·속도
+ * 분산·반응시간)이 비로소 동작한다.
+ */
+interface BehaviorEvent {
+  type: string;
+  object_id?: string;
+  x?: number;
+  y?: number;
+  timestamp_ms: number;
+}
+
+/** 서버 스키마 상한은 600개 — 여유를 두고 자른다(넘치면 422로 검증 자체가 실패). */
+const MAX_EVENTS = 550;
+/** pointer_move 표본 간격(ms). 너무 촘촘하면 상한만 채우고 분석에 도움이 안 된다. */
+const MOVE_SAMPLE_MS = 25;
+/** 이 거리(px) 이상 움직여야 '드래그'로 본다 — 손떨림 클릭과 구분. */
+const DRAG_SLOP_PX = 4;
+
 /** 마운트당 한 번 만들어 challenge/verify에 재사용하는 세션 식별자(16자 이상). */
 function makeSessionId(): string {
   const c = globalThis.crypto;
@@ -96,6 +122,27 @@ export default function ForestCaptcha({ onToken, onClose }: Props) {
   const startedAtRef = useRef<number>(0);
   const stageRef = useRef<HTMLDivElement | null>(null);
   const dropRef = useRef<HTMLDivElement | null>(null);
+  const eventsRef = useRef<BehaviorEvent[]>([]);
+  const lastMoveRef = useRef<number>(0);
+  /** 집어 올린 객체의 실제 렌더 크기와 '잡은 지점' 오프셋 — 고스트를 원래 크기로 따라오게 한다. */
+  const liftRef = useRef<{ w: number; h: number; dx: number; dy: number; moved: boolean } | null>(null);
+
+  /** 무대(=사진) 기준 0~1 정규화 좌표. 무대 밖이면 0~1로 클램프한다(서버 스키마 제약). */
+  const norm = useCallback((clientX: number, clientY: number) => {
+    const box = stageRef.current?.getBoundingClientRect();
+    if (!box || box.width <= 0 || box.height <= 0) return { x: 0, y: 0 };
+    const clamp = (v: number) => Math.max(0, Math.min(1, v));
+    return { x: clamp((clientX - box.left) / box.width), y: clamp((clientY - box.top) / box.height) };
+  }, []);
+
+  const track = useCallback((type: string, extra: Omit<BehaviorEvent, 'type' | 'timestamp_ms'> = {}) => {
+    if (eventsRef.current.length >= MAX_EVENTS) return;
+    eventsRef.current.push({
+      type,
+      timestamp_ms: Math.max(0, Math.round(performance.now() - startedAtRef.current)),
+      ...extra,
+    });
+  }, []);
 
   const load = useCallback(async () => {
     setPhase('loading');
@@ -110,22 +157,55 @@ export default function ForestCaptcha({ onToken, onClose }: Props) {
         session_id: sessionIdRef.current,
       });
       setChallenge(data);
+      // 새 문제마다 행동 기록을 초기화한다 — 이전 문제의 궤적이 섞이면 분석이 왜곡된다.
       startedAtRef.current = performance.now();
+      eventsRef.current = [];
+      lastMoveRef.current = 0;
+      liftRef.current = null;
+      track('challenge_loaded');
       setPhase('ready');
       setMessage(data.instruction || '정답 객체를 정답존으로 옮겨 사람임을 증명하세요.');
     } catch {
       setPhase('error');
       setMessage('문제를 불러오지 못했습니다. 다시 시도해주세요.');
     }
-  }, []);
+  }, [track]);
 
   useEffect(() => {
     void load();
   }, [load]);
 
+  const startDrag = (obj: CaptchaObject, e: ReactPointerEvent) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    liftRef.current = {
+      w: rect.width,
+      h: rect.height,
+      dx: e.clientX - rect.left,
+      dy: e.clientY - rect.top,
+      moved: false,
+    };
+    const p = norm(e.clientX, e.clientY);
+    // pointer_down은 서버가 '첫 1건'만 반응시간 계산에 쓴다. drag_start는 궤적 구간의 시작점.
+    track('pointer_down', { object_id: obj.object_id, x: p.x, y: p.y });
+    track('drag_start', { object_id: obj.object_id, x: p.x, y: p.y });
+    setDragging(obj);
+    setDragPoint({ x: e.clientX, y: e.clientY });
+  };
+
   const moveDrag = (e: ReactPointerEvent) => {
     if (!dragging) return;
     setDragPoint({ x: e.clientX, y: e.clientY });
+    const lift = liftRef.current;
+    if (lift && !lift.moved) {
+      const far = Math.hypot(e.clientX - (dragPoint?.x ?? e.clientX), e.clientY - (dragPoint?.y ?? e.clientY));
+      if (far >= DRAG_SLOP_PX) lift.moved = true;
+    }
+    // 표본 간격을 둬서 이벤트 상한을 아끼되, 실제 궤적 모양(곡률·속도 분산)은 남긴다.
+    const now = performance.now();
+    if (now - lastMoveRef.current < MOVE_SAMPLE_MS) return;
+    lastMoveRef.current = now;
+    const p = norm(e.clientX, e.clientY);
+    track('pointer_move', { object_id: dragging.object_id, x: p.x, y: p.y });
   };
 
   const endDrag = (e: ReactPointerEvent) => {
@@ -137,20 +217,26 @@ export default function ForestCaptcha({ onToken, onClose }: Props) {
       e.clientX <= zone.right &&
       e.clientY >= zone.top &&
       e.clientY <= zone.bottom;
+    const p = norm(e.clientX, e.clientY);
+    track('drop', { object_id: dragging.object_id, x: p.x, y: p.y });
     if (inside) {
       setSelected((rows) => (rows.includes(dragging.object_id) ? rows : [...rows, dragging.object_id]));
     }
+    liftRef.current = null;
     setDragging(null);
     setDragPoint(null);
   };
 
   const cancelDrag = () => {
+    liftRef.current = null;
     setDragging(null);
     setDragPoint(null);
   };
 
-  const removeSelected = (id: string) =>
+  const removeSelected = (id: string) => {
+    track('object_removed', { object_id: id });
     setSelected((rows) => rows.filter((value) => value !== id));
+  };
 
   const verify = async () => {
     if (!challenge || selected.length === 0) {
@@ -165,8 +251,9 @@ export default function ForestCaptcha({ onToken, onClose }: Props) {
         {
           selected_object_ids: selected,
           session_id: sessionIdRef.current,
-          duration_ms: Math.max(100, Math.round(performance.now() - startedAtRef.current)),
-          events: [],
+          // 서버 스키마 제약 100~180000ms — 오래 열어둔 창이 422로 죽지 않게 양쪽을 자른다.
+          duration_ms: Math.min(180000, Math.max(100, Math.round(performance.now() - startedAtRef.current))),
+          events: eventsRef.current.slice(0, MAX_EVENTS),
         },
       );
       if (data.success) {
@@ -202,8 +289,13 @@ export default function ForestCaptcha({ onToken, onClose }: Props) {
 
   const busy = phase === 'loading' || phase === 'verifying';
   const done = phase === 'success';
+  // 큰 객체부터 그린다 — 뒤에 그린 것이 위에 얹히므로, 작은 객체가 큰 객체(예: 화면 절반을
+  // 덮는 인물)에 가려 못 집는 일을 막는다.
   const dropObjects = challenge
-    ? challenge.objects.filter((obj) => !selected.includes(obj.object_id))
+    ? challenge.objects
+        .filter((obj) => !selected.includes(obj.object_id))
+        .slice()
+        .sort((a, b) => b.hit_region[2] * b.hit_region[3] - a.hit_region[2] * a.hit_region[3])
     : [];
 
   return (
@@ -233,10 +325,11 @@ export default function ForestCaptcha({ onToken, onClose }: Props) {
 
         {challenge ? (
           <>
+            {/* 무대는 CSS에서 사진에 shrink-wrap된다 — 여기서 aspect-ratio를 주면 무대와 사진
+                박스가 어긋나 객체 좌표가 통째로 틀어진다(예전 버그). 크기는 .fc-bg가 정한다. */}
             <div
               ref={stageRef}
               className={`fc-stage ${dragging ? 'is-dragging' : ''}`}
-              style={{ aspectRatio: `${challenge.width} / ${challenge.height}` }}
               onPointerMove={moveDrag}
               onPointerUp={endDrag}
               onPointerCancel={cancelDrag}
@@ -262,7 +355,7 @@ export default function ForestCaptcha({ onToken, onClose }: Props) {
                 <button
                   key={obj.object_id}
                   type="button"
-                  className="fc-object"
+                  className={`fc-object ${dragging?.object_id === obj.object_id ? 'is-lifted' : ''}`}
                   style={{
                     left: `${frac(obj.hit_region[0], challenge.width) * 100}%`,
                     top: `${frac(obj.hit_region[1], challenge.height) * 100}%`,
@@ -273,8 +366,7 @@ export default function ForestCaptcha({ onToken, onClose }: Props) {
                     if (done || busy) return;
                     e.preventDefault();
                     e.currentTarget.setPointerCapture(e.pointerId);
-                    setDragging(obj);
-                    setDragPoint({ x: e.clientX, y: e.clientY });
+                    startDrag(obj, e);
                   }}
                   aria-label="객체를 정답존으로 드래그"
                 >
@@ -283,11 +375,18 @@ export default function ForestCaptcha({ onToken, onClose }: Props) {
               ))}
             </div>
 
-            {/* 드래그 중 포인터를 따라오는 고스트 미리보기 */}
-            {dragging && dragPoint && (
+            {/* 집어 올린 객체 — 사진에서 뽑아낸 그 크기 그대로, 잡은 지점이 포인터 아래에
+                유지되도록 오프셋을 빼서 그린다. 그래야 별개 아이콘이 아니라 "사진에서 꺼낸
+                물건"으로 읽힌다. */}
+            {dragging && dragPoint && liftRef.current && (
               <img
                 className="fc-ghost"
-                style={{ left: dragPoint.x, top: dragPoint.y }}
+                style={{
+                  left: dragPoint.x - liftRef.current.dx,
+                  top: dragPoint.y - liftRef.current.dy,
+                  width: liftRef.current.w,
+                  height: liftRef.current.h,
+                }}
                 src={assetSrc(dragging.preview_url)}
                 alt=""
                 draggable={false}

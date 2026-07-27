@@ -93,21 +93,28 @@
 }
 
 /* ---- 이미지 스테이지 ---- */
+/* 무대는 사진 박스와 정확히 같아야 한다.
+   ★버그였던 것: 예전엔 .fc-stage가 width:100% + max-height:300px였고 사진은 object-fit:contain
+   이었다. 그러면 무대(예: 871×291)와 실제 그려진 사진(388×291, 좌우 241px 레터박스)이 달라지는데,
+   객체는 무대 폭 기준 %로 절대배치되므로 사진에서 최대 195px까지 어긋나 "객체가 사진 밖에 따로
+   떠다니는" 상태가 됐다. 해결=무대를 사진에 shrink-wrap(width:fit-content)해서 무대 좌표계와
+   사진 좌표계를 일치시킨다. 크기 제한은 사진 자신(max-width/max-height)이 진다. */
 .fc-stage {
   position: relative;
-  width: 100%;
-  max-height: 300px;
+  width: fit-content;
+  max-width: 100%;
   margin: 0 auto;
-  overflow: hidden;
-  background: var(--surface-3);
   touch-action: none;
   user-select: none;
+  line-height: 0; /* img 아래 baseline 여백 제거 — 무대가 사진보다 커지지 않게 */
 }
 .fc-bg {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
   display: block;
+  max-width: 100%;
+  max-height: 320px;
+  width: auto;
+  height: auto;
+  border-radius: var(--r-sm);
   pointer-events: none;
 }
 
@@ -136,42 +143,51 @@
   pointer-events: none;
 }
 
-/* 드래그 가능한 객체 마커 */
+/* 드래그 가능한 객체 — 사진의 일부처럼 보여야 한다.
+   조각(piece)은 같은 사진에서 오려낸 컷아웃이라 제자리에 얹히면 원본과 겹쳐 티가 안 난다.
+   그래서 평상시엔 테두리·배경·그림자를 전부 없앤다(예전엔 이것들 때문에 사진 위에 스티커가
+   붙은 것처럼 보였다). 대신 호버/포커스에서만 은은한 윤곽을 줘서 집을 수 있음을 알린다. */
 .fc-object {
   position: absolute;
   padding: 0;
-  border: 2px solid color-mix(in srgb, var(--brand) 70%, transparent);
-  border-radius: 8px;
-  background: color-mix(in srgb, var(--surface) 55%, transparent);
-  overflow: hidden;
+  border: none;
+  background: transparent;
+  box-shadow: none;
   cursor: grab;
   touch-action: none;
-  box-shadow: var(--shadow-sm);
+  border-radius: 6px;
+  transition: filter 0.12s ease;
 }
-.fc-object:hover {
-  border-color: var(--brand);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 22%, transparent);
+.fc-object:hover,
+.fc-object:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--brand) 75%, transparent);
+  outline-offset: 1px;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.35));
 }
 .fc-object:active {
   cursor: grabbing;
 }
+/* 집어 올린 객체는 제자리에서 사라진다 — 포인터를 따라가는 고스트가 그 자리를 대신한다. */
+.fc-object.is-lifted {
+  visibility: hidden;
+}
 .fc-object img {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: fill; /* 조각은 hit_region에 딱 맞게 잘린 컷아웃이라 채워 그린다 */
   display: block;
   pointer-events: none;
 }
 
-/* 드래그 고스트 — 포인터를 따라오는 미리보기 */
+/* 드래그 고스트 — 집어 올린 객체가 원래 크기 그대로 포인터를 따라온다.
+   크기·잡은 지점은 인라인 style로 준다(집을 때 실제 렌더 크기에서 계산) — 고정 72px로
+   그리면 사진에서 뽑아낸 물건이 아니라 별개 아이콘처럼 보인다. */
 .fc-ghost {
   position: fixed;
   z-index: 1000;
-  width: 72px;
-  max-height: 72px;
-  object-fit: contain;
-  transform: translate(-50%, -50%);
+  object-fit: fill;
   pointer-events: none;
+  border-radius: 6px;
   filter: drop-shadow(0 8px 10px rgba(0, 0, 0, 0.45));
 }
 
