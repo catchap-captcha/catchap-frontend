@@ -1,256 +1,157 @@
-/* 학생 홈 — 2026-07-23 "애플 디자인 이식(정공법)".
-   왜 이 파일만 바꾸나: StudentHome.tsx(JSX·데이터 훅)와 백엔드 배선(lectureApi)은
-   그대로 두고 이 CSS만 애플 스타일로 재작성했다. 클래스명(sh2-*)을 1:1 유지하므로
-   화면은 실데이터를 그대로 받으면서 룩앤필만 애플 그레이드로 바뀐다(화면 하나씩 안전 배포).
+/* 학생 홈 — 리뉴얼(2026-07-27): handoff `CatChap 학습 홈.dc.html` 구조·수치 그대로.
+ * 종전 "애플 디자인 랩" 스코프 토큰 오버라이드(--bg:#f5f5f7 등)·글래스 pill·벤토 그리드를
+ * 걷어내고, 레퍼런스 값이 전역 theme.css 모노크롬 토큰과 완전히 같아 전역 값을 그대로 쓴다. */
 
-   어떻게: .sh-root에 애플 디자인 토큰(SF 타이포·애플 그레이 캔버스·리파인드 뉴트럴·큰 라디우스·
-   레이어드 소프트 섀도우)을 "스코프 오버라이드"한다 → sh2-* 규칙이 쓰는 var(--ink)/var(--surface)
-   /var(--line) 등이 이 페이지에서만 애플 값으로 해석된다(전역 theme.css 불변 = 다른 페이지 무영향).
-   브랜드 코랄(var(--brand))은 유지 → 공유 상단 내비와 조화(전환기 시각 충돌 방지).
-   다크 모드는 [data-theme='dark'] .sh-root 로 애플 다크 값을 다시 얹어 보존한다. */
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-
-/* ── 애플 디자인 토큰 (이 페이지 스코프) ── */
 .sh-root {
-  --font-display: 'SF Pro Display', 'SF Pro Text', 'Inter', -apple-system, system-ui, sans-serif;
-  --bg: #f5f5f7;
-  --surface: #ffffff;
-  --surface-2: #f5f5f7;
-  --ink: #1d1d1f;
-  --ink-2: #6e6e73;
-  --ink-3: #86868b;
-  --line: rgba(0, 0, 0, 0.08);
-  --line-strong: rgba(0, 0, 0, 0.14);
-  --ap-glass: rgba(255, 255, 255, 0.72);
-  --ap-ease: cubic-bezier(0.4, 0, 0.2, 1);
-  --ap-spring: cubic-bezier(0.34, 1.4, 0.5, 1);
-  --ap-shadow: 0 1px 1px rgba(0, 0, 0, 0.02), 0 8px 24px -12px rgba(0, 0, 0, 0.14);
-  --ap-shadow-hi: 0 2px 4px rgba(0, 0, 0, 0.04), 0 26px 50px -20px rgba(0, 0, 0, 0.24);
-  --ap-r-lg: 24px;
-  --ap-r: 20px;
-  --ap-r-sm: 16px;
-
   min-height: 100vh;
   background: var(--bg);
-  padding-bottom: 72px;
-  font-family: 'SF Pro Text', 'Inter', -apple-system, system-ui, sans-serif;
+  padding-bottom: 60px;
+  font-family: var(--font-display, 'Pretendard', -apple-system, system-ui, sans-serif);
   -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
   letter-spacing: -0.01em;
 }
-[data-theme='dark'] .sh-root {
-  --bg: #000000;
-  --surface: #1c1c1e;
-  --surface-2: #0a0a0a;
-  --ink: #f5f5f7;
-  --ink-2: #aeaeb2;
-  --ink-3: #8e8e93;
-  --line: rgba(255, 255, 255, 0.1);
-  --line-strong: rgba(255, 255, 255, 0.18);
-  --ap-glass: rgba(28, 28, 30, 0.6);
-  --ap-shadow: 0 8px 24px -12px rgba(0, 0, 0, 0.6);
-  --ap-shadow-hi: 0 26px 50px -18px rgba(0, 0, 0, 0.85);
-}
 
-.sh-root ::selection {
-  background: color-mix(in srgb, var(--brand) 22%, transparent);
-}
+/* ===== 인사 + 이어보기 배너 + KPI ===== */
+.sh2-top { max-width: min(2280px, 94vw); margin: 0 auto; padding: 40px 28px 0; }
+.sh2-hero-head { margin-bottom: 26px; }
+.sh2-greet { font-size: 32px; font-weight: 700; letter-spacing: -0.03em; color: var(--ink); margin: 0 0 5px; }
+.sh2-sub { font-size: 16px; color: var(--ink-3); font-weight: 500; margin: 0; }
 
-/* 페이지 진입 모션 — 애플 앱 오프닝(살짝 확대되며 페이드) */
-@keyframes sh2-enter { from { opacity: 0; transform: translateY(10px) scale(0.99); } to { opacity: 1; transform: none; } }
-.sh-root > * { animation: sh2-enter 0.55s var(--ap-ease) both; }
-.sh-root > *:nth-child(2) { animation-delay: 0.06s; }
-.sh-root > *:nth-child(3) { animation-delay: 0.12s; }
-.sh-root > *:nth-child(4) { animation-delay: 0.18s; }
-.sh-root > *:nth-child(5) { animation-delay: 0.24s; }
-@media (prefers-reduced-motion: reduce) { .sh-root > * { animation: none; } }
-
-/* ===== 인사 + 이어보기 히어로 ===== */
-.sh2-hero { max-width: 980px; margin: 0 auto; padding: 40px 24px 0; }
-.sh2-hero-head { margin-bottom: 24px; }
-.sh2-greet { font-family: var(--font-display); font-weight: 700; font-size: 34px; color: var(--ink); margin: 0; letter-spacing: -0.03em; line-height: 1.1; }
-.sh2-sub { margin: 8px 0 0; color: var(--ink-2); font-weight: 400; font-size: 17px; letter-spacing: -0.01em; }
-
-/* ===== 벤토(복제본 랩 이식): 이어보기 히어로 2×2 + 스탯 카드 ===== */
-.sh2-top { max-width: 980px; margin: 0 auto; padding: 40px 24px 0; }
-.sh2-eyebrow { color: var(--brand); font-weight: 600; font-size: 15px; margin: 0 0 6px; letter-spacing: -0.01em; }
-.sh2-bento { margin-top: 24px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
-.sh2-bento > * { min-width: 0; }
-
-.sh2-bento-hero {
-  grid-column: span 2; grid-row: span 2; min-height: 288px;
-  border: 0.5px solid var(--line); border-radius: var(--ap-r-lg); background: var(--surface);
-  overflow: hidden; box-shadow: var(--ap-shadow);
-  display: flex; flex-direction: column; cursor: pointer; text-align: left; padding: 0;
-  font-family: inherit; color: inherit;
-  transition: transform 0.5s var(--ap-spring), box-shadow 0.4s var(--ap-ease);
-}
-.sh2-bento-hero:hover { transform: translateY(-4px); box-shadow: var(--ap-shadow-hi); }
-@media (prefers-reduced-motion: reduce) { .sh2-bento-hero:hover { transform: none; } }
-.sh2-bento-cover { position: relative; flex: 1; min-height: 168px; }
-.sh2-bento-coverimg.cover--md { width: 100%; height: 100%; border-radius: 0; aspect-ratio: auto; }
-.sh2-bento-tag {
-  position: absolute; top: 16px; left: 16px; z-index: 2;
-  display: inline-flex; align-items: center; gap: 6px;
-  color: #fff; font-size: 12.5px; font-weight: 600;
-  background: rgba(0, 0, 0, 0.28); padding: 5px 11px; border-radius: 980px;
-}
-.sh2-bento-play {
-  position: absolute; inset: 0; margin: auto; z-index: 2;
-  width: 62px; height: 62px; border-radius: 50%;
-  background: rgba(255, 255, 255, 0.24); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
-  display: grid; place-items: center; color: #fff; font-size: 24px;
-}
-.sh2-bento-info { padding: 20px 22px; }
-.sh2-bento-title { font-family: var(--font-display); font-weight: 700; font-size: 21px; letter-spacing: -0.02em; color: var(--ink); }
-.sh2-bento-meta { color: var(--ink-2); font-size: 14px; margin-top: 4px; }
-.sh2-bento-hero--empty { justify-content: center; align-items: flex-start; padding: 28px; cursor: default; }
-.sh2-bento-hero--empty:hover { transform: none; box-shadow: var(--ap-shadow); }
-.sh2-bento-hero--empty .sh2-bento-info { padding: 0; }
-.sh2-bento-hero--empty .sh2-continue-btn { margin-top: 16px; }
-
-.sh2-stat {
-  border: 0.5px solid var(--line); border-radius: var(--ap-r); background: var(--surface);
-  box-shadow: var(--ap-shadow); padding: 20px 22px;
-  display: flex; flex-direction: column; justify-content: center;
-  transition: transform 0.5s var(--ap-spring), box-shadow 0.4s var(--ap-ease);
-}
-.sh2-stat:hover { transform: translateY(-4px); box-shadow: var(--ap-shadow-hi); }
-@media (prefers-reduced-motion: reduce) { .sh2-stat:hover { transform: none; } }
-.sh2-stat--wide { grid-column: span 2; }
-.sh2-stat-chip { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 11px; background: color-mix(in srgb, var(--brand) 12%, transparent); color: var(--brand); font-size: 19px; margin-bottom: 12px; }
-.sh2-stat-num { font-family: var(--font-display); font-weight: 700; font-size: 34px; line-height: 1; letter-spacing: -0.03em; color: var(--ink); }
-.sh2-stat-lb { color: var(--ink-2); font-size: 14px; margin-top: 7px; font-weight: 500; }
-
-@media (max-width: 720px) {
-  .sh2-top { padding: 28px 18px 0; }
-  .sh2-bento { grid-template-columns: 1fr 1fr; }
-  .sh2-bento-hero { grid-column: span 2; grid-row: auto; min-height: 240px; }
-  .sh2-stat--wide { grid-column: span 2; }
-  .sh2-stat-num { font-size: 28px; }
-}
-
+/* 이어보기 다크 배너 */
 .sh2-continue {
-  display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
-  background: var(--ap-glass);
-  backdrop-filter: saturate(160%) blur(24px); -webkit-backdrop-filter: saturate(160%) blur(24px);
-  border: 0.5px solid var(--line);
-  border-radius: var(--ap-r-lg);
-  padding: 22px 26px;
-  box-shadow: var(--ap-shadow);
+  background: #171717;
+  border-radius: var(--r);
+  padding: 26px 28px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-bottom: 26px;
 }
-.sh2-continue--empty { background: var(--surface); }
-.sh2-continue-cover.cover--sm { width: 76px; height: 76px; border-radius: var(--ap-r-sm); box-shadow: 0 6px 16px -8px rgba(0,0,0,0.3); }
-.sh2-continue-cover .cover-mono { font-size: 32px; }
-.sh2-continue-info { flex: 1; min-width: 220px; display: flex; flex-direction: column; gap: 5px; }
-.sh2-continue-tag { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 12.5px; color: var(--brand-strong); text-transform: uppercase; letter-spacing: 0.02em; }
-.sh2-continue-title { font-family: var(--font-display); font-weight: 700; font-size: 23px; color: var(--ink); margin: 0; letter-spacing: -0.02em; }
-.sh2-continue-meta { font-weight: 400; font-size: 14px; color: var(--ink-2); }
+.sh2-continue-info { flex: 1; min-width: 240px; display: flex; flex-direction: column; }
+.sh2-continue-tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(255, 255, 255, 0.12); color: #fff;
+  font-weight: 700; font-size: 12px; padding: 5px 11px; border-radius: 999px;
+  margin-bottom: 12px; width: fit-content;
+}
+.sh2-continue-title { font-size: 24px; font-weight: 700; letter-spacing: -0.02em; color: #fff; margin: 0 0 6px; }
+.sh2-continue-meta { font-size: 14px; color: rgba(255, 255, 255, 0.6); font-weight: 500; }
 .sh2-continue-btn {
   display: inline-flex; align-items: center; gap: 8px; flex-shrink: 0;
-  border: none; background: var(--brand); color: var(--on-brand); font-weight: 600; font-size: 15px; font-family: inherit;
-  padding: 13px 24px; border-radius: 980px; cursor: pointer;
-  box-shadow: 0 8px 20px -10px color-mix(in srgb, var(--brand) 80%, transparent);
-  transition: transform 0.2s var(--ap-spring), background 0.2s var(--ap-ease);
+  border: none; background: var(--brand); color: var(--on-brand); font-weight: 700; font-size: 16px;
+  font-family: inherit; padding: 13px 24px; border-radius: var(--r); cursor: pointer;
+  transition: background 0.15s, transform 0.15s;
 }
-.sh2-continue-btn:hover { background: var(--brand-strong); transform: scale(1.04); }
-.sh2-continue-btn:active { transform: scale(0.97); }
+.sh2-continue-btn:hover { background: var(--brand-ink); transform: translateY(-2px); }
+.sh2-continue--empty .sh2-continue-title { color: #fff; }
 
-/* ===== 학습 요약 KPI ===== */
-.sh2-kpis { max-width: 980px; margin: 22px auto 0; padding: 0 24px; display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
+/* KPI 3장 */
+.sh2-kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 34px; }
 .sh2-kpi {
-  background: var(--surface); border: 0.5px solid var(--line); border-radius: var(--ap-r);
-  padding: 20px 22px; display: flex; align-items: center; gap: 15px;
-  box-shadow: var(--ap-shadow);
-  transition: transform 0.5s var(--ap-spring), box-shadow 0.4s var(--ap-ease);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--r);
+  box-shadow: var(--shadow-md); padding: 22px 24px;
+  display: flex; flex-direction: column;
 }
-.sh2-kpi:hover { transform: translateY(-4px); box-shadow: var(--ap-shadow-hi); }
-.sh2-kpi-chip { display: grid; place-items: center; width: 42px; height: 42px; flex-shrink: 0; border-radius: 12px; background: color-mix(in srgb, var(--brand) 12%, transparent); color: var(--brand-strong); font-size: 21px; }
-.sh2-kpi-body { display: flex; flex-direction: column; gap: 5px; }
-.sh2-kpi-num { font-family: var(--font-display); font-weight: 700; font-size: 32px; color: var(--ink); line-height: 1; letter-spacing: -0.03em; }
-.sh2-kpi-lb { font-weight: 500; font-size: 13.5px; color: var(--ink-2); }
+.sh2-kpi-num { font-size: 32px; font-weight: 700; letter-spacing: -0.02em; color: var(--ink); }
+.sh2-kpi-lb { font-size: 14px; color: var(--ink-3); font-weight: 600; }
 
 /* ===== 섹션 헤더 ===== */
-.sh2-courses { max-width: 980px; margin: 44px auto 0; padding: 0 24px 40px; }
-.sh2-sec-head { margin-bottom: 18px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-.sh2-sec-title { display: flex; align-items: center; gap: 9px; font-family: var(--font-display); font-weight: 700; font-size: 24px; color: var(--ink); margin: 0; letter-spacing: -0.02em; }
-.sh2-sec-title i { color: var(--brand-strong); }
-.sh2-sec-more { display: inline-flex; align-items: center; gap: 4px; border: none; background: transparent; color: var(--brand-strong); font-family: inherit; font-weight: 500; font-size: 15px; cursor: pointer; transition: gap 0.2s var(--ap-ease); }
-.sh2-sec-more:hover { gap: 7px; }
+.sh2-courses { max-width: min(2280px, 94vw); margin: 0 auto; padding: 0 28px 60px; }
+.sh2-sec-head { margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.sh2-sec-title { display: flex; align-items: center; gap: 9px; font-size: 20px; font-weight: 700; color: var(--ink); margin: 0; letter-spacing: -0.02em; }
+.sh2-sec-title i { color: var(--ink); font-size: 20px; }
+.sh2-sec-more {
+  display: inline-flex; align-items: center; gap: 5px; border: none; background: transparent;
+  color: var(--brand-ink); font-family: inherit; font-weight: 700; font-size: 13.5px; cursor: pointer;
+}
+.sh2-sec-more:hover { text-decoration: underline; }
 
-/* ===== 가로 스크롤 레일 ===== */
-.sh2-rail { max-width: 980px; margin: 44px auto 0; padding: 0 24px; }
-/* 복제본 랩처럼 가로 스크롤 레일 → 반응형 그리드(가로 스크롤 폐지) */
+/* ===== 레일(이어서 학습 / 추천 코스) ===== */
+.sh2-rail { max-width: min(2280px, 94vw); margin: 0 auto 34px; padding: 0 28px; }
 .sh2-railscroll {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(224px, 1fr));
-  gap: 16px; padding: 6px 2px 4px;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
 }
 .sh2-railcard {
-  text-align: left;
-  border: 0.5px solid var(--line); border-radius: var(--ap-r);
-  background: var(--surface); padding: 0 0 16px; overflow: hidden; cursor: pointer;
+  text-align: left; border: 1px solid var(--line); border-radius: var(--r);
+  background: var(--surface); box-shadow: var(--shadow-md);
+  padding: 0; overflow: hidden; cursor: pointer;
   display: flex; flex-direction: column;
-  box-shadow: var(--ap-shadow);
-  transition: transform 0.5s var(--ap-spring), box-shadow 0.4s var(--ap-ease);
+  transition: border-color 0.15s, transform 0.15s;
 }
-.sh2-railcard:hover { transform: translateY(-5px); box-shadow: var(--ap-shadow-hi); }
-@media (prefers-reduced-motion: reduce) { .sh2-railcard:hover { transform: none; } }
+.sh2-railcard:hover { border-color: var(--line-strong); transform: translateY(-2px); }
 .sh2-railcover.cover--md { aspect-ratio: 16 / 9; border-radius: 0; }
-.sh2-railcover .cover-mono { font-size: 42px; }
-.sh2-railbody { padding: 14px 16px 0; display: flex; flex-direction: column; gap: 5px; }
+.sh2-railbody { padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 4px; }
 .sh2-railtitle {
-  font-family: var(--font-display); font-weight: 600; font-size: 15px; color: var(--ink); letter-spacing: -0.01em;
+  font-weight: 700; font-size: 14px; color: var(--ink); letter-spacing: -0.01em;
   line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
 }
-.sh2-railmeta { font-weight: 400; font-size: 13px; color: var(--ink-3); }
+.sh2-railmeta { font-weight: 500; font-size: 12px; color: var(--ink-3); }
 
-.sh2-empty { background: var(--surface); border: 0.5px solid var(--line); border-radius: var(--ap-r); padding: 28px; color: var(--ink-3); font-weight: 400; font-size: 15px; box-shadow: var(--ap-shadow); }
+.sh2-empty {
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--r);
+  padding: 28px; color: var(--ink-3); font-weight: 500; font-size: 14px; text-align: center;
+}
 
 /* ===== 내 코스 그리드 ===== */
-.sh2-course-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(288px, 1fr)); gap: 18px; }
+.sh2-course-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
 .sh2-course {
-  background: var(--surface); border: 0.5px solid var(--line); border-radius: var(--ap-r-lg);
-  padding: 20px 22px; display: flex; flex-direction: column; gap: 9px; overflow: hidden;
-  box-shadow: var(--ap-shadow);
-  transition: transform 0.5s var(--ap-spring), box-shadow 0.4s var(--ap-ease);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--r);
+  box-shadow: var(--shadow-md);
+  padding: 20px; display: flex; flex-direction: column; overflow: hidden;
 }
 .sh2-course-cover.cover--md {
-  width: calc(100% + 44px); margin: -20px -22px 10px; aspect-ratio: 16 / 6; border-radius: 0;
+  width: calc(100% + 40px); margin: -20px -20px 12px; aspect-ratio: 16 / 8; border-radius: 0;
 }
-.sh2-course-cover .cover-mono { font-size: 40px; }
-.sh2-course:hover { transform: translateY(-5px); box-shadow: var(--ap-shadow-hi); }
-.sh2-course-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.sh2-course-subj { background: color-mix(in srgb, var(--brand) 12%, transparent); color: var(--brand-strong); font-weight: 600; font-size: 11.5px; padding: 4px 11px; border-radius: 999px; letter-spacing: 0.01em; }
-.sh2-course-done { background: color-mix(in srgb, var(--ok) 15%, transparent); color: var(--ok); font-weight: 600; font-size: 11.5px; padding: 4px 11px; border-radius: 999px; display: inline-flex; align-items: center; gap: 4px; }
-.sh2-course-title { font-family: var(--font-display); font-weight: 700; font-size: 18px; color: var(--ink); margin: 3px 0 0; letter-spacing: -0.02em; }
-.sh2-course-inst { font-weight: 400; font-size: 13px; color: var(--ink-3); }
-.sh2-course-progress { margin: 8px 0 4px; display: flex; flex-direction: column; gap: 7px; }
-.sh2-course-bar { height: 6px; background: var(--line); border-radius: 999px; overflow: hidden; }
-.sh2-course-bar-fill { height: 100%; background: var(--brand); border-radius: 999px; transition: width 1s var(--ap-ease); }
-.sh2-course-frac { font-weight: 500; font-size: 12.5px; color: var(--ink-2); }
+.sh2-course-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+.sh2-course-subj { background: var(--brand-soft); color: var(--brand-ink); font-weight: 700; font-size: 12px; padding: 4px 10px; border-radius: 999px; }
+.sh2-course-done { background: var(--ok-soft); color: var(--ok); font-weight: 700; font-size: 12px; padding: 4px 10px; border-radius: 999px; }
+.sh2-course-title { font-size: 16px; font-weight: 700; letter-spacing: -0.02em; color: var(--ink); margin: 0 0 3px; }
+.sh2-course-inst { font-size: 12px; color: var(--ink-3); font-weight: 500; margin-bottom: 16px; }
+.sh2-course-progress { margin-top: auto; }
+.sh2-course-bar { height: 6px; background: var(--line); border-radius: 999px; overflow: hidden; margin-bottom: 7px; }
+.sh2-course-bar-fill { height: 100%; background: var(--brand); border-radius: 999px; transition: width 0.4s ease; }
+.sh2-course-frac { font-size: 12px; color: var(--ink-3); font-weight: 600; }
 .sh2-course-btn {
-  margin-top: 6px; display: inline-flex; align-items: center; justify-content: center; gap: 7px;
-  border: none; background: var(--brand); color: var(--on-brand); font-weight: 600; font-size: 14px; font-family: inherit;
-  padding: 12px 16px; border-radius: 980px; cursor: pointer;
-  transition: transform 0.2s var(--ap-spring), background 0.2s var(--ap-ease);
+  width: 100%; margin-top: 14px; box-sizing: border-box;
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink);
+  font-weight: 700; font-size: 14px; font-family: inherit;
+  padding: 11px; border-radius: var(--r); cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, transform 0.15s;
 }
-.sh2-course-btn:hover:not(:disabled) { background: var(--brand-strong); transform: scale(1.02); }
-.sh2-course-btn:active:not(:disabled) { transform: scale(0.98); }
-.sh2-course-btn--exam { background: #5e5ce6; box-shadow: 0 8px 20px -10px rgba(94,92,230,0.6); }
-.sh2-course-btn--exam:hover:not(:disabled) { background: #4b48d6; }
-.sh2-course-btn--ghost { background: var(--surface-2); color: var(--ink-3); cursor: default; }
-.sh2-course-btn--ghost:hover { transform: none; }
+.sh2-course-btn:hover:not(:disabled) { border-color: var(--brand); color: var(--brand-ink); transform: translateY(-2px); }
+.sh2-course-btn--ghost { color: var(--ink-3); cursor: default; }
+.sh2-course-btn--ghost:hover { transform: none; border-color: var(--line-strong); color: var(--ink-3); }
 
+/* ===== 코스별 강의 그리드(내 코스 / 이런 코스는 어때요) — 강의 신청 카탈로그와 같은 ll-card 룩 ===== */
+.sh2-lecgroups { display: flex; flex-direction: column; gap: 30px; }
+.sh2-lecgroup-head { display: flex; align-items: center; gap: 11px; margin-bottom: 14px; }
+.sh2-lecgroup-cover.cover--sm {
+  width: 44px; height: 44px; border-radius: var(--r-sm, 10px); flex-shrink: 0;
+}
+.sh2-lecgroup-meta { min-width: 0; margin-right: auto; }
+.sh2-lecgroup-title { font-size: 16px; font-weight: 700; letter-spacing: -0.02em; color: var(--ink); margin: 0; }
+.sh2-lecgroup-sub { font-size: 12.5px; color: var(--ink-3); font-weight: 600; }
+.sh2-lecgroup-cta {
+  display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0;
+  border: 1px solid var(--brand); background: var(--brand-soft); color: var(--brand-ink);
+  font-family: inherit; font-weight: 700; font-size: 13px; padding: 8px 14px;
+  border-radius: 999px; cursor: pointer; transition: background 0.15s, transform 0.15s;
+}
+.sh2-lecgroup-cta:hover { background: var(--brand); color: #fff; transform: translateY(-1px); }
+.sh2-lecgroup-cta i { font-size: 15px; }
+
+@media (max-width: 900px) {
+  .sh2-course-grid { grid-template-columns: repeat(2, 1fr); }
+}
 @media (max-width: 720px) {
-  .sh2-greet { font-size: 28px; }
-  .sh2-kpis { grid-template-columns: repeat(3,1fr); gap: 10px; padding: 0 18px; }
-  .sh2-kpi { padding: 14px; flex-direction: column; align-items: flex-start; gap: 8px; }
-  .sh2-kpi-num { font-size: 26px; }
-  .sh2-hero { padding: 28px 18px 0; }
-  .sh2-courses, .sh2-rail { padding-left: 18px; padding-right: 18px; }
+  .sh2-greet { font-size: 26px; }
+  .sh2-kpis { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .sh2-kpi { padding: 14px 16px; }
+  .sh2-kpi-num { font-size: 24px; }
+  .sh2-top, .sh2-courses, .sh2-rail { padding-left: 18px; padding-right: 18px; }
+  .sh2-course-grid { grid-template-columns: 1fr; }
+  .sh2-continue { padding: 20px; }
 }
-
-/* ── 애플 랩 정렬(2026-07-23): 액센트 코랄→애플 블루 (복제본 우선·로고 마크만 코랄) ── */
-.sh-root { --brand:#0071e3; --brand-strong:#0077ed; --brand-soft:rgba(0,113,227,0.12); --brand-ink:#0071e3; --brand-soft-line:rgba(0,113,227,0.24); --on-brand:#ffffff; }
-[data-theme='dark'] .sh-root { --brand:#0a84ff; --brand-strong:#409cff; --brand-soft:rgba(10,132,255,0.18); --brand-ink:#409cff; --brand-soft-line:rgba(10,132,255,0.30); }

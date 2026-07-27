@@ -17,6 +17,71 @@
 /* 헤더 우측 버튼 묶음(코스 관리 + 강의 업로드) */
 .op-lect-headbtns { display: inline-flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 
+/* 상단 헤더 리뉴얼(CatChap 강의 관리.dc.html 기준) — 부제는 한 줄로 짧게 두고, 확인 문항
+   경고는 별도 배너로 분리한다(전엔 부제 문단에 볼드로 섞여 있어 시각적으로 무거웠다). */
+.op-lect-notice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--warn-soft);
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin: 4px 0 18px;
+}
+.op-lect-notice i { color: var(--warn); font-size: 20px; flex-shrink: 0; }
+.op-lect-notice span { font-size: 14px; font-weight: 600; color: var(--warn-ink); line-height: 1.5; }
+
+/* 헤더 보조 액션(코스 관리)·주요 액션(강의 업로드) — 레퍼런스처럼 아웃라인/솔리드로 위계 구분 */
+.op-lect-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink);
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform 0.15s, border-color 0.15s;
+}
+.op-lect-btn-secondary:hover { border-color: var(--ink-3); transform: translateY(-2px); }
+.op-lect-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: none;
+  background: var(--brand);
+  color: var(--on-brand);
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 10px 18px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform 0.15s, background 0.15s;
+}
+.op-lect-btn-primary:hover { background: var(--brand-strong); transform: translateY(-2px); }
+
+/* 과목 필터 — 드롭다운 대신 토글 칩(레퍼런스 스타일) */
+.op-lect-chips { display: flex; gap: 10px; flex-wrap: wrap; }
+.op-lect-chip {
+  border: 1px solid var(--line-strong);
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 10px 15px;
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--ink-2);
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.op-lect-chip:hover { border-color: var(--ink-3); }
+.op-lect-chip--on { background: var(--ink); color: var(--on-brand); border-color: var(--ink); }
+
 /* 강의 목록 — 코스마다 독립 카드로 확실히 구분(전엔 얇은 선뿐이라 뭉쳐 보였다) */
 .op-lect-listwrap { display: flex; flex-direction: column; }
 /* 컬럼 라벨 줄 — 카드 밖 옅은 안내(카드 배경/테두리 없음) */

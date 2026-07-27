@@ -1,69 +1,93 @@
-/* handoff `CatChap 검색.dc.html` — 2026-07-23 애플 디자인 이식(정공법·CSS만).
-   .sp-root에 애플 뉴트럴+블루 토큰을 스코프 오버라이드(전역 theme.css 불변). 클래스명·레이아웃 불변.
+/* CatChap 검색 — 리뉴얼(2026-07-27): 스코프 토큰 오버라이드·글래스·애플 반경을 걷어내고
+   전역 theme.css 모노크롬 토큰을 그대로 상속한다. 클래스명·레이아웃 불변.
    태그 의미색(과목/게임/기타=info/warn ink)은 전역값 그대로 둔다. */
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-
-.sp-root {
-  --font-display: 'SF Pro Display', 'SF Pro Text', 'Inter', -apple-system, system-ui, sans-serif;
-  --bg: #f5f5f7; --surface: #ffffff; --surface-2: #f5f5f7;
-  --ink: #1d1d1f; --ink-2: #6e6e73; --ink-3: #86868b;
-  --line: rgba(0, 0, 0, 0.08); --line-strong: rgba(0, 0, 0, 0.14);
-  --brand: #0071e3; --brand-strong: #0077ed; --brand-soft: rgba(0, 113, 227, 0.12); --brand-ink: #0071e3; --on-brand: #fff;
-  font-family: 'SF Pro Text', 'Inter', -apple-system, system-ui, sans-serif; letter-spacing: -0.01em; -webkit-font-smoothing: antialiased;
-}
-[data-theme='dark'] .sp-root {
-  --bg: #000; --surface: #1c1c1e; --surface-2: #0a0a0a; --ink: #f5f5f7; --ink-2: #aeaeb2; --ink-3: #8e8e93;
-  --line: rgba(255, 255, 255, 0.1); --line-strong: rgba(255, 255, 255, 0.18);
-  --brand: #0a84ff; --brand-strong: #409cff; --brand-soft: rgba(10, 132, 255, 0.18); --brand-ink: #409cff;
-}
 
 .sp-root {
   min-height: 100vh;
   background: var(--bg);
+  font-family: var(--font-display, 'Pretendard', -apple-system, system-ui, sans-serif);
+  letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased;
 }
 
 .sp-container {
-  max-width: 720px;
+  max-width: 940px;
   margin: 0 auto;
-  padding: 44px 28px 60px;
+  padding: 48px 28px 72px;
+}
+
+/* HERO */
+.sp-hero {
+  text-align: center;
+  margin-bottom: 26px;
+}
+.sp-herobadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  font-size: 12.5px;
+  color: var(--brand-ink);
+  background: var(--brand-soft);
+  padding: 6px 13px;
+  border-radius: 999px;
+  margin-bottom: 14px;
+}
+.sp-herobadge i { font-size: 14px; }
+.sp-herotitle {
+  font-family: var(--font-display, 'Pretendard', system-ui, sans-serif);
+  font-weight: 800;
+  font-size: 32px;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+  margin: 0 0 8px;
+}
+.sp-herosub {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ink-3);
 }
 
 /* BIG SEARCH FIELD */
 .sp-searchwrap {
   position: relative;
-  margin-bottom: 30px;
+  margin-bottom: 36px;
 }
 
 .sp-searchicon {
   position: absolute;
-  left: 18px;
+  left: 22px;
   top: 50%;
   transform: translateY(-50%);
   color: var(--ink-3);
-  font-size: 22px;
+  font-size: 24px;
   pointer-events: none;
 }
 
 .sp-input {
   width: 100%;
-  border: 0.5px solid var(--line-strong);
+  border: 1.5px solid var(--line-strong);
   background: var(--surface);
-  border-radius: 16px;
-  padding: 17px 46px 17px 50px;
-  font-size: 15.5px;
+  border-radius: var(--r-lg, 18px);
+  padding: 22px 52px 22px 58px;
+  font-size: 17px;
+  font-weight: 500;
   color: var(--ink);
   font-family: var(--font);
   outline: none;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-md);
+  transition: border-color 0.15s, box-shadow 0.15s;
 }
 
 .sp-input::placeholder {
   color: var(--ink-3);
+  font-weight: 500;
 }
 
 .sp-input:focus {
   border-color: var(--brand);
+  box-shadow: 0 0 0 4px var(--brand-soft);
 }
 
 .sp-inputbtns {
@@ -134,46 +158,75 @@
   margin: 0;
 }
 
-.sp-popchips {
+/* 바로가기 — 아이콘 + 제목 + 설명 카드(2열). 빈 검색 화면을 담백하게 채운다. */
+.sp-shortcutgrid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 12px;
 }
 
-.sp-popchip {
+.sp-shortcut {
   display: flex;
   align-items: center;
-  gap: 11px;
+  gap: 14px;
   background: var(--surface);
-  border: 0.5px solid var(--line);
-  border-radius: 14px;
-  padding: 15px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  padding: 16px 18px;
   color: var(--ink);
   text-decoration: none;
   font-family: var(--font);
-  font-weight: 700;
-  font-size: 14px;
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.02), 0 8px 24px -12px rgba(0, 0, 0, 0.14);
+  box-shadow: var(--shadow-md);
   transition: transform 0.4s cubic-bezier(0.34, 1.4, 0.5, 1), border-color 0.2s ease;
 }
 
-.sp-popchip:hover {
+.sp-shortcut:hover {
   border-color: var(--line-strong);
   transform: translateY(-2px);
 }
 
-.sp-popicon {
-  width: 40px;
-  height: 40px;
+.sp-shortcuticon {
+  width: 44px;
+  height: 44px;
   flex-shrink: 0;
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.sp-popicon i {
-  font-size: 19px;
+.sp-shortcuticon i {
+  font-size: 21px;
+}
+
+.sp-shortcutbody {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.sp-shortcuttitle {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--ink);
+}
+
+.sp-shortcutdesc {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--ink-2);
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sp-shortcutarrow {
+  font-size: 15px;
+  color: var(--ink-3);
+  flex-shrink: 0;
 }
 
 /* 최근에 찾아봤어요 */
@@ -309,11 +362,11 @@
   align-items: center;
   gap: 14px;
   background: var(--surface);
-  border: 0.5px solid var(--line);
-  border-radius: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
   padding: 16px 18px;
   color: var(--ink);
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.02), 0 8px 24px -12px rgba(0, 0, 0, 0.14);
+  box-shadow: var(--shadow-md);
   transition: transform 0.4s cubic-bezier(0.34, 1.4, 0.5, 1), border-color 0.2s ease;
 }
 
@@ -326,7 +379,7 @@
   width: 40px;
   height: 40px;
   flex-shrink: 0;
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -403,7 +456,7 @@
 .sp-noicon {
   width: 60px;
   height: 60px;
-  border-radius: 16px;
+  border-radius: var(--r);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -434,16 +487,18 @@
   .sp-container {
     padding: 32px 18px 48px;
   }
-  .sp-popchips {
-    grid-template-columns: repeat(2, 1fr);
+  .sp-herotitle { font-size: 26px; }
+  .sp-shortcutgrid {
+    grid-template-columns: 1fr;
+  }
+  .sp-input {
+    padding: 18px 46px 18px 50px;
+    font-size: 15.5px;
   }
 }
 
 @media (max-width: 420px) {
   .sp-container {
     padding: 28px 14px 40px;
-  }
-  .sp-popchips {
-    grid-template-columns: 1fr;
   }
 }

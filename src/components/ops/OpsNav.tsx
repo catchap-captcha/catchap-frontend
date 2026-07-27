@@ -1,91 +1,103 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { useTheme } from '../../hooks/useTheme';
-import { settingsApi } from '../../api/settings';
 import { notificationApi, type Notification } from '../../api/notifications';
 import {
   notifyNotificationsUpdated,
   useUnreadNotifications,
 } from '../../hooks/useUnreadNotifications';
 import { PATHS } from '../../routes/paths';
-import mascot from '../../assets/characters/catchap-logo.png';
+import wordmarkDark from '../../assets/brand/catchap-wordmark.png';
+import wordmarkWhite from '../../assets/brand/catchap-wordmark-white.png';
 
-/** 운영 콘솔 공용 사이드바 (모든 ops 페이지가 공유).
+/** 운영/강사 콘솔 공용 상단바 (모든 ops 페이지가 공유).
  *
- *  상단 가로 네비는 메뉴 11개에서 이미 잘려 가로 스크롤로 새고 있었다 — 실무 콘솔
- *  표준인 좌측 사이드바 + 업무 영역 그룹으로 바꾼다(기관·교사 콘솔의 사이드바와도
- *  한 계열). 좁은 화면(≤1080px)에서는 아이콘 레일(64px)로 접혀 전 메뉴가 유지된다.
- *
- *  강사(instructor)도 같은 사이드바를 쓰되 '내 강의'만 보인다 — 운영 메뉴는 서버가
- *  403으로 막지만, 애초에 링크를 노출하지 않는 것이 콘솔의 예의다. */
+ *  리뉴얼(2026-07-24): 좌측 사이드바 → 상단 가로 바 + 드롭다운 그룹으로 재구성한다
+ *  (핸드오프: CatChap 운영 상단바 / 강사 상단바). 운영자는 3개 드롭다운 그룹
+ *  (운영·데이터·시스템), 강사는 평평한 탭 4개(강사 홈·강의 관리·문항 검수·학습 분석).
+ *  우측 클러스터는 알림·다크토글·아바타·로그아웃(기존 기능 보존). */
 type NavItem = { to: string; icon: string; label: string; match?: string[] };
 type NavGroup = { key: string; label: string; items: NavItem[] };
 
-/** 실무 콘솔식 접이식(아코디언) 그룹 + 메뉴 병합(2026-07-23) — 16개→10개.
- *  병합된 항목은 대표 경로(to)로 가고, 형제 페이지는 상단 서브탭(OpsSubTabs)으로 전환한다.
- *  match: 그 항목을 활성/그룹펼침으로 볼 형제 경로들(서브탭 페이지 포함). */
+/** 운영자 상단바 — 드롭다운 3그룹(핸드오프 메뉴 구조 그대로).
+ *  match: 그 항목을 활성/그룹활성으로 볼 형제 경로들(서브탭 페이지 포함). */
 const GROUPS: NavGroup[] = [
   {
     key: 'ops',
     label: '운영',
     items: [
-      // 기관 승인 + 기관 관리 → '기관'(승인=탭). 서브탭으로 둘 사이 전환.
-      { to: PATHS.OPS_APPROVAL, icon: 'ph-buildings', label: '기관', match: [PATHS.OPS_ORGS] },
+      { to: PATHS.OPS_APPROVAL, icon: 'ph-buildings', label: '기관 승인' },
+      { to: PATHS.OPS_ORGS, icon: 'ph-list-checks', label: '기관 관리' },
       { to: PATHS.OPS_INSTRUCTORS, icon: 'ph-chalkboard-teacher', label: '강사 관리' },
+      { to: PATHS.OPS_OPERATORS, icon: 'ph-shield-star', label: '운영자 계정' },
       { to: PATHS.OPS_INQUIRIES, icon: 'ph-chat-circle-dots', label: '문의 관리' },
     ],
   },
   {
-    key: 'lecture',
-    label: '강의',
-    items: [
-      { to: PATHS.OPS_LECTURES, icon: 'ph-video-camera', label: '강의 관리' },
-      { to: PATHS.OPS_QUESTION_METRICS, icon: 'ph-chart-bar', label: '문항 지표' },
-    ],
-  },
-  {
-    key: 'ai',
-    label: 'AI',
-    items: [
-      // LLM 모델·API 키·프롬프트 → 'LLM 설정'(탭 3). 모델 카탈로그는 삭제(레거시).
-      { to: PATHS.OPS_LLM_MODELS, icon: 'ph-robot', label: 'LLM 설정', match: [PATHS.OPS_LLM_KEYS, PATHS.OPS_LLM_PROMPTS] },
-    ],
-  },
-  {
     key: 'data',
-    label: '데이터 · 시스템',
+    label: '데이터',
     items: [
-      // 행동 데이터 + 외부 내보내기 → '행동 데이터'(내보내기=탭).
-      { to: PATHS.OPS_BEHAVIOR, icon: 'ph-fingerprint', label: '행동 데이터', match: [PATHS.OPS_BEHAVIOR_EXPORT] },
+      { to: PATHS.OPS_BEHAVIOR, icon: 'ph-fingerprint', label: '행동 데이터' },
+      { to: PATHS.OPS_BEHAVIOR_EXPORT, icon: 'ph-export', label: '외부 내보내기' },
       { to: PATHS.OPS_LOGS, icon: 'ph-scroll', label: '감사 로그' },
+    ],
+  },
+  {
+    key: 'system',
+    label: '시스템',
+    items: [
       { to: PATHS.OPS_API_KEYS, icon: 'ph-key', label: 'API 발급' },
+      // 'AI 모델'/'설정' 라벨은 실 기능 페이지(LLM 모델/키)로 연결(레거시 카탈로그 미부활).
+      { to: PATHS.OPS_LLM_MODELS, icon: 'ph-cpu', label: 'AI 모델', match: [PATHS.OPS_LLM_PROMPTS] },
       { to: PATHS.OPS_MONITORING, icon: 'ph-gauge', label: '모니터링' },
+      { to: PATHS.OPS_SYSTEM_STATUS, icon: 'ph-heartbeat', label: '시스템 상태' },
+      { to: PATHS.OPS_LLM_KEYS, icon: 'ph-gear-six', label: '설정' },
     ],
   },
 ];
 
-const INSTRUCTOR_GROUPS: NavGroup[] = [
-  {
-    key: 'instructor',
-    label: '강사',
-    items: [
-      { to: PATHS.OPS_INSTRUCTOR_HOME, icon: 'ph-squares-four', label: '홈' },
-      { to: PATHS.OPS_LECTURES, icon: 'ph-video-camera', label: '내 강의' },
-    ],
-  },
+/** 강사 상단바 — 평평한 탭 4개(핸드오프: 강사 상단바). */
+const INSTRUCTOR_TABS: NavItem[] = [
+  { to: PATHS.OPS_INSTRUCTOR_HOME, icon: 'ph-squares-four', label: '강사 홈' },
+  { to: PATHS.OPS_LECTURES, icon: 'ph-video-camera', label: '강의 관리', match: [PATHS.OPS_COURSES] },
+  { to: PATHS.OPS_QUESTION_REVIEW, icon: 'ph-seal-question', label: '문항 검수' },
+  { to: PATHS.OPS_LEARNING_ANALYTICS, icon: 'ph-chart-bar', label: '학습 분석' },
 ];
 
 /** 병합 항목은 대표 경로(to)뿐 아니라 형제 서브탭 경로(match)에서도 활성으로 본다. */
 const itemActive = (l: NavItem, path: string) => path === l.to || !!l.match?.includes(path);
+/** 그룹 안 항목 중 하나라도 현재 경로면 그룹 버튼을 활성으로 본다. */
+const groupActive = (g: NavGroup, path: string) => g.items.some((l) => itemActive(l, path));
+
+/** 상단 카테고리 진입 stagger를 '콘솔 첫 진입'에만 돌리기 위한 게이트.
+ *
+ *  OpsNav는 공용 레이아웃이 아니라 각 ops 페이지가 개별로 렌더한다 → 메뉴를 옮길 때마다
+ *  통째로 재마운트된다. 게이트 없이 CSS 진입 애니메이션을 걸면 페이지 이동마다 상단바가
+ *  다시 흘러내린다(ops 페이지엔 .cc-page-enter 페이드도 없어서 더 눈에 띈다).
+ *  경로가 바뀌었는지로 판별하므로 StrictMode의 이중 렌더·재마운트(같은 경로)에서는 값이
+ *  유지되고, 실제 라우팅에서만 꺼진다. 새로고침하면 모듈이 다시 평가돼 되살아난다.
+ *
+ *  단 강사 탭은 이 게이트를 쓰지 않는다 — 아래 isInstructor 분기 참고. */
+let introGate: { path: string | null; play: boolean } = { path: null, play: true };
+function useIntro(pathname: string): boolean {
+  if (introGate.path !== pathname) {
+    introGate = { path: pathname, play: introGate.path === null };
+  }
+  return introGate.play;
+}
 
 export default function OpsNav() {
   const { pathname } = useLocation();
   const { me, logout } = useAuth();
   const { theme, toggle: toggleTheme } = useTheme();
   const navigate = useNavigate();
+  const firstEntry = useIntro(pathname);
   const isInstructor = me?.role === 'instructor';
-  const groups = isInstructor ? INSTRUCTOR_GROUPS : GROUPS;
+  // 강사 탭은 학생 콘솔(.sl-navlink)과 같은 감각으로 — 탭을 옮길 때마다 다시 흘러내린다.
+  // 학생 상단 NAV(StudentNav)도 공용 레이아웃이 아니라 페이지마다 렌더돼 매번 재생되고,
+  // 사용자가 그쪽을 기준으로 잡았다(2026-07-27). 운영자 드롭다운 그룹은 첫 진입에만 유지.
+  const intro = isInstructor || firstEntry;
   const home = isInstructor ? PATHS.OPS_INSTRUCTOR_HOME : PATHS.OPS_APPROVAL;
 
   // 알림 — 콘솔 벨. 안읽음 배지(useUnreadNotifications) + 패널에서 목록·읽음 처리.
@@ -93,6 +105,34 @@ export default function OpsNav() {
   const unread = useUnreadNotifications();
   const [notifOpen, setNotifOpen] = useState(false);
   const [notes, setNotes] = useState<Notification[] | null>(null);
+  // 상단바 드롭다운 — 열린 그룹 키(운영/데이터/시스템) 하나만. 스크림 클릭으로 닫힘.
+  const [openGroup, setOpenGroup] = useState<string | null>(null);
+
+  // 호버로 펼치기 — 클릭 토글은 그대로 두고(터치·키보드 진입로) 마우스에선 갖다 대면 열린다.
+  // 닫기는 약간 늦춘다: 버튼 → 메뉴로 포인터를 옮기는 중 잠깐 벗어나도 닫히지 않게.
+  // 그룹 사이를 가로지를 때는 다음 그룹의 enter가 이 타이머를 취소해 메뉴바처럼 이어진다.
+  // (버튼과 메뉴 사이 7px 간격은 .op-top-menu::before 브릿지가 덮는다 — CSS 참고)
+  const closeTimer = useRef<number | null>(null);
+  const cancelClose = () => {
+    if (closeTimer.current !== null) {
+      clearTimeout(closeTimer.current);
+      closeTimer.current = null;
+    }
+  };
+  useEffect(() => cancelClose, []); // 언마운트 후 setState 방지
+  // 터치 기기에선 탭이 mouseenter로도 잡혀 클릭 토글과 충돌한다 → 진짜 호버 가능할 때만.
+  const canHover = () =>
+    typeof window !== 'undefined' && window.matchMedia('(hover: hover)').matches;
+  const hoverOpen = (key: string) => {
+    if (!canHover()) return;
+    cancelClose();
+    setOpenGroup(key);
+  };
+  const hoverClose = () => {
+    if (!canHover()) return;
+    cancelClose();
+    closeTimer.current = window.setTimeout(() => setOpenGroup(null), 140);
+  };
 
   const openNotif = () => {
     setNotifOpen(true);
@@ -123,118 +163,126 @@ export default function OpsNav() {
     }
   };
 
-  // 강사 본인 비밀번호 변경 — 운영자는 운영자 계정 페이지에 같은 기능이 있지만,
-  // 강사는 접근 가능한 관리 페이지가 없어 사이드바 푸터에서 직접 연다.
-  const [pwOpen, setPwOpen] = useState(false);
-  const [curPw, setCurPw] = useState('');
-  const [newPw, setNewPw] = useState('');
-  const [newPw2, setNewPw2] = useState('');
-  const [pwErr, setPwErr] = useState('');
-  const [pwMsg, setPwMsg] = useState('');
-  const [pwSaving, setPwSaving] = useState(false);
-
   const onLogout = async () => {
     await logout();
     navigate(PATHS.HOME, { replace: true });
   };
 
-  const openPw = () => {
-    setCurPw('');
-    setNewPw('');
-    setNewPw2('');
-    setPwErr('');
-    setPwMsg('');
-    setPwOpen(true);
-  };
-  const changePw = async () => {
-    if (!curPw) return setPwErr('현재 비밀번호를 입력해 주세요.');
-    if (newPw.length < 8) return setPwErr('새 비밀번호는 8자 이상으로 정해 주세요.');
-    if (newPw !== newPw2) return setPwErr('새 비밀번호가 서로 달라요.');
-    if (newPw === curPw) return setPwErr('현재 비밀번호와 다른 비밀번호로 정해 주세요.');
-    setPwSaving(true);
-    setPwErr('');
-    try {
-      await settingsApi.changePassword(curPw, newPw);
-      setPwMsg('비밀번호를 변경했어요.');
-      setTimeout(() => setPwOpen(false), 900);
-    } catch (e) {
-      const err = e as { response?: { data?: { detail?: string } } };
-      setPwErr(err.response?.data?.detail ?? '변경에 실패했어요. 현재 비밀번호를 확인해 주세요.');
-    } finally {
-      setPwSaving(false);
-    }
-  };
+  const roleLabel = isInstructor ? '강사' : '운영자';
+  const avatarInitial = (me?.name ?? roleLabel).slice(0, 1);
 
   return (
-    <aside className="op-side" aria-label={isInstructor ? '강사 콘솔 메뉴' : '운영 콘솔 메뉴'}>
-      <Link to={home} className="op-side-brand">
-        <img src={mascot} alt="CatChap" className="op-side-logo" />
-        <div className="op-side-brandtext">
-          <div className="op-side-name">CatChap</div>
-          <div className="op-side-sub">{isInstructor ? '강사 콘솔' : '운영 콘솔'}</div>
-        </div>
-      </Link>
-      <nav className="op-side-menu">
-        {groups.map((g) => (
-          <div key={g.key} className="op-side-group">
-            <div className="op-side-grouplabel">{g.label}</div>
-            {g.items.map((l) => {
-              const on = itemActive(l, pathname);
-              return (
-                <Link
-                  key={l.to}
-                  to={l.to}
-                  title={l.label}
-                  className={'op-side-link' + (on ? ' op-side-link--on' : '')}
-                  aria-current={on ? 'page' : undefined}
-                >
-                  <i className={`ph-fill ${l.icon}`} />
-                  <span>{l.label}</span>
-                </Link>
-              );
-            })}
-          </div>
-        ))}
-      </nav>
-      <div className="op-side-foot">
-        {isInstructor ? (
-          <button type="button" className="op-side-me" onClick={openPw} title="내 비밀번호 변경">
-            <span className="op-side-avatar">
-              <i className="ph-fill ph-chalkboard-teacher" />
-            </span>
-            <span className="op-side-mename">{me?.name ?? '강사'}</span>
+    <header className="op-top" aria-label={isInstructor ? '강사 콘솔 메뉴' : '운영 콘솔 메뉴'}>
+      {openGroup && <div className="op-top-scrim" onClick={() => setOpenGroup(null)} />}
+      <div className="op-top-inner">
+        <Link to={home} className="op-top-brand" onClick={() => setOpenGroup(null)}>
+          <img
+            src={theme === 'dark' ? wordmarkWhite : wordmarkDark}
+            alt="CATCHAP"
+            className="op-top-wordmark-img"
+          />
+          <span className="op-top-console">{isInstructor ? '강사 콘솔' : '운영 콘솔'}</span>
+        </Link>
+
+        <nav className={'op-top-nav' + (intro ? ' op-top-nav--intro' : '')}>
+          {isInstructor
+            ? INSTRUCTOR_TABS.map((l) => {
+                const on = itemActive(l, pathname);
+                return (
+                  <Link
+                    key={l.to}
+                    to={l.to}
+                    className={'op-top-tab' + (on ? ' op-top-tab--on' : '')}
+                    aria-current={on ? 'page' : undefined}
+                  >
+                    <i className={`ph ${l.icon}`} />
+                    <span>{l.label}</span>
+                  </Link>
+                );
+              })
+            : GROUPS.map((g) => {
+                const gon = groupActive(g, pathname);
+                const open = openGroup === g.key;
+                return (
+                  <div
+                    key={g.key}
+                    className="op-top-group"
+                    onMouseEnter={() => hoverOpen(g.key)}
+                    onMouseLeave={hoverClose}
+                  >
+                    <button
+                      type="button"
+                      className={
+                        'op-top-gbtn' + (gon ? ' op-top-gbtn--on' : '') + (open ? ' op-top-gbtn--open' : '')
+                      }
+                      onClick={() => setOpenGroup(open ? null : g.key)}
+                      aria-expanded={open}
+                    >
+                      {g.label}
+                      {/* 글리프를 바꾸지 않고 항상 caret-down을 두고 CSS로 180도 회전
+                          시킨다 — up/down 교체는 순간이동이라 회전 모션이 안 붙는다. */}
+                      <i className="ph-bold ph-caret-down op-top-caret" />
+                    </button>
+                    {open && (
+                      <div className="op-top-menu" role="menu">
+                        {g.items.map((l) => {
+                          const on = itemActive(l, pathname);
+                          return (
+                            <Link
+                              key={l.to}
+                              to={l.to}
+                              role="menuitem"
+                              className={'op-top-mitem' + (on ? ' op-top-mitem--on' : '')}
+                              onClick={() => setOpenGroup(null)}
+                            >
+                              <i className={`ph ${l.icon}`} />
+                              <span>{l.label}</span>
+                              {on && <i className="ph ph-check op-top-mcheck" />}
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+        </nav>
+
+        <div className="op-top-right">
+          <button type="button" className="op-top-icbtn op-top-notif" onClick={openNotif} title="알림">
+            <i className="ph ph-bell" />
+            {unread > 0 && <span className="op-top-notifbadge">{unread > 9 ? '9+' : unread}</span>}
           </button>
-        ) : (
-          <Link to={PATHS.OPS_OPERATORS} className="op-side-me" title="운영자 계정 관리">
-            <span className="op-side-avatar">
-              <i className="ph-fill ph-shield-star" />
-            </span>
-            <span className="op-side-mename">{me?.name ?? '운영자'}</span>
-          </Link>
-        )}
-        <button
-          type="button"
-          className="op-side-logout op-side-notif"
-          onClick={openNotif}
-          title="알림"
-        >
-          <i className="ph-fill ph-bell" />
-          <span>알림</span>
-          {unread > 0 && <span className="op-side-notifbadge">{unread > 9 ? '9+' : unread}</span>}
-        </button>
-        <button
-          type="button"
-          className="op-side-logout op-side-theme"
-          onClick={toggleTheme}
-          title={theme === 'dark' ? '라이트 모드로 전환' : '다크 모드로 전환'}
-        >
-          <i className={theme === 'dark' ? 'ph-fill ph-sun' : 'ph-fill ph-moon'} />
-          <span>{theme === 'dark' ? '라이트 모드' : '다크 모드'}</span>
-        </button>
-        <button type="button" className="op-side-logout" onClick={onLogout} title="로그아웃">
-          <i className="ph-fill ph-sign-out" />
-          <span>로그아웃</span>
-        </button>
+          <button
+            type="button"
+            className="op-top-icbtn"
+            onClick={toggleTheme}
+            title={theme === 'dark' ? '라이트 모드로 전환' : '다크 모드로 전환'}
+          >
+            <i className={theme === 'dark' ? 'ph ph-sun' : 'ph ph-moon'} />
+          </button>
+          <div className="op-top-divider" />
+          {isInstructor ? (
+            <Link to={PATHS.OPS_INSTRUCTOR_PROFILE} className="op-top-me" title="강사 프로필">
+              <span className="op-top-avatar">{avatarInitial}</span>
+              <span className="op-top-meblock">
+                <span className="op-top-mename">{me?.name ?? '강사'}</span>
+                <span className="op-top-merole">{roleLabel}</span>
+              </span>
+            </Link>
+          ) : (
+            <Link to={PATHS.OPS_OPERATORS} className="op-top-me" title="운영자 계정 관리">
+              <span className="op-top-avatar">{avatarInitial}</span>
+              <span className="op-top-meblock">
+                <span className="op-top-mename">{me?.name ?? '운영자'}</span>
+                <span className="op-top-merole">{roleLabel}</span>
+              </span>
+            </Link>
+          )}
+          <button type="button" className="op-top-icbtn" onClick={onLogout} title="로그아웃">
+            <i className="ph ph-sign-out" />
+          </button>
+        </div>
       </div>
 
       {/* 알림 패널 — 목록 + 읽음 처리(문항 생성 완료/실패 등) */}
@@ -277,44 +325,6 @@ export default function OpsNav() {
           </div>
         </div>
       )}
-
-      {/* 강사 본인 비밀번호 변경 모달 (OpsApproval.css 공용 모달 스타일) */}
-      {pwOpen && (
-        <div className="op-bh-overlay" onClick={() => !pwSaving && setPwOpen(false)}>
-          <div className="op-formmodal" onClick={(e) => e.stopPropagation()}>
-            <div className="op-bh-modal-h">
-              <span><i className="ph-fill ph-lock-key" /> 내 비밀번호 변경</span>
-              <button className="op-bh-modal-x" onClick={() => !pwSaving && setPwOpen(false)}>
-                <i className="ph-bold ph-x" />
-              </button>
-            </div>
-            <div className="op-form">
-              <p className="op-form-hint">현재 비밀번호를 확인한 뒤 새 비밀번호(8자 이상)로 바꿔요.</p>
-              <label className="op-form-row">
-                <span className="op-form-lb">현재 비밀번호 <b>*</b></span>
-                <input className="op-form-in" type="password" value={curPw} onChange={(e) => setCurPw(e.target.value)} placeholder="현재 비밀번호" />
-              </label>
-              <label className="op-form-row">
-                <span className="op-form-lb">새 비밀번호 <b>*</b></span>
-                <input className="op-form-in" type="password" value={newPw} onChange={(e) => setNewPw(e.target.value)} placeholder="8자 이상" />
-              </label>
-              <label className="op-form-row">
-                <span className="op-form-lb">새 비밀번호 확인 <b>*</b></span>
-                <input className="op-form-in" type="password" value={newPw2} onChange={(e) => setNewPw2(e.target.value)} placeholder="새 비밀번호 다시" />
-              </label>
-              {pwErr && <div className="op-form-err"><i className="ph-fill ph-warning-circle" />{pwErr}</div>}
-              {pwMsg && <div className="op-form-hint" style={{ color: '#1d9e6f', fontWeight: 700 }}>{pwMsg}</div>}
-              <div className="op-form-actions">
-                <button className="op-btn op-btn--reject" disabled={pwSaving} onClick={() => setPwOpen(false)}>취소</button>
-                <button className="op-btn op-btn--approve" disabled={pwSaving} onClick={changePw}>
-                  <i className="ph-bold ph-check" />
-                  {pwSaving ? '변경 중…' : '비밀번호 변경'}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-    </aside>
+    </header>
   );
 }

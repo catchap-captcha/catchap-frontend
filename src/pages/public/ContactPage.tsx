@@ -2,19 +2,22 @@ import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
 import { inquiryApi } from '../../api/misc';
-import mascot from '../../assets/characters/catchap-logo.png';
+import { useTheme } from '../../hooks/useTheme';
+import wordmark from '../../assets/brand/catchap-wordmark.png';
+import wordmarkWhite from '../../assets/brand/catchap-wordmark-white.png';
 import './ContactPage.css';
 
-const TYPES = ['기관 도입 상담', '요금·결제 문의', '기술 지원', '기타 문의'];
+const TYPES = ['기관·기업 도입 상담', '요금·결제 문의', '기술 지원', '기타 문의'];
 
-/** 원본 DCLogic의 필수 필드 오류 표시(borderColor #E23D3D + background #FFF5F5) */
-const BAD_STYLE = { borderColor: '#E23D3D', background: '#FFF5F5' } as const;
+/** 필수 필드 오류 표시 — 시맨틱 위험색 토큰(리뉴얼) */
+const BAD_STYLE = { borderColor: 'var(--danger)', background: 'var(--danger-soft)' } as const;
 
 function isEmail(v: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 }
 
 export default function ContactPage() {
+  const { theme } = useTheme();
   const [type, setType] = useState(0);
   const [sent, setSent] = useState(false);
   const [formError, setFormError] = useState('');
@@ -76,8 +79,11 @@ export default function ContactPage() {
           <Link to={PATHS.HOME} className="ct-back-link"><i className="ph-bold ph-arrow-left" />뒤로</Link>
           <div className="ct-nav-divider"></div>
           <Link to={PATHS.HOME} className="ct-brand">
-            <img src={mascot} alt="CatChap" className="ct-brand-logo" />
-            <span className="ct-brand-name">CatChap</span>
+            <img
+              src={theme === 'dark' ? wordmarkWhite : wordmark}
+              alt="CATCHAP"
+              className="ct-brand-wordmark"
+            />
           </Link>
           <div className="ct-nav-spacer"></div>
           <Link to={PATHS.LOGIN} className="ct-login-link">로그인</Link>
@@ -89,7 +95,7 @@ export default function ContactPage() {
         <div className="ct-header">
           <span className="ct-header-badge"><i className="ph-fill ph-chat-circle-text" />문의하기</span>
           <h1 className="ct-header-title">무엇을 도와드릴까요?</h1>
-          <p className="ct-header-sub">도입 상담부터 기술 지원까지, CatChap 팀이 빠르게 답해드려요.</p>
+          <p className="ct-header-sub">도입 상담부터 기술 지원까지, CatChap 팀이 빠르게 답해 드립니다.</p>
         </div>
 
         <div className="ct-grid">
@@ -132,7 +138,7 @@ export default function ContactPage() {
                   </div>
                   <div className="ct-field-half">
                     <label className="ct-label">소속 (선택)</label>
-                    <input ref={affRef} type="text" placeholder="예) 햇살초등학교" className="ct-input" />
+                    <input ref={affRef} type="text" placeholder="예) OO기업 인재개발팀" className="ct-input" />
                   </div>
                 </div>
                 <div className="ct-field">
@@ -194,7 +200,7 @@ export default function ContactPage() {
               </div>
               <div className="ct-faq-list">
                 <Link to={PATHS.SUPPORT} className="ct-faq-item">
-                  <span className="ct-faq-q">기관 코드는 어디서 받나요?</span>
+                  <span className="ct-faq-q">기관·기업 도입은 어떻게 시작하나요?</span>
                   <i className="ph-bold ph-caret-right ct-faq-caret" />
                 </Link>
                 <Link to={PATHS.SUPPORT} className="ct-faq-item">
@@ -202,7 +208,7 @@ export default function ContactPage() {
                   <i className="ph-bold ph-caret-right ct-faq-caret" />
                 </Link>
                 <Link to={PATHS.SUPPORT} className="ct-faq-item">
-                  <span className="ct-faq-q">아이 정보는 안전하게 관리되나요?</span>
+                  <span className="ct-faq-q">학습자 정보는 안전하게 관리되나요?</span>
                   <i className="ph-bold ph-caret-right ct-faq-caret" />
                 </Link>
               </div>

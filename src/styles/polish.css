@@ -10,7 +10,7 @@
 input:not([type='checkbox']):not([type='radio']):not([type='range']):focus,
 textarea:focus,
 select:focus {
-  box-shadow: 0 0 0 3px rgba(255, 90, 77, 0.08);
+  box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.1);
 }
 
 /* 내비게이션 링크 — 페이지마다 클래스가 달라 속성 선택자로 통일.
@@ -36,7 +36,7 @@ a:focus-visible,
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
-  outline: 3px solid rgba(255, 90, 77, 0.35);
+  outline: 3px solid rgba(26, 26, 26, 0.4);
   outline-offset: 2px;
 }
 

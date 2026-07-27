@@ -122,14 +122,11 @@ export default function OpsInstructorHome() {
 
               {/* 표본 검수 — 검수 대기 문항 무작위 표본으로 생성 품질을 빠르게 점검(문제은행 2단계) */}
               {data.review_sample?.length > 0 && (
-                <section className="ih-card ih-card--wide">
+                <section className="ih-card">
                   <div className="ih-card-head">
                     <i className="ph-bold ph-list-magnifying-glass" />
                     <h2 className="ih-card-title">표본 검수</h2>
                   </div>
-                  <p className="ih-card-sub">
-                    검수 대기 문항 중 무작위 표본이에요 — 강의마다 안 들어가도 생성 품질을 빠르게 확인하세요.
-                  </p>
                   <ul className="ih-sample-list">
                     {data.review_sample.map((q) => (
                       <li key={q.question_id} className="ih-sample-row">
@@ -154,44 +151,10 @@ export default function OpsInstructorHome() {
                   </Link>
                 </section>
               )}
-
-              {/* 이해도 — 강의별 확인문항 통과율(각 강의마다). 강의마다 문항이 다르므로 강의 단위. */}
-              <section className="ih-card">
-                <div className="ih-card-head">
-                  <i className="ph-bold ph-chart-bar" />
-                  <h2 className="ih-card-title">학생이 어려워하는 강의</h2>
-                </div>
-                <p className="ih-card-sub">
-                  강의 중간 확인문항 통과율이 낮을수록 학생이 그 강의를 어려워해요(강의 보강 대상).
-                </p>
-
-                {data.weak_lectures?.length > 0 ? (
-                  <ul className="ih-weak-list">
-                    {data.weak_lectures.map((l) => (
-                      <li key={l.lecture_id} className="ih-weak-row">
-                        <div className="ih-weak-top">
-                          <span className="ih-weak-prompt ih-weak-prompt--title">{l.title}</span>
-                          <span className="ih-weak-rate">{pct(l.pass_rate)}</span>
-                        </div>
-                        <div className="ih-weak-bar">
-                          <div className="ih-weak-bar-fill" style={{ width: pct(l.pass_rate) }} />
-                        </div>
-                        <span className="ih-weak-meta">
-                          확인문항 통과율 · 학생 {l.learners}명 · 시도 {l.attempts}회
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="ih-none">
-                    아직 확인문항 응시 데이터가 없어요. 학생이 강의를 보며 확인문항을 풀면 여기에
-                    강의별 통과율이 떠요.
-                  </p>
-                )}
-              </section>
             </div>
 
-            {/* 문항별 — 특정 확인문항이 유독 어렵거나 잘못 만들어졌는지(question_id 계측 후 데이터) */}
+            {/* 문항별 — 특정 확인문항이 유독 어렵거나 잘못 만들어졌는지(question_id 계측 후 데이터).
+                구체적인 문항 단위 확인이 강의 단위 통계보다 먼저 봐야 할 정보라 위로 옮김(0727). */}
             {data.weak_checkpoint_questions?.length > 0 && (
               <section className="ih-card ih-card--wide">
                 <div className="ih-card-head">
@@ -219,6 +182,41 @@ export default function OpsInstructorHome() {
                 </ul>
               </section>
             )}
+
+            {/* 이해도 — 강의별 확인문항 통과율(각 강의마다). 강의마다 문항이 다르므로 강의 단위. */}
+            <section className="ih-card ih-card--wide">
+              <div className="ih-card-head">
+                <i className="ph-bold ph-chart-bar" />
+                <h2 className="ih-card-title">학생이 어려워하는 강의</h2>
+              </div>
+              <p className="ih-card-sub">
+                강의 중간 확인문항 통과율이 낮을수록 학생이 그 강의를 어려워해요(강의 보강 대상).
+              </p>
+
+              {data.weak_lectures?.length > 0 ? (
+                <ul className="ih-weak-list">
+                  {data.weak_lectures.map((l) => (
+                    <li key={l.lecture_id} className="ih-weak-row">
+                      <div className="ih-weak-top">
+                        <span className="ih-weak-prompt ih-weak-prompt--title">{l.title}</span>
+                        <span className="ih-weak-rate">{pct(l.pass_rate)}</span>
+                      </div>
+                      <div className="ih-weak-bar">
+                        <div className="ih-weak-bar-fill" style={{ width: pct(l.pass_rate) }} />
+                      </div>
+                      <span className="ih-weak-meta">
+                        확인문항 통과율 · 학생 {l.learners}명 · 시도 {l.attempts}회
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="ih-none">
+                  아직 확인문항 응시 데이터가 없어요. 학생이 강의를 보며 확인문항을 풀면 여기에
+                  강의별 통과율이 떠요.
+                </p>
+              )}
+            </section>
           </>
         )}
       </main>

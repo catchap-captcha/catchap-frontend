@@ -30,3 +30,6 @@ dist-ssr
 
 # Playwright MCP test artifacts
 .playwright-mcp/
+
+# Claude Code working dir (launch.json 등 로컬 전용) — backend/.gitignore와 동일 규칙
+.claude/

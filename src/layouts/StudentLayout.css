@@ -1,165 +1,141 @@
-/* 학생 공통 상단 NAV — 2026-07-23 "복제본(디자인 랩) 우선 정렬".
-   랩의 시그니처인 플로팅 글래스 pill 내비로 재작성(종전 풀폭 프로스티드 톱바 → 랩 우선).
-   JSX(StudentLayout.tsx)·클래스명(sl-*)은 그대로 두고 CSS만 재구성:
-   - .sl-navbar는 투명 스티키 래퍼, .sl-navinner가 중앙에 떠 있는 둥근 pill(랩 .ap-nav 이식).
-   - 로고 도트만 코랄(브랜드 마크), 나머지 액센트는 애플 블루. 로고 부제는 랩에 맞춰 숨김.
-   - 프로필은 랩처럼 아바타 원형만(이름 pill 숨김). 아바타 색은 profileColor 유지.
-   .sl-navbar에 애플 뉴트럴+블루 토큰 스코프 오버라이드(전역 theme.css 불변). */
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+/* 학생 공통 상단 NAV — 리뉴얼(2026-07-27): handoff `CatChap 학습 홈.dc.html` 등 상단바 그대로.
+   종전 "디자인 랩" 플로팅 글래스 pill을 걷어내고, 전역 theme.css 토큰 위에 얹는 플랫 스티키
+   풀폭 바로 재구성한다(다른 리뉴얼 화면들과 동일하게 .sl-navbar에 토큰을 새로 정의하지 않음 —
+   레퍼런스 값이 theme.css --bg:#FAFAFA 등과 완전히 같다). JSX(StudentLayout.tsx)의 sl-* 클래스명은
+   그대로 두고 CSS만 재구성했다. */
 
 .sl-navbar {
-  /* 애플 토큰 스코프 (뉴트럴 + 블루 액센트) */
-  --font-display: 'SF Pro Display', 'SF Pro Text', 'Inter', -apple-system, system-ui, sans-serif;
-  --ink: #1d1d1f;
-  --ink-2: #6e6e73;
-  --ink-3: #86868b;
-  --line: rgba(0, 0, 0, 0.08);
-  --surface: #ffffff;
-  --brand: #0071e3;
-  --brand-strong: #0077ed;
-  --sl-glass: rgba(255, 255, 255, 0.72);
-  --sl-hover: rgba(0, 0, 0, 0.05);
-  --sl-ease: cubic-bezier(0.4, 0, 0.2, 1);
-  --sl-spring: cubic-bezier(0.34, 1.4, 0.5, 1);
-
   position: sticky;
   top: 0;
   z-index: 100;
-  background: transparent;
-  font-family: 'SF Pro Text', 'Inter', -apple-system, system-ui, sans-serif;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+  font-family: var(--font-display, 'Pretendard', -apple-system, system-ui, sans-serif);
   letter-spacing: -0.01em;
 }
-[data-theme='dark'] .sl-navbar {
-  --ink: #f5f5f7;
-  --ink-2: #aeaeb2;
-  --ink-3: #8e8e93;
-  --line: rgba(255, 255, 255, 0.1);
-  --surface: #1c1c1e;
-  --brand: #0a84ff;
-  --brand-strong: #409cff;
-  --sl-glass: rgba(28, 28, 30, 0.6);
-  --sl-hover: rgba(255, 255, 255, 0.08);
-}
 
-/* 웜 크림 캐스트 제거(복제본=쿨 그레이) — 학생 화면에선 뷰포트(body) 배경도 애플 쿨 그레이로.
-   왜 body냐: body 배경이 뷰포트 캔버스로 전파돼 상단 여백·오버스크롤에 전역 웜 톤이 비쳤다.
-   :has(.sl-navbar)로 공유 내비가 있는 학생 페이지에서만 적용 → 강사·운영 콘솔(웜 브랜드) 무관. */
-body:has(.sl-navbar) { background: #f5f5f7; }
-[data-theme='dark'] body:has(.sl-navbar) { background: #000000; }
-
-/* 플로팅 pill (랩 .ap-nav) */
 .sl-navinner {
-  width: min(1080px, calc(100% - 32px));
-  margin: 14px auto 0;
-  height: 58px;
-  padding: 0 12px 0 18px;
-  border-radius: 22px;
+  max-width: min(2280px, 94vw);
+  margin: 0 auto;
+  padding: 13px 28px;
   display: flex;
   align-items: center;
-  gap: 22px;
-  background: var(--sl-glass);
-  backdrop-filter: saturate(180%) blur(24px);
-  -webkit-backdrop-filter: saturate(180%) blur(24px);
-  border: 0.5px solid var(--line);
-  box-shadow: 0 10px 34px -14px rgba(0, 0, 0, 0.22);
+  gap: 28px;
 }
 
 .sl-logo {
   display: flex;
   align-items: center;
-  gap: 8px;
-}
-
-/* 로고 도트 — 코랄(브랜드 마크)만 유지 */
-.sl-logobadge {
-  width: 24px;
-  height: 24px;
-  border-radius: 7px;
-  background: linear-gradient(135deg, #ff5a5f, #ff375f);
-  color: #fff;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: 13px;
-  line-height: 1;
+  gap: 9px;
+  text-decoration: none;
+  color: inherit;
   flex-shrink: 0;
 }
 
-.sl-logotext {
-  display: flex;
-  flex-direction: column;
-  line-height: 1;
+.sl-logomark {
+  height: 19px;
+  width: auto;
+  display: block;
 }
 
-.sl-logotitle {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 17px;
-  color: var(--ink);
-  letter-spacing: -0.02em;
-}
-
-/* 랩 로고엔 부제가 없다 — 숨겨 pill을 콤팩트하게 */
 .sl-logosub {
-  display: none;
+  font-size: 12px;
+  color: var(--ink-3);
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 .sl-menu {
   display: flex;
   align-items: center;
-  gap: 22px;
-  margin-left: 6px;
+  gap: 2px;
 }
 
+/* 콘솔 카테고리 nav — Tesla식 미세 모션: 호버/활성 시 둥근 알약이 부드럽게 페이드·스케일 인,
+   그리고 로드 때 메뉴가 순차로 살짝 내려오며 나타난다(Tesla 공식 홈 느낌). */
 .sl-navlink {
-  text-decoration: none;
+  position: relative;
+  isolation: isolate; /* 텍스트를 ::before 알약 위로 */
+  padding: 8px 15px;
+  border-radius: 999px;
+  font-weight: 600;
   font-size: 14px;
-  font-weight: 500;
-  color: var(--ink-2);
-  transition: color 0.2s var(--sl-ease);
+  color: var(--ink-3);
+  text-decoration: none;
+  transition: color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  /* 진입 애니메이션(순차 stagger는 nth-child에서) */
+  opacity: 0;
+  animation: sl-navlink-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-.sl-navlink.sl-active {
-  font-weight: 600;
-  color: var(--ink);
+/* 호버/활성 시 뒤에서 떠오르는 알약 배경 */
+.sl-navlink::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: var(--bg);
+  opacity: 0;
+  transform: scale(0.82);
+  transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.4s cubic-bezier(0.34, 1.4, 0.5, 1);
 }
 
 .sl-navlink:hover {
   color: var(--ink);
+}
+.sl-navlink:hover::before {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.sl-navlink.sl-active {
+  font-weight: 700;
+  color: var(--ink);
+}
+.sl-navlink.sl-active::before {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* stagger — 메뉴 항목이 순서대로 나타난다 */
+.sl-menu > .sl-navlink:nth-child(1) { animation-delay: 0.04s; }
+.sl-menu > .sl-navlink:nth-child(2) { animation-delay: 0.11s; }
+.sl-menu > .sl-navlink:nth-child(3) { animation-delay: 0.18s; }
+.sl-menu > .sl-navlink:nth-child(4) { animation-delay: 0.25s; }
+
+@keyframes sl-navlink-in {
+  from { opacity: 0; transform: translateY(-7px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 모션 최소화 선호 시 — 진입/이징 제거하고 즉시 표시 */
+@media (prefers-reduced-motion: reduce) {
+  .sl-navlink { opacity: 1; animation: none; }
+  .sl-navlink::before { transition: none; }
 }
 
 .sl-right {
   margin-left: auto;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 14px;
 }
 
 .sl-iconbtn {
-  width: 32px;
-  height: 32px;
-  border: none;
-  border-radius: 50%;
-  background: transparent;
-  color: var(--ink-2);
-  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--ink-2);
+  cursor: pointer;
   text-decoration: none;
-  transition: background 0.2s var(--sl-ease), color 0.2s var(--sl-ease);
-}
-
-.sl-iconbtn:hover {
-  background: var(--sl-hover);
-  color: var(--ink);
+  padding: 0;
 }
 
 .sl-iconbtn i {
-  font-size: 17px;
+  font-size: 20px;
 }
 
 .sl-bell {
@@ -168,63 +144,51 @@ body:has(.sl-navbar) { background: #f5f5f7; }
 
 .sl-belldot {
   position: absolute;
-  top: 5px;
-  right: 6px;
-  width: 8px;
-  height: 8px;
-  background: var(--brand);
+  top: -2px;
+  right: -2px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
-  border: 2px solid var(--sl-glass);
+  background: var(--brand);
 }
 
-/* 프로필 — 랩처럼 아바타 원형만 (이름 pill 제거) */
+/* 프로필 — 레퍼런스처럼 아바타 원 + 이름 텍스트 */
+.sl-profilewrap {
+  position: relative;
+  display: inline-flex;
+}
+
 .sl-profile {
-  text-decoration: none;
   display: flex;
   align-items: center;
-  background: transparent;
-  border: none;
-  padding: 0;
-  box-shadow: none;
-  cursor: pointer;
-  margin-left: 2px;
-  transition: transform 0.2s var(--sl-spring);
-}
-
-.sl-profile:hover {
-  transform: scale(1.06);
+  gap: 8px;
+  padding-left: 6px;
+  text-decoration: none;
+  color: inherit;
+  font-family: inherit;
 }
 
 .sl-avatar {
-  position: relative;
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .sl-avatarinitial {
   color: #fff;
   font-weight: 700;
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1;
 }
 
-.sl-hat {
-  position: absolute;
-  top: -2px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 14px;
-  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.15));
-}
-
-/* 이름은 랩 스타일에 맞춰 숨김 */
 .sl-profilename {
-  display: none;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
 }
 
 /* ── 햄버거: 데스크톱 숨김, 모바일 노출 ── */
@@ -241,11 +205,10 @@ body:has(.sl-navbar) { background: #f5f5f7; }
   align-items: center;
   justify-content: center;
   gap: 5px;
-  transition: background 0.2s var(--sl-ease);
 }
 
 .sl-burger:hover {
-  background: var(--sl-hover);
+  background: var(--bg);
 }
 
 .sl-burger span {
@@ -260,11 +223,9 @@ body:has(.sl-navbar) { background: #f5f5f7; }
 .sl-burger-open span:nth-child(1) {
   transform: translateY(7px) rotate(45deg);
 }
-
 .sl-burger-open span:nth-child(2) {
   opacity: 0;
 }
-
 .sl-burger-open span:nth-child(3) {
   transform: translateY(-7px) rotate(-45deg);
 }
@@ -272,15 +233,12 @@ body:has(.sl-navbar) { background: #f5f5f7; }
 /* ── 태블릿/모바일 (≤768px) ── */
 @media (max-width: 768px) {
   .sl-navinner {
-    width: calc(100% - 20px);
-    margin: 10px auto 0;
-    height: 54px;
-    padding: 0 10px 0 14px;
+    padding: 12px 16px;
     gap: 12px;
   }
 
-  .sl-logotitle {
-    font-size: 16px;
+  .sl-logosub {
+    display: none;
   }
 
   .sl-burger {
@@ -288,23 +246,18 @@ body:has(.sl-navbar) { background: #f5f5f7; }
     order: 3;
   }
 
-  /* 메뉴: pill 아래로 떨어지는 글래스 패널 */
   .sl-menu {
     position: absolute;
-    top: calc(100% + 8px);
+    top: 100%;
     left: 0;
     right: 0;
     flex-direction: column;
     align-items: stretch;
     gap: 2px;
-    margin-left: 0;
-    padding: 10px 14px 14px;
-    border-radius: 20px;
-    background: var(--sl-glass);
-    backdrop-filter: saturate(180%) blur(24px);
-    -webkit-backdrop-filter: saturate(180%) blur(24px);
-    border: 0.5px solid var(--line);
-    box-shadow: 0 16px 34px -16px rgba(0, 0, 0, 0.3);
+    padding: 8px 14px 14px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--line);
+    box-shadow: 0 16px 34px -16px rgba(0, 0, 0, 0.2);
     display: none;
   }
 
@@ -315,11 +268,6 @@ body:has(.sl-navbar) { background: #f5f5f7; }
   .sl-navlink {
     padding: 12px 14px;
     font-size: 16px;
-    border-radius: 12px;
-  }
-
-  .sl-navlink:hover {
-    background: var(--sl-hover);
   }
 
   .sl-logo {
@@ -329,48 +277,24 @@ body:has(.sl-navbar) { background: #f5f5f7; }
   .sl-right {
     margin-left: auto;
     order: 2;
-    gap: 6px;
+    gap: 10px;
+  }
+
+  .sl-profilename {
+    display: none;
   }
 }
 
-@media (max-width: 480px) {
-  .sl-navinner {
-    gap: 8px;
-  }
-  .sl-logotitle {
-    font-size: 15px;
-  }
-  .sl-right {
-    gap: 4px;
-  }
-}
-
-/* ── 프로필 드롭다운 — 애플 카드 ── */
-.sl-profilewrap {
-  position: relative;
-  display: inline-flex;
-}
-.sl-profile {
-  font-family: inherit;
-  font-size: inherit;
-}
-.sl-profilecaret {
-  font-size: 12px;
-  color: var(--ink-3);
-  transition: transform 0.2s var(--sl-ease);
-}
-.sl-profilewrap-open .sl-profilecaret {
-  transform: rotate(180deg);
-}
+/* ── 프로필 드롭다운 ── */
 .sl-dropdown {
   position: absolute;
   right: 0;
   top: calc(100% + 12px);
   min-width: 184px;
   background: var(--surface);
-  border: 0.5px solid var(--line);
-  border-radius: 16px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04), 0 20px 44px -16px rgba(0, 0, 0, 0.32);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  box-shadow: var(--shadow-md);
   padding: 7px;
   display: none;
   flex-direction: column;
@@ -394,7 +318,7 @@ body:has(.sl-navbar) { background: #f5f5f7; }
   padding: 10px 12px;
   border: none;
   background: none;
-  border-radius: 10px;
+  border-radius: calc(var(--r) - 4px);
   font-family: inherit;
   font-size: 14px;
   font-weight: 500;
@@ -402,18 +326,21 @@ body:has(.sl-navbar) { background: #f5f5f7; }
   text-decoration: none;
   cursor: pointer;
   text-align: left;
-  transition: background 0.15s var(--sl-ease);
+  transition: background 0.15s;
 }
 .sl-dropitem i {
   font-size: 17px;
   color: var(--ink-3);
 }
 .sl-dropitem:hover {
-  background: var(--sl-hover);
+  background: var(--bg);
 }
 .sl-dropitem-danger {
-  color: #ff3b30;
+  color: var(--danger);
 }
 .sl-dropitem-danger i {
-  color: #ff3b30;
+  color: var(--danger);
 }
+
+/* 학생 화면 뷰포트 배경 — 전역 theme.css --bg와 동일(레퍼런스 #FAFAFA) */
+body:has(.sl-navbar) { background: var(--bg); }

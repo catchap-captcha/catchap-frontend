@@ -1,5 +1,4 @@
 import { courseCover } from '../../utils/courseCover';
-import CatMark from '../brand/CatMark';
 import './CourseCover.css';
 
 /**
@@ -25,17 +24,14 @@ export default function CourseCover({
   const art = courseCover(seed, label);
   return (
     <div
-      className={`cover cover--${size} cover--pat${art.pattern}${className ? ` ${className}` : ''}`}
+      className={`cover cover--${size}${className ? ` ${className}` : ''}`}
       style={{ ['--cover-from' as string]: art.from, ['--cover-to' as string]: art.to }}
       aria-hidden="true"
     >
       {imageUrl ? (
         <img src={imageUrl} alt="" className="cover-img" loading="lazy" />
       ) : (
-        <>
-          <CatMark size={size === 'sm' ? 34 : 72} variant="ghost" whiskers={false} className="cover-cat" />
-          <span className="cover-mono">{art.monogram}</span>
-        </>
+        <span className="cover-mono">{art.monogram}</span>
       )}
     </div>
   );

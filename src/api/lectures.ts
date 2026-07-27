@@ -167,6 +167,8 @@ export interface OpsCourse {
   lecture_count: number;
   /** 수강 인원(active) — 강사 운영 지표. 학생 화면엔 안 보이고 강사 콘솔에만 노출. */
   enrolled_count: number;
+  /** 코스 대표 썸네일 서빙 URL(상대경로, thumbnailSrc로 절대화). null이면 자동 커버 폴백. */
+  thumbnail_url?: string | null;
   created_at: string | null;
 }
 
@@ -281,6 +283,58 @@ export interface InstructorDashboard {
     attempts: number;
     learners: number;
     review: boolean;
+  }[];
+}
+
+/** 코스 상세(코스 관리 화면) — 코스 메타 + 소속 강의 목록. GET /ops/courses/{id}/detail. */
+export interface OpsCourseDetail extends OpsCourse {
+  lectures: OpsLecture[];
+}
+
+/** 문항 검수 큐 항목 — 강의 문항(OpsLectureQuestion) + 소속 강의 제목. */
+export interface ReviewQueueItem extends OpsLectureQuestion {
+  lecture_title: string;
+}
+export interface ReviewQueuePage {
+  items: ReviewQueueItem[];
+  total: number;
+  page: number;
+  page_size: number;
+  counts: { pending: number; review: number; published: number };
+}
+
+/** 학습 분석(강사) — 코스·강의별 완주 추이. GET /ops/instructor/analytics.
+ *  completed_at 컬럼이 없어(스키마 변경 금지) lecture_completions는 근사치(서버 주석 참조). */
+export interface InstructorAnalytics {
+  lecture_count: number;
+  course_count: number;
+  active_learners: number; // 내 강의를 학습한 distinct 학생
+  checkpoint_pass_rate: number | null; // 확인문항 전체 통과율(근사 아님 — 실측 이벤트 집계)
+  watch_completion_rate: number | null; // 시청 완주율(전체 근사 퍼널용)
+  course_completion_rate: number | null; // 코스 수료율(전체 근사 퍼널용)
+  weekly: {
+    week_start: string; // YYYY-MM-DD(그 주 월요일)
+    lecture_completions: number; // 근사치
+    course_completions: number; // 정본(CourseCompletion.passed_at)
+  }[];
+  per_course: {
+    course_id: string;
+    title: string;
+    enrolled_count: number;
+    completed_count: number;
+    completion_rate: number | null; // 응시 0이면 null
+    exam_pass_rate: number | null; // 시험문항 없거나 시도 0이면 null
+  }[];
+  per_lecture: {
+    lecture_id: string;
+    title: string;
+    subject: string;
+    started_count: number;
+    completed_count: number;
+    completion_rate: number;
+    avg_watch_pct: number | null; // 근사치(서버 주석 참조)
+    checkpoint_pass_rate: number | null; // 확인문항 통과율(시도 0이면 null)
+    checkpoint_learners: number;
   }[];
 }
 
@@ -585,8 +639,12 @@ export const lectureApi = {
 
   /** 코스 생성 — subject는 여기서 고정된다(생성 후 못 바꿈). 미지원 과목은 400. */
   /** 코스 생성 — 코스 중심 전환: subject는 안 보냄(서버 기본 '일반'). category로 분류(선택). */
-  opsCourseCreate: (body: { title: string; category?: string | null; description?: string | null }) =>
-    client.post<OpsCourse>('/ops/courses', body).then((r) => r.data),
+  opsCourseCreate: (body: {
+    title: string;
+    subject?: string;
+    category?: string | null;
+    description?: string | null;
+  }) => client.post<OpsCourse>('/ops/courses', body).then((r) => r.data),
 
   /** 코스 수정 — subject는 못 바꾼다(레거시 고정). category(분류)·제목·소개·순서·상태만. */
   opsCourseUpdate: (
@@ -620,6 +678,23 @@ export const lectureApi = {
   /** 강사 홈 대시보드 — 내 강의/코스 전반의 검수 대기·학생 참여·약한 문항(강사 전용). */
   opsInstructorDashboard: () =>
     client.get<InstructorDashboard>('/ops/instructor/dashboard').then((r) => r.data),
+
+  /** 코스 상세(코스 관리 화면) — 코스 메타 + 소속 강의 목록을 한 번에. */
+  opsCourseDetail: (courseId: string) =>
+    client.get<OpsCourseDetail>(`/ops/courses/${courseId}/detail`).then((r) => r.data),
+
+  /** 문항 검수 큐 — 검수 대기(draft) 확인문항 전량을 페이지네이션으로(강사 전용). 승인은
+   *  opsQuestionUpdate(status:'active'), 반려는 opsQuestionDelete를 그대로 재사용한다. */
+  opsQuestionReviewQueue: (params?: {
+    tab?: 'pending' | 'review' | 'published';
+    page?: number;
+    page_size?: number;
+    lecture_id?: string;
+  }) => client.get<ReviewQueuePage>('/ops/questions/review-queue', { params }).then((r) => r.data),
+
+  /** 학습 분석(강사) — 주간 완주 추이 + 코스별·강의별 요약. */
+  opsInstructorAnalytics: () =>
+    client.get<InstructorAnalytics>('/ops/instructor/analytics').then((r) => r.data),
 
   /** 시험 문항 이미지 첨부(multipart) — 강의 문항과 동일 패턴. 같은 슬롯에 있으면 교체. */
   opsExamImageAttach: (

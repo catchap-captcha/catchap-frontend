@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
 import { studentApi } from '../../api/students';
 import { lectureApi, type StudentCourse } from '../../api/lectures';
-import ScreenTimeReminder from '../../components/motion/ScreenTimeReminder';
 import { StudentNav } from '../../layouts/StudentLayout';
 import './AllLearning.css';
 
@@ -184,7 +183,6 @@ export default function AllLearning() {
               const unlocked = c.unlocked_question_count ?? 0;
               const lecturesDone = c.exam?.lectures_done ?? 0;
               const lecturesTotal = c.exam?.lectures_total ?? c.lecture_count;
-              const examReady = !!c.exam?.available && !c.exam?.passed;
               const practiceHref = `${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(c.subject)}&bank=1&course=${c.id}`;
               return (
                 <article key={c.id} className="al-course">
@@ -221,23 +219,12 @@ export default function AllLearning() {
                       <i className="ph-bold ph-monitor-play" /> 강의 보러 가기
                     </Link>
                   )}
-
-                  {examReady && (
-                    <Link
-                      to={`${PATHS.STUDENT_COURSE_EXAM}?course=${c.id}`}
-                      className="al-course-examlink"
-                    >
-                      <i className="ph-bold ph-exam" /> 수료 시험 보기
-                    </Link>
-                  )}
                 </article>
               );
             })}
           </div>
         )}
       </section>
-
-      <ScreenTimeReminder />
     </div>
   );
 }

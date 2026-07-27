@@ -323,18 +323,14 @@ export default function OpsLectures() {
         <div className="op-head">
           <div>
             <h1 className="op-title">강의 관리</h1>
-            <p className="op-sub">
-              시청 검증 강의의 <b>영상 업로드·확인 문항·자료실</b>을 관리해요. 확인 문항이 없는
-              강의는 <b>시청 검증이 동작하지 않아요</b>(확인 없이 끝까지 재생) — 업로드 후 꼭
-              문항을 등록하세요.
-            </p>
+            <p className="op-sub">시청 검증 강의의 영상 업로드·확인 문항·자료실을 관리해요.</p>
           </div>
           <div className="op-lect-headbtns">
             <button className="op-btn op-btn--soft" onClick={openGuide}>
               <i className="ph-bold ph-question" />
               이용 안내
             </button>
-            <button className="op-btn op-btn--reject" onClick={() => setModal({ mode: 'courses' })}>
+            <button className="op-lect-btn-secondary" onClick={() => setModal({ mode: 'courses' })}>
               <i className="ph-bold ph-stack" />
               코스 관리
             </button>
@@ -343,12 +339,17 @@ export default function OpsLectures() {
               휴지통
             </button>
             {!isOps && (
-              <button className="op-refresh" onClick={() => setModal({ mode: 'create' })}>
+              <button className="op-lect-btn-primary" onClick={() => setModal({ mode: 'create' })}>
                 <i className="ph-bold ph-upload-simple" />
                 강의 업로드
               </button>
             )}
           </div>
+        </div>
+
+        <div className="op-lect-notice">
+          <i className="ph-fill ph-warning" />
+          <span>확인 문항이 없는 강의는 시청 검증이 동작하지 않아요 — 업로드 후 꼭 문항을 등록하세요.</span>
         </div>
 
         {/* 운영자는 감독·검수 전용 — 저작(업로드·편집·문항)은 강사가 한다(ops 권한 B) */}
@@ -394,22 +395,31 @@ export default function OpsLectures() {
                 </button>
               )}
             </div>
-            <select
-              className="op-lect-subjfilter"
-              value={subjFilter}
-              onChange={(e) => {
-                setSubjFilter(e.target.value);
-                setCourseFilter(''); // 과목이 바뀌면 코스 선택은 안 맞을 수 있어 초기화
-              }}
-              aria-label="과목 필터"
-            >
-              <option value="">전체 과목</option>
+            <div className="op-lect-chips" role="group" aria-label="과목 필터">
+              <button
+                type="button"
+                className={`op-lect-chip${subjFilter === '' ? ' op-lect-chip--on' : ''}`}
+                onClick={() => {
+                  setSubjFilter('');
+                  setCourseFilter('');
+                }}
+              >
+                전체 과목
+              </button>
               {subjectOptions.map((s) => (
-                <option key={s} value={s}>
+                <button
+                  key={s}
+                  type="button"
+                  className={`op-lect-chip${subjFilter === s ? ' op-lect-chip--on' : ''}`}
+                  onClick={() => {
+                    setSubjFilter(s);
+                    setCourseFilter('');
+                  }}
+                >
                   {s}
-                </option>
+                </button>
               ))}
-            </select>
+            </div>
             {courseOptions.length > 0 && (
               <select
                 className="op-lect-subjfilter"
@@ -1762,7 +1772,10 @@ const EXAM_ORIGIN_LABEL: Record<ExamOrigin, string> = {
   llm: 'AI',
 };
 
-function ExamQuestionsModal({
+/** 코스 수료 시험 문항 모달 — '코스 관리'(OpsLectures 내 CoursesModal) 안에서 코스별
+ *  '수료 시험 문항' 버튼으로 여는 것과 완전히 같은 컴포넌트를, 코스 관리 전용 화면
+ *  (OpsCourses.tsx)의 '시험 문항' 버튼에서도 그대로 재사용한다(중복 구현 대신 export). */
+export function ExamQuestionsModal({
   course,
   onClose,
   say,
@@ -2509,14 +2522,19 @@ function TranscriptBar({
   );
 }
 
-function QuestionsModal({
+/** 확인 문항 모달 — '강의 관리' 목록에서 여는 것과 완전히 같은 컴포넌트를 '문항 검수' 화면
+ *  (OpsQuestionReview.tsx)의 '수정' 버튼에서도 그대로 재사용한다(중복 구현 대신 export).
+ *  initialEditId를 주면 목록 로드 후 그 문항의 편집 폼을 자동으로 연다(딥링크 진입점). */
+export function QuestionsModal({
   lec,
   onClose,
   onChanged,
+  initialEditId,
 }: {
   lec: OpsLecture;
   onClose: () => void;
   onChanged: () => void;
+  initialEditId?: string;
 }) {
   const { me } = useAuth();
   const isOps = me?.role === 'ops'; // 운영자는 문항 조회(검수)만, 저작(추가·AI·자막·수정/삭제) 숨김
@@ -2612,6 +2630,19 @@ function QuestionsModal({
       alignedUpTo: q.options.length,
     });
   };
+
+  // 딥링크 진입 — '문항 검수' 화면에서 특정 문항의 '수정'을 눌러 들어오면, 목록이 로드되는
+  // 대로 그 문항의 편집 폼을 자동으로 연다(한 번만 — ref로 재적용 방지, 저장 후 재로드에서
+  // 다시 튀어 열리지 않게).
+  const appliedInitialEditRef = useRef(false);
+  useEffect(() => {
+    if (!initialEditId || appliedInitialEditRef.current || !items) return;
+    const target = items.find((q) => q.id === initialEditId);
+    if (target) {
+      appliedInitialEditRef.current = true;
+      openEdit(target);
+    }
+  }, [items, initialEditId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const save = async () => {
     if (!form) return;

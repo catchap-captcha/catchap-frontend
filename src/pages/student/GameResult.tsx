@@ -210,7 +210,7 @@ export default function GameResult() {
               : 'zero';
   const PERF: Record<string, { title: string; icon: string; color: string; soft: string; ai: string; sub: string; ribbon: string }> = {
     perfect: {
-      title: `${name}님, 전 문항을 맞혔습니다`, icon: 'ph-fill ph-trophy', color: '#17B08C', soft: '#DFF6ED',
+      title: `${name}님, 전 문항을 맞혔습니다`, icon: 'ph-fill ph-trophy', color: 'var(--ok)', soft: 'var(--ok-soft)',
       ribbon: '전 문항 정답', sub: '한 문항도 틀리지 않았어요. 이 과목의 이해도가 높습니다.',
       ai: '전 문항을 맞혔습니다. 이 과목의 이해도가 높습니다.',
     },

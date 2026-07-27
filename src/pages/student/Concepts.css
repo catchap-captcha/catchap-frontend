@@ -3,20 +3,18 @@
    자체 전체화면 루트(.cp-nav 내장)라 파일 끝에 body:has(.cp-root) 뷰포트 쿨 폴백을 둔다.
    정답=초록(--ok)·분류(과목) 색은 의미색이라 그대로 둔다. */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-
 .cp-root {
-  --font-display: 'SF Pro Display', 'SF Pro Text', 'Inter', -apple-system, system-ui, sans-serif;
+  --font-display: 'Pretendard', -apple-system, system-ui, sans-serif;
   --bg: #f5f5f7; --surface: #ffffff; --surface-2: #f5f5f7;
   --ink: #1d1d1f; --ink-2: #6e6e73; --ink-3: #86868b;
   --line: rgba(0, 0, 0, 0.08); --line-strong: rgba(0, 0, 0, 0.14);
-  --brand: #0071e3; --brand-strong: #0077ed; --brand-soft: rgba(0, 113, 227, 0.12); --brand-ink: #0071e3; --on-brand: #fff;
-  font-family: 'SF Pro Text', 'Inter', -apple-system, system-ui, sans-serif; letter-spacing: -0.01em; -webkit-font-smoothing: antialiased;
+  --brand: #1a1a1a; --brand-strong: #000000; --brand-soft: rgba(26, 26, 26, 0.12); --brand-ink: #1a1a1a; --on-brand: #fff;
+  font-family: 'Pretendard', -apple-system, system-ui, sans-serif; letter-spacing: -0.01em; -webkit-font-smoothing: antialiased;
 }
 [data-theme='dark'] .cp-root {
   --bg: #000; --surface: #1c1c1e; --surface-2: #0a0a0a; --ink: #f5f5f7; --ink-2: #aeaeb2; --ink-3: #8e8e93;
   --line: rgba(255, 255, 255, 0.1); --line-strong: rgba(255, 255, 255, 0.18);
-  --brand: #0a84ff; --brand-strong: #409cff; --brand-soft: rgba(10, 132, 255, 0.18); --brand-ink: #409cff;
+  --brand: #f5f5f7; --on-brand:#161616; --brand-strong: #ffffff; --brand-soft: rgba(245, 245, 247, 0.18); --brand-ink: #ffffff;
 }
 
 /* rotate는 비트맵 마스코트를 매 프레임 리샘플링해 번져 보임 → 이동만 남김 */

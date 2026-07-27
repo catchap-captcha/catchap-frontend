@@ -3,9 +3,11 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { PATHS } from '../routes/paths';
 import { useAuth } from '../hooks/useAuth';
 import { useUnreadNotifications } from '../hooks/useUnreadNotifications';
-import ScreenTimeReminder from '../components/motion/ScreenTimeReminder';
 import ThemeToggle from '../components/common/ThemeToggle';
 import { profileColor } from '../utils/profileColor';
+import { useTheme } from '../hooks/useTheme';
+import wordmark from '../assets/brand/catchap-wordmark.png';
+import wordmarkWhite from '../assets/brand/catchap-wordmark-white.png';
 import './StudentLayout.css';
 
 /**
@@ -33,6 +35,7 @@ export function StudentNav({
   onHomeClick?: () => void;
 }) {
   const { me, logout } = useAuth();
+  const { theme } = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false); // 모바일 햄버거 메뉴 열림 상태
@@ -57,25 +60,26 @@ export function StudentNav({
   return (
     <div className="sl-navbar">
       <div className="sl-navinner">
-        <Link to={PATHS.STUDENT_HOME} className="sl-logo" style={{ textDecoration: 'none', color: 'inherit' }}>
-          <span className="sl-logobadge">C</span>
-          <div className="sl-logotext">
-            <span className="sl-logotitle">CatChap</span>
-            <span className="sl-logosub">시청을 검증하는 강의 학습</span>
-          </div>
+        <Link to={PATHS.STUDENT_HOME} className="sl-logo">
+          <img
+            src={theme === 'dark' ? wordmarkWhite : wordmark}
+            alt="CATCHAP"
+            className="sl-logomark"
+          />
+          <span className="sl-logosub">시청을 검증하는 강의 학습</span>
         </Link>
         <nav className={`sl-menu${menuOpen ? ' sl-menu-open' : ''}`}>
           {onHomeClick ? (
             <a href="#" onClick={() => { closeMenu(); onHomeClick(); }} className={cls('home')}>
-              홈
+              강의 홈
             </a>
           ) : (
             <Link to={PATHS.STUDENT_HOME} className={cls('home')} onClick={closeMenu}>
-              홈
+              강의 홈
             </Link>
           )}
           <Link to={PATHS.STUDENT_LECTURES} className={cls('lectures')} onClick={closeMenu}>
-            강의
+            강의 신청
           </Link>
           <Link to={PATHS.STUDENT_ALL_LEARNING} className={cls('all')} onClick={closeMenu}>
             문제은행
@@ -117,13 +121,10 @@ export function StudentNav({
               </div>
               <span className="sl-profilename">{name}</span>
             </Link>
-            {/* 실서비스식 빠른 허브 — 마이페이지·나의 기록·설정·로그아웃 */}
+            {/* 실서비스식 빠른 허브 — 마이페이지·설정·로그아웃(나의 기록은 상단 nav에 이미 있어 중복 제거) */}
             <div className="sl-dropdown" role="menu">
               <Link to={PATHS.STUDENT_MYPAGE} className="sl-dropitem" role="menuitem" onClick={() => setProfileOpen(false)}>
                 <i className="ph-fill ph-user" /> 마이페이지
-              </Link>
-              <Link to={PATHS.STUDENT_RECORDS} className="sl-dropitem" role="menuitem" onClick={() => setProfileOpen(false)}>
-                <i className="ph-fill ph-chart-line-up" /> 나의 기록
               </Link>
               <Link to={`${PATHS.STUDENT_MYPAGE}?tab=account`} className="sl-dropitem" role="menuitem" onClick={() => setProfileOpen(false)}>
                 <i className="ph-fill ph-gear-six" /> 설정
@@ -157,7 +158,6 @@ export default function StudentLayout({
     <div className={className} style={style}>
       <StudentNav active={active} onHomeClick={onHomeClick} />
       {children}
-      <ScreenTimeReminder />
     </div>
   );
 }

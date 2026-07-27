@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
 import { authApi } from '../../api/auth';
-import mascot from '../../assets/characters/catchap-logo.png';
+import wordmarkWhite from '../../assets/brand/catchap-wordmark-white.png';
 import './PasswordResetPage.css';
 import PasswordInput from '../../components/common/PasswordInput';
 
@@ -111,14 +111,9 @@ export default function PasswordResetPage() {
       <div className="pr-left">
         <div className="pr-deco-1"></div>
         <div className="pr-deco-2"></div>
-        <div className="pr-deco-3"></div>
-        <div className="pr-deco-4"></div>
 
         <Link to={PATHS.LOGIN} className="pr-brand">
-          <div className="pr-brand-badge">
-            <img src={mascot} alt="CatChap" className="pr-brand-img" />
-          </div>
-          <span className="pr-brand-name">CatChap</span>
+          <img src={wordmarkWhite} alt="CATCHAP" className="pr-brand-wordmark" />
         </Link>
 
         <div className="pr-hero">
@@ -232,7 +227,7 @@ export default function PasswordResetPage() {
               <div className="pr-info">
                 <i className="ph-fill ph-info pr-info-icon"></i>
                 <p className="pr-info-text">
-                  학생 계정은 보호자 또는 소속 기관 이메일로 재설정할 수 있어요.
+                  학습자 계정은 보호자 또는 소속 기관 이메일로 재설정할 수 있어요.
                 </p>
               </div>
             </div>

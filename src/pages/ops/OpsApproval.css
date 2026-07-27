@@ -6,11 +6,9 @@
    ★의미색 보존: 상태 배지(대기/승인/거절)·성공(초록)·위험(빨강)·경고(노랑)·정보(파랑),
    행동데이터 차트/게이지/위험도 색은 그대로 둔다(브랜드 블루로 바꾸지 않음). */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-
 .op-root {
   /* ── 애플 디자인 토큰 (콘솔 공용 스코프) — 브랜드 코랄만 애플 블루로, 의미색은 전역 유지 ── */
-  --font-display: 'SF Pro Display', 'SF Pro Text', 'Inter', -apple-system, system-ui, sans-serif;
+  --font-display: 'Pretendard', -apple-system, system-ui, sans-serif;
   --bg: #f5f5f7;
   --surface: #ffffff;
   --surface-2: #f5f5f7;
@@ -19,11 +17,11 @@
   --ink-3: #86868b;
   --line: rgba(0, 0, 0, 0.08);
   --line-strong: rgba(0, 0, 0, 0.14);
-  --brand: #0071e3;
-  --brand-strong: #0077ed;
-  --brand-soft: rgba(0, 113, 227, 0.12);
-  --brand-soft-line: rgba(0, 113, 227, 0.22);
-  --brand-ink: #0071e3;
+  --brand: #1a1a1a;
+  --brand-strong: #000000;
+  --brand-soft: rgba(26, 26, 26, 0.12);
+  --brand-soft-line: rgba(26, 26, 26, 0.22);
+  --brand-ink: #1a1a1a;
   --on-brand: #ffffff;
   /* 애플 소프트 섀도우(쿨) — 종전 웜 브라운 섀도우 대체 */
   --op-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 14px 30px -18px rgba(0, 0, 0, 0.16);
@@ -34,7 +32,7 @@
     radial-gradient(1100px 560px at 85% -10%, var(--brand-soft) 0%, transparent 60%),
     radial-gradient(900px 500px at 2% 6%, var(--info-soft) 0%, transparent 55%),
     var(--bg);
-  font-family: 'SF Pro Text', 'Inter', -apple-system, system-ui, sans-serif;
+  font-family: 'Pretendard', -apple-system, system-ui, sans-serif;
   letter-spacing: -0.01em;
   -webkit-font-smoothing: antialiased;
   padding-bottom: 60px;
@@ -48,11 +46,11 @@
   --ink-3: #8e8e93;
   --line: rgba(255, 255, 255, 0.1);
   --line-strong: rgba(255, 255, 255, 0.18);
-  --brand: #0a84ff;
-  --brand-strong: #409cff;
-  --brand-soft: rgba(10, 132, 255, 0.18);
-  --brand-soft-line: rgba(10, 132, 255, 0.3);
-  --brand-ink: #409cff;
+  --brand: #f5f5f7; --on-brand:#161616;
+  --brand-strong: #ffffff;
+  --brand-soft: rgba(245, 245, 247, 0.18);
+  --brand-soft-line: rgba(245, 245, 247, 0.3);
+  --brand-ink: #ffffff;
   --op-shadow: 0 8px 24px -14px rgba(0, 0, 0, 0.6);
   --op-shadow-hi: 0 26px 50px -20px rgba(0, 0, 0, 0.85);
 }
@@ -211,13 +209,324 @@
 }
 
 /* HEAD */
-.op-main {
-  max-width: 1080px;
-  margin-left: 228px; /* 사이드바 폭 — 본문은 그 옆에 좌측 정렬(실무 콘솔 표준) */
-  padding: 26px 32px 0;
+/* ══════════ 리뉴얼 상단바 (2026-07-24, 핸드오프: 운영/강사 상단바) ══════════
+   좌측 사이드바(.op-side*, 이제 미사용)를 상단 가로 바로 대체.
+   운영자=드롭다운 3그룹, 강사=평평한 탭 4개. 우측=알림·다크토글·아바타·로그아웃. */
+.op-top {
+  position: sticky;
+  top: 0;
+  z-index: 90;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+  font-family: var(--font-display);
 }
-@media (max-width: 1080px) {
-  .op-main { margin-left: 64px; padding: 20px 20px 0; }
+.op-top-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  background: transparent;
+}
+.op-top-inner {
+  position: relative;
+  z-index: 2;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 28px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.op-top-brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-right: 14px;
+  text-decoration: none;
+  color: inherit;
+  flex-shrink: 0;
+}
+.op-top-wordmark-img { height: 22px; width: auto; display: block; }
+.op-top-console {
+  font-size: 12px;
+  color: var(--ink-3);
+  font-weight: 700;
+  border-left: 1px solid var(--line-strong);
+  padding-left: 9px;
+}
+.op-top-nav { display: flex; align-items: center; gap: 2px; }
+.op-top-group { position: relative; }
+.op-top-gbtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 8px 13px;
+  border-radius: 12px;
+  color: var(--ink-2);
+  transition: color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.op-top-gbtn i { font-size: 12px; }
+.op-top-gbtn:hover { color: var(--ink); }
+.op-top-gbtn--on { color: var(--ink); }
+.op-top-gbtn--open { color: var(--ink); }
+.op-top-menu {
+  position: absolute;
+  top: calc(100% + 7px);
+  left: 0;
+  min-width: 216px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: 0 18px 40px -18px rgba(0, 0, 0, 0.28);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  z-index: 3;
+}
+.op-top-mitem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 11px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 14px;
+  text-decoration: none;
+  color: var(--ink-2);
+  transition: background 0.14s, color 0.14s;
+}
+.op-top-mitem > i:first-child { font-size: 16px; width: 19px; text-align: center; flex-shrink: 0; }
+.op-top-mitem:hover { background: var(--bg); color: var(--ink); }
+.op-top-mitem--on { background: var(--brand-soft); color: var(--ink); }
+.op-top-mcheck { margin-left: auto; font-size: 14px; }
+.op-top-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 13px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--ink-2);
+  text-decoration: none;
+  transition: color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.op-top-tab i { font-size: 16px; }
+.op-top-tab:hover { color: var(--ink); }
+.op-top-tab--on { color: var(--ink); }
+
+/* ══════════ 상단 카테고리 모션 (2026-07-27) ══════════
+   학생 상단 메뉴(.sl-navlink, layouts/StudentLayout.css)와 같은 모션 언어로 맞춘다.
+   ① 콘솔 첫 진입 시 카테고리가 순차로 내려오고, ② 호버·활성 알약이 뒤에서 떠오르며,
+   ③ 드롭다운은 캐럿 회전 + 펼침 후 항목이 차례로 들어온다.
+   색/모양(브랜드 알약·색상)은 기존 그대로 두고 전환만 입힌 것 — 시각 디자인 변경 아님.
+
+   ①은 .op-top-nav--intro가 붙을 때만 돈다. OpsNav는 페이지마다 개별 렌더라
+   라우팅할 때마다 재마운트되는데, 매번 돌리면 메뉴 이동마다 상단바가 다시 튄다
+   (게이트는 OpsNav.tsx의 introGate). */
+
+/* ① 진입 stagger — 콘솔 첫 진입에서만 */
+@keyframes op-topnav-in {
+  from { opacity: 0; transform: translateY(-7px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.op-top-nav--intro > .op-top-group,
+.op-top-nav--intro > .op-top-tab {
+  opacity: 0;
+  animation: op-topnav-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.op-top-nav--intro > :nth-child(1) { animation-delay: 0.04s; }
+.op-top-nav--intro > :nth-child(2) { animation-delay: 0.11s; }
+.op-top-nav--intro > :nth-child(3) { animation-delay: 0.18s; }
+.op-top-nav--intro > :nth-child(4) { animation-delay: 0.25s; }
+
+/* ② 호버·활성 알약 — 배경을 ::before로 옮겨 뒤에서 살짝 커지며 떠오르게 한다.
+   isolation으로 라벨을 알약(z-index:-1) 위에 유지한다. */
+.op-top-gbtn,
+.op-top-tab {
+  position: relative;
+  isolation: isolate;
+}
+.op-top-gbtn::before,
+.op-top-tab::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: var(--bg);
+  opacity: 0;
+  transform: scale(0.82);
+  transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.4s cubic-bezier(0.34, 1.4, 0.5, 1),
+    background 0.2s ease;
+}
+.op-top-gbtn:hover::before,
+.op-top-tab:hover::before,
+.op-top-gbtn--open::before,
+.op-top-tab--on::before {
+  opacity: 1;
+  transform: scale(1);
+}
+/* 펼침·활성은 브랜드 톤 — 호버 규칙 뒤에 둬서 호버 중에도 유지된다. */
+.op-top-gbtn--open::before,
+.op-top-tab--on::before { background: var(--brand-soft); }
+
+/* 강사 탭 아이콘 — 호버 시 살짝 들린다(진입 애니메이션이 잡는 건 탭 자신의
+   transform이라 자식 아이콘 transform과는 충돌하지 않는다). */
+.op-top-tab i { transition: transform 0.4s cubic-bezier(0.34, 1.4, 0.5, 1); }
+.op-top-tab:hover i { transform: translateY(-1px) scale(1.08); }
+
+/* ③ 드롭다운 — 캐럿 회전 + 메뉴 펼침 + 항목 순차 등장.
+   조건부 렌더(open && ...)라 닫힘 모션은 없다 — 펼침만 애니메이션한다. */
+.op-top-caret { transition: transform 0.34s cubic-bezier(0.34, 1.4, 0.5, 1); }
+.op-top-gbtn--open .op-top-caret { transform: rotate(180deg); }
+
+@keyframes op-topmenu-in {
+  from { opacity: 0; transform: translateY(-6px) scale(0.97); }
+  to { opacity: 1; transform: none; }
+}
+.op-top-menu {
+  transform-origin: top left;
+  animation: op-topmenu-in 0.22s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+/* 호버 브릿지 — 버튼과 메뉴 사이 7px 빈 구간을 메뉴의 히트 영역으로 덮는다.
+   이게 없으면 버튼에서 메뉴로 포인터를 내리는 순간 그룹에서 벗어나 메뉴가 닫힌다.
+   보이지 않고(투명) 메뉴의 자식이라 그룹 mouseleave가 뜨지 않는다. */
+.op-top-menu::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -9px;
+  height: 9px;
+}
+
+@keyframes op-topmitem-in {
+  from { opacity: 0; transform: translateX(-6px); }
+  to { opacity: 1; transform: none; }
+}
+.op-top-menu > .op-top-mitem {
+  opacity: 0;
+  animation: op-topmitem-in 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.op-top-menu > :nth-child(1) { animation-delay: 0.05s; }
+.op-top-menu > :nth-child(2) { animation-delay: 0.09s; }
+.op-top-menu > :nth-child(3) { animation-delay: 0.13s; }
+.op-top-menu > :nth-child(4) { animation-delay: 0.17s; }
+.op-top-menu > :nth-child(5) { animation-delay: 0.21s; }
+
+@keyframes op-topcheck-pop {
+  from { opacity: 0; transform: scale(0.4); }
+  to { opacity: 1; transform: none; }
+}
+.op-top-mcheck { animation: op-topcheck-pop 0.34s cubic-bezier(0.34, 1.4, 0.5, 1) 0.16s both; }
+
+/* 모션 최소화 선호 — 진입/이징 제거하고 즉시 최종 상태로 */
+@media (prefers-reduced-motion: reduce) {
+  .op-top-nav--intro > .op-top-group,
+  .op-top-nav--intro > .op-top-tab,
+  .op-top-menu,
+  .op-top-menu > .op-top-mitem,
+  .op-top-mcheck {
+    opacity: 1;
+    animation: none;
+  }
+  .op-top-gbtn,
+  .op-top-tab,
+  .op-top-gbtn::before,
+  .op-top-tab::before,
+  .op-top-tab i,
+  .op-top-caret {
+    transition: none;
+  }
+}
+.op-top-right { margin-left: auto; display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.op-top-icbtn {
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink-2);
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  font-size: 16px;
+  transition: background 0.14s, color 0.14s;
+}
+.op-top-icbtn:hover { background: var(--bg); color: var(--ink); }
+.op-top-notifbadge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--danger);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.op-top-divider { width: 1px; height: 22px; background: var(--line); margin: 0 4px; }
+.op-top-me {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 4px 8px 4px 4px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-decoration: none;
+  border-radius: 12px;
+  font-family: inherit;
+  transition: background 0.14s;
+}
+.op-top-me:hover { background: var(--bg); }
+.op-top-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--info);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.op-top-meblock { display: flex; flex-direction: column; line-height: 1.15; text-align: left; }
+.op-top-mename { font-size: 14px; font-weight: 700; color: var(--ink); }
+.op-top-merole { font-size: 12px; color: var(--ink-3); font-weight: 500; }
+@media (max-width: 860px) {
+  .op-top-console { display: none; }
+  .op-top-meblock { display: none; }
+  .op-top-inner { padding: 0 16px; gap: 4px; }
+  .op-top-gbtn, .op-top-tab { padding: 8px 10px; }
+}
+
+.op-main {
+  /* 리뉴얼(2026-07-24): 좌측 사이드바 → 상단바. 본문은 중앙 정렬 컨테이너(핸드오프 1400px). */
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 26px 28px 0;
+}
+@media (max-width: 760px) {
+  .op-main { padding: 18px 16px 0; }
 }
 .op-head {
   display: flex;
@@ -333,7 +642,7 @@
   background: var(--brand);
   border-color: var(--brand);
   color: var(--on-brand);
-  box-shadow: 0 8px 18px -8px rgba(0, 113, 227, 0.4);
+  box-shadow: 0 8px 18px -8px rgba(26, 26, 26, 0.4);
 }
 .op-tab-count {
   background: rgba(0, 0, 0, 0.08);
@@ -486,15 +795,15 @@
   background: var(--surface);
 }
 .op-btn--approve {
-  background: linear-gradient(180deg, #0077ed, #0071e3);
+  background: linear-gradient(180deg, #000000, #1a1a1a);
   color: var(--on-brand);
   box-shadow:
-    0 8px 18px -8px rgba(0, 113, 227, 0.4),
+    0 8px 18px -8px rgba(26, 26, 26, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.22);
 }
 .op-btn--approve:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 14px 26px -10px rgba(0, 113, 227, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  box-shadow: 0 14px 26px -10px rgba(26, 26, 26, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.28);
 }
 .op-btn--approve:active:not(:disabled) {
   transform: translateY(0) scale(0.97);
@@ -829,7 +1138,7 @@
   display: inline-flex; align-items: center; gap: 6px;
   border: none; background: var(--brand); color: var(--on-brand); border-radius: 12px;
   padding: 10px 16px; font-weight: 800; font-size: 13.5px; cursor: pointer;
-  box-shadow: 0 8px 18px -8px rgba(0, 113, 227, 0.5); transition: transform 0.12s, background 0.15s;
+  box-shadow: 0 8px 18px -8px rgba(26, 26, 26, 0.5); transition: transform 0.12s, background 0.15s;
 }
 .op-addbtn:hover { background: var(--brand-strong); transform: translateY(-1px); }
 .op-addbtn:active { transform: translateY(0); }
@@ -1014,7 +1323,7 @@
   display: inline-flex; align-items: center; gap: 6px; margin-left: auto;
   border: none; background: var(--brand); color: var(--on-brand); border-radius: 12px;
   padding: 11px 17px; font-weight: 800; font-size: 13.5px; cursor: pointer;
-  box-shadow: 0 8px 18px -8px rgba(0, 113, 227, 0.5); transition: background 0.15s, transform 0.12s;
+  box-shadow: 0 8px 18px -8px rgba(26, 26, 26, 0.5); transition: background 0.15s, transform 0.12s;
 }
 .ox-download:hover:not(:disabled) { background: var(--brand-strong); transform: translateY(-1px); }
 .ox-download:disabled { opacity: 0.6; cursor: default; }

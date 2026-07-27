@@ -8,7 +8,6 @@ import { PATHS } from '../../routes/paths';
 import ChapterAccuracyChart, { type SubjectStat } from '../../components/student/ChapterAccuracyChart';
 import HabitTrendLine, { type HabitDay } from '../../components/student/HabitTrendLine';
 import CourseCover from '../../components/course/CourseCover';
-import CatMark from '../../components/brand/CatMark';
 import './MyRecords.css';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -475,7 +474,7 @@ export default function MyRecords() {
       {demo ? (
         <section className="mr-section">
           <div className="mr-card mr-emptyhero">
-            <CatMark size={64} variant="line" whiskers className="mr-emptyhero-cat" />
+            <i className="ph ph-chart-line-up mr-emptyhero-icon" />
             <h3 className="mr-h3">아직 학습 기록이 없어요</h3>
             <p className="mr-emptyhero-sub">
               강의를 듣고 확인 문제를 풀면 학습 통계·수료 현황이 여기에 쌓여요.
@@ -571,7 +570,7 @@ export default function MyRecords() {
             <div className="mr-comp-empty">불러오는 중…</div>
           ) : examCourses.length === 0 ? (
             <div className="mr-comp-empty">
-              <CatMark size={52} variant="line" whiskers className="mr-empty-cat" />
+              <i className="ph ph-seal-check mr-empty-icon" />
               <p>아직 수료 시험이 있는 코스가 없어요.<br />강의를 완주하고 수료 시험에 도전해 보세요!</p>
               <button className="mr-comp-cta" onClick={() => navigate(PATHS.STUDENT_LECTURES)}>
                 <i className="ph-fill ph-television" /> 강의 보러 가기

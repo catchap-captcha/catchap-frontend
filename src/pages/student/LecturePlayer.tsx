@@ -13,9 +13,10 @@ import {
   type LectureSession,
 } from '../../api/lectures';
 import { getFreshAccessToken } from '../../api/client';
-import { useAuth } from '../../hooks/useAuth';
 import CatchapWidget from '../../components/captcha/CatchapWidget';
-import mascot from '../../assets/characters/catchap-logo.png';
+import { useTheme } from '../../hooks/useTheme';
+import wordmark from '../../assets/brand/catchap-wordmark.png';
+import wordmarkWhite from '../../assets/brand/catchap-wordmark-white.png';
 import {
   LECTURE_SUBJECTS,
   formatClock,
@@ -52,7 +53,6 @@ export default function LecturePlayer() {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
-  const { me } = useAuth();
 
   /* 파라미터 관용구: navigate state 우선, 쿼리(?id=) 딥링크는 최초 1회 주소창 정리 */
   const navState = (location.state ?? null) as { id?: string } | null;
@@ -70,8 +70,6 @@ export default function LecturePlayer() {
   // 수강신청 게이트 — 코스 강의를 미신청 상태로 열면 서버가 403(not_enrolled)을 준다.
   // 그 코스 id를 담아 '수강신청하고 바로 보기' 화면을 띄운다(에러 대신 행동 유도).
   const [notEnrolled, setNotEnrolled] = useState<string | null>(null);
-  const [enrolling, setEnrolling] = useState(false);
-  const [reloadKey, setReloadKey] = useState(0); // 수강신청 후 강의 로드를 다시 트리거
   const [overlay, setOverlay] = useState<Overlay | null>(null);
   const [streamSrc, setStreamSrc] = useState<string | null>(null);
 
@@ -225,23 +223,12 @@ export default function LecturePlayer() {
     return () => {
       on = false;
     };
-  }, [lectureId, applySession, reloadKey]);
+  }, [lectureId, applySession]);
 
-  // 수강신청하고 바로 이 강의로 — 신청 성공 후 로드를 다시 트리거(게이트 통과)
-  const enrollAndEnter = async () => {
-    if (!notEnrolled || enrolling) return;
-    setEnrolling(true);
-    try {
-      await lectureApi.enrollCourse(notEnrolled);
-      setNotEnrolled(null);
-      setPhase('loading');
-      setReloadKey((k) => k + 1);
-    } catch (e) {
-      setPhase('error');
-      setErrMsg(errorDetail(e, '수강신청에 실패했어요. 잠시 후 다시 시도해 주세요.'));
-    } finally {
-      setEnrolling(false);
-    }
+  // 수강신청 결제 화면으로 — 결제를 완료하면 수강신청이 활성화된다(결제 후 이 강의로 돌아와 열람).
+  const enrollAndEnter = () => {
+    if (!notEnrolled) return;
+    navigate(`${PATHS.STUDENT_CHECKOUT}?course=${notEnrolled}`);
   };
 
   /* ---- 하트비트 ---- */
@@ -643,10 +630,18 @@ export default function LecturePlayer() {
 
   /* ================= 렌더 ================= */
   const subject = meta?.subject ?? '국어';
-  const theme = LECTURE_SUBJECTS[subject] ?? LECTURE_SUBJECTS['국어'];
+  // 리뉴얼(2026-07-27): 강의실 accent를 앱 전체 모노크롬 톤과 통일 — 과목 아이콘만 유지하고
+  // 색(color/soft/grad/band)은 전역 잉크 토큰으로 치환한다(과목별 코랄·블루 accent 제거).
+  const subjectMeta = LECTURE_SUBJECTS[subject] ?? LECTURE_SUBJECTS['국어'];
+  const theme = {
+    ...subjectMeta,
+    color: 'var(--brand)',
+    soft: 'var(--brand-soft)',
+    grad: 'var(--brand)',
+    band: 'var(--brand-soft)',
+  };
   const durationSec = meta?.duration_sec ?? 0;
   const orderNo = meta && meta.order_no > 0 ? meta.order_no : null;
-  const name = (me?.name ?? '학생').trim() || '학생';
 
   const numToc = (r: LectureItem, i: number) => (r.order_no > 0 ? r.order_no : i + 1);
 
@@ -654,20 +649,46 @@ export default function LecturePlayer() {
   if (notEnrolled) {
     return (
       <div className="lp-root">
-        <TopBar subject={subject} title="강의실" name={name} />
-        <div className="lp-errwrap">
-          <i className="ph-fill ph-lock-simple" />
-          <p>이 강의는 <b>수강신청</b>을 해야 볼 수 있어요.</p>
-          <p className="lp-enroll-sub">수강신청하면 이 코스의 모든 강의를 바로 볼 수 있어요(무료·언제든 취소 가능).</p>
-          {/* 세로 배치 — '수강신청하고 바로 보기' 아래에 '강의 목록으로' */}
-          <div className="lp-enroll-actions">
-            <button className="lp-enroll-btn" onClick={enrollAndEnter} disabled={enrolling}>
-              <i className="ph-bold ph-plus-circle" />
-              {enrolling ? '수강신청 중…' : '수강신청하고 바로 보기'}
-            </button>
-            <Link to={PATHS.STUDENT_LECTURES} className="lp-errback">
-              강의 목록으로
-            </Link>
+        <TopBar subject={subject} title="강의실" />
+        <div className="lp-enrollwrap">
+          <div className="lp-enrollcard">
+            <span className="lp-enrollicon"><i className="ph-fill ph-lock-key" /></span>
+            <h1 className="lp-enrolltitle">이 강의는 수강신청을 해야 볼 수 있어요</h1>
+            <p className="lp-enrolldesc">
+              수강신청(결제)하면 이 코스의 모든 강의를 바로 볼 수 있어요.
+            </p>
+            <ul className="lp-enrollbenefits">
+              <li>
+                <span className="lp-enrollbi"><i className="ph-fill ph-monitor-play" /></span>
+                <div>
+                  <b>모든 강의 무제한 시청</b>
+                  <span>코스에 포함된 전체 강의를 순서대로 학습해요.</span>
+                </div>
+              </li>
+              <li>
+                <span className="lp-enrollbi"><i className="ph-fill ph-squares-four" /></span>
+                <div>
+                  <b>확인문항으로 복습</b>
+                  <span>강의를 완주하면 문제은행 연습이 열려요.</span>
+                </div>
+              </li>
+              <li>
+                <span className="lp-enrollbi"><i className="ph-fill ph-seal-check" /></span>
+                <div>
+                  <b>수료증 발급</b>
+                  <span>전 강의 완주 후 수료 시험을 통과하면 수료돼요.</span>
+                </div>
+              </li>
+            </ul>
+            <div className="lp-enroll-actions">
+              <button className="lp-enroll-btn" onClick={enrollAndEnter}>
+                <i className="ph-bold ph-plus-circle" />
+                수강신청하러 가기
+              </button>
+              <Link to={PATHS.STUDENT_LECTURES} className="lp-enroll-ghost">
+                강의 목록으로
+              </Link>
+            </div>
           </div>
         </div>
       </div>
@@ -677,7 +698,7 @@ export default function LecturePlayer() {
   if (phase === 'error') {
     return (
       <div className="lp-root">
-        <TopBar subject={subject} title="강의실" name={name} />
+        <TopBar subject={subject} title="강의실" />
         <div className="lp-errwrap">
           <i className="ph-fill ph-warning-circle" />
           <p>{errMsg}</p>
@@ -691,7 +712,7 @@ export default function LecturePlayer() {
 
   return (
     <div className="lp-root">
-      <TopBar subject={subject} title={meta?.title ?? ''} name={name} />
+      <TopBar subject={subject} title={meta?.title ?? ''} />
 
       <div className="lp-main">
         <div className="lp-left">
@@ -699,7 +720,7 @@ export default function LecturePlayer() {
           <div
             className={`lp-shell${idle ? ' lp-shell--idle' : ''}`}
             ref={shellRef}
-            style={{ '--lp-c': theme.color } as CSSProperties}
+            style={{ '--lp-c': 'var(--brand)' } as CSSProperties}
             onMouseMove={bumpActivity}
             onMouseLeave={() => {
               // 재생 중 커서가 플레이어를 벗어나면 즉시 숨긴다
@@ -974,7 +995,7 @@ export default function LecturePlayer() {
               <button
                 key={key}
                 className={`lp-tab${tab === key ? ' lp-tab-on' : ''}`}
-                style={{ '--lp-c': theme.color } as CSSProperties}
+                style={{ '--lp-c': 'var(--brand)' } as CSSProperties}
                 onClick={() => setTab(key)}
               >
                 <i className={icon} />
@@ -1326,18 +1347,24 @@ function fmtReviewDate(iso: string | null): string {
   return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
 }
 
-/** 강의실 상단 바 — 목업의 슬림 헤더(← 학습 홈 / 로고 / 경로 / 프로필) */
-function TopBar({ subject, title, name }: { subject: string; title: string; name: string }) {
+/** 강의실 상단 바 — 강의 영상 전용 슬림 헤더. */
+// 시청 몰입을 위해 사이트 공통 NAV(홈·강의·문제은행·나의 기록)를 걷어내고, 로고 왼쪽엔
+// '학습 홈' 뒤로가기, 오른쪽엔 지금 보는 강의 경로(홈 > 과목 > 제목)만 남긴다(사용자 요청 2026-07-27).
+function TopBar({ subject, title }: { subject: string; title: string }) {
+  const { theme } = useTheme();
   return (
-    <div className="lp-topbar">
-      <div className="lp-topbar-inner">
+    <div className="lp-subbar">
+      <div className="lp-subbar-inner">
         <Link to={PATHS.STUDENT_HOME} className="lp-back">
           <i className="ph-bold ph-arrow-left" />
           학습 홈
         </Link>
-        <Link to={PATHS.STUDENT_HOME} className="lp-brand">
-          <img src={mascot} alt="CatChap" className="lp-brand-img" />
-          <span className="lp-brand-name">CatChap</span>
+        <Link to={PATHS.STUDENT_HOME} className="lp-logo" aria-label="CATCHAP 홈">
+          <img
+            src={theme === 'dark' ? wordmarkWhite : wordmark}
+            alt="CATCHAP"
+            className="lp-logomark"
+          />
         </Link>
         <div className="lp-crumb">
           <i className="ph-fill ph-house" />
@@ -1348,11 +1375,6 @@ function TopBar({ subject, title, name }: { subject: string; title: string; name
           <i className="ph-bold ph-caret-right lp-crumb-sep" />
           <span className="lp-crumb-cur">{title}</span>
         </div>
-        <div className="lp-topspace" />
-        <Link to={PATHS.STUDENT_MYPAGE} className="lp-profile">
-          <span className="lp-profile-avatar">{name.slice(0, 1)}</span>
-          <span className="lp-profile-name">{name}님</span>
-        </Link>
       </div>
     </div>
   );

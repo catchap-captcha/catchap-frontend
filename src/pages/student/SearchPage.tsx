@@ -30,15 +30,6 @@ const FALLBACK: SearchItem[] = [
   { title: '설정', tag: '바로가기', desc: '화면·알림·계정을 설정해요', icon: 'ph-fill ph-gear', bg: 'var(--surface-2)', color: 'var(--ink-2)', href: PATHS.STUDENT_SETTINGS, kw: '설정 계정 다크 모드 settings' },
 ];
 
-const POPULAR = [
-  { label: '강의', icon: 'ph-fill ph-monitor-play', color: 'var(--brand-ink)', bg: 'var(--brand-soft)', href: PATHS.STUDENT_LECTURES },
-  { label: '문제은행', icon: 'ph-fill ph-squares-four', color: 'var(--ok-ink)', bg: 'var(--ok-soft)', href: PATHS.STUDENT_ALL_LEARNING },
-  { label: '틀린 문제', icon: 'ph-fill ph-notebook', color: 'var(--danger-ink)', bg: 'var(--danger-soft)', href: PATHS.STUDENT_WRONG_NOTES },
-  { label: '나의 기록', icon: 'ph-fill ph-chart-line-up', color: 'var(--info-ink)', bg: 'var(--info-soft)', href: PATHS.STUDENT_RECORDS },
-  { label: '알림', icon: 'ph-fill ph-bell', color: 'var(--warn-ink)', bg: 'var(--warn-soft)', href: PATHS.STUDENT_NOTIFICATIONS },
-  { label: '설정', icon: 'ph-fill ph-gear', color: 'var(--ink-2)', bg: 'var(--surface-2)', href: PATHS.STUDENT_SETTINGS },
-];
-
 /**
  * 존재하지 않는 개별 게임 파일 링크 → `${PATHS.STUDENT_GAME}?subject=<과목>` 통일.
  * 과목은 원본 ITEMS의 과목 카드가 가리키는 파일 기준(HANDOFF_ROUTE_MAP의 한글낱말/그림찾기 매핑과 동일 규칙).
@@ -210,6 +201,15 @@ export default function SearchPage() {
       <StudentNav />
 
       <div className="sp-container">
+        {/* HERO — 검색 랜딩을 담백하게 채운다(넓은 빈 화면 대신 목적을 먼저 말해준다) */}
+        <div className="sp-hero">
+          <span className="sp-herobadge">
+            <i className="ph-fill ph-magnifying-glass" /> 통합 검색
+          </span>
+          <h1 className="sp-herotitle">무엇을 찾고 있나요?</h1>
+          <p className="sp-herosub">강의 · 문제은행 · 나의 기록을 한 번에 검색하세요.</p>
+        </div>
+
         {/* BIG SEARCH FIELD */}
         <div className="sp-searchwrap">
           <i className="ph ph-magnifying-glass sp-searchicon" />
@@ -243,13 +243,17 @@ export default function SearchPage() {
                 </span>
                 <h2 className="sp-cardtitle">바로가기</h2>
               </div>
-              <div className="sp-popchips">
-                {POPULAR.map((c) => (
-                  <Link key={c.label} to={mapHref(c.href)} className="sp-popchip">
-                    <span className="sp-popicon" style={{ background: c.bg, color: c.color }}>
+              <div className="sp-shortcutgrid">
+                {FALLBACK.map((c) => (
+                  <Link key={c.title} to={mapHref(c.href)} className="sp-shortcut">
+                    <span className="sp-shortcuticon" style={{ background: c.bg, color: c.color }}>
                       <i className={c.icon} />
                     </span>
-                    {c.label}
+                    <span className="sp-shortcutbody">
+                      <span className="sp-shortcuttitle">{c.title}</span>
+                      <span className="sp-shortcutdesc">{c.desc}</span>
+                    </span>
+                    <i className="ph-bold ph-arrow-right sp-shortcutarrow" />
                   </Link>
                 ))}
               </div>

@@ -11,7 +11,6 @@ import { useTheme } from '../../hooks/useTheme';
 import { playSfx } from '../../utils/feedback';
 import StatTile from '../../components/student/StatTile';
 import CourseCover from '../../components/course/CourseCover';
-import CatMark from '../../components/brand/CatMark';
 import './StudentSettings.css';
 import './StudentMyPage.css';
 
@@ -185,25 +184,89 @@ export default function StudentMyPage() {
         <div className="mp-panel">
           {/* 프로필 */}
           {tab === 'profile' && (
-            <section className="mp-card mp-profile">
-              <CatMark size={132} variant="ghost" className="mp-profile-cat" />
-              <div className="mp-avatar" style={{ background: profileColor(me?.id) }}>
-                {name.charAt(0)}
-              </div>
-              <div className="mp-profileinfo">
-                <div className="mp-name">
-                  {name}
-                  {age != null ? ` · ${age}세` : ''}
+            <>
+              <section className="mp-card mp-profile">
+                <div className="mp-avatar" style={{ background: profileColor(me?.id) }}>
+                  {name.charAt(0)}
                 </div>
-                <div className="mp-sub">
-                  {email}
-                  {courseCount != null ? ` · 수강 코스 ${courseCount}개` : ''}
+                <div className="mp-profileinfo">
+                  <div className="mp-name">
+                    {name}
+                    {age != null ? ` · ${age}세` : ''}
+                  </div>
+                  <div className="mp-sub">
+                    {email}
+                    {courseCount != null ? ` · 수강 코스 ${courseCount}개` : ''}
+                  </div>
                 </div>
-              </div>
-              <button className="mp-editbtn" onClick={() => navigate(PATHS.STUDENT_PROFILE_EDIT)}>
-                <i className="ph-bold ph-pencil-simple" /> 수정
-              </button>
-            </section>
+                <button className="mp-editbtn" onClick={() => navigate(PATHS.STUDENT_PROFILE_EDIT)}>
+                  <i className="ph-bold ph-pencil-simple" /> 수정
+                </button>
+              </section>
+
+              {!demo && stats && (
+                <section className="mp-card">
+                  <div className="mp-card-head">
+                    <h2 className="mp-card-title">학습 요약</h2>
+                    <Link to={PATHS.STUDENT_RECORDS} className="mp-more">
+                      자세히 <i className="ph-bold ph-arrow-right" />
+                    </Link>
+                  </div>
+                  <div className="mp-profile-stats">
+                    <div className="mp-profile-stat">
+                      <span className="mp-profile-statnum">{stats.streak_days ?? 0}</span>
+                      <span className="mp-profile-statlb">연속 학습일</span>
+                    </div>
+                    <div className="mp-profile-stat">
+                      <span className="mp-profile-statnum">{stats.total_solved ?? 0}</span>
+                      <span className="mp-profile-statlb">푼 문제</span>
+                    </div>
+                    <div className="mp-profile-stat">
+                      <span className="mp-profile-statnum">{stats.avg_accuracy ?? 0}%</span>
+                      <span className="mp-profile-statlb">평균 정답률</span>
+                    </div>
+                    <div className="mp-profile-stat">
+                      <span className="mp-profile-statnum">{stats.total_hours ?? 0}시간</span>
+                      <span className="mp-profile-statlb">학습 시간</span>
+                    </div>
+                  </div>
+                </section>
+              )}
+
+              <section className="mp-card">
+                <div className="mp-card-head">
+                  <h2 className="mp-card-title">
+                    수강 코스{courseCount != null ? ` (${courseCount})` : ''}
+                  </h2>
+                  <Link to={PATHS.STUDENT_LECTURES} className="mp-more">
+                    강의 <i className="ph-bold ph-arrow-right" />
+                  </Link>
+                </div>
+                {courses == null ? (
+                  <p className="mp-empty">불러오는 중…</p>
+                ) : courses.length === 0 ? (
+                  <p className="mp-empty">
+                    아직 수강 중인 코스가 없어요.{' '}
+                    <Link to={PATHS.STUDENT_LECTURES} className="mp-inlink">
+                      강의 둘러보기 →
+                    </Link>
+                  </p>
+                ) : (
+                  <div className="mp-profile-courses">
+                    {courses.slice(0, 4).map((c) => (
+                      <Link
+                        key={c.id}
+                        to={PATHS.STUDENT_LECTURES}
+                        className="mp-profile-coursechip"
+                      >
+                        <span className="mp-profile-coursesubj">{c.subject}</span>
+                        {c.title}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </section>
+            </>
           )}
 
           {/* 학습 요약 */}
@@ -218,7 +281,7 @@ export default function StudentMyPage() {
                 </div>
                 {demo ? (
                   <div className="mp-emptybox">
-                    <CatMark size={56} variant="line" whiskers className="mp-empty-cat" />
+                    <i className="ph ph-chart-line-up mp-empty-icon" />
                     <p className="mp-empty">
                       아직 학습 기록이 없어요.
                       <br />
@@ -274,7 +337,7 @@ export default function StudentMyPage() {
                   <p className="mp-empty">불러오는 중…</p>
                 ) : courses.length === 0 ? (
                   <div className="mp-emptybox">
-                    <CatMark size={56} variant="line" whiskers className="mp-empty-cat" />
+                    <i className="ph ph-video-camera mp-empty-icon" />
                     <p className="mp-empty">
                       아직 수강 중인 코스가 없어요.
                       <br />

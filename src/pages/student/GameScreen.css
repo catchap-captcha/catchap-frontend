@@ -1,62 +1,9 @@
 /* 게임화면 — handoff `CatChap 게임화면.dc.html` 원본 그대로 (gs- 접두사) */
 
-/* ── 애플 디자인 토큰 (이 페이지 스코프, 2026-07-23 이식) ──
-   왜 이 파일만: GameScreen.tsx(JSX·데이터·위젯 배선)와 백엔드는 그대로 두고 이 CSS만
-   애플 스타일로 재정의한다. .gs-root에 뉴트럴 토큰(SF 타이포·애플 쿨 그레이·리파인드 라인)을
-   스코프 오버라이드 → gs-* 규칙이 쓰는 var(--ink)/var(--surface)/var(--line) 등이 이 페이지에서만
-   애플 값으로 해석된다(전역 theme.css 불변). 의미색(정답=초록 --ok / 오답=빨강 --danger)과
-   과목 테마(themeVars의 --gs-solid/--gs-soft/--gs-prog-grad 등)는 오버라이드하지 않아 정체성 보존. */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-
-.gs-root {
-  --font-display: 'SF Pro Display', 'SF Pro Text', 'Inter', -apple-system, system-ui, sans-serif;
-  --bg: #f5f5f7;
-  --surface: #ffffff;
-  --surface-2: #f5f5f7;
-  --ink: #1d1d1f;
-  --ink-2: #6e6e73;
-  --ink-3: #86868b;
-  --line: rgba(0, 0, 0, 0.08);
-  --line-strong: rgba(0, 0, 0, 0.14);
-  --brand: #0071e3;
-  --brand-strong: #0077ed;
-  --brand-soft: rgba(0, 113, 227, 0.12);
-  --brand-ink: #0071e3;
-  --on-brand: #fff;
-  --ap-shadow: 0 1px 1px rgba(0, 0, 0, 0.02), 0 8px 24px -12px rgba(0, 0, 0, 0.14);
-  --ap-shadow-hi: 0 2px 4px rgba(0, 0, 0, 0.04), 0 26px 50px -20px rgba(0, 0, 0, 0.24);
-  --ap-spring: cubic-bezier(0.34, 1.4, 0.5, 1);
-  font-family: 'SF Pro Text', 'Inter', -apple-system, system-ui, sans-serif;
-  letter-spacing: -0.01em;
-  -webkit-font-smoothing: antialiased;
-}
-[data-theme='dark'] .gs-root {
-  --bg: #000000;
-  --surface: #1c1c1e;
-  --surface-2: #0a0a0a;
-  --ink: #f5f5f7;
-  --ink-2: #aeaeb2;
-  --ink-3: #8e8e93;
-  --line: rgba(255, 255, 255, 0.1);
-  --line-strong: rgba(255, 255, 255, 0.18);
-  --brand: #0a84ff;
-  --brand-strong: #409cff;
-  --brand-soft: rgba(10, 132, 255, 0.18);
-  --brand-ink: #409cff;
-  --ap-shadow: 0 8px 24px -12px rgba(0, 0, 0, 0.6);
-  --ap-shadow-hi: 0 26px 50px -18px rgba(0, 0, 0, 0.85);
-}
-
-/* 원본 ccFloat: translateY(-10px) rotate(±1deg) — 공용과 다름 → 접두사 정의 */
-@keyframes gsFloat {
-  0%,
-  100% {
-    transform: translateY(0) rotate(-1deg);
-  }
-  50% {
-    transform: translateY(-10px) rotate(1deg);
-  }
-}
+/* ── 리뉴얼(CATCHAP renewal, 모노크롬) ──
+   스코프 토큰 오버라이드를 제거하고 전역 theme.css 모노크롬 토큰을 그대로 상속한다.
+   과목 테마(--gs-solid/--gs-soft/--gs-prog-grad 등)는 TSX가 인라인으로 뉴트럴 값을 주입하므로
+   var(--gs-*) 참조는 그대로 유지한다. --ap-spring은 색이 아닌 커브라 로컬로 남긴다. */
 
 @keyframes gsBounce {
   0%,
@@ -69,12 +16,13 @@
 }
 
 .gs-root {
+  --ap-spring: cubic-bezier(0.34, 1.4, 0.5, 1);
   min-height: 100vh;
-  /* 웜 피치/핑크 방사형 배경 제거 → 플랫 애플 쿨 그레이 캔버스 */
   background: var(--bg);
   display: flex;
   flex-direction: column;
-  font-family: 'SF Pro Text', 'Inter', -apple-system, system-ui, sans-serif;
+  font-family: var(--font-display, 'Pretendard', -apple-system, system-ui, sans-serif);
+  letter-spacing: -0.01em;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -83,10 +31,8 @@
   position: sticky;
   top: 0;
   z-index: 60;
-  background: color-mix(in srgb, var(--surface) 82%, transparent);
-  backdrop-filter: saturate(180%) blur(20px);
-  -webkit-backdrop-filter: saturate(180%) blur(20px);
-  border-bottom: 0.5px solid var(--line);
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
 }
 
 .gs-topbar-inner {
@@ -107,7 +53,7 @@
   font-weight: 800;
   font-size: 14px;
   padding: 9px 15px;
-  border-radius: 13px;
+  border-radius: var(--r);
   background: var(--brand-soft);
 }
 
@@ -129,7 +75,7 @@
 .gs-gameicon {
   width: 38px;
   height: 38px;
-  border-radius: 12px;
+  border-radius: var(--r);
   background: var(--gs-soft);
   color: var(--gs-solid);
   display: flex;
@@ -162,6 +108,24 @@
   flex: 1;
   max-width: 340px;
   margin: 0 6px;
+}
+/* 무한 모드: '푼 문제 수'는 내용 너비만 차지하고, '무한 연습'을 오른쪽 끝으로 밀어낸다 */
+.gs-progress--infinite {
+  flex: 0 0 auto;
+  max-width: none;
+  margin: 0;
+}
+.gs-progress-count {
+  font-size: 11.5px;
+  font-weight: 800;
+  color: var(--ink-3);
+}
+.gs-infinite {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--gs-solid);
+  white-space: nowrap;
 }
 
 .gs-progress-labels {
@@ -198,7 +162,7 @@
   gap: 6px;
   background: var(--warn-soft);
   padding: 7px 13px;
-  border-radius: 20px;
+  border-radius: 999px;
 }
 
 .gs-scorechip i {
@@ -231,7 +195,7 @@
   font-weight: 800;
   font-size: 12.5px;
   padding: 6px 13px;
-  border-radius: 18px;
+  border-radius: var(--r);
 }
 
 .gs-tab i {
@@ -245,7 +209,7 @@
 }
 
 .gs-tab-inactive {
-  border: 0.5px solid var(--line);
+  border: 1px solid var(--line);
   background: var(--surface);
   color: var(--ink-3);
 }
@@ -266,10 +230,10 @@
 
 .gs-main {
   background: var(--surface);
-  border: 0.5px solid var(--line);
-  border-radius: 22px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
   padding: 26px 28px;
-  box-shadow: var(--ap-shadow);
+  box-shadow: var(--shadow-md);
   display: flex;
   flex-direction: column;
 }
@@ -290,7 +254,7 @@
   font-weight: 800;
   font-size: 12.5px;
   padding: 6px 13px;
-  border-radius: 20px;
+  border-radius: 999px;
 }
 
 .gs-catchip i {
@@ -302,9 +266,9 @@
   align-items: center;
   gap: 6px;
   background: var(--surface);
-  border: 0.5px solid var(--line);
+  border: 1px solid var(--line);
   padding: 6px 12px;
-  border-radius: 20px;
+  border-radius: 999px;
 }
 
 .gs-guard-dotwrap {
@@ -354,7 +318,7 @@
   flex: 1;
   min-height: 360px;
   border: 2px dashed var(--gs-dash);
-  border-radius: 26px;
+  border-radius: var(--r-lg);
   background: var(--gs-slot-bg);
   display: flex;
   align-items: center;
@@ -369,7 +333,7 @@
   font-size: 10.5px;
   font-weight: 800;
   color: var(--ink-3);
-  background: color-mix(in srgb, var(--surface) 78%, transparent);
+  background: var(--surface);
   padding: 4px 9px;
   border-radius: 8px;
 }
@@ -381,7 +345,7 @@
   font-size: 10.5px;
   font-weight: 800;
   color: var(--gs-solid);
-  background: color-mix(in srgb, var(--surface) 78%, transparent);
+  background: var(--surface);
   padding: 4px 9px;
   border-radius: 8px;
 }
@@ -398,7 +362,7 @@
 .gs-mount-icon {
   width: 88px;
   height: 88px;
-  border-radius: 26px;
+  border-radius: var(--r-lg);
   background: var(--gs-soft);
   color: var(--gs-solid);
   display: flex;
@@ -438,26 +402,6 @@
   gap: 18px;
 }
 
-.gs-mascotcard {
-  background: var(--gs-mascot-grad);
-  border-radius: 22px;
-  padding: 22px 20px;
-  text-align: center;
-  box-shadow: var(--ap-shadow);
-}
-
-.gs-mascotfloat {
-  animation: gsFloat 4s ease-in-out infinite;
-  margin-bottom: 12px;
-}
-
-.gs-mascotimg {
-  width: 96px;
-  height: 96px;
-  border-radius: 50%;
-  /* 떠다니는 요소 그림자 제거 */
-}
-
 .gs-cheer {
   font-family: var(--font-display); font-weight: 800;
   font-size: 15px;
@@ -467,10 +411,10 @@
 
 .gs-card {
   background: var(--surface);
-  border: 0.5px solid var(--line);
-  border-radius: 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
   padding: 18px 20px;
-  box-shadow: var(--ap-shadow);
+  box-shadow: var(--shadow-md);
 }
 
 .gs-card-title {
@@ -575,7 +519,7 @@
 .gs-reward-slot {
   flex: 1;
   aspect-ratio: 1;
-  border-radius: 13px;
+  border-radius: var(--r);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -608,10 +552,8 @@
   position: sticky;
   bottom: 0;
   z-index: 50;
-  background: color-mix(in srgb, var(--surface) 88%, transparent);
-  backdrop-filter: saturate(180%) blur(20px);
-  -webkit-backdrop-filter: saturate(180%) blur(20px);
-  border-top: 0.5px solid var(--line);
+  background: var(--surface);
+  border-top: 1px solid var(--line);
 }
 
 .gs-bottombar-inner {
@@ -642,7 +584,7 @@
   font-family: var(--font-display); font-weight: 700;
   font-size: 17px;
   padding: 13px 34px;
-  border-radius: 980px;
+  border-radius: 999px;
   cursor: pointer;
   box-shadow: 0 8px 20px -10px var(--gs-solid);
   display: inline-flex;
@@ -669,25 +611,20 @@
 }
 
 
-/* ===== 엘리베이션: 카드 질감 고급화 (애플 소프트 섀도우) ===== */
-.gs-card,
-.gs-mascotcard {
-  box-shadow: var(--ap-shadow);
-}
-.gs-card,
-.gs-mascotcard {
+/* ===== 엘리베이션: 카드 질감 (소프트 섀도우) ===== */
+.gs-card {
+  box-shadow: var(--shadow-md);
   transition:
     box-shadow 0.28s ease,
     transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
 }
-.gs-card:hover,
-.gs-mascotcard:hover {
+.gs-card:hover {
   transform: translateY(-3px);
-  box-shadow: var(--ap-shadow-hi);
+  box-shadow: var(--shadow-lg);
 }
 @media (prefers-reduced-motion: reduce) {
-  .gs-card,.gs-mascotcard { transition: none; }
-  .gs-card:hover,.gs-mascotcard:hover { transform: none; }
+  .gs-card { transition: none; }
+  .gs-card:hover { transform: none; }
 }
 
 /* (실전 문항 모드 폐지 — gs-live-옵션/피드백/풋터/멀티 규칙 제거. 위젯이 자체 렌더) */
@@ -725,7 +662,7 @@
 /* 커리큘럼 일차 배너 (게임 상단) */
 .gs-live-daybar {
   display: inline-flex; align-items: center; gap: 7px;
-  margin-bottom: 16px; padding: 8px 15px; border-radius: 20px;
+  margin-bottom: 16px; padding: 8px 15px; border-radius: 999px;
   font-size: 13.5px; font-weight: 800;
   background: var(--brand-soft); color: var(--brand-ink);
 }
@@ -755,10 +692,10 @@
 
   .gs-main {
     padding: 20px 18px;
-    border-radius: 24px;
+    border-radius: var(--r-lg);
   }
 
-  /* 사이드(마스코트/응원 카드)는 가로로 눕혀 공간 절약 */
+  /* 사이드(응원·통계 카드)는 가로로 눕혀 공간 절약 */
   .gs-side {
     flex-direction: row;
     flex-wrap: wrap;
@@ -768,18 +705,13 @@
   .gs-side > * {
     flex: 1 1 100%;
   }
-
-  .gs-mascotimg {
-    width: 72px;
-    height: 72px;
-  }
 }
 
 /* ── 작은 폰 (≤480px) ── */
 @media (max-width: 480px) {
   .gs-main {
     padding: 16px 13px;
-    border-radius: 20px;
+    border-radius: var(--r-lg);
   }
 
   .gs-live {
@@ -808,7 +740,7 @@
   gap: 7px;
   margin-bottom: 16px;
   padding: 8px 14px;
-  border-radius: 20px;
+  border-radius: 999px;
   background: var(--gs-soft);
 }
 .gs-stagebar-label {
@@ -845,7 +777,7 @@
   color: var(--info-ink);
   background: var(--info-soft);
   padding: 4px 10px;
-  border-radius: 14px;
+  border-radius: 999px;
 }
 
 /* ── 비방해 전환/축하 토스트 — 위젯 위에 떠 있고 조작을 막지 않는다 ── */
@@ -856,13 +788,13 @@
   transform: translateX(-50%);
   z-index: 5;
   pointer-events: none;
-  background: rgba(58, 50, 38, 0.88);
+  background: var(--brand);
   color: var(--on-brand);
   font-weight: 800;
   font-size: 14.5px;
   padding: 11px 20px;
-  border-radius: 24px;
-  box-shadow: 0 10px 24px -10px rgba(58, 50, 38, 0.5);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-lg);
   animation: gsBannerIn 0.25s ease;
   max-width: 90%;
   text-align: center;
@@ -880,7 +812,7 @@
   position: fixed;
   inset: 0;
   z-index: 120;
-  background: rgba(58, 50, 38, 0.45);
+  background: var(--overlay);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -888,12 +820,12 @@
 }
 .gs-quitpop {
   background: var(--surface);
-  border-radius: 22px;
+  border-radius: var(--r-lg);
   padding: 26px 24px 20px;
   max-width: 340px;
   width: 100%;
   text-align: center;
-  box-shadow: 0 24px 60px -24px rgba(58, 50, 38, 0.5);
+  box-shadow: var(--shadow-lg);
 }
 .gs-quitpop-icon {
   font-size: 40px;
@@ -920,7 +852,7 @@
   flex: 1;
   padding: 12px;
   border: 2px solid var(--line);
-  border-radius: 13px;
+  border-radius: var(--r);
   background: var(--surface);
   color: var(--ink-2);
   font-weight: 800;
@@ -932,7 +864,7 @@
   flex: 1;
   padding: 12px;
   border: none;
-  border-radius: 13px;
+  border-radius: var(--r);
   background: var(--gs-solid, var(--brand));
   color: var(--on-brand);
   font-weight: 800;
@@ -948,17 +880,17 @@
   z-index: 30;
   display: grid;
   place-items: center;
-  background: rgba(58, 51, 64, 0.42);
+  background: var(--overlay);
   border-radius: inherit;
   padding: 18px;
 }
 .gs-bankcard {
   width: min(360px, 100%);
   background: var(--surface);
-  border-radius: 22px;
+  border-radius: var(--r-lg);
   padding: 26px 22px 20px;
   text-align: center;
-  box-shadow: 0 24px 48px -18px rgba(60, 40, 30, 0.45);
+  box-shadow: var(--shadow-lg);
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -976,7 +908,7 @@
   gap: 6px;
   padding: 12px 10px;
   border: none;
-  border-radius: 13px;
+  border-radius: var(--r);
   background: var(--gs-solid, var(--brand));
   color: var(--on-brand);
   font-weight: 800;
@@ -990,8 +922,6 @@
 /* 오늘의 Q 일일 목표 표시(표시줄 우측) */
 .gs-daybar-goal { margin-left: auto; font-weight: 800; font-size: 12.5px; opacity: 0.95; }
 
-/* 웜 크림 캐스트 제거 — 뷰포트(body) 배경도 애플 쿨 그레이로.
-   왜 body냐: body 배경이 오버스크롤·상단 여백에 비쳐 전역 웜 톤이 새던 것을 막는다.
-   :has(.gs-root)로 게임화면에서만 적용(다른 페이지 무영향). */
-body:has(.gs-root) { background: #f5f5f7; }
-[data-theme='dark'] body:has(.gs-root) { background: #000000; }
+/* 뷰포트(body) 배경도 전역 토큰으로 — 오버스크롤·상단 여백에 톤이 새지 않게.
+   :has(.gs-root)로 게임화면에서만 적용(다른 페이지 무영향). 다크는 전역 토큰이 처리. */
+body:has(.gs-root) { background: var(--bg); }

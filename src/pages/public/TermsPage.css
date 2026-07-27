@@ -1,46 +1,13 @@
-/* CatChap 이용약관 — 2026-07-23 애플 디자인 이식(정공법·CSS만).
-   텍스트 문서 페이지라 담백하게: 애플 쿨 그레이 캔버스 + SF 타이포 + 블루 링크 + 소프트 시트.
-   .tm-page에 애플 뉴트럴+블루 토큰 스코프 오버라이드(전역 theme.css 불변·JSX/문서내용 무변경). */
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+/* CatChap 이용약관 — 리뉴얼(2026-07-27): CATCHAP 모노크롬 룩으로 재정렬.
+   텍스트 문서 페이지라 담백하게 유지하되, 종전 "애플 이식(2026-07-23)"의 .tm-page 스코프
+   토큰 오버라이드(--bg:#f5f5f7 등)·글래스 내비·0.5px 하이라인을 걷어내고 전역 theme.css를 상속한다. */
 
 .tm-page {
-  --font-display: 'SF Pro Display', 'SF Pro Text', 'Inter', -apple-system, system-ui, sans-serif;
-  --bg: #f5f5f7;
-  --surface: #ffffff;
-  --surface-2: #f5f5f7;
-  --ink: #1d1d1f;
-  --ink-2: #6e6e73;
-  --ink-3: #86868b;
-  --line: rgba(0, 0, 0, 0.08);
-  --line-strong: rgba(0, 0, 0, 0.14);
-  --brand: #0071e3;
-  --brand-strong: #0077ed;
-  --brand-soft: rgba(0, 113, 227, 0.12);
-  --brand-ink: #0071e3;
-  --on-brand: #ffffff;
-  --ap-shadow: 0 1px 1px rgba(0, 0, 0, 0.02), 0 8px 24px -12px rgba(0, 0, 0, 0.14);
-
   background: var(--bg);
   min-height: 100vh;
-  font-family: 'SF Pro Text', 'Inter', -apple-system, system-ui, sans-serif;
+  font-family: var(--font-display, 'Pretendard', -apple-system, system-ui, sans-serif);
   letter-spacing: -0.01em;
   -webkit-font-smoothing: antialiased;
-}
-[data-theme='dark'] .tm-page {
-  --bg: #000000;
-  --surface: #1c1c1e;
-  --surface-2: #0a0a0a;
-  --ink: #f5f5f7;
-  --ink-2: #aeaeb2;
-  --ink-3: #8e8e93;
-  --line: rgba(255, 255, 255, 0.1);
-  --line-strong: rgba(255, 255, 255, 0.18);
-  --brand: #0a84ff;
-  --brand-strong: #409cff;
-  --brand-soft: rgba(10, 132, 255, 0.18);
-  --brand-ink: #409cff;
-  --ap-shadow: 0 8px 24px -12px rgba(0, 0, 0, 0.6);
 }
 
 /* NAV */
@@ -344,19 +311,17 @@
   }
 }
 
-/* ── 애플 머티리얼 이식(2026-07-23): 쿨 글래스 내비 · 소프트 시트 · SF 제목 ── */
+/* ── 리뉴얼(2026-07-27): 솔리드 내비 · 소프트 시트(모노크롬) ── */
 .tm-nav {
-  background: color-mix(in srgb, var(--surface) 82%, transparent);
-  backdrop-filter: saturate(180%) blur(20px);
-  -webkit-backdrop-filter: saturate(180%) blur(20px);
-  border-bottom: 0.5px solid var(--line);
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
 }
-.tm-badge { border: 0.5px solid var(--line); box-shadow: var(--ap-shadow); }
+.tm-badge { border: 1px solid var(--line); box-shadow: var(--shadow-md); }
 .tm-title { font-weight: 700; }
 .tm-sheet {
-  border: 0.5px solid var(--line);
-  border-radius: 22px;
-  box-shadow: var(--ap-shadow);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-md);
 }
 .tm-h2 { font-weight: 700; }
-.tm-contact { border: 0.5px solid var(--line); border-radius: 14px; }
+.tm-contact { border: 1px solid var(--line); border-radius: 14px; }

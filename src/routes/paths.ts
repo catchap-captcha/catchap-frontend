@@ -25,6 +25,7 @@ export const PATHS = {
   STUDENT_RESULT: '/student/result', // ?subject=
   STUDENT_DAILY_QUIZ: '/student/daily-quiz', // 은퇴(Q 통합 0719) — 문제은행으로 리다이렉트만 남음
   STUDENT_LECTURES: '/student/lectures', // ?subject= — 과목별 강의 카탈로그(개념 설명 톤)
+  STUDENT_CHECKOUT: '/student/checkout', // ?course= — 코스 수강 결제(주문→승인→수강신청)
   STUDENT_LECTURE: '/student/lecture', // ?id= — 강의실(플레이어 + 시청 검증)
   STUDENT_COURSE_EXAM: '/student/course-exam', // ?course= — 코스 수료 시험(완전학습)
   STUDENT_ALL_LEARNING: '/student/all-learning',
@@ -62,9 +63,15 @@ export const PATHS = {
   OPS_LLM_PROMPTS: '/ops/llm/prompts', // 생성·검증 프롬프트(규칙) 편집
   OPS_SETTINGS: '/ops/settings', // (레거시) → OPS_LLM_KEYS로 리다이렉트(북마크 보호)
   OPS_INSTRUCTOR_HOME: '/ops/home', // 강사 홈 대시보드 (검수 대기·학생 참여·약한 문항) — 강사 착지
+  OPS_INSTRUCTOR_PROFILE: '/ops/profile', // 강사 프로필 — 상단바 아바타 클릭 시 착지(비밀번호 변경은 이 안의 액션)
   OPS_LECTURES: '/ops/lectures', // 강의 관리 (영상 업로드·확인 문항·자료실) — 운영자·강사 공용
   OPS_QUESTION_METRICS: '/ops/question-metrics', // 문항 지표 (문제은행 노출수·정답률 — 문제은행 2단계)
   OPS_INSTRUCTORS: '/ops/instructors', // 강사 계정 관리 (운영자 초대 발급)
+  // 리뉴얼 상단바(2026-07-24) 신규 콘솔 화면
+  OPS_SYSTEM_STATUS: '/ops/system-status', // 시스템 상태 — 구성요소 헬스체크(운영, 상단바 '시스템')
+  OPS_COURSES: '/ops/courses', // 코스 관리 — 강의 묶음(코스) 빌더(강사, '강의 관리'에서 진입)
+  OPS_QUESTION_REVIEW: '/ops/question-review', // 문항 검수 — 생성 문항 승인/반려 QC(강사, 문항 지표와 별개)
+  OPS_LEARNING_ANALYTICS: '/ops/learning-analytics', // 학습 분석 — 주간 시청 완주·참여(강사)
 
   // 학생 코드 활성화 가입 (공개) — 학교 발급 코드 흐름 종료 안내만 남음
   ACTIVATE: '/activate',

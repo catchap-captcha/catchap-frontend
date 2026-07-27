@@ -3,11 +3,9 @@
    (전역 theme.css 불변 → 다른 페이지 무영향). 클래스명·레이아웃 불변, CSS만 재해석.
    좌측 브랜드 패널은 웜 브라운(#3d3935)→애플 뉴트럴 다크로, 코랄 데코 원은 블루 틴트로. */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-
 .opl-root {
   /* ── 애플 디자인 토큰 (이 페이지 스코프) ── */
-  --font-display: 'SF Pro Display', 'SF Pro Text', 'Inter', -apple-system, system-ui, sans-serif;
+  --font-display: 'Pretendard', -apple-system, system-ui, sans-serif;
   --bg: #f5f5f7;
   --surface: #ffffff;
   --surface-2: #f5f5f7;
@@ -16,10 +14,10 @@
   --ink-3: #86868b;
   --line: rgba(0, 0, 0, 0.08);
   --line-strong: rgba(0, 0, 0, 0.14);
-  --brand: #0071e3;
-  --brand-strong: #0077ed;
-  --brand-soft: rgba(0, 113, 227, 0.12);
-  --brand-ink: #0071e3;
+  --brand: #1a1a1a;
+  --brand-strong: #000000;
+  --brand-soft: rgba(26, 26, 26, 0.12);
+  --brand-ink: #1a1a1a;
   --on-brand: #ffffff;
 
   position: relative;
@@ -27,7 +25,7 @@
   display: grid;
   grid-template-columns: 1.05fr 0.95fr;
   background: var(--bg);
-  font-family: 'SF Pro Text', 'Inter', -apple-system, system-ui, sans-serif;
+  font-family: 'Pretendard', -apple-system, system-ui, sans-serif;
   letter-spacing: -0.01em;
   -webkit-font-smoothing: antialiased;
   font-size: 16px;
@@ -41,10 +39,10 @@
   --ink-3: #8e8e93;
   --line: rgba(255, 255, 255, 0.1);
   --line-strong: rgba(255, 255, 255, 0.18);
-  --brand: #0a84ff;
-  --brand-strong: #409cff;
-  --brand-soft: rgba(10, 132, 255, 0.18);
-  --brand-ink: #409cff;
+  --brand: #f5f5f7; --on-brand:#161616;
+  --brand-strong: #ffffff;
+  --brand-soft: rgba(245, 245, 247, 0.18);
+  --brand-ink: #ffffff;
 }
 
 /* ===== LEFT — 다크 브랜드 패널 ===== */
@@ -71,7 +69,7 @@
   width: 300px;
   height: 300px;
   border-radius: 50%;
-  background: rgba(0, 113, 227, 0.14);
+  background: rgba(26, 26, 26, 0.14);
 }
 
 .opl-c2 {

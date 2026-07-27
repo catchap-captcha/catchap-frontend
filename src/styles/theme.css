@@ -14,41 +14,43 @@
  * ========================================================================== */
 
 :root {
-  /* ---- 배경 / 표면 (리뉴얼: 차분한 웜-뉴트럴) ---- */
-  --bg: #fbfaf8;            /* 페이지 바탕(맑은 오프화이트) */
-  --bg-tint: #f5f3ef;       /* 헤더 등 아주 옅은 뉴트럴 틴트 */
+  /* ---- 배경 / 표면 (리뉴얼 2026-07-24: 모노크롬 미니멀 — 쿨 뉴트럴) ----
+     디자인 핸드오프(*.dc.html) 토큰: --bg:#FAFAFA --surface:#FFFFFF --ink:#1A1A1A
+     --line:#EBEBEB --line2:#DADADA --brand:#1A1A1A. 종전 코랄/블루 액센트 전면 제거. */
+  --bg: #fafafa;            /* 페이지 바탕(쿨 오프화이트) */
+  --bg-tint: #f4f4f4;       /* 헤더 등 아주 옅은 뉴트럴 틴트 */
   --surface: #ffffff;       /* 카드·패널 */
-  --surface-2: #fbfaf8;     /* 카드 안 삽입 행(inset) */
-  --surface-3: #f3f1ed;     /* 한 단계 더 진한 삽입 */
-  --overlay: rgba(23, 23, 26, 0.42); /* 모달 뒤 배경 */
+  --surface-2: #fafafa;     /* 카드 안 삽입 행(inset) */
+  --surface-3: #f0f0f0;     /* 한 단계 더 진한 삽입 */
+  --overlay: rgba(20, 20, 20, 0.42); /* 모달 뒤 배경 */
 
   /* ---- 경계선 ---- */
-  --line: #eae8e4;
-  --line-strong: #dcd9d3;
+  --line: #ebebeb;
+  --line-strong: #dadada;
 
   /* ---- 글자 (중립 잉크) ---- */
-  --ink: #17171a;           /* 본문·제목 */
-  --ink-2: #5b5b63;         /* 보조 설명 */
-  --ink-3: #8e8e98;         /* 아주 흐린 라벨 */
-  --on-brand: #ffffff;      /* 코랄 버튼 위 글자 */
+  --ink: #1a1a1a;           /* 본문·제목 */
+  --ink-2: #5c5e62;         /* 보조 설명 */
+  --ink-3: #8e8e93;         /* 아주 흐린 라벨 */
+  --on-brand: #ffffff;      /* 잉크(블랙) 버튼 위 글자 */
 
-  /* ---- 브랜드(코랄, 리뉴얼: 채도 낮춘 벽돌빛) ---- */
-  --brand: #ea5443;
-  --brand-strong: #c8412f;
-  --brand-ink: #c8412f;     /* 라이트 배경 위 코랄 글자(대비 확보) */
-  --brand-soft: #fcede9;    /* 코랄 옅은 배경(선택/틴트) */
-  --brand-soft-line: #f5d9d1;
+  /* ---- 브랜드(모노크롬 잉크 블랙) ---- */
+  --brand: #1a1a1a;
+  --brand-strong: #000000;
+  --brand-ink: #000000;     /* 라이트 배경 위 강조 글자 */
+  --brand-soft: #f0f0f0;    /* 옅은 회색 배경(선택/틴트) */
+  --brand-soft-line: #e0e0e0;
 
-  /* ---- 상태색(성공/경고/위험/정보) ---- */
-  --ok: #1f9d6b;   --ok-soft: #e4f4ec;   --ok-ink: #1a845a;
-  --warn: #c08815; --warn-soft: #faf0d8; --warn-ink: #9e6f11;
-  --danger: #d64545; --danger-soft: #fbe6e6; --danger-ink: #c13a3a;
-  --info: #5b4be0; --info-soft: #ece9fb; --info-ink: #4a3acb;
+  /* ---- 상태색(성공/경고/위험/정보) — 리뉴얼: 채도 낮춘 뉴트럴 톤 ---- */
+  --ok: #2e7d5b;   --ok-soft: #edf3ef;   --ok-ink: #256b4d;
+  --warn: #8a6d1f; --warn-soft: #f3efe3; --warn-ink: #75591a;
+  --danger: #d4483f; --danger-soft: #fbeae8; --danger-ink: #b83b33;
+  --info: #3a3a3c; --info-soft: #f0f0f0; --info-ink: #2c2c2e;
 
   /* ---- 그림자 (중립 그레이 기반) ---- */
-  --shadow-sm: 0 1px 2px rgba(23, 23, 26, 0.04);
-  --shadow-md: 0 1px 2px rgba(23, 23, 26, 0.05), 0 14px 30px -26px rgba(23, 23, 26, 0.18);
-  --shadow-lg: 0 1px 2px rgba(23, 23, 26, 0.05), 0 20px 46px -24px rgba(23, 23, 26, 0.24);
+  --shadow-sm: 0 1px 2px rgba(20, 20, 20, 0.04);
+  --shadow-md: 0 1px 2px rgba(20, 20, 20, 0.05), 0 14px 30px -26px rgba(20, 20, 20, 0.16);
+  --shadow-lg: 0 1px 2px rgba(20, 20, 20, 0.05), 0 20px 46px -24px rgba(20, 20, 20, 0.2);
 
   /* ---- 형태 ---- */
   --r-sm: 10px;
@@ -65,31 +67,34 @@
 
 /* =============================== 다크 팔레트 =============================== */
 :root[data-theme='dark'] {
-  --bg: #15171e;
-  --bg-tint: #1b1d26;
-  --surface: #1f232e;
-  --surface-2: #262b37;
-  --surface-3: #2c313d;
-  --overlay: rgba(0, 0, 0, 0.58);
+  /* 리뉴얼 모노크롬 다크 — 핸드오프 다크 섹션(랜딩·상단바) 기준:
+     --bg:#161616 --ink:#F1F0ED --line:#2A2A2A --brand:#F5F5F7.
+     브랜드가 near-white라 채움 버튼은 흰 배경 + 다크 글자(--on-brand). */
+  --bg: #161616;
+  --bg-tint: #1c1c1c;
+  --surface: #1f1f1f;
+  --surface-2: #262626;
+  --surface-3: #2e2e2e;
+  --overlay: rgba(0, 0, 0, 0.6);
 
-  --line: #2a2e3a;
-  --line-strong: #363b49;
+  --line: #2a2a2a;
+  --line-strong: #383838;
 
-  --ink: #f1f3f8;
-  --ink-2: #9098aa;
-  --ink-3: #6b7284;
-  --on-brand: #ffffff;
+  --ink: #f1f0ed;
+  --ink-2: #a0a0a0;
+  --ink-3: #757575;
+  --on-brand: #161616;
 
-  --brand: #f06a5a;
-  --brand-strong: #ea5443;
-  --brand-ink: #f5897b;      /* 다크 배경 위 코랄 글자(밝게) */
-  --brand-soft: #2e211e;     /* 다크 코랄 틴트 */
-  --brand-soft-line: #45312b;
+  --brand: #f5f5f7;
+  --brand-strong: #ffffff;
+  --brand-ink: #f5f5f7;      /* 다크 배경 위 강조 글자(밝게) */
+  --brand-soft: #262626;     /* 다크 뉴트럴 틴트 */
+  --brand-soft-line: #383838;
 
-  --ok: #35c48d;   --ok-soft: #16302a;   --ok-ink: #57dba7;
-  --warn: #dba83e; --warn-soft: #352c18; --warn-ink: #e6b85c;
-  --danger: #e86a6a; --danger-soft: #3a2020; --danger-ink: #f58f8f;
-  --info: #8c7cf0; --info-soft: #241f3a; --info-ink: #afa4ff;
+  --ok: #4fb98a;   --ok-soft: #17251f;   --ok-ink: #6bd0a3;
+  --warn: #c9a54e; --warn-soft: #2a2417; --warn-ink: #ddbd6a;
+  --danger: #e86a6a; --danger-soft: #2e1c1b; --danger-ink: #f58f8f;
+  --info: #b0b0b3; --info-soft: #242424; --info-ink: #cfcfd2;
 
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
   --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.35), 0 16px 34px -26px rgba(0, 0, 0, 0.7);

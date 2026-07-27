@@ -1,0 +1,60 @@
+/* 시스템 상태 — CatChap 시스템 상태.dc.html 구조 그대로 (1360px·전체상태 배너·
+   2열 좌측강조바 카드). */
+
+.sys-page { max-width: 1360px; padding: 32px 40px 60px; }
+
+.sys-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-radius: var(--r);
+  padding: 15px 18px;
+  margin-bottom: 20px;
+  border: 1px solid transparent;
+}
+.sys-banner i { font-size: 24px; }
+.sys-banner b { font-size: 16px; }
+.sys-checked { margin-left: auto; font-size: 12px; font-weight: 600; opacity: 0.75; }
+.sys-banner--ok { background: var(--ok-soft); color: var(--ok-ink); border-color: var(--ok-soft); }
+.sys-banner--warn { background: var(--warn-soft); color: var(--warn-ink); border-color: var(--warn-soft); }
+.sys-banner--bad { background: var(--brand-soft); color: var(--brand-ink); border-color: var(--brand-soft); }
+
+.sys-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+@media (max-width: 760px) { .sys-grid { grid-template-columns: 1fr; } }
+
+.sys-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--ink-3);
+  border-radius: var(--r);
+  padding: 20px 22px;
+}
+.sys-card-top { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.sys-icbox {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--r);
+  background: var(--bg);
+  color: var(--ink-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 20px;
+}
+.sys-card-title { flex: 1; min-width: 0; }
+.sys-card-name { font-size: 16px; font-weight: 700; letter-spacing: -0.02em; color: var(--ink); }
+.sys-card-desc { font-size: 12px; color: var(--ink-3); font-weight: 500; }
+.sys-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 5px 11px;
+  border-radius: var(--r-pill);
+}
+.sys-card-bottom { display: flex; align-items: center; gap: 10px; padding-top: 13px; border-top: 1px solid var(--line); }
+.sys-latency { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; color: var(--ink); }
+.sys-detail { font-size: 12px; color: var(--ink-2); font-weight: 500; }

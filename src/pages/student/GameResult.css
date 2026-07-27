@@ -1,91 +1,9 @@
-/* 게임/챕터 결과 — 전용 정적 목업 없음(gr- 접두사).
-   과목별 퀴즈·챕터를 마친 뒤 보여주는 실기능 화면으로, GameScreen(퀴즈 플레이 화면)의 짝 —
-   GameScreen도 과거 감사에서 확인됐듯 전용 핸드오프가 없어 둥근 카드·웜 섀도우로 독자 디자인됨.
-   `CatChap 학습결과.dc.html`은 실제로는 "코스 수료증" 화면(실제 구현은 CourseExam.tsx)이라
-   이 화면과는 다른 목업 — 과거 라우팅 주석의 매핑은 오표기이니 참고하지 말 것. */
-
-/* ── 애플 디자인 토큰 (이 페이지 스코프) — 2026-07-23 "애플 디자인 이식(정공법)".
-   왜 이 파일만·CSS만: GameResult.tsx(실데이터·리워드·컨페티·과목 themeVars)와 백엔드는 불변.
-   .gr-root에 애플 뉴트럴/블루 토큰을 스코프 오버라이드 → gr-* 규칙이 쓰는 var(--ink)/var(--surface)/
-   var(--line) 등이 이 화면에서만 애플 값으로 해석(전역 theme.css 불변 = 타 화면 무영향).
-   보존: 정답=초록(--ok*)·오답=빨강(--danger*) 의미색, 인라인 themeVars(--gr-solid/--gr-soft)와
-   컨페티 레이어는 재정의하지 않음(과목 정체성·컨페티 색 유지). */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-
-.gr-root {
-  --font-display: 'SF Pro Display', 'SF Pro Text', 'Inter', -apple-system, system-ui, sans-serif;
-  --bg: #f5f5f7;
-  --surface: #ffffff;
-  --surface-2: #f5f5f7;
-  --ink: #1d1d1f;
-  --ink-2: #6e6e73;
-  --ink-3: #86868b;
-  --line: rgba(0, 0, 0, 0.08);
-  --line-strong: rgba(0, 0, 0, 0.14);
-  --brand: #0071e3;
-  --brand-strong: #0077ed;
-  --brand-soft: rgba(0, 113, 227, 0.12);
-  --brand-ink: #0071e3;
-  --on-brand: #ffffff;
-  --ap-shadow: 0 1px 1px rgba(0, 0, 0, 0.02), 0 8px 24px -12px rgba(0, 0, 0, 0.14);
-  --ap-spring: cubic-bezier(0.34, 1.2, 0.5, 1);
-  font-family: 'SF Pro Text', 'Inter', -apple-system, system-ui, sans-serif;
-  letter-spacing: -0.01em;
-  -webkit-font-smoothing: antialiased;
-}
-[data-theme='dark'] .gr-root {
-  --bg: #000000;
-  --surface: #1c1c1e;
-  --surface-2: #0a0a0a;
-  --ink: #f5f5f7;
-  --ink-2: #aeaeb2;
-  --ink-3: #8e8e93;
-  --line: rgba(255, 255, 255, 0.1);
-  --line-strong: rgba(255, 255, 255, 0.18);
-  --brand: #0a84ff;
-  --brand-strong: #409cff;
-  --brand-soft: rgba(10, 132, 255, 0.18);
-  --brand-ink: #409cff;
-}
-
-/* 원본 ccPop: scale(.5)→1.12→1 — 공용 ccPop(scale .85)과 다름 → 접두사 정의 */
-@keyframes grPop {
-  0% {
-    transform: scale(0.5);
-    opacity: 0;
-  }
-  60% {
-    transform: scale(1.12);
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-@keyframes grFloat {
-  0%,
-  100% {
-    transform: translateY(0) rotate(-2deg);
-  }
-  50% {
-    transform: translateY(-12px) rotate(2deg);
-  }
-}
-
-@keyframes grFall {
-  0% {
-    transform: translateY(-40px) rotate(0);
-    opacity: 0;
-  }
-  12% {
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(560px) rotate(540deg);
-    opacity: 0;
-  }
-}
+/* 게임/챕터 결과 (gr- 접두사) — 리뉴얼(2026-07-27): CATCHAP 모노크롬 룩으로 재정렬.
+   종전 "애플 디자인 이식(2026-07-23)"의 .gr-root 스코프 토큰 오버라이드(--bg:#f5f5f7 등)·
+   980px pill·0.5px 하이라인·웜 섀도우를 걷어내고 전역 theme.css 모노크롬 토큰을 상속한다.
+   또한 실제로 렌더되지 않는 사장(死藏) 마스코트·컨페티·트로피·맵노드 CSS를 제거해 톤을 정리했다.
+   보존: 정답=초록(--ok*)·오답=빨강(--danger*) 의미색. --gr-solid/--gr-soft는 TSX에서 var(--brand)로
+   설정돼 모노크롬으로 해석된다. 클래스명(gr-*)은 GameResult.tsx와 1:1 유지 — 기능 불변. */
 
 @keyframes grRing {
   from {
@@ -97,32 +15,14 @@
 }
 
 .gr-root {
+  --ap-spring: cubic-bezier(0.34, 1.2, 0.5, 1);
   position: relative;
   min-height: 100vh;
   overflow: hidden;
-  /* 웜 피치/라벤더 방사형 배경 제거 → 플랫 애플 그레이 캔버스 */
   background: var(--bg);
-  font-family: 'SF Pro Text', 'Inter', -apple-system, system-ui, sans-serif;
+  font-family: var(--font-display, 'Pretendard', -apple-system, system-ui, sans-serif);
+  letter-spacing: -0.01em;
   -webkit-font-smoothing: antialiased;
-}
-
-/* CONFETTI */
-.gr-confetti-layer {
-  position: absolute;
-  inset: 0 0 auto 0;
-  height: 600px;
-  pointer-events: none;
-  z-index: 1;
-  overflow: hidden;
-}
-
-.gr-confetti {
-  position: absolute;
-  top: 0;
-  width: 12px;
-  height: 16px;
-  border-radius: 3px;
-  animation: grFall 3.2s ease-in infinite;
 }
 
 .gr-content {
@@ -144,49 +44,18 @@
   align-items: center;
   gap: 7px;
   background: var(--surface);
+  border: 1px solid var(--line);
   color: var(--gr-solid);
   font-weight: 800;
   font-size: 13px;
   padding: 8px 16px;
-  border-radius: 980px;
-  box-shadow: var(--ap-shadow);
+  border-radius: 999px;
+  box-shadow: var(--shadow-md);
   margin-bottom: 20px;
 }
 
 .gr-herochip i {
   font-size: 16px;
-}
-
-.gr-mascotwrap {
-  position: relative;
-  display: inline-block;
-  animation: grPop 0.5s ease;
-}
-
-.gr-mascotimg {
-  width: 150px;
-  height: 150px;
-  border-radius: 50%;
-animation: grFloat 4s ease-in-out infinite;
-}
-
-.gr-trophy {
-  position: absolute;
-  bottom: -4px;
-  right: -6px;
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  background: var(--surface);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 8px 16px -6px rgba(0, 0, 0, 0.2);
-}
-
-.gr-trophy i {
-  font-size: 28px;
-  color: var(--warn);
 }
 
 .gr-title {
@@ -200,17 +69,17 @@ animation: grFloat 4s ease-in-out infinite;
 .gr-herosub {
   margin: 0;
   font-size: 16px;
-  color: var(--brand-ink);
+  color: var(--ink-2);
   font-weight: 600;
 }
 
 /* SCORE CARD */
 .gr-scorecard {
   background: var(--surface);
-  border: 0.5px solid var(--line);
-  border-radius: 24px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
   padding: 34px;
-  box-shadow: var(--ap-shadow);
+  box-shadow: var(--shadow-md);
   display: flex;
   align-items: center;
   gap: 36px;
@@ -272,8 +141,8 @@ animation: grFloat 4s ease-in-out infinite;
 
 .gr-stat {
   background: var(--surface-2, var(--surface));
-  border: 0.5px solid var(--line);
-  border-radius: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
   padding: 16px 18px;
   display: flex;
   align-items: center;
@@ -336,11 +205,11 @@ animation: grFloat 4s ease-in-out infinite;
 /* TODAY MAP */
 .gr-mapcard {
   background: var(--surface);
-  border: 0.5px solid var(--line);
-  border-radius: 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
   padding: 24px 26px;
   margin-top: 20px;
-  box-shadow: var(--ap-shadow);
+  box-shadow: var(--shadow-md);
 }
 
 .gr-maphead {
@@ -395,89 +264,21 @@ animation: grFloat 4s ease-in-out infinite;
   font-weight: 800;
   font-size: 12px;
   padding: 7px 13px;
-  border-radius: 20px;
+  border-radius: 999px;
 }
 
 .gr-todaybadge i {
   font-size: 14px;
 }
 
-.gr-mapnodes {
-  display: flex;
-  align-items: flex-start;
-}
-
-.gr-mapnode {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  position: relative;
-}
-
-/* border-top 색은 과목별 → inline style */
-.gr-mapline {
-  position: absolute;
-  top: 26px;
-  left: -50%;
-  width: 100%;
-  height: 0;
-  border-top: 3px dashed;
-  z-index: 0;
-}
-
-.gr-node {
-  position: relative;
-  z-index: 1;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.gr-node i {
-  font-size: 24px;
-}
-
-/* background/box-shadow는 과목색 → inline style */
-.gr-node-hero {
-  width: 56px;
-  height: 56px;
-  color: var(--on-brand);
-  transform: scale(1.12);
-}
-
-.gr-node-done {
-  width: 52px;
-  height: 52px;
-  color: var(--on-brand);
-}
-
-.gr-node-todo {
-  width: 52px;
-  height: 52px;
-  background: var(--surface-2, var(--surface));
-  color: var(--ink-3);
-}
-
-/* color는 상태별 → inline style */
-.gr-maplabel {
-  font-size: 12.5px;
-  font-weight: 800;
-  margin-top: 10px;
-  text-align: center;
-  line-height: 1.2;
-  white-space: nowrap;
-}
-
 /* AI COMMENT */
 .gr-aicard {
   background: var(--surface);
-  border: 0.5px solid var(--line);
-  border-radius: 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
   padding: 22px 24px;
   margin-top: 20px;
-  box-shadow: var(--ap-shadow);
+  box-shadow: var(--shadow-md);
 }
 
 .gr-aihead {
@@ -491,7 +292,7 @@ animation: grFloat 4s ease-in-out infinite;
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--info), var(--info));
+  background: var(--info);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -518,36 +319,18 @@ animation: grFloat 4s ease-in-out infinite;
   margin: 0 0 14px;
   font-size: 14px;
   line-height: 1.65;
-  color: var(--brand-ink);
+  color: var(--ink-2);
   font-weight: 600;
-}
-
-.gr-ailink {
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--info);
-  font-weight: 800;
-  font-size: 13.5px;
-}
-
-.gr-ailink:hover {
-  color: var(--info-ink);
-}
-
-.gr-ailink i {
-  font-size: 14px;
 }
 
 /* QUESTION REVIEW */
 .gr-reviewcard {
   background: var(--surface);
-  border: 0.5px solid var(--line);
-  border-radius: 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
   padding: 22px 24px;
   margin-top: 20px;
-  box-shadow: var(--ap-shadow);
+  box-shadow: var(--shadow-md);
 }
 
 .gr-reviewhead {
@@ -597,7 +380,7 @@ animation: grFloat 4s ease-in-out infinite;
 
 .gr-reviewchip-wrong {
   background: var(--danger-soft);
-  color: var(--brand-ink);
+  color: var(--danger-ink);
 }
 
 /* ACTIONS */
@@ -612,13 +395,13 @@ animation: grFloat 4s ease-in-out infinite;
   text-decoration: none;
   flex: 1;
   min-width: 150px;
-  border: 2px solid var(--brand-soft);
+  border: 1px solid var(--line-strong);
   background: var(--surface);
-  color: var(--gr-solid);
+  color: var(--ink);
   font-weight: 800;
   font-size: 15px;
   padding: 15px;
-  border-radius: 980px;
+  border-radius: var(--r);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -627,7 +410,7 @@ animation: grFloat 4s ease-in-out infinite;
 }
 
 .gr-btn-secondary:hover {
-  background: var(--surface);
+  border-color: var(--ink-3);
 }
 
 .gr-btn-secondary i {
@@ -644,41 +427,39 @@ animation: grFloat 4s ease-in-out infinite;
   font-family: var(--font-display); font-weight: 800;
   font-size: 17px;
   padding: 15px;
-  border-radius: 980px;
+  border-radius: var(--r);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   min-height: 52px;
-  box-shadow: var(--ap-shadow);
+  box-shadow: var(--shadow-md);
 }
 
 .gr-btn-primary:hover {
-  filter: brightness(0.95);
+  background: var(--brand-strong);
 }
 
 .gr-btn-primary i {
   font-size: 19px;
 }
 
-/* ===== 정제(polish): 액션 버튼 hover 부상 + 탄력 눌림 (배경색 불변, 그림자/모션만) ===== */
+/* ===== 정제(polish): 액션 버튼 hover 부상 (배경색 불변, 그림자/모션만) ===== */
 .gr-btn-primary,
 .gr-btn-secondary {
   transition:
     transform 0.2s var(--ap-spring),
     box-shadow 0.2s ease,
-    filter 0.2s ease;
+    border-color 0.2s ease;
 }
 .gr-btn-primary:hover,
 .gr-btn-secondary:hover {
-  transform: translateY(-1px) scale(1.015);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04), 0 14px 30px -14px rgba(0, 0, 0, 0.22);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
 }
 .gr-btn-primary:active,
 .gr-btn-secondary:active {
-  transform: translateY(0) scale(0.97);
-  box-shadow: 0 1px 4px -2px rgba(0, 0, 0, 0.18);
-  transition-duration: 0.09s;
+  transform: translateY(0);
 }
 @media (prefers-reduced-motion: reduce) {
   .gr-btn-primary,
@@ -734,12 +515,12 @@ animation: grFloat 4s ease-in-out infinite;
   margin: 14px auto 0;
   display: inline-block;
   background: var(--warn-soft);
-  border: 2px solid var(--line);
+  border: 1px solid var(--line);
   color: var(--warn-ink);
   font-weight: 800;
   font-size: 14.5px;
   padding: 10px 18px;
-  border-radius: 20px;
+  border-radius: 999px;
 }
 .gr-compareline {
   margin: 12px auto 0;
@@ -749,7 +530,7 @@ animation: grFloat 4s ease-in-out infinite;
   font-weight: 700;
   font-size: 14px;
   padding: 9px 16px;
-  border-radius: 18px;
+  border-radius: 999px;
 }
 .gr-compareline b {
   font-weight: 900;
@@ -758,12 +539,12 @@ animation: grFloat 4s ease-in-out infinite;
   margin: 12px auto 0;
   display: inline-block;
   background: var(--surface);
-  border: 2px solid var(--line);
+  border: 1px solid var(--line);
   color: var(--brand-strong);
   font-weight: 700;
   font-size: 13px;
   padding: 8px 15px;
-  border-radius: 16px;
+  border-radius: var(--r);
 }
 
 /* ── 챕터 결과: 5단계 진행 행 ── */
@@ -817,8 +598,3 @@ animation: grFloat 4s ease-in-out infinite;
   margin: 0 auto 4px; width: fit-content;
 }
 .gr-perfribbon i { font-size: 15px; }
-
-/* 뷰포트(body) 캔버스도 애플 그레이 — 상단 여백·오버스크롤에 웜 톤이 비치지 않게.
-   :has(.gr-root)로 결과 화면에서만 적용(타 화면 무관). */
-body:has(.gr-root) { background: #f5f5f7; }
-[data-theme='dark'] body:has(.gr-root) { background: #000000; }

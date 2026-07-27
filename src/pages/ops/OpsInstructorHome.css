@@ -126,6 +126,10 @@
   align-items: center;
   justify-content: space-between;
   gap: 10px;
+  /* 행 규격(min-height·padding·radius·배경)은 .ih-sample-row와 반드시 같이 간다 —
+     두 카드가 2열로 나란히 놓여서 행 높이·테두리가 어긋나면 바로 보인다.
+     min-height는 2줄짜리 표본 검수 행 기준(내용 32.5px + 상하 패딩 20px). */
+  min-height: 54px;
   padding: 10px 12px;
   background: var(--surface-2);
   border-radius: 12px;
@@ -164,6 +168,36 @@
 }
 .ih-cta:hover {
   text-decoration: underline;
+}
+
+/* 2열(검수 대기 · 표본 검수) 하단 CTA 줄맞춤 —
+   두 카드는 그리드 stretch로 높이가 이미 같지만, 내용 길이가 달라서 짧은 쪽 CTA가
+   그만큼 위에 떠 '강의 관리로 이동'과 '강의 관리에서 검수'의 높이가 어긋났다.
+   카드를 세로 flex로 두고 CTA에 margin-top:auto를 줘 남는 공간을 위로 몰아
+   두 링크가 항상 카드 바닥(패딩 경계)에 나란히 서게 한다.
+   .ih-card 전역이 아니라 2열 카드에만 적용 — 아래 전폭 카드들은 기존 블록 레이아웃 유지. */
+.ih-cols > .ih-card {
+  display: flex;
+  flex-direction: column;
+}
+/* 남는 높이를 목록이 가져가고, 행 묶음은 그 안에서 세로 가운데 정렬 —
+   위 margin-top:auto만 있으면 남는 공간이 전부 '목록과 CTA 사이' 한곳에 몰려
+   목록이 카드 위쪽에 붙고 아래가 크게 비었다(표본 검수 기준 53px).
+   이제 여백이 목록 위아래로 나뉘어 목록이 카드 중앙에 놓인다. */
+.ih-cols > .ih-card > .ih-lec-list,
+.ih-cols > .ih-card > .ih-sample-list {
+  flex-grow: 1;
+  justify-content: center;
+}
+/* 목록이 늘어나도 CTA와 최소 간격은 유지(.ih-lec-list는 이미 동일 값 보유). */
+.ih-cols > .ih-card > .ih-sample-list {
+  margin-bottom: 14px;
+}
+.ih-cols > .ih-card > .ih-cta {
+  margin-top: auto;
+  /* inline-flex라도 flex 아이템이 되면 stretch로 카드 폭 전체가 되어 hover 밑줄이
+     가로로 늘어난다 — 내용 폭만 차지하게 고정. */
+  align-self: flex-start;
 }
 
 /* 약한 문항 */
@@ -257,7 +291,10 @@
 .ih-sample-list { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
 .ih-sample-row {
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface);
+  /* 규격은 .ih-lec-row와 동일하게 유지(위 주석 참고). 종전엔 여기만 흰 배경 + 1px 테두리
+     + radius 10이라 왼쪽 카드의 채움형 행과 따로 놀았다 → 채움형(surface-2)으로 통일. */
+  min-height: 54px;
+  padding: 10px 12px; border-radius: 12px; background: var(--surface-2);
 }
 .ih-sample-main { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .ih-sample-prompt {
@@ -269,5 +306,6 @@
   flex-shrink: 0; font-weight: 700; font-size: 11px; padding: 3px 9px; border-radius: 999px; white-space: nowrap;
 }
 .ih-verdict--captcha { background: var(--ok-soft); color: var(--ok-ink); }
-.ih-verdict--bank { background: var(--surface-2); color: var(--ink-2); }
+/* 행 배경이 surface-2로 바뀌면서 종전의 surface-2 칩은 행에 묻혔다 → 한 단계 밝은 surface로. */
+.ih-verdict--bank { background: var(--surface); color: var(--ink-2); }
 .ih-verdict--discard { background: var(--danger-soft); color: var(--danger-ink); }

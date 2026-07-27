@@ -7,41 +7,13 @@
    코랄 유지). 마이페이지에서는 .mp-root의 토큰이 상속되어 동일한 애플 값으로 렌더된다.
    JSX·클래스명·레이아웃 불변 = 실데이터·기능 그대로. */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-
 .st-root {
-  --font-display: 'SF Pro Display', 'SF Pro Text', 'Inter', -apple-system, system-ui, sans-serif;
-  --bg: #f5f5f7;
-  --surface: #ffffff;
-  --surface-2: #f5f5f7;
-  --ink: #1d1d1f;
-  --ink-2: #6e6e73;
-  --ink-3: #86868b;
-  --line: rgba(0, 0, 0, 0.08);
-  --line-strong: rgba(0, 0, 0, 0.14);
-  --ap-ease: cubic-bezier(0.4, 0, 0.2, 1);
-  --ap-spring: cubic-bezier(0.34, 1.4, 0.5, 1);
-  --ap-shadow: 0 1px 1px rgba(0, 0, 0, 0.02), 0 8px 24px -12px rgba(0, 0, 0, 0.14);
-  --ap-shadow-hi: 0 2px 4px rgba(0, 0, 0, 0.04), 0 26px 50px -20px rgba(0, 0, 0, 0.24);
-
   min-height: 100vh;
   background: var(--bg);
   padding-bottom: 60px;
-  font-family: 'SF Pro Text', 'Inter', -apple-system, system-ui, sans-serif;
+  font-family: var(--font-display, 'Pretendard', -apple-system, system-ui, sans-serif);
   letter-spacing: -0.01em;
   -webkit-font-smoothing: antialiased;
-}
-[data-theme='dark'] .st-root {
-  --bg: #000000;
-  --surface: #1c1c1e;
-  --surface-2: #0a0a0a;
-  --ink: #f5f5f7;
-  --ink-2: #aeaeb2;
-  --ink-3: #8e8e93;
-  --line: rgba(255, 255, 255, 0.1);
-  --line-strong: rgba(255, 255, 255, 0.18);
-  --ap-shadow: 0 8px 24px -12px rgba(0, 0, 0, 0.6);
-  --ap-shadow-hi: 0 26px 50px -18px rgba(0, 0, 0, 0.85);
 }
 
 /* 원본 ccPop(0.9 시작)은 공용 ccPop(0.85 시작)과 값이 달라 접두사 버전 정의 */
@@ -69,13 +41,13 @@
 /* PROFILE — handoff: 흰 카드(1px 테두리·14px radius, 그림자 없음) + ink색 이니셜 원 */
 .st-profile {
   background: var(--surface);
-  border: 0.5px solid var(--line);
-  border-radius: 22px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
   padding: 22px 24px;
   display: flex;
   align-items: center;
   gap: 16px;
-  box-shadow: var(--ap-shadow);
+  box-shadow: var(--shadow-md);
 }
 
 .st-avatar {
@@ -107,17 +79,17 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  border: 0.5px solid var(--line-strong);
+  border: 1px solid var(--line-strong);
   background: var(--surface);
   color: var(--ink-2);
   font-family: inherit;
   font-weight: 600;
   font-size: 13px;
   padding: 8px 16px;
-  border-radius: 980px;
+  border-radius: 999px;
   cursor: pointer;
-  transition: transform 0.2s var(--ap-spring), border-color 0.15s var(--ap-ease),
-    color 0.15s var(--ap-ease);
+  transition: transform 0.2s, border-color 0.15s,
+    color 0.15s;
 }
 .st-editbtn:hover { border-color: var(--ink-3); color: var(--ink); transform: scale(1.03); }
 .st-editbtn:active { transform: scale(0.98); }
@@ -140,10 +112,10 @@
 /* SECTION CARD — handoff: 흰 카드 1px 테두리·14px radius, 그림자 없음 */
 .st-card {
   background: var(--surface);
-  border: 0.5px solid var(--line);
-  border-radius: 22px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
   padding: 8px 24px;
-  box-shadow: var(--ap-shadow);
+  box-shadow: var(--shadow-md);
 }
 
 .st-cardtitle {
@@ -211,7 +183,7 @@
   border: none;
   border-radius: 999px;
   cursor: pointer;
-  transition: background 0.25s var(--ap-ease);
+  transition: background 0.25s;
   background: var(--line-strong);
 }
 
@@ -227,8 +199,8 @@
   height: 20px;
   border-radius: 50%;
   background: #ffffff;
-  transition: left 0.25s var(--ap-spring);
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04), 0 3px 8px -2px rgba(0, 0, 0, 0.28);
+  transition: left 0.25s;
+  box-shadow: var(--shadow-sm);
 }
 
 .st-toggle--on .st-knob {
@@ -242,13 +214,13 @@
 }
 
 .st-fbtn {
-  border: 0.5px solid var(--line);
+  border: 1px solid var(--line);
   cursor: pointer;
   font-family: inherit;
   font-weight: 600;
   font-size: 12.5px;
   padding: 8px 14px;
-  border-radius: 980px;
+  border-radius: 999px;
   min-height: 38px;
   background: var(--surface-2);
   color: var(--ink-2);
@@ -279,13 +251,13 @@
 .st-logout {
   text-decoration: none;
   text-align: center;
-  border: 0.5px solid var(--line-strong);
+  border: 1px solid var(--line-strong);
   background: var(--surface);
-  color: #ff3b30;
+  color: var(--danger);
   font-family: var(--font-display); font-weight: 600;
   font-size: 14.5px;
   padding: 14px;
-  border-radius: 980px;
+  border-radius: 999px;
   min-height: 52px;
   display: inline-flex;
   align-items: center;
@@ -294,13 +266,13 @@
   cursor: pointer;
   width: 100%;
   box-sizing: border-box;
-  transition: transform 0.2s var(--ap-spring), border-color 0.2s var(--ap-ease),
-    background 0.2s var(--ap-ease);
+  transition: transform 0.2s, border-color 0.2s,
+    background 0.2s;
 }
 
 .st-logout:hover {
-  border-color: #ff3b30;
-  background: color-mix(in srgb, #ff3b30 8%, transparent);
+  border-color: var(--danger);
+  background: var(--danger-soft);
   transform: scale(1.01);
 }
 .st-logout:active {
@@ -324,9 +296,7 @@
   position: fixed;
   inset: 0;
   z-index: 120;
-  background: rgba(0, 0, 0, 0.32);
-  backdrop-filter: saturate(160%) blur(12px);
-  -webkit-backdrop-filter: saturate(160%) blur(12px);
+  background: var(--overlay);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -337,11 +307,11 @@
   width: 100%;
   max-width: 360px;
   background: var(--surface);
-  border: 0.5px solid var(--line);
-  border-radius: 26px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
   padding: 30px 26px 24px;
   text-align: center;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06), 0 40px 80px -24px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--shadow-lg);
   animation: stPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
@@ -384,16 +354,16 @@
 
 .st-cancel {
   flex: 1;
-  border: 0.5px solid var(--line-strong);
+  border: 1px solid var(--line-strong);
   background: var(--surface-2);
   color: var(--ink-2);
   font-weight: 600;
   font-size: 15px;
   padding: 13px;
-  border-radius: 980px;
+  border-radius: 999px;
   cursor: pointer;
   font-family: inherit;
-  transition: transform 0.2s var(--ap-spring), background 0.2s var(--ap-ease);
+  transition: transform 0.2s, background 0.2s;
 }
 
 .st-cancel:hover {
@@ -414,14 +384,14 @@
   font-family: var(--font-display); font-weight: 700;
   font-size: 15px;
   padding: 13px;
-  border-radius: 980px;
-  box-shadow: 0 10px 22px -10px color-mix(in srgb, var(--brand) 80%, transparent);
+  border-radius: 999px;
+  box-shadow: var(--shadow-md);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
   cursor: pointer;
-  transition: transform 0.2s var(--ap-spring), background 0.2s var(--ap-ease);
+  transition: transform 0.2s, background 0.2s;
 }
 
 .st-confirm:hover {
@@ -445,11 +415,11 @@
 }
 .st-fbtn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 5px 12px -6px rgba(255, 90, 77, 0.28);
+  box-shadow: var(--shadow-md);
 }
 .st-fbtn:active {
   transform: translateY(0) scale(0.97);
-  box-shadow: 0 2px 6px -4px rgba(255, 90, 77, 0.28);
+  box-shadow: var(--shadow-md);
   transition-duration: 0.09s;
 }
 @media (prefers-reduced-motion: reduce) {
@@ -467,7 +437,3 @@
   .st-profile { flex-wrap: wrap; padding: 20px 18px; }
   .st-card { padding: 8px 18px; }
 }
-
-/* ── 애플 랩 정렬(2026-07-23): 액센트 코랄→애플 블루 (복제본 우선·로고 마크만 코랄) ── */
-.st-root { --brand:#0071e3; --brand-strong:#0077ed; --brand-soft:rgba(0,113,227,0.12); --brand-ink:#0071e3; --brand-soft-line:rgba(0,113,227,0.24); --on-brand:#ffffff; }
-[data-theme='dark'] .st-root { --brand:#0a84ff; --brand-strong:#409cff; --brand-soft:rgba(10,132,255,0.18); --brand-ink:#409cff; --brand-soft-line:rgba(10,132,255,0.30); }

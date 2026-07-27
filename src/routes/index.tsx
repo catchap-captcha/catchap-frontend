@@ -24,6 +24,7 @@ const GameScreen = lazy(() => import('../pages/student/GameScreen'));
 const GameResult = lazy(() => import('../pages/student/GameResult'));
 // 오늘의퀴즈 페이지는 Q 통합(0719 결정)으로 은퇴 — 옛 경로는 문제은행으로 보낸다(아래 라우트)
 const LectureList = lazy(() => import('../pages/student/LectureList'));
+const Checkout = lazy(() => import('../pages/student/Checkout'));
 const LecturePlayer = lazy(() => import('../pages/student/LecturePlayer'));
 const CourseExam = lazy(() => import('../pages/student/CourseExam'));
 const AllLearning = lazy(() => import('../pages/student/AllLearning'));
@@ -56,8 +57,14 @@ const OpsLlmKeys = lazy(() => import('../pages/ops/OpsLlmKeys'));
 const OpsLlmPrompts = lazy(() => import('../pages/ops/OpsLlmPrompts'));
 const OpsLectures = lazy(() => import('../pages/ops/OpsLectures'));
 const OpsInstructorHome = lazy(() => import('../pages/ops/OpsInstructorHome'));
+const OpsInstructorProfile = lazy(() => import('../pages/ops/OpsInstructorProfile'));
 const OpsOperators = lazy(() => import('../pages/ops/OpsOperators'));
 const OpsInstructors = lazy(() => import('../pages/ops/OpsInstructors'));
+// 리뉴얼 상단바(2026-07-24) 신규 콘솔 화면
+const OpsSystemStatus = lazy(() => import('../pages/ops/OpsSystemStatus'));
+const OpsCourses = lazy(() => import('../pages/ops/OpsCourses'));
+const OpsQuestionReview = lazy(() => import('../pages/ops/OpsQuestionReview'));
+const OpsLearningAnalytics = lazy(() => import('../pages/ops/OpsLearningAnalytics'));
 
 // 시스템
 const NotFoundPage = lazy(() => import('../pages/system/NotFoundPage'));
@@ -89,6 +96,7 @@ export default function AppRoutes() {
             element={<Navigate to={PATHS.STUDENT_ALL_LEARNING} replace />}
           />
           <Route path={PATHS.STUDENT_LECTURES} element={<LectureList />} />
+          <Route path={PATHS.STUDENT_CHECKOUT} element={<Checkout />} />
           <Route path={PATHS.STUDENT_LECTURE} element={<LecturePlayer />} />
           <Route path={PATHS.STUDENT_COURSE_EXAM} element={<CourseExam />} />
           <Route path={PATHS.STUDENT_ALL_LEARNING} element={<AllLearning />} />
@@ -140,13 +148,20 @@ export default function AppRoutes() {
           <Route path={PATHS.OPS_SETTINGS} element={<Navigate to={PATHS.OPS_LLM_KEYS} replace />} />
           <Route path={PATHS.OPS_OPERATORS} element={<OpsOperators />} />
           <Route path={PATHS.OPS_INSTRUCTORS} element={<OpsInstructors />} />
+          <Route path={PATHS.OPS_SYSTEM_STATUS} element={<OpsSystemStatus />} />
         </Route>
 
         {/* 강의 제작 콘솔 — 운영자(전체) + 강사(자기 강의만, 스코프는 서버가 강제) */}
         <Route element={<ProtectedRoute roles={['ops', 'instructor']} />}>
           <Route path={PATHS.OPS_INSTRUCTOR_HOME} element={<OpsInstructorHome />} />
+          <Route path={PATHS.OPS_INSTRUCTOR_PROFILE} element={<OpsInstructorProfile />} />
           <Route path={PATHS.OPS_LECTURES} element={<OpsLectures />} />
           <Route path={PATHS.OPS_QUESTION_METRICS} element={<OpsQuestionMetrics />} />
+          <Route path={PATHS.OPS_COURSES} element={<OpsCourses />} />
+          {/* 문항 검수·학습 분석은 저작자(강사) 전용 API(require_content_author)라 운영자가
+              들어오면 목록 페이지들과 동일하게 카드 안에서 '불러오지 못했어요'로 보인다. */}
+          <Route path={PATHS.OPS_QUESTION_REVIEW} element={<OpsQuestionReview />} />
+          <Route path={PATHS.OPS_LEARNING_ANALYTICS} element={<OpsLearningAnalytics />} />
         </Route>
 
         {/* 404 — handoff: CatChap 404 */}

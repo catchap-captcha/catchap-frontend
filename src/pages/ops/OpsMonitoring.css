@@ -321,9 +321,9 @@
 }
 /* CPU 시리즈는 원본 코랄 유지 — .op-root 애플 블루 오버라이드로 var(--brand)가 블루가 되면
    MEM(info 블루) 선과 색이 충돌한다. 차트 데이터색은 보존 규칙에 따라 하드코딩으로 고정. */
-.mon-line--cpu { stroke: #ea5443; }
+.mon-line--cpu { stroke: var(--warn); }
 .mon-line--mem { stroke: var(--info); }
-.mon-line--gpu { stroke: #8b6bff; }
+.mon-line--gpu { stroke: var(--ok); }
 .mon-trend-legend {
   display: flex;
   align-items: center;
@@ -344,9 +344,9 @@
   height: 3px;
   border-radius: 2px;
 }
-.mon-lg--cpu::before { background: #ea5443; }
+.mon-lg--cpu::before { background: var(--warn); }
 .mon-lg--mem::before { background: var(--info); }
-.mon-lg--gpu::before { background: #8b6bff; }
+.mon-lg--gpu::before { background: var(--ok); }
 .mon-trend-span {
   margin-left: auto;
   color: var(--ink-3);

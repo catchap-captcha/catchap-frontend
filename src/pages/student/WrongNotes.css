@@ -1,32 +1,19 @@
-/* CatChap 오답노트 — 2026-07-23 애플 디자인 이식(정공법·CSS만).
-   .wn-root에 애플 뉴트럴+블루 토큰을 스코프 오버라이드(전역 theme.css 불변). 클래스명·레이아웃 불변.
+/* CatChap 오답노트 — 리뉴얼(2026-07-27): 모노크롬. 스코프 토큰 오버라이드를 걷어내고
+   전역 theme.css 토큰을 그대로 상속한다(라이트/다크 자동). 클래스명·레이아웃 불변.
    정답=초록(--ok/--ok-soft)·경고(--warn)는 의미색이라 전역값 그대로 둔다. */
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-
-.wn-root {
-  --font-display: 'SF Pro Display', 'SF Pro Text', 'Inter', -apple-system, system-ui, sans-serif;
-  --bg: #f5f5f7; --surface: #ffffff; --surface-2: #f5f5f7;
-  --ink: #1d1d1f; --ink-2: #6e6e73; --ink-3: #86868b;
-  --line: rgba(0, 0, 0, 0.08); --line-strong: rgba(0, 0, 0, 0.14);
-  --brand: #0071e3; --brand-strong: #0077ed; --brand-soft: rgba(0, 113, 227, 0.12); --brand-ink: #0071e3; --on-brand: #fff;
-  font-family: 'SF Pro Text', 'Inter', -apple-system, system-ui, sans-serif; letter-spacing: -0.01em; -webkit-font-smoothing: antialiased;
-}
-[data-theme='dark'] .wn-root {
-  --bg: #000; --surface: #1c1c1e; --surface-2: #0a0a0a; --ink: #f5f5f7; --ink-2: #aeaeb2; --ink-3: #8e8e93;
-  --line: rgba(255, 255, 255, 0.1); --line-strong: rgba(255, 255, 255, 0.18);
-  --brand: #0a84ff; --brand-strong: #409cff; --brand-soft: rgba(10, 132, 255, 0.18); --brand-ink: #409cff;
-}
 
 .wn-root {
   min-height: 100vh;
   background: var(--bg);
+  font-family: var(--font-display, 'Pretendard', -apple-system, system-ui, sans-serif);
+  letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased;
   padding-bottom: 60px;
 }
 
 /* HEADER */
 .wn-head {
-  max-width: 900px;
+  max-width: min(2280px, 94vw);
   margin: 0 auto;
   padding: 40px 28px 0;
 }
@@ -41,14 +28,14 @@
 .wn-headicon {
   width: 48px;
   height: 48px;
-  border-radius: 14px;
+  border-radius: var(--r);
   background: var(--surface);
-  border: 0.5px solid var(--line);
+  border: 1px solid var(--line);
   color: var(--ink);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.02), 0 8px 24px -12px rgba(0, 0, 0, 0.14);
+  box-shadow: var(--shadow-md);
 }
 
 .wn-headicon i {
@@ -81,13 +68,13 @@
 
 .wn-sumitem {
   background: var(--surface);
-  border: 0.5px solid var(--line);
-  border-radius: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
   padding: 20px 22px;
   display: flex;
   align-items: center;
   gap: 14px;
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.02), 0 8px 24px -12px rgba(0, 0, 0, 0.14);
+  box-shadow: var(--shadow-md);
 }
 
 .wn-sumicon {
@@ -133,7 +120,7 @@
 
 /* 툴바 — 필터 칩(좌) + 주요 액션(우) */
 .wn-toolbar {
-  max-width: 900px;
+  max-width: min(2280px, 94vw);
   margin: 0 auto;
   padding: 0 28px;
   display: flex;
@@ -152,7 +139,7 @@
   font-weight: 600;
   font-size: 13.5px;
   padding: 11px 20px;
-  border-radius: 980px;
+  border-radius: 999px;
   cursor: pointer;
   text-decoration: none;
   display: inline-flex;
@@ -192,7 +179,7 @@
   font-weight: 700;
   font-size: 13px;
   padding: 9px 15px;
-  border-radius: 9px;
+  border-radius: var(--r-sm);
   background: var(--surface);
   color: var(--ink-2);
   border: 1px solid var(--line-strong);
@@ -206,13 +193,13 @@
 
 .wn-chip-on {
   background: var(--ink);
-  color: #fff;
+  color: var(--surface);
   border-color: var(--ink);
 }
 
 .wn-chip-on:hover {
   background: var(--ink);
-  color: #fff;
+  color: var(--surface);
 }
 
 .wn-chip i {
@@ -221,7 +208,7 @@
 
 /* WRONG ANSWER LIST — 단일 컬럼 */
 .wn-grid {
-  max-width: 900px;
+  max-width: min(2280px, 94vw);
   margin: 0 auto;
   padding: 0 28px;
   display: flex;
@@ -231,10 +218,10 @@
 
 .wn-card {
   background: var(--surface);
-  border: 0.5px solid var(--line);
-  border-radius: 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
   padding: 20px 22px;
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.02), 0 8px 24px -12px rgba(0, 0, 0, 0.14);
+  box-shadow: var(--shadow-md);
 }
 
 .wn-cardhead {
@@ -373,14 +360,14 @@
 
 .wn-retry {
   text-decoration: none;
-  border: 0.5px solid var(--line-strong);
+  border: 1px solid var(--line-strong);
   background: var(--surface);
   color: var(--ink-2);
   font-family: inherit;
   font-weight: 700;
   font-size: 13px;
   padding: 9px 16px;
-  border-radius: 9px;
+  border-radius: var(--r-sm);
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -399,20 +386,20 @@
 
 /* 안내 푸터 — 플랫 카드 */
 .wn-footwrap {
-  max-width: 900px;
+  max-width: min(2280px, 94vw);
   margin: 24px auto 0;
   padding: 0 28px;
 }
 
 .wn-foot {
   background: var(--surface);
-  border: 0.5px solid var(--line);
-  border-radius: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
   padding: 20px 22px;
   display: flex;
   align-items: center;
   gap: 16px;
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.02), 0 8px 24px -12px rgba(0, 0, 0, 0.14);
+  box-shadow: var(--shadow-md);
 }
 
 .wn-footicon {
@@ -451,11 +438,11 @@
 /* ===== 빈 상태 — '틀린 문제' 뷰(SRS wrong 상자)가 비었을 때 ===== */
 .wn-empty {
   background: var(--surface);
-  border: 0.5px solid var(--line);
-  border-radius: 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
   padding: 44px 28px;
   text-align: center;
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.02), 0 8px 24px -12px rgba(0, 0, 0, 0.14);
+  box-shadow: var(--shadow-md);
 }
 
 .wn-empty i {

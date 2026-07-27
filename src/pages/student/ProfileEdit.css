@@ -1,26 +1,13 @@
-/* 프로필 수정 페이지 — 2026-07-23 애플 디자인 이식(정공법·CSS만).
-   .pe-root에 애플 뉴트럴+블루 토큰을 스코프 오버라이드(전역 theme.css 불변). 클래스명·레이아웃 불변.
+/* 프로필 수정 페이지 — 리뉴얼(2026-07-27): 스코프 토큰 오버라이드·애플 반경을 걷어내고
+   전역 theme.css 모노크롬 토큰을 그대로 상속한다. 클래스명·레이아웃 불변.
    danger 계열(오류)은 의미색이라 전역값 그대로 둔다. */
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-
-.pe-root {
-  --font-display: 'SF Pro Display', 'SF Pro Text', 'Inter', -apple-system, system-ui, sans-serif;
-  --bg: #f5f5f7; --surface: #ffffff; --surface-2: #f5f5f7;
-  --ink: #1d1d1f; --ink-2: #6e6e73; --ink-3: #86868b;
-  --line: rgba(0, 0, 0, 0.08); --line-strong: rgba(0, 0, 0, 0.14);
-  --brand: #0071e3; --brand-strong: #0077ed; --brand-soft: rgba(0, 113, 227, 0.12); --brand-ink: #0071e3; --on-brand: #fff;
-  font-family: 'SF Pro Text', 'Inter', -apple-system, system-ui, sans-serif; letter-spacing: -0.01em; -webkit-font-smoothing: antialiased;
-}
-[data-theme='dark'] .pe-root {
-  --bg: #000; --surface: #1c1c1e; --surface-2: #0a0a0a; --ink: #f5f5f7; --ink-2: #aeaeb2; --ink-3: #8e8e93;
-  --line: rgba(255, 255, 255, 0.1); --line-strong: rgba(255, 255, 255, 0.18);
-  --brand: #0a84ff; --brand-strong: #409cff; --brand-soft: rgba(10, 132, 255, 0.18); --brand-ink: #409cff;
-}
 
 .pe-root {
   min-height: 100vh;
   background: var(--bg);
+  font-family: var(--font-display, 'Pretendard', -apple-system, system-ui, sans-serif);
+  letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased;
 }
 .pe-main {
   max-width: 560px;
@@ -44,13 +31,13 @@
 
 .pe-card {
   background: var(--surface);
-  border: 0.5px solid var(--line);
-  border-radius: 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
   padding: 24px;
   display: flex;
   flex-direction: column;
   gap: 18px;
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.02), 0 8px 24px -12px rgba(0, 0, 0, 0.14);
+  box-shadow: var(--shadow-md);
 }
 
 .pe-field {
@@ -71,7 +58,7 @@
   font-weight: 600;
   font-size: 15px;
   padding: 12px 14px;
-  border-radius: 12px;
+  border-radius: var(--r);
   outline: none;
   transition: border-color 0.15s ease;
 }
@@ -83,7 +70,7 @@
   color: var(--danger-ink);
   background: var(--danger-soft);
   padding: 10px 12px;
-  border-radius: 10px;
+  border-radius: var(--r-sm);
 }
 
 .pe-actions {
@@ -94,7 +81,7 @@
 .pe-btn {
   flex: 1;
   border: none;
-  border-radius: 980px;
+  border-radius: var(--r-pill);
   padding: 12px 16px;
   font-family: inherit;
   font-weight: 600;
@@ -108,7 +95,7 @@
 .pe-btn--primary:disabled { opacity: 0.6; cursor: default; transform: none; }
 .pe-btn--ghost {
   background: var(--surface);
-  border: 0.5px solid var(--line-strong);
+  border: 1px solid var(--line-strong);
   color: var(--ink-2);
 }
 @media (prefers-reduced-motion: reduce) {

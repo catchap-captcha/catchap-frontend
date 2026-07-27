@@ -1,0 +1,137 @@
+/* 학습 분석 — CatChap 학습 분석.dc.html 구조 그대로 (1200px·KPI 4장·주간 바차트+퍼널·
+   강의별 확인문항 통과율 리스트). */
+
+.la-page { max-width: 1200px; }
+
+.la-period {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink-2);
+  font-weight: 600;
+  font-size: 14px;
+  padding: 9px 15px;
+  border-radius: var(--r);
+}
+
+.la-kpigrid { grid-template-columns: repeat(4, 1fr); margin-bottom: 16px; }
+
+.la-cols {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+@media (max-width: 900px) {
+  .la-cols { grid-template-columns: 1fr; }
+}
+
+.la-card { padding: 24px; }
+.la-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  gap: 10px;
+}
+.la-card-head h2 {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  margin: 0;
+}
+.la-card-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ok);
+  background: var(--ok-soft);
+  padding: 4px 10px;
+  border-radius: var(--r-pill);
+  white-space: nowrap;
+}
+.la-card-badge--down { color: var(--brand-ink); background: var(--brand-soft); }
+.la-card-sub { font-size: 12px; color: var(--ink-3); font-weight: 500; margin: 0 0 22px; }
+
+.la-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+  height: 180px;
+  padding: 0 4px;
+}
+.la-bar-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  height: 100%;
+  justify-content: flex-end;
+}
+.la-bar-val { font-size: 12px; font-weight: 700; color: var(--ink-3); }
+.la-bar-val--now { color: var(--brand-ink); }
+.la-bar {
+  width: 100%;
+  border-radius: 6px 7px 0 0;
+  background: var(--line-strong);
+  min-height: 2px;
+}
+.la-bar--now { background: var(--brand); }
+.la-bar-lb { font-size: 12px; color: var(--ink-3); font-weight: 600; }
+
+.la-funnel { display: flex; flex-direction: column; gap: 14px; }
+.la-funnel-row-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 7px;
+}
+.la-funnel-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.la-funnel-label i { color: var(--ink-3); }
+.la-funnel-val { font-size: 14px; font-weight: 700; color: var(--ink); }
+.la-funnel-bar { height: 9px; border-radius: var(--r); background: var(--line); overflow: hidden; }
+.la-funnel-bar-fill { height: 100%; border-radius: var(--r); }
+
+.la-lecsection { padding: 24px; }
+.la-lecsection-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.la-lecsection-head i { font-size: 20px; color: var(--ink); }
+.la-lecsection-head h2 { font-size: 16px; font-weight: 700; letter-spacing: -0.02em; color: var(--ink); margin: 0; }
+.la-lecsection-sub { font-size: 12px; color: var(--ink-3); font-weight: 500; margin: 0 0 18px; line-height: 1.55; }
+
+.la-lecrow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 0;
+  border-top: 1px solid var(--line);
+}
+.la-lecrow:first-child { border-top: none; }
+.la-lec-name { width: 180px; flex-shrink: 0; }
+.la-lec-title { font-size: 14px; font-weight: 700; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.la-lec-meta { font-size: 12px; color: var(--ink-3); font-weight: 500; }
+.la-lec-bar { flex: 1; height: 9px; border-radius: var(--r); background: var(--line); overflow: hidden; }
+.la-lec-bar-fill { height: 100%; border-radius: var(--r); }
+.la-lec-rate { width: 52px; text-align: right; font-size: 14px; font-weight: 700; flex-shrink: 0; }
+.la-lec-flag {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--brand-ink);
+  background: var(--brand-soft);
+  padding: 4px 9px;
+  border-radius: var(--r);
+  flex-shrink: 0;
+  white-space: nowrap;
+}

@@ -1,54 +1,19 @@
-/* CatChap 나의 기록 — 2026-07-23 "애플 디자인 이식(정공법)".
-   왜 이 파일만 바꾸나: MyRecords.tsx(JSX·데이터 훅)와 백엔드 배선(studentApi/lectureApi)은
-   그대로 두고 이 CSS만 애플 스타일로 재정제했다. 클래스명(mr-*)을 1:1 유지하므로 화면은
-   실데이터를 그대로 받으면서 룩앤필만 애플 그레이드로 바뀐다(학생 홈·레이아웃과 톤 정렬).
+/* CatChap 나의 기록.
+   이 CSS는 전역 theme.css 토큰(var(--bg), --surface, --ink 계열, --line 계열, --shadow-md, --r 등)을
+   그대로 상속해서 쓴다 — 페이지 스코프 오버라이드 없음. 클래스명(mr-*)은 MyRecords.tsx와
+   1:1 유지하므로 화면은 실데이터를 그대로 받으면서 룩앤필만 전역 톤(라이트/다크)에 맞춰진다. */
 
-   어떻게: .mr-root에 애플 디자인 토큰(SF 타이포·애플 그레이 캔버스·리파인드 뉴트럴·큰 라디우스·
-   레이어드 소프트 섀도우)을 "스코프 오버라이드"한다 → mr-* 규칙이 쓰는 var(--ink)/var(--surface)
-   /var(--line) 등이 이 페이지에서만 애플 값으로 해석된다(전역 theme.css 불변 = 다른 페이지 무영향).
-   브랜드 코랄(var(--brand))·과목/성취 기능색(--ok/--warn/--info…)은 유지 → 데이터 의미 보존.
-   다크 모드는 [data-theme='dark'] .mr-root 로 애플 다크 값을 다시 얹어 보존한다. */
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-
-/* ── 애플 디자인 토큰 (이 페이지 스코프) ── */
 .mr-root {
-  --font-display: 'SF Pro Display', 'SF Pro Text', 'Inter', -apple-system, system-ui, sans-serif;
-  --bg: #f5f5f7;
-  --surface: #ffffff;
-  --surface-2: #f5f5f7;
-  --ink: #1d1d1f;
-  --ink-2: #6e6e73;
-  --ink-3: #86868b;
-  --line: rgba(0, 0, 0, 0.08);
-  --line-strong: rgba(0, 0, 0, 0.14);
-  --ap-ease: cubic-bezier(0.4, 0, 0.2, 1);
-  --ap-spring: cubic-bezier(0.34, 1.4, 0.5, 1);
-  --ap-shadow: 0 1px 1px rgba(0, 0, 0, 0.02), 0 8px 24px -12px rgba(0, 0, 0, 0.14);
-  --ap-shadow-hi: 0 2px 4px rgba(0, 0, 0, 0.04), 0 26px 50px -20px rgba(0, 0, 0, 0.24);
-
   min-height: 100vh;
   background: var(--bg);
   padding-bottom: 60px;
-  font-family: 'SF Pro Text', 'Inter', -apple-system, system-ui, sans-serif;
+  font-family: var(--font);
   letter-spacing: -0.01em;
   -webkit-font-smoothing: antialiased;
 }
-[data-theme='dark'] .mr-root {
-  --bg: #000000;
-  --surface: #1c1c1e;
-  --surface-2: #0a0a0a;
-  --ink: #f5f5f7;
-  --ink-2: #aeaeb2;
-  --ink-3: #8e8e93;
-  --line: rgba(255, 255, 255, 0.1);
-  --line-strong: rgba(255, 255, 255, 0.18);
-  --ap-shadow: 0 8px 24px -12px rgba(0, 0, 0, 0.6);
-  --ap-shadow-hi: 0 26px 50px -18px rgba(0, 0, 0, 0.85);
-}
 
 .mr-section {
-  max-width: 1080px;
+  max-width: min(2280px, 94vw);
   margin: 16px auto 0;
   padding: 0 28px;
 }
@@ -77,12 +42,12 @@
   height: 48px;
   border-radius: 14px;
   background: var(--surface);
-  border: 0.5px solid var(--line);
+  border: 1px solid var(--line);
   color: var(--ink);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: var(--ap-shadow);
+  box-shadow: var(--shadow-md);
 }
 
 .mr-headicon i {
@@ -105,26 +70,26 @@
 }
 
 .mr-reportbtn {
-  border: 0.5px solid var(--line);
+  border: 1px solid var(--line);
   background: var(--surface);
   color: var(--ink);
   font-weight: 600;
   font-size: 13.5px;
   padding: 10px 18px;
-  border-radius: 980px;
+  border-radius: 999px;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 8px;
   min-height: 44px;
-  box-shadow: var(--ap-shadow);
+  box-shadow: var(--shadow-md);
   transition: transform 0.2s var(--ap-spring), border-color 0.2s var(--ap-ease), box-shadow 0.3s var(--ap-ease);
 }
 
 .mr-reportbtn:hover {
   border-color: var(--line-strong);
   transform: translateY(-1px);
-  box-shadow: var(--ap-shadow-hi);
+  box-shadow: var(--shadow-lg);
 }
 
 .mr-reportbtn i {
@@ -140,16 +105,16 @@
 
 .mr-stat {
   background: var(--surface);
-  border: 0.5px solid var(--line);
+  border: 1px solid var(--line);
   border-radius: 18px;
   padding: 20px;
-  box-shadow: var(--ap-shadow);
+  box-shadow: var(--shadow-md);
   transition: transform 0.5s var(--ap-spring), box-shadow 0.4s var(--ap-ease);
 }
 
 .mr-stat:hover {
   transform: translateY(-4px);
-  box-shadow: var(--ap-shadow-hi);
+  box-shadow: var(--shadow-lg);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -229,10 +194,10 @@
 
 .mr-card {
   background: var(--surface);
-  border: 0.5px solid var(--line);
+  border: 1px solid var(--line);
   border-radius: 20px;
   padding: 24px;
-  box-shadow: var(--ap-shadow);
+  box-shadow: var(--shadow-md);
 }
 
 .mr-h3 {
@@ -531,7 +496,7 @@
   font-weight: 600;
   font-size: 12.5px;
   padding: 7px 14px;
-  border-radius: 980px;
+  border-radius: 999px;
   border: none;
   background: color-mix(in srgb, var(--ink) 6%, transparent);
   color: var(--ink-2);
@@ -547,7 +512,7 @@
   font-weight: 700;
   border: none;
   color: var(--on-brand);
-  box-shadow: var(--ap-shadow);
+  box-shadow: var(--shadow-md);
 }
 
 .mr-tab-on:hover {
@@ -724,7 +689,8 @@
   font-size: 34px;
   color: var(--ink-3);
 }
-.mr-empty-cat {
+.mr-empty-icon {
+  font-size: 32px;
   color: var(--ink-3);
   opacity: 0.75;
 }
@@ -740,7 +706,7 @@
   align-items: center;
   gap: 6px;
   border: none;
-  border-radius: 980px;
+  border-radius: 999px;
   background: var(--brand);
   color: var(--on-brand);
   font-family: var(--font-display); font-weight: 700;
@@ -841,12 +807,12 @@
   gap: 11px;
   width: 100%;
   text-align: left;
-  border: 0.5px solid var(--line);
+  border: 1px solid var(--line);
   border-radius: 16px;
   background: var(--surface);
   padding: 11px 13px;
   cursor: pointer;
-  box-shadow: var(--ap-shadow);
+  box-shadow: var(--shadow-md);
   transition:
     transform 0.5s var(--ap-spring),
     border-color 0.2s var(--ap-ease),
@@ -855,7 +821,7 @@
 .mr-comp:hover {
   transform: translateY(-4px);
   border-color: var(--line-strong);
-  box-shadow: var(--ap-shadow-hi);
+  box-shadow: var(--shadow-lg);
 }
 @media (prefers-reduced-motion: reduce) {
   .mr-comp:hover { transform: none; }
@@ -921,7 +887,7 @@
 
 /* 상단 탭 — 요약 / 수료 현황 / 학습 통계 (0723 긴 스크롤 분할) */
 .mr-rectabs {
-  max-width: 1080px;
+  max-width: min(2280px, 94vw);
   margin: 0 auto 4px;
   padding: 0 28px;
   display: flex;
@@ -953,10 +919,10 @@
 }
 .mr-rectab-on,
 .mr-rectab-on:hover {
-  border: 0.5px solid var(--line);
+  border: 1px solid var(--line);
   background: var(--surface);
   color: var(--ink);
-  box-shadow: var(--ap-shadow);
+  box-shadow: var(--shadow-md);
 }
 .mr-rectab-on i {
   color: var(--brand-strong);
@@ -971,7 +937,8 @@
   gap: 10px;
   padding: 48px 20px;
 }
-.mr-emptyhero-cat {
+.mr-emptyhero-icon {
+  font-size: 36px;
   color: var(--ink-3);
   opacity: 0.8;
 }
@@ -985,6 +952,4 @@
   margin-top: 8px;
 }
 
-/* ── 애플 랩 정렬(2026-07-23): 액센트 코랄→애플 블루 (복제본 우선·로고 마크만 코랄) ── */
-.mr-root { --brand:#0071e3; --brand-strong:#0077ed; --brand-soft:rgba(0,113,227,0.12); --brand-ink:#0071e3; --brand-soft-line:rgba(0,113,227,0.24); --on-brand:#ffffff; }
-[data-theme='dark'] .mr-root { --brand:#0a84ff; --brand-strong:#409cff; --brand-soft:rgba(10,132,255,0.18); --brand-ink:#409cff; --brand-soft-line:rgba(10,132,255,0.30); }
+/* 리뉴얼(2026-07-27): 브랜드 재오버라이드 제거 — 전역 theme.css 모노크롬 토큰을 그대로 상속. */

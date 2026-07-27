@@ -1,0 +1,144 @@
+/* 코스 관리 — CatChap 코스 관리.dc.html 구조 그대로 (좁은 본문 1040px·정보 배너·
+   토글형 생성/수정 폼·5열 테이블). 공용 원자는 OpsRenewalShared.css. */
+
+.crs-page { max-width: 1040px; }
+
+.crs-banner {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  background: var(--info-soft);
+  border-radius: var(--r);
+  padding: 12px 16px;
+  margin: 18px 0 22px;
+}
+.crs-banner i { color: var(--info); font-size: 20px; flex-shrink: 0; }
+.crs-banner span { font-size: 14px; font-weight: 600; color: var(--info-ink); line-height: 1.5; }
+
+.crs-formcard { padding: 22px 24px; margin-bottom: 20px; }
+.crs-formcard-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.crs-formcard-head i { color: var(--brand); font-size: 20px; }
+.crs-formcard-head h2 {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  margin: 0;
+}
+.crs-form-lb {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 6px;
+}
+.crs-form-in, .crs-form-sel {
+  width: 100%;
+  padding: 11px 13px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r);
+  font-family: inherit;
+  font-size: 14px;
+  background: var(--bg);
+  color: var(--ink);
+  outline: none;
+}
+.crs-form-in:focus, .crs-form-sel:focus { border-color: var(--brand); background: var(--surface); }
+.crs-form-sel { cursor: pointer; }
+.crs-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 200px;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+.crs-form-full { margin-bottom: 18px; }
+.crs-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.crs-form-err {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--danger);
+  margin: -4px 0 14px;
+}
+
+.crs-table { overflow: hidden; }
+.crs-thead, .crs-row {
+  display: grid;
+  grid-template-columns: 1fr 90px 70px 84px 210px;
+  gap: 12px;
+  align-items: center;
+}
+.crs-thead {
+  padding: 13px 20px;
+  background: var(--bg-tint);
+  border-bottom: 1px solid var(--line);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-3);
+}
+.crs-row {
+  padding: 15px 20px;
+  border-bottom: 1px solid var(--line);
+}
+.crs-row:last-child { border-bottom: none; }
+.crs-title { font-size: 14px; font-weight: 700; color: var(--ink); }
+.crs-desc {
+  font-size: 12px;
+  color: var(--ink-3);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.crs-subject, .crs-count { font-size: 14px; color: var(--ink-2); font-weight: 600; }
+.crs-badge {
+  justify-self: start;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 11px;
+  border-radius: var(--r-pill);
+}
+.crs-badge--active { color: var(--ok); background: var(--ok-soft); }
+.crs-badge--hidden { color: var(--warn); background: var(--warn-soft); }
+
+.crs-rowactions { display: flex; gap: 6px; justify-content: flex-end; }
+.crs-abtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink-2);
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 12px;
+  padding: 7px 11px;
+  border-radius: var(--r);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.14s, color 0.14s, transform 0.14s;
+  text-decoration: none;
+}
+.crs-abtn:hover { transform: translateY(-2px); }
+.crs-abtn--exam:hover { border-color: var(--warn); color: var(--warn); }
+.crs-abtn--edit:hover { border-color: var(--brand); color: var(--brand-ink); }
+.crs-abtn--icon { justify-content: center; color: var(--ink-3); padding: 7px 9px; }
+.crs-abtn--icon:hover { border-color: var(--brand); color: var(--brand); }
+.crs-abtn:disabled { opacity: 0.5; cursor: default; transform: none; }
+
+@media (max-width: 860px) {
+  .crs-thead { display: none; }
+  .crs-row { grid-template-columns: 1fr; gap: 6px; }
+  .crs-rowactions { justify-content: flex-start; }
+}

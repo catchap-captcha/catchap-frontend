@@ -1,0 +1,145 @@
+/* 리뉴얼 신규 콘솔 화면 4종(코스 관리·문항 검수·학습 분석·시스템 상태) 공용 원자 —
+   "CatChap 코스/문항 검수/학습 분석/시스템 상태.dc.html" 레퍼런스 그대로.
+
+   ★의도적으로 .op-root를 쓰지 않는다 — OpsApproval.css의 .op-root는 콘솔 공용 스코프에서
+   토큰을 '애플 그레이 팔레트'로 재정의하고 장식용 radial-gradient 배경까지 얹는다(다른
+   기존 콘솔 화면들의 스타일이라 여기서 건드리지 않는다). 리뉴얼 레퍼런스는 그 오버라이드 밖의
+   순수 theme.css 토큰(--bg:#FAFAFA 등)과 완전히 같은 값이므로, 이 4개 화면은 .op-root 없이
+   전역 theme.css 토큰을 그대로 사용해 육안상 레퍼런스와 동일하게 렌더된다. */
+
+.orn-root {
+  min-height: 100vh;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-display);
+}
+
+.orn-page {
+  flex: 1;
+  min-width: 0;
+  margin: 0 auto;
+  width: 100%;
+  padding: 32px 36px 60px;
+}
+
+.orn-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+}
+.orn-h1 {
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+  margin: 0 0 5px;
+}
+.orn-sub {
+  font-size: 14px;
+  color: var(--ink-2);
+  font-weight: 500;
+  margin: 0;
+  line-height: 1.6;
+}
+
+.orn-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 10px 18px;
+  border-radius: var(--r);
+  cursor: pointer;
+  border: none;
+  transition: transform 0.14s, background 0.14s, border-color 0.14s, color 0.14s;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.orn-btn:hover { transform: translateY(-2px); }
+.orn-btn:disabled { opacity: 0.6; cursor: default; transform: none; }
+.orn-btn--primary { background: var(--brand); color: var(--on-brand); }
+.orn-btn--primary:hover { background: var(--brand-strong); }
+.orn-btn--secondary {
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink);
+}
+.orn-btn--secondary:hover { border-color: var(--ink-3); }
+.orn-btn--ghost {
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink-2);
+}
+.orn-btn--ghost:hover { border-color: var(--ink-3); color: var(--ink); }
+.orn-btn--ok { background: var(--ok); color: #fff; }
+.orn-btn--ok:hover { filter: brightness(0.94); }
+
+.orn-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  box-shadow: var(--shadow-md);
+}
+
+.orn-toast {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--ok-soft);
+  color: var(--ok-ink);
+  border-radius: var(--r);
+  padding: 11px 15px;
+  margin-bottom: 18px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.orn-kpigrid {
+  display: grid;
+  gap: 14px;
+  margin-bottom: 26px;
+}
+.orn-kpi {
+  padding: 20px 22px;
+}
+.orn-kpi-num {
+  display: block;
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+.orn-kpi-lb { font-size: 14px; color: var(--ink-3); font-weight: 600; }
+.orn-kpi-delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 12px;
+  font-weight: 700;
+  margin-top: 6px;
+}
+.orn-kpi-delta--up { color: var(--ok); }
+.orn-kpi-delta--down { color: var(--brand-ink); }
+
+.orn-empty {
+  padding: 44px;
+  text-align: center;
+  color: var(--ink-3);
+}
+.orn-empty i { font-size: 32px; }
+.orn-empty p { font-size: 14px; font-weight: 600; margin: 12px 0 0; }
+
+.orn-loading {
+  padding: 60px 20px;
+  text-align: center;
+  color: var(--ink-3);
+  font-size: 14px;
+  font-weight: 600;
+}
+.orn-loading i { font-size: 26px; display: block; margin-bottom: 10px; }

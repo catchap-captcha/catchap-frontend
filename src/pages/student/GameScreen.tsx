@@ -5,7 +5,6 @@ import { studentApi } from '../../api/students';
 import { getFreshAccessToken } from '../../api/client';
 import { playSfx } from '../../utils/feedback';
 import { attachPointerTrace, type PointerTraceRecorder } from '../../utils/pointerTrace';
-import ScreenTimeReminder from '../../components/motion/ScreenTimeReminder';
 import CatchapWidget from '../../components/captcha/CatchapWidget';
 import './GameScreen.css';
 
@@ -560,12 +559,12 @@ export default function GameScreen() {
   const qd = questions[s.key] ?? { q: '', pre: '', hi: '', post: '' };
 
   const themeVars = {
-    '--gs-solid': '#0071e3',
-    '--gs-soft': '#e8f1fd',
-    '--gs-slot-bg': '#f5f7fa',
-    '--gs-dash': 'rgba(0,113,227,0.28)',
-    '--gs-mascot-grad': 'linear-gradient(160deg,#cfe2ff,#bbd6ff)',
-    '--gs-prog-grad': 'linear-gradient(90deg,#0a84ff,#0071e3)',
+    '--gs-solid': '#1a1a1a',
+    '--gs-soft': '#f0f0f0',
+    '--gs-slot-bg': '#fafafa',
+    '--gs-dash': 'rgba(26,26,26,0.28)',
+    '--gs-mascot-grad': 'linear-gradient(160deg,#e6e6e6,#d2d2d2)',
+    '--gs-prog-grad': 'linear-gradient(90deg,#3a3a3c,#1a1a1a)',
   } as CSSProperties;
 
   return (
@@ -594,27 +593,27 @@ export default function GameScreen() {
               <div className="gs-gamesub">{s.gameSub}</div>
             </div>
           </div>
-          <div className="gs-progress">
-            {infinite ? (
-              /* 무한 문제은행 — 총량 없이 '푼 문제 수'와 무한 안내만 */
-              <div className="gs-progress-labels">
-                <span>{curNo}번째 문제</span>
-                <span className="gs-progress-pct">∞ 무한 연습</span>
+          {infinite ? (
+            /* 무한 문제은행 — '푼 문제 수'는 왼쪽에, '무한 연습' 안내는 상단바 오른쪽 끝으로 */
+            <>
+              <div className="gs-progress gs-progress--infinite">
+                <span className="gs-progress-count">{curNo}번째 문제</span>
               </div>
-            ) : (
-              <>
-                <div className="gs-progress-labels">
-                  <span>
-                    문제 {curNo} / {curTotal}
-                  </span>
-                  <span className="gs-progress-pct">{pct}%</span>
-                </div>
-                <div className="gs-progress-track">
-                  <div className="gs-progress-fill" style={{ width: `${pct}%` }} />
-                </div>
-              </>
-            )}
-          </div>
+              <span className="gs-infinite">∞ 무한 연습</span>
+            </>
+          ) : (
+            <div className="gs-progress">
+              <div className="gs-progress-labels">
+                <span>
+                  문제 {curNo} / {curTotal}
+                </span>
+                <span className="gs-progress-pct">{pct}%</span>
+              </div>
+              <div className="gs-progress-track">
+                <div className="gs-progress-fill" style={{ width: `${pct}%` }} />
+              </div>
+            </div>
+          )}
         </div>
         {/* SUBJECT SWITCHER */}
         <div className="gs-tabs">
@@ -878,7 +877,7 @@ export default function GameScreen() {
             <div className="gs-actions">
               <div className="gs-finishwrap" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
                 {saveError && (
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: '#E23D3D', fontWeight: 700, fontSize: 13 }}>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: 'var(--danger)', fontWeight: 700, fontSize: 13 }}>
                     <i className="ph-fill ph-warning-circle" />
                     저장에 실패했어요. 다시 시도해 주세요.
                   </span>
@@ -937,7 +936,7 @@ export default function GameScreen() {
                 type="button"
                 onClick={() => navigate(PATHS.STUDENT_HOME)}
                 style={{
-                  marginTop: 12, background: 'none', border: 'none', color: '#B0A79B',
+                  marginTop: 12, background: 'none', border: 'none', color: 'var(--ink-3)',
                   fontWeight: 700, fontSize: 13, cursor: 'pointer', textDecoration: 'underline',
                 }}
               >
@@ -947,8 +946,6 @@ export default function GameScreen() {
           </div>
         </div>
       )}
-
-      <ScreenTimeReminder />
     </div>
   );
 }

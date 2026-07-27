@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent }
 import { Link, useNavigate } from 'react-router-dom';
 import { authApi } from '../../api/auth';
 import mascot from '../../assets/characters/catchap-logo.png';
+import wordmarkWhite from '../../assets/brand/catchap-wordmark-white.png';
 import ForestCaptcha from '../../components/captcha/ForestCaptcha';
 import { useAuth } from '../../hooks/useAuth';
 import { PATHS } from '../../routes/paths';
@@ -468,16 +469,9 @@ export default function LoginPage() {
       {/* 테마 토글은 App의 GlobalThemeToggle(로그인 전 전역 고정)이 담당 — 중복 제거 */}
       {/* LEFT BRAND PANEL */}
       <div className="lg-left">
-        <div className="lg-left-deco">
-          <div className="lg-left-c1" />
-          <div className="lg-left-c2" />
-        </div>
         <div className="lg-left-pin">
           <Link to={PATHS.HOME} className="lg-brand" title="메인으로">
-            <div className="lg-brand-logo">
-              <img src={mascot} alt="CatChap" />
-            </div>
-            <span className="lg-brand-name">CatChap</span>
+            <img src={wordmarkWhite} alt="CATCHAP" className="lg-brand-wordmark" />
           </Link>
           <div className="lg-hero">
             <h1 className="lg-hero-title">
@@ -491,18 +485,11 @@ export default function LoginPage() {
             </p>
           </div>
           <div className="lg-badges">
-            <span className="lg-badge">
-              <i className="ph ph-shield-check" />
-              데이터 보호
-            </span>
-            <span className="lg-badge">
-              <i className="ph ph-seal-question" />
-              시청 검증
-            </span>
-            <span className="lg-badge">
-              <i className="ph ph-chart-line-up" />
-              행동 데이터 분석
-            </span>
+            <span>데이터 보호</span>
+            <span className="lg-badge-dot" />
+            <span>시청 검증</span>
+            <span className="lg-badge-dot" />
+            <span>행동 데이터 분석</span>
           </div>
         </div>
       </div>
@@ -827,23 +814,17 @@ export default function LoginPage() {
       {captcha && (
         <div className="lg-cap-overlay">
           <div className="lg-cap">
-            <div className="lg-cap-mascot-wrap">
-              <div className="lg-cap-mascot-float">
-                <img src={mascot} alt="냥냥이" />
-              </div>
-            </div>
-
             <div className="lg-cap-card">
               <div className="lg-cap-head">
                 <div className="lg-cap-chip">
-                  <i className="ph-fill ph-cat" />
-                  <span>냥이 지킴이</span>
+                  <i className="ph-fill ph-shield-check" />
+                  <span>보안 확인</span>
                 </div>
                 <button type="button" onClick={() => setCaptcha(false)} className="lg-cap-close">
                   <i className="ph-bold ph-x" />
                 </button>
-                <div className="lg-cap-title">사람인지 확인해요 🐱</div>
-                <div className="lg-cap-sub">냥이랑 잠깐 확인하고 이어가요</div>
+                <div className="lg-cap-title">사람인지 확인해요</div>
+                <div className="lg-cap-sub">잠깐만 확인하고 이어가요</div>
               </div>
 
               <div className="lg-cap-body">
@@ -852,12 +833,12 @@ export default function LoginPage() {
                     <i className="ph-fill ph-hand-waving" />
                   </span>
                   <span className="lg-cap-why-text">
-                    평소와 조금 다른 접속이 보여서 한 번만 확인할게요. 사람이라면 아주 쉬워요! 🐾
+                    평소와 조금 다른 접속이 보여서 한 번만 확인할게요. 사람이라면 아주 쉬워요.
                   </span>
                 </div>
 
                 <div className="lg-cap-prompt-row">
-                  <span>숨은 동물을 찾아 같은 방향으로 돌려주세요 🧭</span>
+                  <span>숨은 동물을 찾아 같은 방향으로 돌려주세요</span>
                 </div>
 
                 {/* 메인 캡차(숲속 마을 동물 방향) — 통과 시 토큰이 자동 전달돼 로그인이 이어져요 */}

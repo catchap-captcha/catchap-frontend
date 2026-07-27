@@ -1,8 +1,7 @@
-/* CatChap 문의하기 — 2026-07-23 애플 디자인 이식(정공법·CSS만).
-   .ct-page에 애플 뉴트럴+블루 토큰 스코프 오버라이드(전역 theme.css 불변·JSX/클래스명 무변경).
+/* CatChap 문의하기 — 리뉴얼(2026-07-27): CATCHAP 모노크롬 룩으로 재정렬.
+   종전 "애플 디자인 이식(2026-07-23)"의 .ct-page 스코프 토큰 오버라이드(--bg:#f5f5f7 등)·
+   글래스 내비·980px pill·0.5px 하이라인을 걷어내고 전역 theme.css 모노크롬 토큰을 상속한다.
    보존: 성공=초록(--ok)·오류=빨강(--danger, .ct-form-error/BAD_STYLE) 의미색. */
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 @keyframes ctPop {
   0% {
@@ -16,46 +15,15 @@
 }
 
 .ct-page {
-  --font-display: 'SF Pro Display', 'SF Pro Text', 'Inter', -apple-system, system-ui, sans-serif;
-  --bg: #f5f5f7;
-  --surface: #ffffff;
-  --surface-2: #f5f5f7;
-  --ink: #1d1d1f;
-  --ink-2: #6e6e73;
-  --ink-3: #86868b;
-  --line: rgba(0, 0, 0, 0.08);
-  --line-strong: rgba(0, 0, 0, 0.14);
-  --brand: #0071e3;
-  --brand-strong: #0077ed;
-  --brand-soft: rgba(0, 113, 227, 0.12);
-  --brand-ink: #0071e3;
-  --on-brand: #ffffff;
-  --ap-shadow: 0 1px 1px rgba(0, 0, 0, 0.02), 0 8px 24px -12px rgba(0, 0, 0, 0.14);
-  --ap-shadow-hi: 0 2px 4px rgba(0, 0, 0, 0.04), 0 26px 50px -20px rgba(0, 0, 0, 0.24);
+  /* 색·그림자·반경은 전역 토큰 상속. 여기선 이징 커브만 로컬 정의. */
   --ap-ease: cubic-bezier(0.4, 0, 0.2, 1);
   --ap-spring: cubic-bezier(0.34, 1.4, 0.5, 1);
 
   min-height: 100vh;
   background: var(--bg);
-  font-family: 'SF Pro Text', 'Inter', -apple-system, system-ui, sans-serif;
+  font-family: var(--font-display, 'Pretendard', -apple-system, system-ui, sans-serif);
   letter-spacing: -0.01em;
   -webkit-font-smoothing: antialiased;
-}
-[data-theme='dark'] .ct-page {
-  --bg: #000000;
-  --surface: #1c1c1e;
-  --surface-2: #0a0a0a;
-  --ink: #f5f5f7;
-  --ink-2: #aeaeb2;
-  --ink-3: #8e8e93;
-  --line: rgba(255, 255, 255, 0.1);
-  --line-strong: rgba(255, 255, 255, 0.18);
-  --brand: #0a84ff;
-  --brand-strong: #409cff;
-  --brand-soft: rgba(10, 132, 255, 0.18);
-  --brand-ink: #409cff;
-  --ap-shadow: 0 8px 24px -12px rgba(0, 0, 0, 0.6);
-  --ap-shadow-hi: 0 26px 50px -18px rgba(0, 0, 0, 0.85);
 }
 
 /* NAV */
@@ -539,43 +507,27 @@
   }
 }
 
-/* ── 애플 머티리얼 이식(2026-07-23): 쿨 글래스 내비 · 소프트 카드 · pill 버튼 ── */
-.ct-nav {
-  background: color-mix(in srgb, var(--surface) 82%, transparent);
-  backdrop-filter: saturate(180%) blur(20px);
-  -webkit-backdrop-filter: saturate(180%) blur(20px);
-  border-bottom: 0.5px solid var(--line);
-}
-.ct-login-link { border: 0.5px solid var(--line-strong); border-radius: 980px; }
-
-.ct-header-badge { border: 0.5px solid var(--line); box-shadow: var(--ap-shadow); }
+/* ── 리뉴얼(2026-07-27): 솔리드 내비 · 소프트 카드 · 둥근 사각 버튼(모노크롬) ── */
 .ct-header-title { font-weight: 700; }
 
 .ct-form-card,
 .ct-info-card,
 .ct-faq-card {
-  border: 0.5px solid var(--line);
-  border-radius: 20px;
-  box-shadow: var(--ap-shadow);
+  border-radius: var(--r);
+  box-shadow: var(--shadow-md);
 }
 .ct-sent-title,
 .ct-info-title,
 .ct-faq-head-title { font-weight: 700; }
 
-.ct-input,
-.ct-textarea { border: 0.5px solid var(--line-strong); border-radius: 12px; }
-.ct-faq-head-icon { border: 0.5px solid var(--line); }
-.ct-info-icon { border-radius: 12px; }
+/* 브랜드 워드마크(내비) — 라이트/다크 자동 전환 */
+.ct-brand-wordmark { height: 20px; width: auto; display: block; }
 
-.ct-type-btn,
-.ct-reset-btn { border: 0.5px solid var(--line-strong); border-radius: 980px; }
 .ct-submit-btn {
-  border-radius: 980px;
-  box-shadow: 0 8px 20px -10px color-mix(in srgb, var(--brand) 80%, transparent);
   transition: transform 0.2s var(--ap-spring), background 0.2s var(--ap-ease);
 }
-.ct-submit-btn:hover { transform: scale(1.02); }
-.ct-submit-btn:active { transform: scale(0.98); }
+.ct-submit-btn:hover { transform: translateY(-2px); }
+.ct-submit-btn:active { transform: translateY(0); }
 
 @media (prefers-reduced-motion: reduce) {
   .ct-submit-btn:hover,

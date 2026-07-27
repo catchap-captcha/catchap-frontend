@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
 import { lectureApi, thumbnailSrc, type LectureItem, type StudentCourse } from '../../api/lectures';
-import ScreenTimeReminder from '../../components/motion/ScreenTimeReminder';
 import { StudentNav } from '../../layouts/StudentLayout';
 import { categoryTheme, formatClock } from './lectureSubjects';
 import CourseCover from '../../components/course/CourseCover';
@@ -58,48 +57,6 @@ function courseGroupsForCategory(
   return groups;
 }
 
-/** 코스 수료 시험 카드(#28) — 코스 그룹 말미. 배움(강의)→연습(Q)→증명(시험)의 마지막 조각.
- *  상태 흐름을 한 카드에: 잠김(완주 필요) → 응시 가능(진행) → 수료(+완벽 통과). */
-function ExamCard({ course, onGo }: { course: StudentCourse; onGo: () => void }) {
-  const ex = course.exam!;
-  const passed = ex.passed;
-  const perfect = ex.perfect;
-  const locked = !ex.available && !passed;
-  return (
-    <button
-      className={`ll-examcard${passed ? ' ll-examcard--passed' : ''}`}
-      onClick={onGo}
-    >
-      <span
-        className={`ll-examicon${passed ? (perfect ? ' ll-examicon--perfect' : ' ll-examicon--passed') : ''}`}
-      >
-        <i className={passed ? (perfect ? 'ph-fill ph-crown' : 'ph-fill ph-seal-check') : locked ? 'ph-fill ph-lock-simple' : 'ph-fill ph-exam'} />
-      </span>
-      <span className="ll-exambody">
-        <b className="ll-examtitle">
-          수료 시험
-          {passed && <span className={`ll-exambadge${perfect ? ' ll-exambadge--perfect' : ''}`}>
-            {perfect ? '완벽 통과' : '수료'}
-          </span>}
-        </b>
-        <span className="ll-examdesc">
-          {passed
-            ? (perfect ? '전 문항을 한 번에 다 맞혔어요 🏆' : '수료 완료 · 완벽 통과에 도전할 수 있어요')
-            : locked
-              ? `강의 ${ex.lectures_done}/${ex.lectures_total} 완주 시 열려요`
-              : ex.mastered_count > 0
-                ? `수료까지 ${ex.question_count - ex.mastered_count}문항 (${ex.mastered_count}/${ex.question_count} 정복)`
-                : `문항 ${ex.question_count}개를 모두 맞히면 수료해요`}
-        </span>
-      </span>
-      {!passed && !locked && (
-        <span className="ll-exsmgo">
-          <i className="ph-bold ph-arrow-right" />
-        </span>
-      )}
-    </button>
-  );
-}
 
 export default function LectureList() {
   const navigate = useNavigate();
@@ -115,12 +72,6 @@ export default function LectureList() {
   const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading');
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
-  // 탐색 레이어(0723) — 그룹 목록을 '탐색 가능한 카탈로그'로: 검색어·시청상태 필터·정렬.
-  // 별점/난이도 같은 없는 데이터는 만들지 않고, 이미 있는 값(제목·시청상태·길이)으로만 만든다.
-  const [query, setQuery] = useState('');
-  const [watchFilter, setWatchFilter] = useState<'all' | 'new' | 'watching' | 'done'>('all');
-  const [sortBy, setSortBy] = useState<'default' | 'short' | 'long' | 'title'>('default');
-
   const load = () => {
     setState('loading');
     // 강의와 코스를 함께 불러온다 — 코스는 분류→강사별 코스→강의 그룹의 상위 메타.
@@ -135,42 +86,18 @@ export default function LectureList() {
   };
   useEffect(load, []);
 
-  const total = rows?.length ?? 0;
-  const watched = (rows ?? []).filter((l) => watchState(l) === 'done').length;
+  // 이 페이지는 '강의 신청(구매)' 전용 — 아직 수강신청 안 한 코스와 그 강의만 다룬다.
+  const shopCourses = courses.filter((c) => !c.enrolled);
+  const shopCourseIds = new Set(shopCourses.map((c) => c.id));
+  const shopRows = (rows ?? []).filter((l) => l.course_id && shopCourseIds.has(l.course_id));
+  const shopCourseCount = shopCourses.length;
 
-  // 검색어·시청상태로 거르고 정렬한다. 정렬은 새 배열로(원본 order_no 순서 보존 — '강 번호' 계산용).
-  const q = query.trim().toLowerCase();
-  const filtersActive = q !== '' || watchFilter !== 'all' || sortBy !== 'default';
-  const applyFilters = (lects: LectureItem[]): LectureItem[] => {
-    let out = lects;
-    if (q)
-      out = out.filter(
-        (l) =>
-          (l.title ?? '').toLowerCase().includes(q) ||
-          (l.description ?? '').toLowerCase().includes(q),
-      );
-    if (watchFilter !== 'all') out = out.filter((l) => watchState(l) === watchFilter);
-    if (sortBy === 'short') out = [...out].sort((a, b) => (a.duration_sec ?? 0) - (b.duration_sec ?? 0));
-    else if (sortBy === 'long') out = [...out].sort((a, b) => (b.duration_sec ?? 0) - (a.duration_sec ?? 0));
-    else if (sortBy === 'title') out = [...out].sort((a, b) => (a.title ?? '').localeCompare(b.title ?? '', 'ko'));
-    return out;
-  };
-  const resetFilters = () => {
-    setQuery('');
-    setWatchFilter('all');
-    setSortBy('default');
-  };
-  // 필터 적용 후 전체 매칭 강의 수(빈 상태·결과 수 표기용)
-  const matchCount = applyFilters(rows ?? []).length;
-
-  // 과목 은퇴(0722) — 학교식 6과목 대신 코스의 '분류(category)'로 브라우징한다. 화면에 실제
-  // 있는 분류만 동적으로 묶고, 코스 없이 올린 강의가 있으면 '기타'를 맨 뒤에 붙인다.
+  // 과목 은퇴(0722) — 코스의 '분류(category)'로 브라우징한다. 구매 페이지라 미신청 코스가 있는
+  // 분류만 노출한다(코스 없이 올린 강의 '기타'는 구매 대상이 아니라 제외).
   const presentCategories = (() => {
     const set = new Set<string>();
-    for (const c of courses) set.add(catOf(c));
-    if ((rows ?? []).some((l) => !l.course_id)) set.add(CAT_ETC);
-    const arr = [...set].filter((x) => x !== CAT_ETC).sort();
-    return set.has(CAT_ETC) ? [...arr, CAT_ETC] : arr;
+    for (const c of shopCourses) set.add(catOf(c));
+    return [...set].filter((x) => x !== CAT_ETC).sort();
   })();
 
   const tabDefs = [{ key: '전체', icon: 'ph-fill ph-squares-four' }].concat(
@@ -180,24 +107,22 @@ export default function LectureList() {
 
   const goWatch = (id: string) => navigate(PATHS.STUDENT_LECTURE, { state: { id } });
 
-  // 수강신청 상태를 바꾸는 중인 코스 id — 연타·중복요청을 막고 버튼에 진행 표시를 준다.
-  const [enrollBusy, setEnrollBusy] = useState<Record<string, boolean>>({});
-
-  /** 무료 자유 신청·취소(Coursera 무료 모델). 서버가 upsert/withdrawn을 처리하고,
-   *  화면은 성공 시에만 낙관적으로 enrolled 플래그를 뒤집는다(실패는 삼키지 않고 원상 유지). */
-  const toggleEnroll = async (courseId: string, next: boolean) => {
-    if (enrollBusy[courseId]) return;
-    setEnrollBusy((m) => ({ ...m, [courseId]: true }));
-    try {
-      if (next) await lectureApi.enrollCourse(courseId);
-      else await lectureApi.unenrollCourse(courseId);
-      setCourses((cs) => cs.map((c) => (c.id === courseId ? { ...c, enrolled: next } : c)));
-    } catch {
-      // 실패 시 플래그를 건드리지 않는다 — 가짜 성공을 만들지 않는다.
-    } finally {
-      setEnrollBusy((m) => ({ ...m, [courseId]: false }));
-    }
+  // 장바구니 — 구매(수강신청)할 코스를 여러 개 담는다. 코스 머리의 체크박스로 토글하고,
+  // 하단 바의 '구매하기'가 선택 코스들을 결제(Checkout) 페이지로 넘긴다(?cart=id1,id2).
+  const [cart, setCart] = useState<Set<string>>(new Set());
+  const toggleCart = (courseId: string) =>
+    setCart((prev) => {
+      const next = new Set(prev);
+      if (next.has(courseId)) next.delete(courseId);
+      else next.add(courseId);
+      return next;
+    });
+  const goCheckout = () => {
+    if (cart.size === 0) return;
+    navigate(`${PATHS.STUDENT_CHECKOUT}?cart=${[...cart].join(',')}`);
   };
+  // 선택된 코스 메타(하단 바 표시용) — shopCourses는 위에서 계산됨.
+  const cartCourses = shopCourses.filter((c) => cart.has(c.id));
 
   /** 강의 카드 — 코스 그룹 안에서 반복 렌더한다(그룹 내 순번 i로 강 번호를 센다). */
   const renderCard = (l: LectureItem, i: number) => {
@@ -205,7 +130,7 @@ export default function LectureList() {
     // 코스 안 순서는 그룹 내 위치(1강·2강…)로 센다 — order_no는 과목 전역이라 코스로 묶으면
     // 2강·3강처럼 건너뛰어 보인다(정렬 순서는 이미 order_no로 맞춰져 있어 위치가 곧 강 순서).
     const num = i + 1;
-    const badgeText = st === 'done' ? '봤어요' : st === 'watching' ? '학습중' : '새 강의';
+    const badgeText = st === 'done' ? '학습 완료' : st === 'watching' ? '학습중' : '새 강의';
     // 썸네일 인프라(Object Storage)가 없어 코스별 결정적 커버로 색을 준다 — 같은 코스 강의는
     // 같은 색 계열(cohesive), 코스가 없으면 강의 id로. 재생 아이콘은 위에 얹는다.
     return (
@@ -256,7 +181,7 @@ export default function LectureList() {
   };
 
   return (
-    <div className="ll-root">
+    <div className={`ll-root${cartCourses.length > 0 ? ' ll-root--cart' : ''}`}>
       <StudentNav />
 
       <div className="ll-container">
@@ -264,27 +189,27 @@ export default function LectureList() {
         <section className="ll-hero">
           <div className="ll-heroleft">
             <span className="ll-herobadge">
-              <i className="ph-fill ph-video-camera" />
-              강의 카탈로그
+              <i className="ph-fill ph-shopping-bag-open" />
+              강의 신청
             </span>
-            <h1 className="ll-herotitle">과목별 강의를 골라 학습하세요</h1>
+            <h1 className="ll-herotitle">수강신청할 강의를 골라보세요</h1>
             <p className="ll-herodesc">
-              각 과목의 핵심 개념을 강의로 배우고, 시청 중 확인 문제로 이해를 점검합니다.
+              관심 있는 코스를 수강신청하고, 시청 검증 강의로 학습을 시작하세요.
             </p>
           </div>
           <div className="ll-herostats">
             {state === 'ready' ? (
               <>
                 <div className="ll-herostatnum">
-                  {watched}
-                  <span className="ll-herostatslash">/{total}편</span>
+                  {shopCourseCount}
+                  <span className="ll-herostatslash">개</span>
                 </div>
-                <div className="ll-herostatlabel">시청 완료</div>
+                <div className="ll-herostatlabel">신청 가능한 코스</div>
               </>
             ) : state === 'loading' ? (
-              <div className="ll-herostatlabel">내 시청 기록을 불러오는 중…</div>
+              <div className="ll-herostatlabel">코스를 불러오는 중…</div>
             ) : (
-              <div className="ll-herostatlabel ll-herostatlabel-err">시청 기록을 불러오지 못했어요</div>
+              <div className="ll-herostatlabel ll-herostatlabel-err">코스를 불러오지 못했어요</div>
             )}
           </div>
         </section>
@@ -306,70 +231,6 @@ export default function LectureList() {
           })}
         </div>
 
-        {/* 검색·필터·정렬 툴바 — 그룹 목록을 탐색 가능한 카탈로그로 */}
-        {state === 'ready' && (
-          <div className="ll-toolbar">
-            <div className="ll-search">
-              <i className="ph-bold ph-magnifying-glass" />
-              <input
-                type="search"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="강의 제목·설명 검색"
-                aria-label="강의 검색"
-              />
-              {query && (
-                <button className="ll-search-clear" onClick={() => setQuery('')} aria-label="검색어 지우기">
-                  <i className="ph-bold ph-x" />
-                </button>
-              )}
-            </div>
-            <div className="ll-filterchips" role="group" aria-label="시청 상태 필터">
-              {([
-                ['all', '전체'],
-                ['new', '새 강의'],
-                ['watching', '학습 중'],
-                ['done', '봤어요'],
-              ] as const).map(([key, label]) => (
-                <button
-                  key={key}
-                  className={`ll-chip${watchFilter === key ? ' ll-chip-on' : ''}`}
-                  onClick={() => setWatchFilter(key)}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-            <select
-              className="ll-sort"
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-              aria-label="정렬"
-            >
-              <option value="default">코스 순서</option>
-              <option value="short">짧은 순</option>
-              <option value="long">긴 순</option>
-              <option value="title">제목순</option>
-            </select>
-            {filtersActive && (
-              <button className="ll-filterreset" onClick={resetFilters}>
-                <i className="ph-bold ph-arrow-counter-clockwise" /> 초기화
-              </button>
-            )}
-          </div>
-        )}
-
-        {/* 필터 결과 전무 — 정직한 빈 상태 */}
-        {state === 'ready' && filtersActive && matchCount === 0 && (
-          <div className="ll-state">
-            <i className="ph-fill ph-magnifying-glass" />
-            조건에 맞는 강의가 없어요.
-            <button className="ll-retry" onClick={resetFilters}>
-              필터 초기화
-            </button>
-          </div>
-        )}
-
         {state === 'loading' && (
           <div className="ll-state">
             <i className="ph-fill ph-hourglass-medium" />
@@ -386,17 +247,24 @@ export default function LectureList() {
           </div>
         )}
 
+        {/* 구매 페이지 — 신청 가능한(미신청) 코스가 하나도 없을 때 */}
+        {state === 'ready' && shopCourseCount === 0 && (
+          <div className="ll-state">
+            <i className="ph-fill ph-shopping-bag" />
+            신청할 수 있는 새 코스가 없어요. 이미 모든 코스를 수강 중이에요.
+            <button className="ll-retry" onClick={() => navigate(PATHS.STUDENT_HOME)}>
+              강의 홈으로
+            </button>
+          </div>
+        )}
+
         {state === 'ready' &&
           visibleCategories.map((sub) => {
             const s = categoryTheme(sub);
-            // 분류(category) → 강사별 코스 → 강의. '기타'엔 코스 없는 강의가 모인다.
-            const groups = courseGroupsForCategory(sub, rows ?? [], courses);
+            // 분류(category) → 강사별 코스 → 강의. 구매 페이지라 미신청 코스만 묶는다.
+            const groups = courseGroupsForCategory(sub, shopRows, shopCourses);
             const subjTotal = groups.reduce((n, g) => n + g.lectures.length, 0);
-            const subjMatch = filtersActive
-              ? groups.reduce((n, g) => n + applyFilters(g.lectures).length, 0)
-              : subjTotal;
             if (subjTotal === 0 && tab === '전체') return null; // 전체 탭에선 빈 분류 생략
-            if (filtersActive && subjMatch === 0) return null; // 필터 결과 없는 분류 숨김
             return (
               <section key={sub} className="ll-section">
                 <div className="ll-sechead">
@@ -406,8 +274,8 @@ export default function LectureList() {
                   <div>
                     <h2 className="ll-sectitle">{sub}</h2>
                     <p className="ll-secsub">
-                      {filtersActive ? `${subjMatch}강 검색됨` : `${subjTotal}강`}
-                      {!filtersActive && groups.some((g) => g.title)
+                      {subjTotal}강
+                      {groups.some((g) => g.title)
                         ? ` · 코스 ${groups.filter((g) => g.title).length}개`
                         : ''}
                     </p>
@@ -424,10 +292,9 @@ export default function LectureList() {
                     // (코스 없는 분류는 카드만 평면 노출) 어색한 라벨을 피한다.
                     const hasCourses = groups.some((g) => g.title);
                     return groups.map((g) => {
-                      // 코스 안 원래 순서(강 번호)를 보존 — 필터/정렬해도 'N강'은 원래 위치로 표시
+                      // 코스 안 원래 순서(강 번호)를 보존 — 'N강'은 원래 위치로 표시
                       const numMap = new Map(g.lectures.map((l, idx) => [l.id, idx + 1]));
-                      const gl = applyFilters(g.lectures);
-                      if (gl.length === 0) return null; // 필터 결과 없는 코스 숨김
+                      const gl = g.lectures;
                       const showAll = !!expanded[g.key];
                       const shown = showAll ? gl : gl.slice(0, VISIBLE_PER_GROUP);
                       const hidden = gl.length - shown.length;
@@ -461,53 +328,27 @@ export default function LectureList() {
                                 <h3 className="ll-coursetitle ll-coursetitle--none">기타 강의</h3>
                               )}
                               <span className="ll-coursecount">
-                                {filtersActive ? `${gl.length}/${g.lectures.length}강` : `${g.lectures.length}강`}
+                                {`${g.lectures.length}강`}
                               </span>
-                              {/* 수강신청/취소 — 무료 자유 신청(진행 이력은 취소해도 보존).
-                                  실제 코스(g.course)가 있는 그룹에만 노출한다(미분류 '기타 강의' 제외). */}
-                              {g.course &&
-                                (g.course.enrolled ? (
-                                  <button
-                                    className="ll-enroll ll-enroll--on"
-                                    disabled={!!enrollBusy[g.course.id]}
-                                    onClick={() => toggleEnroll(g.course!.id, false)}
-                                    title="수강 취소(진행 이력은 보존됩니다)"
-                                  >
-                                    <i className="ph-fill ph-check-circle" /> 수강 중
-                                  </button>
-                                ) : (
-                                  <button
-                                    className="ll-enroll"
-                                    disabled={!!enrollBusy[g.course.id]}
-                                    onClick={() => toggleEnroll(g.course!.id, true)}
-                                  >
-                                    <i className="ph-bold ph-plus-circle" /> 수강신청
-                                  </button>
-                                ))}
-                              {/* 코스 Q(3단계-b) — 완주로 열린 문항이 있으면 연습 버튼, 문항은
-                                  있는데 전부 잠겨 있으면 '완주하면 열려요'(배움→연습 순서 안내).
-                                  은행 배치 문항이 0개면 아무것도 안 보인다(빈 약속 금지). */}
-                              {g.course && (g.course.unlocked_question_count ?? 0) > 0 && (
+                              {/* 장바구니 담기 — 실제 코스(g.course)가 있는 그룹에만. 여러 코스를
+                                  담아 하단 바의 '구매하기'로 한 번에 결제(Checkout)로 넘긴다. */}
+                              {g.course && (
                                 <button
-                                  className="ll-course-qbtn"
-                                  onClick={() =>
-                                    navigate(
-                                      `${PATHS.STUDENT_GAME}?subject=${encodeURIComponent(g.course!.subject)}&bank=1&course=${g.course!.id}`,
-                                    )
-                                  }
+                                  className={`ll-cartadd${cart.has(g.course.id) ? ' ll-cartadd--on' : ''}`}
+                                  onClick={() => toggleCart(g.course!.id)}
+                                  aria-pressed={cart.has(g.course.id)}
                                 >
-                                  <i className="ph-fill ph-lightning" />
-                                  이 코스 문제 풀기 ({g.course.unlocked_question_count})
+                                  {cart.has(g.course.id) ? (
+                                    <>
+                                      <i className="ph-fill ph-check-circle" /> 담김
+                                    </>
+                                  ) : (
+                                    <>
+                                      <i className="ph-fill ph-shopping-cart-simple" /> 장바구니 담기
+                                    </>
+                                  )}
                                 </button>
                               )}
-                              {g.course &&
-                                (g.course.bank_question_count ?? 0) > 0 &&
-                                (g.course.unlocked_question_count ?? 0) === 0 && (
-                                  <span className="ll-course-qlock">
-                                    <i className="ph-fill ph-lock-simple" />
-                                    문제 {g.course.bank_question_count}개 · 강의 완주 시 열려요
-                                  </span>
-                                )}
                             </div>
                           )}
                         <div className="ll-grid">
@@ -525,13 +366,6 @@ export default function LectureList() {
                             </button>
                           )}
                         </div>
-                        {/* 수료 시험 카드(#28) — 코스 그룹 말미. 배움→연습→증명의 마지막 조각.
-                            활성 문항 0개면 렌더 안 함(시험 없는 코스). 상태: 잠김/응시/진행/수료 */}
-                        {g.course?.exam?.has_exam && (
-                          <ExamCard course={g.course} onGo={() =>
-                            navigate(`${PATHS.STUDENT_COURSE_EXAM}?course=${g.course!.id}`)
-                          } />
-                        )}
                       </div>
                     );
                   });
@@ -542,7 +376,32 @@ export default function LectureList() {
           })}
       </div>
 
-      <ScreenTimeReminder />
+      {/* 장바구니 바 — 선택한 코스가 있을 때만. '구매하기'가 결제 페이지(?cart=)로 넘긴다. */}
+      {cartCourses.length > 0 && (
+        <div className="ll-cartbar">
+          <div className="ll-cartbar-inner">
+            <div className="ll-cartbar-info">
+              <span className="ll-cartbar-badge">
+                <i className="ph-fill ph-shopping-cart" />
+                {cartCourses.length}
+              </span>
+              <span className="ll-cartbar-titles">
+                {cartCourses.map((c) => c.title).join(', ')}
+              </span>
+            </div>
+            <div className="ll-cartbar-actions">
+              <button className="ll-cartbar-clear" onClick={() => setCart(new Set())}>
+                비우기
+              </button>
+              <button className="ll-cartbar-btn" onClick={goCheckout}>
+                <i className="ph-fill ph-lock-simple" />
+                {cartCourses.length}개 코스 구매하기
+                <i className="ph-bold ph-arrow-right" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
