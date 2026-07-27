@@ -58,6 +58,7 @@ const OpsLectures = lazy(() => import('../pages/ops/OpsLectures'));
 const OpsInstructorHome = lazy(() => import('../pages/ops/OpsInstructorHome'));
 const OpsOperators = lazy(() => import('../pages/ops/OpsOperators'));
 const OpsInstructors = lazy(() => import('../pages/ops/OpsInstructors'));
+const OpsAccountUnlock = lazy(() => import('../pages/ops/OpsAccountUnlock'));
 
 // 시스템
 const NotFoundPage = lazy(() => import('../pages/system/NotFoundPage'));
@@ -140,6 +141,7 @@ export default function AppRoutes() {
           <Route path={PATHS.OPS_SETTINGS} element={<Navigate to={PATHS.OPS_LLM_KEYS} replace />} />
           <Route path={PATHS.OPS_OPERATORS} element={<OpsOperators />} />
           <Route path={PATHS.OPS_INSTRUCTORS} element={<OpsInstructors />} />
+          <Route path={PATHS.OPS_ACCOUNT_UNLOCK} element={<OpsAccountUnlock />} />
         </Route>
 
         {/* 강의 제작 콘솔 — 운영자(전체) + 강사(자기 강의만, 스코프는 서버가 강제) */}

@@ -223,6 +223,30 @@ export default function DragObjectCaptcha({ onToken, onClose }: Props) {
     setSelected((rows) => rows.filter((value) => value !== id));
   };
 
+  /**
+   * 키보드로 객체를 정답존에 넣는다(Tab으로 이동 → Enter/Space).
+   *
+   * 왜: 이 캡차는 드래그로만 풀 수 있어서 마우스를 못 쓰는 사용자는 로그인 자체가 막혔다.
+   * 히트 영역은 평상시 투명하지만 :focus-visible에서 드러나므로, 화면을 볼 수 있는 키보드
+   * 사용자는 어디를 고르는지 확인하면서 진행할 수 있다.
+   *
+   * ★행동 점수: 키보드 경로엔 드래그 궤적이 없어 서버가 move_count<3으로 +15를 매긴다.
+   * 그래도 step_up 임계(30)보다 낮아 통과한다 — 반응시간(challenge_loaded→pointer_down)을
+   * 함께 보내 reaction=None(+12)만은 피한다. 이 둘이 겹치면 27점이 되어 임계에 닿는다.
+   */
+  const selectByKeyboard = (obj: CaptchaObject, e: React.KeyboardEvent<HTMLButtonElement>) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    e.preventDefault();
+    if (done || busy) return;
+    const box = e.currentTarget.getBoundingClientRect();
+    const p = norm(box.left + box.width / 2, box.top + box.height / 2);
+    track('pointer_down', { object_id: obj.object_id, x: p.x, y: p.y });
+    track('drag_start', { object_id: obj.object_id, x: p.x, y: p.y });
+    track('drop', { object_id: obj.object_id, x: p.x, y: p.y });
+    track('selection_add', { object_id: obj.object_id, x: p.x, y: p.y });
+    setSelected((rows) => (rows.includes(obj.object_id) ? rows : [...rows, obj.object_id]));
+  };
+
   const verify = async () => {
     if (!challenge || selected.length === 0) {
       setMessage('먼저 정답 객체를 정답존으로 옮겨주세요.');
@@ -341,7 +365,8 @@ export default function DragObjectCaptcha({ onToken, onClose }: Props) {
                       e.currentTarget.setPointerCapture(e.pointerId);
                       startDrag(obj, e);
                     }}
-                    aria-label="사진 속 객체를 정답존으로 드래그"
+                    onKeyDown={(e) => selectByKeyboard(obj, e)}
+                    aria-label="사진 속 객체 — 드래그하거나 Enter를 눌러 정답존으로 옮기기"
                   />
                 ))}
               </div>
@@ -352,6 +377,9 @@ export default function DragObjectCaptcha({ onToken, onClose }: Props) {
                 </span>
                 <strong>정답존</strong>
                 <small>해당 객체를 여기에 놓으세요</small>
+                {/* 마우스를 못 쓰는 사용자에게 대체 조작법을 알린다 — 안 적어두면 투명한
+                    히트 영역을 Tab으로 찾을 수 있다는 걸 알 방법이 없다. */}
+                <small className="fc-drop-kbd">키보드는 Tab으로 이동 후 Enter</small>
                 <div className="fc-drop-grid">
                   {selected.map((id) => {
                     const obj = challenge.objects.find((o) => o.object_id === id);

@@ -148,6 +148,16 @@
 .fc-object:active {
   cursor: grabbing;
 }
+/* 키보드 초점에서는 히트 영역을 드러낸다.
+   평상시 opacity:0(원본 그대로)이라 초점 표시가 없으면 Tab으로 어디를 고르는지 알 수 없어
+   키보드 조작이 사실상 불가능하다. 마우스 호버에는 일부러 반응하지 않는다 — 마우스로 훑어
+   정답 후보를 찾아내는 힌트가 되면 캡차가 약해진다. */
+.fc-object:focus-visible {
+  opacity: 1;
+  outline: 3px solid var(--brand);
+  outline-offset: 1px;
+  background: color-mix(in srgb, var(--brand) 16%, transparent);
+}
 /* 집어 올린 객체는 제자리에서 사라진다 — 포인터를 따라가는 고스트가 그 자리를 대신한다. */
 .fc-object.is-lifted {
   visibility: hidden;
@@ -183,6 +193,10 @@
   margin-top: 4px;
   font-size: 12px;
   color: var(--ink-3);
+}
+.fc-drop-kbd {
+  font-size: 11px !important;
+  opacity: 0.85;
 }
 .fc-drop-icon {
   font-size: 26px;

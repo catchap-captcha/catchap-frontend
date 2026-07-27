@@ -666,3 +666,51 @@ export const opsAiRuntimeApi = {
     auto_swap?: boolean;
   }) => client.put<AiRuntime>('/ops/ai-runtime/config', body).then((r) => r.data),
 };
+
+// --- 계정 잠금 해제 · 학생 임시 비밀번호 ---
+// 왜: 로그인 실패가 임계를 넘으면 캡차를 요구하는데, 캡차를 풀 수 없는 사용자(키보드·스크린리더)나
+// 비밀번호를 잊은 학생(로그인 아이디가 이메일이 아니면 메일 재설정도 불가)은 자력 복구가 안 된다.
+// 운영자의 최후 수단.
+export type OpsThrottleAccount = {
+  type: 'student' | 'user';
+  id: string;
+  status: string;
+  name: string | null;
+  role?: string;
+  can_email: boolean;
+};
+
+export type OpsThrottleRow = {
+  identifier: string;
+  kind: string;
+  subject: string;
+  fail_count: number;
+  updated_at: string | null;
+  /** null이면 가입되지 않은 아이디 = 뒤에 풀어줄 사람이 없다(오타·탐색 흔적) */
+  account: OpsThrottleAccount | null;
+};
+
+export const opsAccountApi = {
+  throttles: (onlyBlocked = true) =>
+    client
+      .get<{ items: OpsThrottleRow[]; threshold: number }>('/ops/login-throttles', {
+        params: { only_blocked: onlyBlocked },
+      })
+      .then((r) => r.data),
+  unlock: (identifier: string) =>
+    client
+      .post<{ ok: boolean; identifier: string; before: number }>('/ops/login-throttles/unlock', {
+        identifier,
+      })
+      .then((r) => r.data),
+  resetStudentPassword: (studentId: string) =>
+    client
+      .post<{
+        ok: boolean;
+        student_login_id: string;
+        email_status: string;
+        /** 메일을 못 보내는 학생일 때만 채워진다 — 운영자가 다른 경로로 전달해야 한다 */
+        temp_password: string | null;
+      }>(`/ops/students/${studentId}/reset-password`, {})
+      .then((r) => r.data),
+};

@@ -1,0 +1,147 @@
+/* 계정 잠금 해제 — 공유 콘솔 토큰(op-*)을 그대로 쓰고 이 화면 고유부만 정의한다. */
+.au-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0 14px;
+  font-size: 13px;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+
+.au-notice {
+  margin-bottom: 14px;
+  padding: 10px 14px;
+  border-radius: var(--r-sm);
+  background: var(--brand-soft);
+  color: var(--ink);
+  font-size: 13px;
+}
+
+/* 임시 비밀번호는 서버에 평문으로 남지 않으므로 화면에서 한 번만 보여준다 — 눈에 띄게. */
+.au-temppw {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-md, 12px);
+  background: var(--surface-2);
+}
+.au-temppw p {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--ink-3);
+}
+.au-temppw code {
+  padding: 8px 14px;
+  border-radius: var(--r-sm);
+  background: var(--ink);
+  color: var(--surface);
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.au-section {
+  margin-bottom: 26px;
+}
+.au-section h2 {
+  margin: 0 0 6px;
+  font-size: 15px;
+  color: var(--ink);
+}
+.au-section h2 span {
+  margin-left: 6px;
+  color: var(--ink-3);
+  font-weight: 500;
+}
+.au-hint,
+.au-empty {
+  margin: 0 0 10px;
+  font-size: 13px;
+  color: var(--ink-3);
+}
+
+.au-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.au-table th,
+.au-table td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--line);
+}
+.au-table th {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-3);
+}
+.au-id {
+  font-family: var(--font-mono, monospace);
+  word-break: break-all;
+}
+.au-time {
+  color: var(--ink-3);
+  white-space: nowrap;
+}
+.au-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+.au-tag {
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: var(--r-pill);
+  background: var(--surface-3);
+  color: var(--ink-3);
+  font-size: 11px;
+}
+
+.au-orphans {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.au-orphans li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+  font-size: 12px;
+  color: var(--ink-3);
+}
+.au-orphans code {
+  font-family: var(--font-mono, monospace);
+  color: var(--ink-2);
+}
+
+@media (max-width: 720px) {
+  .au-table thead {
+    display: none;
+  }
+  .au-table tr {
+    display: grid;
+    gap: 2px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .au-table td {
+    border: 0;
+    padding: 2px 0;
+  }
+  .au-actions {
+    justify-content: flex-start;
+    margin-top: 6px;
+  }
+}

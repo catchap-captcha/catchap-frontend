@@ -65,6 +65,7 @@ export const PATHS = {
   OPS_LECTURES: '/ops/lectures', // 강의 관리 (영상 업로드·확인 문항·자료실) — 운영자·강사 공용
   OPS_QUESTION_METRICS: '/ops/question-metrics', // 문항 지표 (문제은행 노출수·정답률 — 문제은행 2단계)
   OPS_INSTRUCTORS: '/ops/instructors', // 강사 계정 관리 (운영자 초대 발급)
+  OPS_ACCOUNT_UNLOCK: '/ops/account-unlock', // 로그인 잠금 해제·학생 임시 비밀번호 (캡차를 풀 수 없는 사용자의 최후 수단)
 
   // 학생 코드 활성화 가입 (공개) — 학교 발급 코드 흐름 종료 안내만 남음
   ACTIVATE: '/activate',
