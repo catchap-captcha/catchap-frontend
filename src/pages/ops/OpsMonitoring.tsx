@@ -274,7 +274,7 @@ export default function OpsMonitoring() {
 
         {state === 'error' && (
           <div className="op-empty">
-            <i className="ph-duotone ph-warning-circle" />
+            <i className="ph-fill ph-warning-circle" />
             <p>모니터링 데이터를 불러오지 못했어요.</p>
           </div>
         )}

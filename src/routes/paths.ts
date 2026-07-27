@@ -72,6 +72,7 @@ export const PATHS = {
   OPS_COURSES: '/ops/courses', // 코스 관리 — 강의 묶음(코스) 빌더(강사, '강의 관리'에서 진입)
   OPS_QUESTION_REVIEW: '/ops/question-review', // 문항 검수 — 생성 문항 승인/반려 QC(강사, 문항 지표와 별개)
   OPS_LEARNING_ANALYTICS: '/ops/learning-analytics', // 학습 분석 — 주간 시청 완주·참여(강사)
+  OPS_ACCOUNT_UNLOCK: '/ops/account-unlock', // 로그인 잠금 해제·학생 임시 비밀번호 (캡차를 풀 수 없는 사용자의 최후 수단)
 
   // 학생 코드 활성화 가입 (공개) — 학교 발급 코드 흐름 종료 안내만 남음
   ACTIVATE: '/activate',

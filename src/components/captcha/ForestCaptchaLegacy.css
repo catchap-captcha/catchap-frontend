@@ -1,0 +1,46 @@
+/* ForestCaptchaLegacy — 기존 forest(3D) 캡차 iframe 래퍼.
+ *
+ * ★클래스 접두사가 `fcl-`인 이유: 메인 캡차는 ForestCaptcha 디스패처가 플래그에 따라 이 위젯과
+ * DragObjectCaptcha 중 하나를 고르는데, 두 컴포넌트를 정적 import 하므로 **CSS가 같은 청크로
+ * 함께 번들된다**. 예전엔 둘 다 `.fc-wrap`·`.fc-close`를 정의해 충돌했고, 번들에서 이 파일 값이
+ * 이겨 드래그 위젯이 의도한 max-width:460px 대신 900px로, 닫기 버튼이 헤더가 아닌 카드 우상단에
+ * 절대배치로 떴다. 어느 쪽이 이기든 '우연'이므로 접두사를 분리해 충돌 자체를 없앤다.
+ */
+.fcl-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+}
+.fcl-prompt {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 15px;
+  color: var(--ink);
+  margin-bottom: 12px;
+}
+.fcl-iframe {
+  width: 100%;
+  height: clamp(360px, calc(100dvh - 180px), 720px);
+  border: none;
+  border-radius: 18px;
+  background: var(--surface);
+  display: block;
+  box-shadow: 0 8px 24px -14px rgba(60, 90, 40, 0.4);
+}
+.fcl-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.35);
+  color: var(--on-brand);
+  font-size: 14px;
+  cursor: pointer;
+}
+.fcl-close:hover {
+  background: rgba(0, 0, 0, 0.55);
+}

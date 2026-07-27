@@ -19,10 +19,10 @@
         } catch (e) {}
       })();
     </script>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;700;900&display=swap" rel="stylesheet" />
+    <!-- Noto Serif KR(Google Fonts) 링크 제거(2026-07-24): src 전체에서 미사용인데도 모든 페이지에서
+         렌더블로킹으로 CJK serif 4웨이트를 받고 있었다. 함께 쓰던 fonts.googleapis/gstatic preconnect도
+         이 폰트 전용이라 제거. Pretendard(위, 별도 CDN)만 유지 — 시각 변화 없음. -->
     <title>CatChap 캣챱 — 시청 검증형 온라인 강의 플랫폼</title>
   </head>
   <body>

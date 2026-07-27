@@ -46,13 +46,13 @@ export default function OpsInstructorHome() {
 
         {state === 'loading' && (
           <div className="op-empty">
-            <i className="ph-duotone ph-spinner-gap" />
+            <i className="ph-fill ph-spinner-gap" />
             <p>불러오는 중…</p>
           </div>
         )}
         {state === 'error' && (
           <div className="op-empty">
-            <i className="ph-duotone ph-warning-circle" />
+            <i className="ph-fill ph-warning-circle" />
             <p>대시보드를 불러오지 못했어요.</p>
           </div>
         )}

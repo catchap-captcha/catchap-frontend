@@ -837,11 +837,9 @@ export default function LoginPage() {
                   </span>
                 </div>
 
-                <div className="lg-cap-prompt-row">
-                  <span>숨은 동물을 찾아 같은 방향으로 돌려주세요</span>
-                </div>
-
-                {/* 메인 캡차(숲속 마을 동물 방향) — 통과 시 토큰이 자동 전달돼 로그인이 이어져요 */}
+                {/* 과제 안내는 여기서 하드코딩하지 않는다 — 메인 캡차가 플래그로 forest↔드래그
+                    사이에서 바뀌므로(ForestCaptcha 디스패처), 안내를 호출부가 고정하면 실제 과제와
+                    어긋난다. 각 위젯이 자기 안내를 그린다. 통과 시 토큰은 그대로 자동 전달된다. */}
                 <div className="lg-cap-slot lg-cap-slot--forest">
                   <ForestCaptcha onToken={onCaptchaToken} />
                 </div>

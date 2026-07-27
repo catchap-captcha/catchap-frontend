@@ -32,6 +32,8 @@ const GROUPS: NavGroup[] = [
       { to: PATHS.OPS_INSTRUCTORS, icon: 'ph-chalkboard-teacher', label: '강사 관리' },
       { to: PATHS.OPS_OPERATORS, icon: 'ph-shield-star', label: '운영자 계정' },
       { to: PATHS.OPS_INQUIRIES, icon: 'ph-chat-circle-dots', label: '문의 관리' },
+      // 캡차를 풀 수 없어 로그인이 막힌 사용자의 최후 수단(잠금 해제·학생 임시 비밀번호)
+      { to: PATHS.OPS_ACCOUNT_UNLOCK, icon: 'ph-lock-key-open', label: '계정 잠금 해제' },
     ],
   },
   {

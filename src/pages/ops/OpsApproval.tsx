@@ -163,17 +163,17 @@ export default function OpsApproval() {
         {/* LIST */}
         {listLoading ? (
           <div className="op-empty">
-            <i className="ph-duotone ph-spinner-gap" />
+            <i className="ph-fill ph-spinner-gap" />
             <p>신청 목록을 불러오는 중…</p>
           </div>
         ) : listErr ? (
           <div className="op-empty">
-            <i className="ph-duotone ph-warning" />
+            <i className="ph-fill ph-warning" />
             <p>신청 목록을 불러오지 못했어요. 새로고침해 주세요.</p>
           </div>
         ) : list.length === 0 ? (
           <div className="op-empty">
-            <i className="ph-duotone ph-tray" />
+            <i className="ph-fill ph-tray" />
             <p>{tab === 'pending' ? '대기 중인 신청이 없어요.' : `${TAB_LABEL[tab]} 항목이 없어요.`}</p>
           </div>
         ) : (

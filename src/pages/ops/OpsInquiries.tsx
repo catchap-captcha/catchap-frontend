@@ -170,13 +170,13 @@ export default function OpsInquiries() {
           <span className="op-inqsearch-total">{total.toLocaleString()}건</span>
         </div>
 
-        {state === 'loading' && <div className="op-empty"><i className="ph-duotone ph-spinner" /><p>불러오는 중…</p></div>}
+        {state === 'loading' && <div className="op-empty"><i className="ph-fill ph-spinner" /><p>불러오는 중…</p></div>}
         {state === 'error' && (
-          <div className="op-empty"><i className="ph-duotone ph-warning" /><p>문의를 불러오지 못했어요.</p></div>
+          <div className="op-empty"><i className="ph-fill ph-warning" /><p>문의를 불러오지 못했어요.</p></div>
         )}
         {state === 'ready' && list.length === 0 && (
           <div className="op-empty">
-            <i className="ph-duotone ph-tray" />
+            <i className="ph-fill ph-tray" />
             <p>{tab === 'received' ? '미처리 문의가 없어요.' : `${TAB_LABEL[tab]} 문의가 없어요.`}</p>
           </div>
         )}
