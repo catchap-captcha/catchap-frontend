@@ -5,6 +5,8 @@ import { lectureApi, thumbnailSrc, type LectureItem, type StudentCourse } from '
 import { StudentNav } from '../../layouts/StudentLayout';
 import { categoryTheme, formatClock } from './lectureSubjects';
 import CourseCover from '../../components/course/CourseCover';
+import InstructorBioModal from '../../components/course/InstructorBioModal';
+import { paymentApi, fmtWon } from '../../api/payments';
 import './LectureList.css';
 
 /** 코스(그룹)별 기본 노출 개수 — 그 이상은 '더보기' 카드로 접는다(목업 동일) */
@@ -110,19 +112,48 @@ export default function LectureList() {
   // 장바구니 — 구매(수강신청)할 코스를 여러 개 담는다. 코스 머리의 체크박스로 토글하고,
   // 하단 바의 '구매하기'가 선택 코스들을 결제(Checkout) 페이지로 넘긴다(?cart=id1,id2).
   const [cart, setCart] = useState<Set<string>>(new Set());
-  const toggleCart = (courseId: string) =>
+
+  // 코스별 수강료 — 목록 API에는 금액이 없어 결제 요약(GET /courses/{id}/checkout)에서 가져온다.
+  // 담는 순간에만 1건씩 부르므로 목록 진입 시 N번 호출하지 않는다. 'error'는 조회 실패(합계에서 빠짐).
+  const [prices, setPrices] = useState<Record<string, number | 'error'>>({});
+  const loadPrice = async (courseId: string) => {
+    if (typeof prices[courseId] === 'number') return; // 이미 알고 있음(실패는 재시도 허용)
+    try {
+      const info = await paymentApi.checkoutInfo(courseId);
+      setPrices((p) => ({ ...p, [courseId]: info.amount }));
+    } catch {
+      setPrices((p) => ({ ...p, [courseId]: 'error' }));
+    }
+  };
+
+  const toggleCart = (courseId: string) => {
+    // 담는 경우에만 가격을 부른다. setState 업데이터 밖에서 판단해야 StrictMode 이중 호출로
+    // 같은 요청이 두 번 나가지 않는다.
+    const adding = !cart.has(courseId);
     setCart((prev) => {
       const next = new Set(prev);
-      if (next.has(courseId)) next.delete(courseId);
-      else next.add(courseId);
+      if (adding) next.add(courseId);
+      else next.delete(courseId);
       return next;
     });
+    if (adding) void loadPrice(courseId);
+  };
   const goCheckout = () => {
     if (cart.size === 0) return;
     navigate(`${PATHS.STUDENT_CHECKOUT}?cart=${[...cart].join(',')}`);
   };
   // 선택된 코스 메타(하단 바 표시용) — shopCourses는 위에서 계산됨.
   const cartCourses = shopCourses.filter((c) => cart.has(c.id));
+
+  // 장바구니 합계 — 아직 못 받은 금액이 하나라도 있으면 '계산 중', 조회 실패가 있으면 그 사실을
+  // 숨기지 않고 알린다(합계가 실제보다 적게 보이는 채로 결제로 넘어가지 않게).
+  const cartPrices = cartCourses.map((c) => prices[c.id]);
+  const priceLoading = cartPrices.some((p) => p === undefined);
+  const priceFailed = cartPrices.some((p) => p === 'error');
+  const cartTotal = cartPrices.reduce<number>((n, p) => n + (typeof p === 'number' ? p : 0), 0);
+
+  // 강사 소개 모달 — 코스 머리의 '강사 소개' 버튼이 연다.
+  const [bioFor, setBioFor] = useState<{ name: string; courseTitle: string | null } | null>(null);
 
   /** 강의 카드 — 코스 그룹 안에서 반복 렌더한다(그룹 내 순번 i로 강 번호를 센다). */
   const renderCard = (l: LectureItem, i: number) => {
@@ -319,9 +350,20 @@ export default function LectureList() {
                                   </span>
                                   <h3 className="ll-coursetitle">{g.title}</h3>
                                   {g.instructor && (
-                                    <span className="ll-courseinst">
-                                      <i className="ph-fill ph-chalkboard-teacher" /> {g.instructor} 선생님
-                                    </span>
+                                    <>
+                                      <span className="ll-courseinst">
+                                        <i className="ph-fill ph-chalkboard-teacher" /> {g.instructor} 선생님
+                                      </span>
+                                      <button
+                                        type="button"
+                                        className="ibm-trigger"
+                                        onClick={() =>
+                                          setBioFor({ name: g.instructor!, courseTitle: g.title })
+                                        }
+                                      >
+                                        <i className="ph-fill ph-user-circle" /> 강사 소개
+                                      </button>
+                                    </>
                                   )}
                                 </>
                               ) : (
@@ -389,6 +431,20 @@ export default function LectureList() {
                 {cartCourses.map((c) => c.title).join(', ')}
               </span>
             </div>
+            {/* 총 가격 — 담긴 코스들의 수강료 합계. 최종 결제 금액은 결제 페이지에서 서버가 확정한다. */}
+            <div className="ll-cartbar-total">
+              <span className="ll-cartbar-totlabel">총 가격</span>
+              {priceLoading ? (
+                <span className="ll-cartbar-totcalc">계산 중…</span>
+              ) : (
+                <strong className="ll-cartbar-totnum">{fmtWon(cartTotal)}</strong>
+              )}
+              {priceFailed && !priceLoading && (
+                <span className="ll-cartbar-toterr">
+                  <i className="ph-fill ph-warning-circle" /> 일부 코스 금액을 불러오지 못했어요
+                </span>
+              )}
+            </div>
             <div className="ll-cartbar-actions">
               <button className="ll-cartbar-clear" onClick={() => setCart(new Set())}>
                 비우기
@@ -401,6 +457,14 @@ export default function LectureList() {
             </div>
           </div>
         </div>
+      )}
+
+      {bioFor && (
+        <InstructorBioModal
+          name={bioFor.name}
+          courseTitle={bioFor.courseTitle}
+          onClose={() => setBioFor(null)}
+        />
       )}
     </div>
   );

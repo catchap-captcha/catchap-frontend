@@ -454,9 +454,6 @@ export default function MyRecords() {
       <section className="mr-section mr-header">
         <div className="mr-headrow">
           <div className="mr-headleft">
-            <span className="mr-headicon">
-              <i className="ph-fill ph-chart-line-up" />
-            </span>
             <div>
               <h1 className="mr-title">{name}님의 학습 기록</h1>
               <p className="mr-subtitle">배운 강의·풀어 온 문제·수료한 코스를 한눈에 볼 수 있어요</p>
@@ -811,19 +808,26 @@ export default function MyRecords() {
             {/* 배지 페이지 은퇴(0718) — 링크 제거 */}
           </div>
           <div className="mr-alist">
-            {data.activities.map((a) => (
-              <div key={a.title} className="mr-act">
-                <span className="mr-acticon" style={{ background: a.bg, color: a.color }}>
-                  <i className={a.icon} />
-                </span>
-                <div className="mr-actbody">
-                  <div className="mr-acttitle">{a.title}</div>
-                  <div className="mr-actsub">{a.sub}</div>
+            {data.activities.map((a) => {
+              /* 서버가 title='과학 학습', sub='과학 · 63문제'로 내려줘 과목명이 한 줄에 두 번
+                 나온다. 제목에서 과목을 뽑아 부제 앞의 중복만 걷어낸다(형식이 다르면 원문 유지). */
+              const subj = a.title.replace(/\s*학습$/, '').trim();
+              const dupe = `${subj} · `;
+              const sub = subj && a.sub.startsWith(dupe) ? a.sub.slice(dupe.length) : a.sub;
+              return (
+                <div key={a.title} className="mr-act">
+                  <span className="mr-acticon" style={{ background: a.bg, color: a.color }}>
+                    <i className={a.icon} />
+                  </span>
+                  <div className="mr-actbody">
+                    <div className="mr-acttitle">{a.title}</div>
+                    <div className="mr-actsub">{sub}</div>
+                  </div>
+                  <span className={`mr-actbadge ${a.grade === 'ok' ? 'mr-actok' : 'mr-actmid'}`}>{a.result}</span>
+                  <span className="mr-acttime">{a.time}</span>
                 </div>
-                <span className={`mr-actbadge ${a.grade === 'ok' ? 'mr-actok' : 'mr-actmid'}`}>{a.result}</span>
-                <span className="mr-acttime">{a.time}</span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>

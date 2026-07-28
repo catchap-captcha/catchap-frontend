@@ -57,8 +57,8 @@ export default function OpsLlmKeys() {
       <main className="op-main">
         <div className="op-head">
           <div>
-            <h1>API 키</h1>
-            <p>
+            <h1 className="op-title">API 키</h1>
+            <p className="op-sub">
               AI 문항 생성에 쓰는 <b>API 키</b>를 관리해요. 저장하면 <b>재시작 없이</b> 다음
               요청부터 적용되고, 키는 암호화되어 서버에만 보관돼요(화면엔 끝 4자리만 표시).
             </p>

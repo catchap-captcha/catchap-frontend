@@ -24,10 +24,12 @@
   background: var(--surface);
   border-bottom: 1px solid var(--line);
 }
+/* 학생 상단바(.sl-navinner)·콘솔 상단바(.op-top-inner)와 같은 헤더 규격 — 높이 60px, 좌우 28px */
 .lp-subbar-inner {
   max-width: min(2280px, 94vw);
   margin: 0 auto;
-  padding: 13px 28px;
+  padding: 0 28px;
+  height: 60px;
   display: flex;
   align-items: center;
   gap: 16px;
@@ -39,21 +41,22 @@
   padding: 7px 14px;
   border-radius: var(--r-sm, 10px);
   background: var(--bg);
-  border: 1px solid var(--line);
+  border: none;
   color: var(--ink-2);
   font-weight: 700;
   font-size: 13.5px;
   text-decoration: none;
 }
-.lp-back:hover { color: var(--ink); border-color: var(--ink-3); }
+.lp-back:hover { color: var(--ink); background: var(--surface-2); }
 .lp-logo {
   display: flex;
   align-items: center;
   text-decoration: none;
   flex-shrink: 0;
 }
+/* 워드마크 높이는 다른 헤더와 같은 22px */
 .lp-logomark {
-  height: 19px;
+  height: 22px;
   width: auto;
   display: block;
 }

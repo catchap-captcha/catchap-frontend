@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { settingsApi } from '../../api/settings';
+import { loadInstructorBio, saveInstructorBio } from '../../api/instructorBio';
 import OpsNav from '../../components/ops/OpsNav';
 import './OpsApproval.css';
 import './OpsInstructorProfile.css';
@@ -26,6 +27,32 @@ export default function OpsInstructorProfile() {
   const roleLabel = me?.role === 'ops' ? '운영자' : '강사';
   const name = me?.name ?? roleLabel;
   const avatarInitial = name.slice(0, 1);
+
+  // ---- 강사 이력 — 학생의 '강사 소개' 모달에 그대로 실리는 내용 ----
+  const [headline, setHeadline] = useState('');
+  const [career, setCareer] = useState('');
+  const [bioSavedAt, setBioSavedAt] = useState<string | null>(null);
+  const [bioMsg, setBioMsg] = useState('');
+  const [bioErr, setBioErr] = useState('');
+  // me는 비동기로 채워지므로 이름이 잡히는 시점에 저장된 이력을 끌어온다.
+  useEffect(() => {
+    if (!me?.name) return;
+    const saved = loadInstructorBio(me.name);
+    setHeadline(saved?.headline ?? '');
+    setCareer(saved?.career ?? '');
+    setBioSavedAt(saved?.updatedAt ?? null);
+  }, [me?.name]);
+
+  const saveBio = () => {
+    if (!me?.name) return setBioErr('계정 정보를 불러오는 중이에요. 잠시 후 다시 시도해 주세요.');
+    setBioErr('');
+    setBioMsg('');
+    const saved = saveInstructorBio(me.name, { headline, career });
+    if (!saved) return setBioErr('저장에 실패했어요. 브라우저 저장공간을 확인해 주세요.');
+    setBioSavedAt(saved.updatedAt);
+    setBioMsg('이력을 저장했어요. 학생의 ‘강사 소개’에 바로 보여요.');
+    setTimeout(() => setBioMsg(''), 2600);
+  };
 
   const openPw = () => {
     setCurPw('');
@@ -75,6 +102,68 @@ export default function OpsInstructorProfile() {
             </div>
           </div>
         </div>
+
+        {/* 강사 이력 — 학생이 코스의 '강사 소개'를 누르면 이 내용이 그대로 보인다.
+            운영자 프로필엔 띄우지 않는다(운영자는 코스의 강사로 노출되지 않으므로). */}
+        {me?.role === 'instructor' && (
+          <div className="ipf-card ipf-bio">
+            <div className="ipf-biohead">
+              <span className="ipf-rowicon">
+                <i className="ph-fill ph-identification-card" />
+              </span>
+              <div className="ipf-rowinfo">
+                <div className="ipf-rowtitle">강사 이력</div>
+                <div className="ipf-rowsub">
+                  학생이 내 코스에서 ‘강사 소개’를 누르면 이 내용이 보여요.
+                </div>
+              </div>
+              {bioSavedAt && (
+                <span className="ipf-biosaved">
+                  {new Date(bioSavedAt).toLocaleDateString('ko-KR')} 저장됨
+                </span>
+              )}
+            </div>
+
+            <label className="ipf-biofield">
+              <span className="ipf-biolabel">한 줄 소개</span>
+              <input
+                className="ipf-bioin"
+                value={headline}
+                maxLength={60}
+                onChange={(e) => setHeadline(e.target.value)}
+                placeholder="예) 10년째 중등 수학을 가르치고 있습니다"
+              />
+              <span className="ipf-biocount">{headline.length}/60</span>
+            </label>
+
+            <label className="ipf-biofield">
+              <span className="ipf-biolabel">이력</span>
+              <textarea
+                className="ipf-bioarea"
+                value={career}
+                maxLength={1000}
+                rows={7}
+                onChange={(e) => setCareer(e.target.value)}
+                placeholder={'한 줄에 하나씩 적으면 학생 화면에도 줄바꿈 그대로 보여요.\n\n예)\n· ○○대학교 수학교육과 졸업\n· 前 ○○학원 중등부 대표강사\n· 저서 「개념부터 잡는 중학 수학」'}
+              />
+              <span className="ipf-biocount">{career.length}/1000</span>
+            </label>
+
+            {bioErr && (
+              <div className="op-form-err">
+                <i className="ph-fill ph-warning-circle" />
+                {bioErr}
+              </div>
+            )}
+            {bioMsg && <div className="ipf-biook">{bioMsg}</div>}
+
+            <div className="ipf-bioactions">
+              <button className="op-btn op-btn--approve" onClick={saveBio}>
+                <i className="ph-bold ph-check" /> 이력 저장
+              </button>
+            </div>
+          </div>
+        )}
 
         <div className="ipf-card ipf-section">
           <div className="ipf-row">

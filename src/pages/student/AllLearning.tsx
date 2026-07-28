@@ -79,9 +79,6 @@ export default function AllLearning() {
       <section className="al-header-section">
         <div className="al-header">
           <div className="al-header-left">
-            <span className="al-header-icon">
-              <i className="ph-fill ph-squares-four" />
-            </span>
             <div>
               <h1 className="al-title">문제은행</h1>
               <p className="al-subtitle">

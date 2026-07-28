@@ -17,8 +17,8 @@ export default function OpsLlmPrompts() {
       <main className="op-main">
         <div className="op-head">
           <div>
-            <h1>프롬프트</h1>
-            <p>
+            <h1 className="op-title">프롬프트</h1>
+            <p className="op-sub">
               LLM에 주는 지침을 직접 편집해요. <b>생성</b>은 문항을 만드는 규칙, <b>검증</b>은 만든
               문항을 봇으로 풀어 봇저항을 판정하는 태도예요. 둘 다 형식·근거 같은 <b>구조부는 서버가
               고정</b>하고 규칙만 바꿔 안전하며, 저장하면 다음 문항 생성부터 바로 반영돼요.

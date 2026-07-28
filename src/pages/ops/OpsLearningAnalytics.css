@@ -1,7 +1,8 @@
 /* 학습 분석 — CatChap 학습 분석.dc.html 구조 그대로 (1200px·KPI 4장·주간 바차트+퍼널·
    강의별 확인문항 통과율 리스트). */
 
-.la-page { max-width: 1200px; }
+/* 본문 폭은 .op-main 공통 규격(1400px)을 따른다 — 종전 1200px 오버라이드로 형제 페이지와
+   좌우 여백이 어긋났다. */
 
 .la-period {
   display: inline-flex;

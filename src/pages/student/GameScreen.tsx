@@ -6,6 +6,7 @@ import { getFreshAccessToken } from '../../api/client';
 import { playSfx } from '../../utils/feedback';
 import { attachPointerTrace, type PointerTraceRecorder } from '../../utils/pointerTrace';
 import CatchapWidget from '../../components/captcha/CatchapWidget';
+import { useTheme } from '../../hooks/useTheme';
 import './GameScreen.css';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -222,7 +223,11 @@ export default function GameScreen() {
   const [stagesDone, setStagesDone] = useState(0); // 이번 세션에서 완료한 단계 수(시작 단계 기준 누적 아님 — 마지막 완료 단계 번호)
   const [stageBanner, setStageBanner] = useState<string | null>(null); // 비방해 전환 표시(토스트)
   const [quitAsk, setQuitAsk] = useState(false); // 그만하기 확인 팝업
+  const { theme } = useTheme(); // 위젯 리마운트 키 — 아래 CatchapWidget 주석 참고
   const [widgetStats, setWidgetStats] = useState({ answered: 0, correct: 0, wrong: 0, streak: 0 });
+  /** 이번 세션에서 틀린 문제(최신순, 최대 5개) — 사이드바 '직전에 틀린 문제' 카드가 쓴다.
+   *  큐가 알아서 다시 내주긴 하지만, 방금 뭘 틀렸는지 눈으로 확인할 방법이 없었다. */
+  const [wrongList, setWrongList] = useState<{ no: number; prompt: string }[]>([]);
   /* 문제은행 SRS 큐(설계 question-bank-scale-design.md) — 오늘 큐 소진(catchap:bankdone) 시
      완료 화면, '미리 복습하기'는 위젯을 early로 재마운트해 휴면 문항을 잇는다. */
   const [bankDone, setBankDone] = useState<{ nextReviewAt: string | null } | null>(null);
@@ -262,6 +267,7 @@ export default function GameScreen() {
   const navigatedRef = useRef(false); // 결과 이동 1회 가드(결과 보기 이중클릭 → 중복 내비 방지)
   useEffect(() => {
     setWidgetStats({ answered: 0, correct: 0, wrong: 0, streak: 0 });
+    setWrongList([]);
     setAuthLost(false);
     setCurStage(startStage);
     setStagesDone(0);
@@ -338,6 +344,9 @@ export default function GameScreen() {
       const d = (e as CustomEvent).detail as
         | {
             correct?: boolean;
+            /** 방금 푼 문제의 문제 텍스트 — 사이드바 '직전에 틀린 문제'가 쓴다.
+             *  구버전 위젯은 안 보내므로 없으면 그 항목은 목록에서 생략한다. */
+            prompt?: string;
             // (은퇴 0719) 퀴즈 보상 키(quiz_bonus·sticker_*)는 서버 응답에서 키째 사라짐
             session?: { coins_earned?: number };
           }
@@ -358,6 +367,12 @@ export default function GameScreen() {
         wrong: st.wrong + (d?.correct ? 0 : 1),
         streak: d?.correct ? st.streak + 1 : 0,
       }));
+      // 틀린 문제만 최신순으로 쌓아 사이드바에서 되짚어 본다(최대 5개).
+      // 문제 텍스트를 못 받으면(구버전 위젯) 빈 항목을 만들지 않고 건너뛴다.
+      if (!d?.correct && d?.prompt) {
+        const text = d.prompt;
+        setWrongList((prev) => [{ no: bag.answered, prompt: text }, ...prev].slice(0, 5));
+      }
       // 은행 모드 세트 단위감 — 10문항마다 중간 요약(계속/그만)을 띄운다
       if (bankMode) {
         bag.setAnswered += 1;
@@ -558,14 +573,27 @@ export default function GameScreen() {
 
   const qd = questions[s.key] ?? { q: '', pre: '', hi: '', post: '' };
 
-  const themeVars = {
-    '--gs-solid': '#1a1a1a',
-    '--gs-soft': '#f0f0f0',
-    '--gs-slot-bg': '#fafafa',
-    '--gs-dash': 'rgba(26,26,26,0.28)',
-    '--gs-mascot-grad': 'linear-gradient(160deg,#e6e6e6,#d2d2d2)',
-    '--gs-prog-grad': 'linear-gradient(90deg,#3a3a3c,#1a1a1a)',
-  } as CSSProperties;
+  /* 화면 스코프 토큰 — 값이 밝은 색으로만 박혀 있어 다크 모드에서 위젯 슬롯이 흰 판으로
+     남았다(위젯 글자가 다크 팔레트로 바뀌자 흰 배경 위 흰 글자가 됐다). 테마별로 나눈다. */
+  const themeVars = (
+    theme === 'dark'
+      ? {
+          '--gs-solid': '#f0f0f0',
+          '--gs-soft': 'rgba(255,255,255,0.10)',
+          '--gs-slot-bg': '#15181d',
+          '--gs-dash': 'rgba(255,255,255,0.26)',
+          '--gs-mascot-grad': 'linear-gradient(160deg,#33383f,#22262b)',
+          '--gs-prog-grad': 'linear-gradient(90deg,#c9cdd4,#f0f0f0)',
+        }
+      : {
+          '--gs-solid': '#1a1a1a',
+          '--gs-soft': '#f0f0f0',
+          '--gs-slot-bg': '#fafafa',
+          '--gs-dash': 'rgba(26,26,26,0.28)',
+          '--gs-mascot-grad': 'linear-gradient(160deg,#e6e6e6,#d2d2d2)',
+          '--gs-prog-grad': 'linear-gradient(90deg,#3a3a3c,#1a1a1a)',
+        }
+  ) as CSSProperties;
 
   return (
     <div className="gs-root" style={themeVars}>
@@ -737,11 +765,11 @@ export default function GameScreen() {
             data-captcha-slot="true"
             data-subject={s.key}
             data-question={curNo}
-            className="gs-mount"
+            /* 위젯이 실제로 붙는 슬롯은 실선(내용이 든 카드), 위젯 키가 없어 자리표시만
+               띄우는 경우에만 점선(진짜 빈 슬롯) — 점선은 '아직 안 채워짐'의 관용구라
+               위젯이 들어와 있는데 쓰면 로딩 실패처럼 보인다. */
+            className={`gs-mount${EDU_SITE_KEY ? '' : ' gs-mount--slot'}`}
           >
-            <span className="gs-mount-tagright">
-              {infinite ? `${curNo}번째 문제` : `문제 ${curNo}/${curTotal}`}
-            </span>
             {stageBanner && (
               /* 비방해 전환/축하 토스트 — 위젯 조작을 막지 않는다(pointer-events 없음) */
               <div className="gs-stagebanner">{stageBanner}</div>
@@ -807,6 +835,10 @@ export default function GameScreen() {
                  학생 토큰(auth)을 실어 서버가 채점 시점에 학습기록·SRS 상태를 적립하고,
                  행동데이터(behavior_summaries)도 학생 귀속으로 수집한다. */
               <CatchapWidget
+                /* 테마가 바뀌면 key가 바뀌어 위젯이 다시 마운트된다 — 위젯은 색을 인라인
+                   스타일로 박기 때문에, 다시 그리지 않으면 이미 그려진 문항이 옛 팔레트로
+                   남는다(라이트 카드 위에 다크 글자 같은 상태). */
+                key={`w-${theme}`}
                 siteKey={EDU_SITE_KEY}
                 api={WIDGET_API}
                 subject={s.key}
@@ -841,27 +873,65 @@ export default function GameScreen() {
         {/* SIDE PANEL */}
         <div className="gs-side">
           <div className="gs-card">
+            {/* 아이콘 타일 3개를 세로로 쌓던 목록을 3열 숫자 그리드로 바꿨다 — 타일이 값보다
+                커서 시선이 장식에 먼저 갔고, 세로로 길어 카드가 비어 보였다. 숫자를 앞세우고
+                색은 값에만 남긴다(맞힘 초록·틀림 빨강·연속 골드). 위에 정답률 요약을 둬서
+                세 숫자를 한 문장으로 읽게 한다. */}
             <div className="gs-card-title">이번 학습 진행</div>
-            <div className="gs-statlist">
-              <div className="gs-statrow">
-                <span className="gs-staticon gs-staticon-ok">
-                  <i className="ph-fill ph-check-circle" />
-                </span>
-                맞힌 문제 <span className="gs-statval gs-statval-ok">{EDU_SITE_KEY ? widgetStats.correct : s.correct}</span>
-              </div>
-              <div className="gs-statrow">
-                <span className="gs-staticon gs-staticon-no">
-                  <i className="ph-fill ph-x-circle" />
-                </span>
-                틀린 문제 <span className="gs-statval gs-statval-no">{EDU_SITE_KEY ? widgetStats.wrong : s.wrong}</span>
-              </div>
-              <div className="gs-statrow">
-                <span className="gs-staticon gs-staticon-streak">
-                  <i className="ph-fill ph-lightning" />
-                </span>
-                연속 정답 <span className="gs-statval gs-statval-streak">{EDU_SITE_KEY ? widgetStats.streak : s.streak}</span>
-              </div>
-            </div>
+            {(() => {
+              const ok = EDU_SITE_KEY ? widgetStats.correct : s.correct;
+              const no = EDU_SITE_KEY ? widgetStats.wrong : s.wrong;
+              const st = EDU_SITE_KEY ? widgetStats.streak : s.streak;
+              const solved = ok + no;
+              const rate = solved > 0 ? Math.round((ok / solved) * 100) : null;
+              return (
+                <>
+                  <div className="gs-statsum">
+                    <span className="gs-statsum-num">{rate == null ? '–' : `${rate}%`}</span>
+                    <span className="gs-statsum-label">
+                      정답률
+                      <small>{solved === 0 ? '아직 푼 문제가 없어요' : `${solved}문제 풀이`}</small>
+                    </span>
+                  </div>
+                  <div className="gs-statgrid">
+                    <div className="gs-stat">
+                      <span className="gs-stat-num gs-stat-num--ok">{ok}</span>
+                      <span className="gs-stat-label">맞힘</span>
+                    </div>
+                    <div className="gs-stat">
+                      <span className="gs-stat-num gs-stat-num--no">{no}</span>
+                      <span className="gs-stat-label">틀림</span>
+                    </div>
+                    <div className="gs-stat">
+                      <span className="gs-stat-num gs-stat-num--streak">{st}</span>
+                      <span className="gs-stat-label">연속 정답</span>
+                    </div>
+                  </div>
+                </>
+              );
+            })()}
+          </div>
+
+          {/* 직전에 틀린 문제 — 이번 세션에서 틀린 문항을 최신순으로 되짚는다.
+              큐가 '복습→틀린→새 문제 순'이라 어차피 다시 나오지만, 방금 무엇을 틀렸는지
+              눈으로 확인할 방법이 없어서 넣었다. 문제 텍스트는 위젯이 catchap:answer로 준다. */}
+          <div className="gs-card">
+            <div className="gs-card-title">직전에 틀린 문제</div>
+            {wrongList.length === 0 ? (
+              <p className="gs-wrong-empty">
+                아직 틀린 문제가 없어요.
+                <small>틀리면 여기에 모아 두고, 큐가 다시 내줍니다.</small>
+              </p>
+            ) : (
+              <ul className="gs-wrong-list">
+                {wrongList.map((w) => (
+                  <li key={`${w.no}-${w.prompt}`} className="gs-wrong-item">
+                    <span className="gs-wrong-no">{w.no}번째</span>
+                    <span className="gs-wrong-text">{w.prompt}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </div>
       </div>

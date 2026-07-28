@@ -53,18 +53,20 @@ export default function OpsSystemStatus() {
   }, 'ok');
 
   return (
-    <div className="orn-root">
+    // 헤더 셸은 콘솔 공통 규격(op-*)을 쓴다 — 이 화면만 orn-* 셸이라 본문 폭(1400 제한 없음)·
+    // 여백(32/36 vs 26/28)·제목 크기(32/700 vs 30/800)가 다른 시스템 페이지들과 어긋났다.
+    <div className="op-root">
       <OpsNav />
-      <main className="orn-page sys-page">
-        <div className="orn-head">
+      <main className="op-main sys-page">
+        <div className="op-head">
           <div>
-            <h1 className="orn-h1">시스템 상태</h1>
-            <p className="orn-sub" style={{ maxWidth: 560 }}>
+            <h1 className="op-title">시스템 상태</h1>
+            <p className="op-sub" style={{ maxWidth: 560 }}>
               전부 서버 실측입니다 — DB 왕복시간, 문제은행 로드, 최근 24시간 이메일 발송 결과, 디스크.
             </p>
           </div>
-          <button className="orn-btn orn-btn--secondary" onClick={load} disabled={state === 'loading'}>
-            <i className="ph ph-arrows-clockwise" />다시 점검
+          <button className="op-refresh" onClick={load} disabled={state === 'loading'}>
+            <i className="ph-bold ph-arrows-clockwise" />다시 점검
           </button>
         </div>
 

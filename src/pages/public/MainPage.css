@@ -2,9 +2,12 @@
  * 리뉴얼(2026-07-26): 스코프 토큰 오버라이드 제거 — 레퍼런스 값이 전역 theme.css
  * 모노크롬 토큰과 완전히 같아(--ink:#1A1A1A 등) 전역 값을 그대로 쓴다. */
 
+/* 표면색은 반드시 토큰으로 — 배경을 #fff로 박아두고 글자만 var(--ink)를 쓰면, 다크 테마에서
+   --ink가 near-white(#f1f0ed)가 되어 '흰 배경 위 흰 글자'가 된다(OS가 다크인 브라우저에서
+   재현). --surface는 라이트에서 #ffffff라 기존 화면은 그대로다. */
 .mn-page {
   --font-display: 'Pretendard', -apple-system, system-ui, sans-serif;
-  background: #fff;
+  background: var(--surface);
   font-family: 'Pretendard', -apple-system, system-ui, sans-serif;
   color: var(--ink);
 }
@@ -45,7 +48,7 @@ html:has(.mn-page) { scroll-behavior: smooth; }
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .mn-nav--solid {
-  background: rgba(255, 255, 255, 0.85);
+  background: color-mix(in srgb, var(--surface) 85%, transparent);
   backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--line);
 }
@@ -144,12 +147,12 @@ html:has(.mn-page) { scroll-behavior: smooth; }
   border-radius: 12px;
   font-weight: 600;
   font-size: 14px;
-  background: var(--mn-ctabg, #fff);
+  background: var(--mn-ctabg, var(--surface));
   color: var(--mn-ctafg, var(--ink));
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.mn-nav--solid .mn-cta-link { --mn-ctabg: var(--ink); --mn-ctafg: #fff; }
-.mn-nav:not(.mn-nav--solid) .mn-cta-link { --mn-ctabg: #fff; --mn-ctafg: var(--ink); }
+.mn-nav--solid .mn-cta-link { --mn-ctabg: var(--ink); --mn-ctafg: var(--on-brand); }
+.mn-nav:not(.mn-nav--solid) .mn-cta-link { --mn-ctabg: var(--surface); --mn-ctafg: var(--ink); }
 .mn-cta-link:hover { opacity: 0.85; transform: translateY(-2px); }
 
 /* 상단바 드롭다운 패널(호버) */
@@ -158,7 +161,7 @@ html:has(.mn-page) { scroll-behavior: smooth; }
   left: 0;
   right: 0;
   top: 100%;
-  background: #fff;
+  background: var(--surface);
   border-bottom: 1px solid var(--line);
   overflow: hidden;
   opacity: 0;
@@ -194,7 +197,7 @@ html:has(.mn-page) { scroll-behavior: smooth; }
   text-decoration: none;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.mn-navpanel-item:hover { background: #f6f6f6; transform: translateY(-2px); }
+.mn-navpanel-item:hover { background: var(--surface-2); transform: translateY(-2px); }
 .mn-navpanel-item--center {
   display: flex;
   flex-direction: column;
@@ -371,7 +374,7 @@ html:has(.mn-page) { scroll-behavior: smooth; }
   border-radius: 12px;
   box-shadow: var(--shadow-md);
   padding: 14px;
-  background: #fff;
+  background: var(--surface);
 }
 .mn-preview-video {
   position: relative;
@@ -459,13 +462,13 @@ html:has(.mn-page) { scroll-behavior: smooth; }
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
 }
-.mn-vp-card { background: #fff; padding: 36px 32px 40px; }
+.mn-vp-card { background: var(--surface); padding: 36px 32px 40px; }
 .mn-vp-icon { display: block; font-size: 32px; color: var(--ink); }
 .mn-vp-title { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; color: var(--ink); margin: 22px 0 10px; }
 .mn-vp-text { margin: 0; font-size: 16px; color: var(--ink-2); font-weight: 400; line-height: 1.7; }
 
 /* ===== SUBJECTS (강의 과목) ===== */
-.mn-games { border-top: 1px solid var(--line); background: #fafafa; }
+.mn-games { border-top: 1px solid var(--line); background: var(--bg); }
 .mn-games-inner { max-width: 1200px; margin: 0 auto; padding: 88px 32px; }
 .mn-games-head { margin-bottom: 48px; }
 .mn-games-title { font-size: 40px; font-weight: 700; letter-spacing: -0.035em; color: var(--ink); margin: 0; line-height: 1.15; }
@@ -476,8 +479,8 @@ html:has(.mn-page) { scroll-behavior: smooth; }
   background: var(--line);
   border: 1px solid var(--line);
 }
-.mn-game-card { background: #fafafa; padding: 30px 28px; transition: background 0.2s, transform 0.2s; }
-.mn-game-card:hover { background: #fff; transform: translateY(-2px); }
+.mn-game-card { background: var(--bg); padding: 30px 28px; transition: background 0.2s, transform 0.2s; }
+.mn-game-card:hover { background: var(--surface); transform: translateY(-2px); }
 .mn-game-icon { display: block; font-size: 24px; color: var(--ink); }
 .mn-game-name { font-weight: 700; font-size: 20px; letter-spacing: -0.02em; color: var(--ink); margin: 18px 0 4px; }
 .mn-game-tag { font-size: 12px; font-weight: 500; color: var(--ink-3); margin-bottom: 10px; }

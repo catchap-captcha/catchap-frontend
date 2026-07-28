@@ -233,7 +233,9 @@
   font-family: 'JetBrains Mono', 'Consolas', monospace;
   font-size: 12.5px;
   line-height: 1.6;
-  color: #eef0ff;
+  /* 배경이 var(--ink)라 테마마다 뒤집힌다 — 글자도 같이 뒤집히는 var(--surface)를 써야
+     한다. 종전 하드코딩 #eef0ff는 다크에서 밝은 배경 위 밝은 글자가 되어 안 보였다. */
+  color: var(--surface);
   white-space: pre-wrap;
   word-break: break-all;
 }

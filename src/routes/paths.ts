@@ -14,6 +14,7 @@ export const PATHS = {
 
   // 인증 — handoff: CatChap 로그인(회원가입 포함), 비밀번호 재설정, 보안캡챠
   LOGIN: '/login',
+  FIND_ID: '/find-id', // 아이디 찾기 — 가입 이메일 본인확인 후 로그인 아이디 안내
   PASSWORD_RESET: '/password-reset',
   CAPTCHA: '/captcha',
   INVITE: '/invite', // 교사 초대링크 (?token=) → 검증 후 프리필된 가입화면으로

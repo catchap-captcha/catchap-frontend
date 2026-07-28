@@ -133,18 +133,20 @@ export default function OpsCourses() {
   };
 
   return (
-    <div className="orn-root">
+    // 헤더 셸·본문 폭은 콘솔 공통 규격(op-*) — 이 화면만 orn-* 셸 + 1040px이라 형제
+    // 페이지들과 좌우 여백·제목 크기가 어긋났다.
+    <div className="op-root">
       <OpsNav />
-      <main className="orn-page crs-page">
-        <div className="orn-head">
+      <main className="op-main crs-page">
+        <div className="op-head">
           <div>
-            <h1 className="orn-h1">코스 관리</h1>
-            <p className="orn-sub" style={{ maxWidth: 620 }}>
+            <h1 className="op-title">코스 관리</h1>
+            <p className="op-sub" style={{ maxWidth: 620 }}>
               여러 강의를 코스로 묶어 학생 화면에서 하나의 과정으로 보여줍니다. 코스는 한 과목으로 고정됩니다.
             </p>
           </div>
           {!isOps && (
-            <button className="orn-btn orn-btn--primary" onClick={openCreate}>
+            <button className="op-btn op-btn--approve" onClick={openCreate}>
               <i className="ph ph-plus" />
               코스 만들기
             </button>

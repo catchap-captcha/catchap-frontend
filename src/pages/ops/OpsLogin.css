@@ -340,6 +340,34 @@
   line-height: 1.55;
 }
 
+/* 아이디 찾기 · 비밀번호 재설정 — 로그인 버튼 바로 아래 한 줄 */
+.opl-findrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.opl-findlink {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  text-decoration: none;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink-3);
+}
+
+.opl-findlink:hover { color: var(--brand-ink); }
+.opl-findlink i { font-size: 14px; }
+
+.opl-findsep {
+  width: 1px;
+  height: 11px;
+  background: var(--line);
+}
+
 .opl-footlink {
   text-align: center;
   margin: 20px 0 0;

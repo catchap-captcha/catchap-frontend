@@ -143,17 +143,19 @@ export default function OpsQuestionReview() {
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (
-    <div className="orn-root">
+    // 헤더 셸은 강사 홈·강의 관리와 같은 공통 규격(op-*) — 이 화면만 orn-* 셸이라 제목 크기
+    // (32/700 vs 30/800)·본문 폭·여백이 형제 페이지들과 어긋났다.
+    <div className="op-root">
       <OpsNav />
-      <main className="orn-page qr-page">
-        <div className="orn-head">
+      <main className="op-main qr-page">
+        <div className="op-head">
           <div>
-            <h1 className="orn-h1">문항 검수</h1>
-            <p className="orn-sub" style={{ maxWidth: 640 }}>
+            <h1 className="op-title">문항 검수</h1>
+            <p className="op-sub" style={{ maxWidth: 640 }}>
               AI가 만든 초안과 등록된 확인 문항을 검토해 공개합니다. 공개해야 학생 화면의 시청 검증에 사용됩니다.
             </p>
           </div>
-          <button className="orn-btn orn-btn--primary" disabled={generating} onClick={genAI}>
+          <button className="op-btn op-btn--approve" disabled={generating} onClick={genAI}>
             <i className={generating ? 'ph ph-spinner-gap' : 'ph ph-sparkle'} />
             {generating ? '생성 중…' : 'AI 문항 생성'}
           </button>

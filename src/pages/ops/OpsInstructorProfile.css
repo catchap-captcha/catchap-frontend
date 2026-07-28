@@ -65,3 +65,80 @@
 .ipf-rowinfo { flex: 1; min-width: 0; }
 .ipf-rowtitle { font-weight: 800; font-size: 14.5px; color: var(--ink); }
 .ipf-rowsub { font-size: 12.5px; color: var(--ink-3); font-weight: 600; margin-top: 2px; }
+
+/* ===== 강사 이력 편집 — 학생 '강사 소개' 모달의 원천 ===== */
+.ipf-bio {
+  display: block; /* .ipf-card의 가로 flex를 세로 폼으로 되돌린다 */
+}
+.ipf-biohead {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 16px;
+}
+.ipf-biosaved {
+  flex-shrink: 0;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--ink-3);
+  background: var(--brand-soft);
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.ipf-biofield {
+  position: relative;
+  display: block;
+  margin-bottom: 16px;
+}
+.ipf-biolabel {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--ink-2);
+  margin-bottom: 7px;
+}
+.ipf-bioin,
+.ipf-bioarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 500;
+  padding: 11px 13px;
+  outline: none;
+}
+.ipf-bioarea { line-height: 1.7; resize: vertical; min-height: 132px; }
+.ipf-bioin:focus,
+.ipf-bioarea:focus { border-color: var(--brand); }
+.ipf-bioin::placeholder,
+.ipf-bioarea::placeholder { color: var(--ink-3); opacity: 0.75; }
+
+.ipf-biocount {
+  position: absolute;
+  right: 2px;
+  top: 0;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ink-3);
+}
+
+.ipf-biook {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #1d9e6f;
+  margin-bottom: 12px;
+}
+
+.ipf-bioactions { display: flex; justify-content: flex-end; }
+
+@media (max-width: 560px) {
+  .ipf-biohead { flex-wrap: wrap; }
+  .ipf-bioactions .op-btn { width: 100%; justify-content: center; }
+}

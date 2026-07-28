@@ -1,0 +1,98 @@
+/* 아이디 찾기 — 레이아웃·단계표시는 PasswordResetPage.css(pr-*)를 그대로 쓰고,
+ * 결과 패널에만 필요한 것들을 여기 둔다. */
+
+/* 2단계 단계표시 — 3단계 화면의 막대 길이(≈110px)와 같아 보이도록 폭을 묶는다 */
+.fid-steps {
+  max-width: 190px;
+}
+
+.fid-err {
+  margin: -6px 0 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--danger, #d94a3d);
+}
+
+/* 찾은 아이디 목록 — 한 이메일에 학습자·학부모가 함께 걸릴 수 있어 목록으로 보여준다. */
+.fid-list {
+  list-style: none;
+  margin: 20px 0 8px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: left;
+}
+
+.fid-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 13px 15px;
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  background: var(--bg);
+}
+
+.fid-role {
+  flex-shrink: 0;
+  font-size: 11.5px;
+  font-weight: 800;
+  color: var(--brand-ink);
+  background: var(--brand-soft);
+  padding: 3px 9px;
+  border-radius: 999px;
+}
+
+.fid-loginid {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  word-break: break-all;
+}
+
+.fid-created {
+  margin-left: auto;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--ink-3);
+}
+
+/* 서버 미구현 안내 — 실패가 아니라 '아직 없음'이라 배지 색을 중립으로 둔다. */
+.fid-badge-wait {
+  background: var(--brand-soft) !important;
+  color: var(--brand-ink) !important;
+}
+
+.fid-hint {
+  margin: 18px 0 4px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--bg);
+  text-align: left;
+}
+.fid-hint p {
+  margin: 0 0 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--ink-2);
+}
+.fid-hint ul {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.fid-hint li {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--ink-3);
+  line-height: 1.6;
+}

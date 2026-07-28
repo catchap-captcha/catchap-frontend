@@ -31,13 +31,15 @@ export default function OpsLearningAnalytics() {
   useEffect(load, []);
 
   return (
-    <div className="orn-root">
+    // 헤더 셸은 강사 홈·강의 관리와 같은 공통 규격(op-*) — 이 화면만 orn-* 셸이라 제목 크기
+    // (32/700 vs 30/800)·본문 폭·여백이 형제 페이지들과 어긋났다.
+    <div className="op-root">
       <OpsNav />
-      <main className="orn-page la-page">
-        <div className="orn-head">
+      <main className="op-main la-page">
+        <div className="op-head">
           <div>
-            <h1 className="orn-h1">학습 분석</h1>
-            <p className="orn-sub">시청 완주·확인문항 통과·코스 수료 흐름을 분석합니다.</p>
+            <h1 className="op-title">학습 분석</h1>
+            <p className="op-sub">시청 완주·확인문항 통과·코스 수료 흐름을 분석합니다.</p>
           </div>
           <span className="la-period"><i className="ph ph-calendar-blank" />최근 8주</span>
         </div>

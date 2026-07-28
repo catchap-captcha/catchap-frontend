@@ -5,6 +5,7 @@ import { PATHS } from '../../routes/paths';
 import { useAuth } from '../../hooks/useAuth';
 import { lectureApi, thumbnailSrc, type LectureItem, type StudentCourse } from '../../api/lectures';
 import CourseCover from '../../components/course/CourseCover';
+import InstructorBioModal from '../../components/course/InstructorBioModal';
 import CountUp from '../../components/motion/CountUp';
 import { formatClock } from './lectureSubjects';
 import './LectureList.css';
@@ -93,6 +94,9 @@ export default function StudentHome() {
   const enrolledGroups = useMemo(() => groupsFor(true), [courses, lectures]);
   const discoverGroups = useMemo(() => groupsFor(false), [courses, lectures]);
   const enrolledCount = useMemo(() => (courses ?? []).filter((c) => c.enrolled).length, [courses]);
+
+  // 강사 소개 모달 — '내 코스'·'이런 코스는 어때요' 양쪽 코스 머리의 버튼이 연다.
+  const [bioFor, setBioFor] = useState<{ name: string; courseTitle: string | null } | null>(null);
 
   // 이어서 학습 레일 — 시청 중(watching)인 강의(발견·재방문 유도). 히어로의 1건과 겹쳐도
   // 여러 개를 가로 스크롤로 노출하는 게 목적(넷플릭스·Coursera '이어보기' 레일 패턴).
@@ -185,6 +189,18 @@ export default function StudentHome() {
             {g.course.instructor_name ? `${g.course.instructor_name} 강사 · ` : ''}
             {g.lectures.length}강
           </span>
+          {/* 강사 소개 — 강사가 프로필에 저장한 이력을 그 자리에서 펼쳐 본다 */}
+          {g.course.instructor_name && (
+            <button
+              type="button"
+              className="ibm-trigger sh2-lecgroup-bio"
+              onClick={() =>
+                setBioFor({ name: g.course.instructor_name!, courseTitle: g.course.title })
+              }
+            >
+              <i className="ph-fill ph-user-circle" /> 강사 소개
+            </button>
+          )}
         </div>
         {locked && (
           <button
@@ -327,6 +343,14 @@ export default function StudentHome() {
             {discoverGroups.map((g) => renderGroup(g, true))}
           </div>
         </section>
+      )}
+
+      {bioFor && (
+        <InstructorBioModal
+          name={bioFor.name}
+          courseTitle={bioFor.courseTitle}
+          onClose={() => setBioFor(null)}
+        />
       )}
     </StudentLayout>
   );

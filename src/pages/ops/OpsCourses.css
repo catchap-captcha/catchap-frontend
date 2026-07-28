@@ -1,7 +1,7 @@
 /* 코스 관리 — CatChap 코스 관리.dc.html 구조 그대로 (좁은 본문 1040px·정보 배너·
    토글형 생성/수정 폼·5열 테이블). 공용 원자는 OpsRenewalShared.css. */
 
-.crs-page { max-width: 1040px; }
+/* 본문 폭은 .op-main 공통 규격을 따른다 — 종전 1040px 고정으로 형제 페이지와 어긋났다. */
 
 .crs-banner {
   display: flex;

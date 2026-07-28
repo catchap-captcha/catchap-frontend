@@ -1,0 +1,177 @@
+/* 강사 소개 모달 — 강의 홈·강의 신청의 '강사 소개' 버튼이 연다. 전역 theme.css 토큰만 쓴다. */
+
+.ibm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background: rgba(15, 15, 18, 0.46);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: ibmFade 0.16s ease;
+}
+
+@keyframes ibmFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.ibm-card {
+  position: relative;
+  width: min(460px, 100%);
+  max-height: 82vh;
+  overflow-y: auto;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  box-shadow: var(--shadow-lg, 0 18px 48px rgba(0, 0, 0, 0.22));
+  padding: 24px 24px 20px;
+  animation: ibmPop 0.2s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+
+@keyframes ibmPop {
+  from { opacity: 0; transform: scale(0.94) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.ibm-x {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 9px;
+  background: none;
+  color: var(--ink-3);
+  cursor: pointer;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ibm-x:hover { background: var(--brand-soft); color: var(--brand-ink); }
+
+.ibm-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.ibm-avatar {
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--brand-soft);
+  color: var(--brand-ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 21px;
+  font-weight: 800;
+}
+
+.ibm-headinfo { min-width: 0; }
+
+.ibm-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--brand-ink);
+  background: var(--brand-soft);
+  padding: 3px 9px;
+  border-radius: 999px;
+}
+
+.ibm-name {
+  margin: 6px 0 0;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+}
+
+.ibm-course {
+  margin: 3px 0 0;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--ink-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ibm-body { padding: 18px 0 4px; }
+
+.ibm-headline {
+  margin: 0 0 12px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.55;
+}
+
+/* 강사가 줄바꿈으로 항목을 나눠 적는다 — 입력한 그대로 보존해서 보여준다. */
+.ibm-career {
+  white-space: pre-line;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--ink-2);
+  line-height: 1.75;
+}
+
+.ibm-empty {
+  padding: 30px 8px 22px;
+  text-align: center;
+  color: var(--ink-3);
+}
+.ibm-empty i { font-size: 32px; color: var(--ink-3); opacity: 0.55; }
+.ibm-empty p { margin: 10px 0 4px; font-size: 14px; font-weight: 700; color: var(--ink-2); }
+.ibm-empty span { font-size: 12.5px; font-weight: 500; }
+
+.ibm-close {
+  width: 100%;
+  margin-top: 18px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--ink-2);
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 13.5px;
+  cursor: pointer;
+}
+.ibm-close:hover { background: var(--brand-soft); color: var(--brand-ink); border-color: transparent; }
+
+/* 코스 머리의 '강사 소개' 트리거 버튼 — 강의 홈·강의 신청에서 공용으로 쓴다. */
+.ibm-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink-3);
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 11.5px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.ibm-trigger i { font-size: 13px; }
+.ibm-trigger:hover { background: var(--brand-soft); color: var(--brand-ink); border-color: transparent; }
+
+@media (max-width: 480px) {
+  .ibm-card { padding: 20px 18px 16px; }
+  .ibm-avatar { width: 44px; height: 44px; font-size: 18px; }
+  .ibm-name { font-size: 16.5px; }
+}

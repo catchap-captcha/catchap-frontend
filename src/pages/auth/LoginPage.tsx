@@ -552,9 +552,15 @@ export default function LoginPage() {
                 <input type="checkbox" />
                 로그인 유지
               </label>
-              <Link to={PATHS.PASSWORD_RESET} className="lg-forgot">
-                비밀번호를 잊으셨나요?
-              </Link>
+              <span className="lg-findrow">
+                <Link to={PATHS.FIND_ID} className="lg-forgot">
+                  아이디 찾기
+                </Link>
+                <span className="lg-findsep" aria-hidden="true" />
+                <Link to={PATHS.PASSWORD_RESET} className="lg-forgot">
+                  비밀번호를 잊으셨나요?
+                </Link>
+              </span>
             </div>
 
             {loginError && (

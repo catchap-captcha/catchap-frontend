@@ -37,20 +37,27 @@
   -webkit-font-smoothing: antialiased;
   padding-bottom: 60px;
 }
+/* 다크 — 종전엔 배경이 순수 검정(#000)이고 본문이 거의 순백(#f5f5f7)이라 대비가 19:1까지
+   올라가 글자가 번져 보였다(헐레이션). 눈부심을 줄이려고 ① 배경을 검정에서 떼어내고
+   ② 가장 어두웠던 surface-2를 올려 움푹 꺼진 구멍처럼 보이지 않게 하고 ③ 본문 잉크를 한
+   단계 낮춘다. 배경<surface-2<surface 의 밝기 순서(레이어 위계)는 그대로 지킨다.
+   대비는 여전히 넉넉하다(본문 #e8e8ec / 배경 #121214 ≈ 15:1, WCAG AAA). */
 [data-theme='dark'] .op-root {
-  --bg: #000000;
-  --surface: #1c1c1e;
-  --surface-2: #0a0a0a;
-  --ink: #f5f5f7;
-  --ink-2: #aeaeb2;
-  --ink-3: #8e8e93;
-  --line: rgba(255, 255, 255, 0.1);
-  --line-strong: rgba(255, 255, 255, 0.18);
-  --brand: #f5f5f7; --on-brand:#161616;
-  --brand-strong: #ffffff;
-  --brand-soft: rgba(245, 245, 247, 0.18);
-  --brand-soft-line: rgba(245, 245, 247, 0.3);
-  --brand-ink: #ffffff;
+  --bg: #121214;
+  --surface: #1c1c1f;
+  --surface-2: #17171a;
+  --ink: #e8e8ec;
+  --ink-2: #a9a9ae;
+  --ink-3: #8a8a8f;
+  --line: rgba(255, 255, 255, 0.08);
+  --line-strong: rgba(255, 255, 255, 0.16);
+  /* 채운 주요 버튼('강의 업로드' 등)이 순백(#fff)이면 어두운 화면에서 그 자체가 광원이 된다.
+     한 단계 낮춰 눈부심만 덜고, 어두운 글자와의 대비는 그대로 둔다. */
+  --brand: #e4e4e8; --on-brand:#161616;
+  --brand-strong: #f0f0f3;
+  --brand-soft: rgba(228, 228, 232, 0.14);
+  --brand-soft-line: rgba(228, 228, 232, 0.26);
+  --brand-ink: #ececf0;
   --op-shadow: 0 8px 24px -14px rgba(0, 0, 0, 0.6);
   --op-shadow-hi: 0 26px 50px -20px rgba(0, 0, 0, 0.85);
 }
@@ -229,7 +236,9 @@
 .op-top-inner {
   position: relative;
   z-index: 2;
-  max-width: 1400px;
+  /* 본문(.op-main)·학생 상단바(.sl-navinner)와 같은 폭 — 셋이 달라지면 로고와 콘텐츠의
+     좌측 정렬선이 어긋난다. */
+  max-width: min(2280px, 94vw);
   margin: 0 auto;
   padding: 0 28px;
   height: 60px;
@@ -520,31 +529,39 @@
 }
 
 .op-main {
-  /* 리뉴얼(2026-07-24): 좌측 사이드바 → 상단바. 본문은 중앙 정렬 컨테이너(핸드오프 1400px). */
-  max-width: 1400px;
+  /* 본문 컨테이너 — 학생 콘솔 '강의 신청'(.ll-container)과 같은 폭으로 통일(2026-07-28).
+     종전 1400px 고정이라 1920px 화면에서 콘텐츠가 281px에서 시작해, 학생 화면(85px)보다
+     200px 가까이 안쪽이었다. 콘솔을 오갈 때 좌우 여백이 눈에 띄게 달랐다. */
+  max-width: min(2280px, 94vw);
   margin: 0 auto;
   padding: 26px 28px 0;
 }
 @media (max-width: 760px) {
   .op-main { padding: 18px 16px 0; }
 }
+/* 페이지 머리 규격 — 학생 '문제은행'(.al-header)의 타이포·간격에 맞춘다(2026-07-28).
+   제목 + 부제만 두고 아이콘 타일은 쓰지 않는다(사용자 결정) — 좌측 여백 없이 제목이
+   콘텐츠 좌측 정렬선에서 바로 시작한다. 우측에는 페이지 액션(새로고침 등)을 둔다. */
 .op-head {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
-  margin-bottom: 22px;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
 }
 .op-title {
-  font-family: var(--font-display); font-weight: 800;
-  font-size: 30px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 32px;
   color: var(--ink);
-  margin: 0;
-  letter-spacing: -0.5px;
+  margin: 0 0 4px;
+  letter-spacing: -0.03em;
 }
 .op-sub {
-  margin: 6px 0 0;
-  color: var(--ink-2);
-  font-weight: 600;
+  margin: 0;
+  color: var(--ink-3);
+  font-weight: 500;
   font-size: 14px;
 }
 .op-refresh {
@@ -794,8 +811,11 @@
   transform: translateY(-1px);
   background: var(--surface);
 }
+/* 배경이 검정으로 하드코딩돼 있었는데 글자는 --on-brand라, 다크 테마(--on-brand:#161616)에서
+   검정 위 검정 글자가 되어 버튼이 통째로 안 보였다('코스 만들기'·'수료 시험 문항' 등 콘솔 전역).
+   배경도 --brand 계열로 돌려 테마를 따르게 한다 — 라이트에선 #000→#1a1a1a로 종전과 동일. */
 .op-btn--approve {
-  background: linear-gradient(180deg, #000000, #1a1a1a);
+  background: linear-gradient(180deg, var(--brand-strong), var(--brand));
   color: var(--on-brand);
   box-shadow:
     0 8px 18px -8px rgba(26, 26, 26, 0.4),
@@ -911,7 +931,7 @@
 .op-logic--ok { background: var(--ok-soft); color: var(--ok); }
 .op-logic--no { background: var(--danger-soft); color: var(--danger); }
 .op-logic--warn { background: var(--warn-soft); color: var(--warn-ink); }
-.op-logic--neutral { background: #eef0f6; color: var(--info-ink); }
+.op-logic--neutral { background: var(--info-soft); color: var(--info-ink); }
 
 /* ===== 운영 콘솔 확장 (KPI 링크 / 로그아웃 / 기관 목록 / 문의) ===== */
 
@@ -1093,7 +1113,7 @@
   padding: 3px 8px; font-weight: 800; font-size: 11.5px; color: var(--info);
   cursor: pointer; transition: background 0.15s, border-color 0.15s;
 }
-.op-bh-tracebtn:hover { background: #ece4ff; border-color: var(--line); }
+.op-bh-tracebtn:hover { background: var(--brand-soft); border-color: var(--line); }
 .op-bh-overlay {
   position: fixed; inset: 0; z-index: 90; display: flex; align-items: center; justify-content: center;
   background: rgba(0, 0, 0, 0.4); padding: 20px;
@@ -1349,7 +1369,7 @@
   border-radius: 9px; padding: 4px 10px; font-weight: 800; font-size: 11.5px;
   cursor: pointer; transition: background 0.15s, border-color 0.15s;
 }
-.op-previewbtn:hover { background: #ece4ff; border-color: var(--line); }
+.op-previewbtn:hover { background: var(--brand-soft); border-color: var(--line); }
 .op-answer-body {
   margin-top: 12px; padding: 16px 18px; background: var(--surface-2); border: 1.5px solid var(--brand-soft);
   border-radius: 14px; font-weight: 600; font-size: 14px; line-height: 1.7; color: var(--info-ink);
@@ -1387,7 +1407,7 @@
 .op-op-toggle--off:hover:not(:disabled) { background: var(--danger-soft); border-color: var(--line); color: var(--danger); }
 .op-op-toggle--on:hover:not(:disabled) { background: var(--ok-soft); border-color: var(--line); color: var(--ok); }
 .op-op-toggle--reset { display: inline-flex; align-items: center; gap: 4px; border-color: var(--line); color: var(--info); }
-.op-op-toggle--reset:hover:not(:disabled) { background: #f1ecff; border-color: var(--line); }
+.op-op-toggle--reset:hover:not(:disabled) { background: var(--info-soft); border-color: var(--line); }
 .op-op-toggle:disabled { opacity: 0.4; cursor: default; }
 /* 운영자 계정 발급 — 이메일 발송 결과 배너 */
 .op-mailstat { display: flex; align-items: flex-start; gap: 7px; border-radius: 12px; padding: 10px 13px; font-weight: 700; font-size: 12.5px; line-height: 1.55; }
@@ -1430,8 +1450,8 @@
 .op-bh-selbtn--bot:hover { background: #ea4437; }
 .op-bh-riskcell { display: flex; flex-direction: column; gap: 3px; align-items: flex-start; }
 .op-bh-label { font-size: 10px; font-weight: 900; border-radius: 6px; padding: 2px 7px; }
-.op-bh-label--bot { background: #ffe3e0; color: var(--danger); }
-.op-bh-label--hum { background: #dff4ec; color: var(--ok-ink); }
+.op-bh-label--bot { background: var(--danger-soft); color: var(--danger); }
+.op-bh-label--hum { background: var(--ok-soft); color: var(--ok-ink); }
 .op-bh-label--org { background: var(--surface-2); color: var(--ink-3); }
 .ox-daterange { display: inline-flex; align-items: center; gap: 6px; color: var(--ink-3); font-weight: 800; }
 .ox-daterange input { border: 1.5px solid var(--line); background: var(--surface); border-radius: 10px; padding: 7px 9px; font-size: 12.5px; font-weight: 700; color: var(--brand-ink); }
@@ -1447,9 +1467,9 @@
 /* ── 시스템 상태 페이지 ── */
 .op-sys-overall { display: flex; align-items: center; gap: 10px; border-radius: 14px; padding: 14px 18px; margin-bottom: 14px; font-size: 15px; }
 .op-sys-overall i { font-size: 22px; }
-.op-sys-overall--ok { background: #e2f6ee; color: var(--ok-ink); }
+.op-sys-overall--ok { background: var(--ok-soft); color: var(--ok-ink); }
 .op-sys-overall--warn { background: var(--warn-soft); color: var(--warn-ink); }
-.op-sys-overall--no { background: #ffe3e0; color: var(--danger); }
+.op-sys-overall--no { background: var(--danger-soft); color: var(--danger); }
 .op-sys-checked { margin-left: auto; font-size: 12px; font-weight: 700; opacity: 0.75; }
 .op-sys-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; }
 .op-sys-card { background: var(--surface); border-radius: 16px; padding: 16px 18px; box-shadow: 0 3px 12px rgba(0, 0, 0, 0.05); border-left: 4px solid var(--line); }
@@ -1462,9 +1482,11 @@
 .op-sys-title b { font-size: 14.5px; color: var(--ink-2); }
 .op-sys-title small { font-size: 11.5px; color: var(--ink-3); font-weight: 700; }
 .op-sys-status { margin-left: auto; display: inline-flex; align-items: center; gap: 4px; font-weight: 900; font-size: 12px; border-radius: 8px; padding: 4px 9px; }
-.op-sys-status--ok { background: #e2f6ee; color: var(--ok-ink); }
+/* ok·no는 배경이 밝은 색으로 하드코딩돼 있어 다크 모드에서도 흰 알약으로 남아 있었다
+   (어두운 행 위의 광원 — 눈부심의 큰 원인). warn·neutral처럼 토큰으로 바꿔 테마를 따르게 한다. */
+.op-sys-status--ok { background: var(--ok-soft); color: var(--ok-ink); }
 .op-sys-status--warn { background: var(--warn-soft); color: var(--warn-ink); }
-.op-sys-status--no { background: #ffe3e0; color: var(--danger); }
+.op-sys-status--no { background: var(--danger-soft); color: var(--danger-ink); }
 .op-sys-status--neutral { background: var(--surface-2); color: var(--ink-3); }
 .op-sys-body { margin-top: 10px; display: flex; align-items: baseline; gap: 10px; }
 .op-sys-lat { font-family: monospace; font-weight: 900; font-size: 18px; color: var(--ink-2); }
@@ -1560,7 +1582,7 @@
 /* 전체화면 콘솔 — 뷰포트(body) 캔버스도 애플 쿨 그레이로(사이드바 옆 여백·오버스크롤에 웜 톤이 비치지 않게).
    :has(.op-root)로 콘솔 화면에서만 적용 → 학생·공개 페이지 무영향. */
 body:has(.op-root) { background: #f5f5f7; }
-[data-theme='dark'] body:has(.op-root) { background: #000000; }
+[data-theme='dark'] body:has(.op-root) { background: #121214; } /* --bg(다크)와 동일 — 오버스크롤에 검정이 안 비치게 */
 
 /* ── 서브탭 (메뉴 병합 2026-07-23) — 한 메뉴 아래 형제 페이지 전환(iOS 세그먼트식) ── */
 .op-subtabs {

@@ -491,6 +491,24 @@
   color: var(--brand);
 }
 
+/* 아이디 찾기 · 비밀번호 재설정 — 한 줄에 나란히, 가운데 얇은 구분선 */
+.lg-findrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.lg-findsep {
+  width: 1px;
+  height: 11px;
+  background: var(--line);
+}
+
+@media (max-width: 380px) {
+  .lg-findrow { gap: 7px; }
+  .lg-forgot { font-size: 12.5px; }
+}
+
 /* ===== BUTTONS ===== */
 .lg-primary {
   width: 100%;

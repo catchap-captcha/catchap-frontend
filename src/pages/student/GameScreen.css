@@ -44,6 +44,9 @@
   gap: 18px;
 }
 
+/* 위젯 모드에선 <button>, 아니면 <a>로 렌더된다. border를 안 잡아두면 <button> 쪽에만
+   브라우저 기본값(2px outset)이 그대로 살아 어두운 테두리가 생긴다 — 같은 이유로 커서도
+   default가 되어 링크 변형과 달라 보였다. 둘 다 명시해 두 변형을 같게 만든다. */
 .gs-quit {
   text-decoration: none;
   display: inline-flex;
@@ -53,8 +56,10 @@
   font-weight: 800;
   font-size: 14px;
   padding: 9px 15px;
+  border: none;
   border-radius: var(--r);
   background: var(--brand-soft);
+  cursor: pointer;
 }
 
 .gs-quit:hover {
@@ -313,17 +318,26 @@
 }
 
 /* CAPTCHA API MOUNT SLOT */
+/* 위젯이 들어있는 정상 상태 — 실선 카드. min-height도 낮춘다: 종전 360px 고정이라
+   '풀 수 있는 문제가 없어요' 두 줄일 때 화면 절반이 빈 상자로 남았다(문제가 실제로 뜨면
+   위젯 자체 높이가 이보다 커서 정상 상태에는 영향 없음). */
 .gs-mount {
   position: relative;
   flex: 1;
-  min-height: 360px;
-  border: 2px dashed var(--gs-dash);
+  min-height: 200px;
+  border: 1px solid var(--line);
   border-radius: var(--r-lg);
   background: var(--gs-slot-bg);
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
+}
+
+/* 위젯 키가 없어 자리표시(API 캡챠 위젯 자리)만 띄우는 경우 — 진짜 빈 슬롯이라 점선 유지 */
+.gs-mount--slot {
+  min-height: 360px;
+  border: 2px dashed var(--gs-dash);
 }
 
 .gs-mount-tagleft {
@@ -424,65 +438,166 @@
   margin-bottom: 12px;
 }
 
-.gs-statlist {
-  display: flex;
-  flex-direction: column;
-  gap: 11px;
-}
-
-.gs-statrow {
+/* 정답률 요약 — 세 숫자를 한눈에 묶는 머리값. 아직 푼 게 없으면 0%가 아니라 '–'로 둔다
+   (0%는 '다 틀렸다'로 읽힌다). */
+.gs-statsum {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+  padding-bottom: 14px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+}
+.gs-statsum-num {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 30px;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  line-height: 1;
+}
+.gs-statsum-label {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--ink-2);
+}
+.gs-statsum-label small {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--ink-3);
+}
+
+/* 맞힘 · 틀림 · 연속 정답 — 3열 숫자 그리드(종전 아이콘 타일 목록 대체) */
+.gs-statgrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  text-align: center;
+}
+.gs-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 4px;
+  border-radius: 12px;
+  background: var(--surface-2, rgba(0, 0, 0, 0.03));
+}
+.gs-stat-num {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 19px;
+  line-height: 1;
+}
+/* 값 색은 전역 의미색 그대로 — 맞힘 초록 · 틀림 빨강 · 연속 정답 골드 */
+.gs-stat-num--ok { color: var(--ok); }
+.gs-stat-num--no { color: var(--danger); }
+.gs-stat-num--streak { color: var(--warn); }
+.gs-stat-label {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--ink-3);
+}
+
+/* ── 직전에 틀린 문제 카드 ── */
+.gs-wrong-empty {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
   font-size: 13px;
   font-weight: 700;
   color: var(--ink-2);
 }
-
-.gs-staticon {
-  width: 30px;
-  height: 30px;
-  border-radius: 10px;
+.gs-wrong-empty small {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--ink-3);
+  line-height: 1.5;
+}
+.gs-wrong-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
+  gap: 8px;
+}
+.gs-wrong-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 9px 11px;
+  border-radius: 10px;
+  background: var(--surface-2);
+}
+.gs-wrong-no {
+  flex-shrink: 0;
+  font-size: 10.5px;
+  font-weight: 800;
+  color: var(--danger);
+  padding-top: 1px;
+}
+.gs-wrong-text {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink-2);
+  line-height: 1.5;
+  /* 문제 텍스트가 길 수 있어 두 줄로 자른다 — 카드가 세로로 늘어지지 않게 */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-.gs-staticon i {
-  font-size: 17px;
+/* ── (미사용 대기) 오늘 목표 카드 스타일 — 사이드바에서 '직전에 틀린 문제'로 교체됨 ── */
+.gs-goal-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 10px;
 }
-
-.gs-staticon-ok {
-  background: var(--ok-soft);
-  color: var(--ok);
+.gs-goal-num {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 26px;
+  line-height: 1;
+  color: var(--ink);
 }
-
-.gs-staticon-no {
-  background: var(--danger-soft);
-  color: var(--brand-ink);
+.gs-goal-num small {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink-3);
 }
-
-.gs-staticon-streak {
-  background: var(--warn-soft);
-  color: var(--warn);
-}
-
-.gs-statval {
+.gs-goal-tag {
   margin-left: auto;
-  font-family: var(--font-display); font-weight: 800;
+  font-size: 11.5px;
+  font-weight: 800;
+  color: var(--ink-2);
+  background: var(--surface-2);
+  padding: 3px 9px;
+  border-radius: 999px;
 }
-
-.gs-statval-ok {
+.gs-goal-tag--done {
   color: var(--ok);
+  background: color-mix(in srgb, var(--ok) 14%, transparent);
 }
-
-.gs-statval-no {
-  color: var(--brand-ink);
+.gs-goal-track {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--line);
+  overflow: hidden;
 }
-
-.gs-statval-streak {
-  color: var(--warn);
+.gs-goal-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--warn);
+  transition: width 0.4s ease;
 }
+.gs-goal-fill--done { background: var(--ok); }
 
 .gs-reward-head {
   display: flex;

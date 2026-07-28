@@ -57,4 +57,25 @@ export const authApi = {
     client
       .post('/auth/password-reset/confirm', { email, code, new_password: newPassword })
       .then((r) => r.data),
+
+  /**
+   * 아이디 찾기 — 이메일로 받은 6자리 코드로 본인 확인 후, 그 이메일에 연결된 로그인 아이디를 받는다.
+   *
+   * ⚠ 백엔드에 아직 이 엔드포인트가 없다(2026-07-28 확인 — `/auth/*` 에 find-id 라우트 없음).
+   * 서버가 404/405/501로 답하면 화면(FindIdPage)이 '아직 준비되지 않았어요' 안내로 분기한다.
+   * 서버가 생기면 화면 수정 없이 그대로 동작한다.
+   */
+  findId: (email: string, code: string) =>
+    client
+      .post<{ accounts: FoundAccount[] }>('/auth/find-id', { email, code })
+      .then((r) => r.data),
 };
+
+/** 아이디 찾기 결과 한 건 — 한 이메일에 학생·보호자 계정이 함께 걸릴 수 있어 목록으로 받는다. */
+export interface FoundAccount {
+  /** 로그인에 쓰는 아이디. 이메일 계정(운영자·강사·학부모)이면 이메일 그 자체 */
+  login_id: string;
+  role: string;
+  /** 가입일(있으면 표시) — 같은 이메일에 계정이 여럿일 때 구분에 쓴다 */
+  created_at?: string | null;
+}

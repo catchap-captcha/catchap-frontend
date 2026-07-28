@@ -1,6 +1,7 @@
 /* 문항 검수 — CatChap 문항 검수.dc.html 구조 그대로 (1200px·KPI 3장·탭·문항 카드). */
 
-.qr-page { max-width: 1200px; }
+/* 본문 폭은 .op-main 공통 규격(1400px)을 따른다 — 종전 1200px 오버라이드로 형제 페이지와
+   좌우 여백이 어긋났다. */
 
 .qr-kpigrid { grid-template-columns: repeat(3, 1fr); }
 

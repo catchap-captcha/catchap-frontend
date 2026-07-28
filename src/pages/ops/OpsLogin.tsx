@@ -180,6 +180,17 @@ export default function OpsLogin() {
             {busy ? '확인 중…' : captchaNeeded ? '보안 확인 후 로그인' : '로그인'}
           </button>
 
+          {/* 아이디(=계정 이메일)를 잊은 경우 — 일반 로그인과 같은 아이디 찾기 흐름으로 보낸다 */}
+          <div className="opl-findrow">
+            <Link to={PATHS.FIND_ID} className="opl-findlink">
+              <i className="ph ph-identification-card" /> 아이디 찾기
+            </Link>
+            <span className="opl-findsep" aria-hidden="true" />
+            <Link to={PATHS.PASSWORD_RESET} className="opl-findlink">
+              비밀번호 재설정
+            </Link>
+          </div>
+
           <div className="opl-notice">
             <i className="ph ph-info" />
             <p>

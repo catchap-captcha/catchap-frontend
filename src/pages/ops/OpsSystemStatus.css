@@ -1,7 +1,9 @@
 /* 시스템 상태 — CatChap 시스템 상태.dc.html 구조 그대로 (1360px·전체상태 배너·
    2열 좌측강조바 카드). */
 
-.sys-page { max-width: 1360px; padding: 32px 40px 60px; }
+/* 본문 컨테이너(폭·여백)는 .op-main 공통 규격을 그대로 쓴다 — 종전엔 여기서 1360px·32/40/60으로
+   덮어써서 다른 시스템 페이지(1400px·26/28)와 좌우 여백이 어긋났다. 아래 여백만 더한다. */
+.sys-page { padding-bottom: 60px; }
 
 .sys-banner {
   display: flex;

@@ -706,6 +706,33 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+/* 총 가격 — 담긴 코스 수강료 합계. 제목 줄과 액션 사이에 놓여 결제 전에 금액을 먼저 보게 한다. */
+.ll-cartbar-total {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-shrink: 0;
+  margin-left: 20px;
+  padding-left: 20px;
+  border-left: 1px solid var(--line);
+}
+.ll-cartbar-totlabel { font-weight: 600; font-size: 12.5px; color: var(--ink-3); }
+.ll-cartbar-totnum {
+  font-weight: 800;
+  font-size: 19px;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+.ll-cartbar-totcalc { font-weight: 700; font-size: 13px; color: var(--ink-3); }
+.ll-cartbar-toterr {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+  font-size: 11.5px;
+  color: var(--danger, #d94a3d);
+}
+
 .ll-cartbar-actions { display: flex; align-items: center; gap: 10px; margin-left: auto; flex-shrink: 0; }
 .ll-cartbar-clear {
   border: none;
@@ -740,6 +767,11 @@
   .ll-cartbar-inner { padding: 10px 16px; gap: 10px; }
   .ll-cartbar-titles { display: none; }
   .ll-cartbar-btn { padding: 11px 16px; font-size: 13.5px; }
+  /* 좁은 화면에선 제목이 빠지므로 구분선·여백을 걷고 금액만 남긴다(총 가격은 항상 보인다). */
+  .ll-cartbar-total { margin-left: 0; padding-left: 0; border-left: none; }
+  .ll-cartbar-totlabel { display: none; }
+  .ll-cartbar-totnum { font-size: 16px; }
+  .ll-cartbar-toterr { display: none; }
 }
 
 /* ===== 모바일 반응형 (레이아웃만) ===== */

@@ -12,6 +12,7 @@ const PrivacyPage = lazy(() => import('../pages/public/PrivacyPage'));
 
 // 인증
 const LoginPage = lazy(() => import('../pages/auth/LoginPage'));
+const FindIdPage = lazy(() => import('../pages/auth/FindIdPage'));
 const PasswordResetPage = lazy(() => import('../pages/auth/PasswordResetPage'));
 const CaptchaPage = lazy(() => import('../pages/auth/CaptchaPage'));
 const ActivatePage = lazy(() => import('../pages/auth/ActivatePage'));
@@ -82,6 +83,7 @@ export default function AppRoutes() {
         <Route path={PATHS.PRIVACY} element={<PrivacyPage />} />
         <Route path={PATHS.LOGIN} element={<LoginPage />} />
         <Route path={PATHS.INVITE} element={<InvitePage />} />
+        <Route path={PATHS.FIND_ID} element={<FindIdPage />} />
         <Route path={PATHS.PASSWORD_RESET} element={<PasswordResetPage />} />
         <Route path={PATHS.CAPTCHA} element={<CaptchaPage />} />
         <Route path={PATHS.ACTIVATE} element={<ActivatePage />} />

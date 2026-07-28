@@ -257,13 +257,31 @@ export default function OpsLectures() {
   const setAllCollapsed = (collapse: boolean) =>
     setCollapsed(collapse ? new Set(groups.map((g) => g.key)) : new Set());
 
-  /** 재배열 결과(그룹 강의 전체의 새 순서)를 서버에 저장하고 목록을 다시 읽는다.
-   *  성공은 재조회로 확인 — 응답만 믿고 낙관적으로 바꾸지 않는다(순서가 어긋나면 혼란). */
+  /** 재배열 결과(그룹 강의 전체의 새 순서)를 저장한다.
+   *
+   *  화면은 낙관적으로 먼저 바꾸고, 서버가 거절하면 되돌린다. 종전엔 저장 후 load()로 목록
+   *  전량을 다시 읽었는데, load()가 state를 'loading'으로 되돌려서 한 칸 옮길 때마다 목록이
+   *  '불러오는 중…'으로 통째로 깜빡였다(화면이 새로고침되는 느낌 + 스크롤·접힘 상태 튐). */
   const applyOrder = async (ids: string[]) => {
+    const prev = rows;
+    setRows((cur) => {
+      const idSet = new Set(ids);
+      const byId = new Map(cur.map((l) => [l.id, l]));
+      const seq = ids.map((id) => byId.get(id)).filter((l): l is OpsLecture => !!l);
+      // 새 순서대로 뽑되 원래 배열에서 이 그룹이 차지하던 자리에 그대로 끼워 넣는다
+      // (다른 과목·코스 강의의 위치는 건드리지 않는다). order_no도 서버가 매길 값과 맞춘다.
+      let k = 0;
+      return cur.map((l) => {
+        if (!idSet.has(l.id)) return l;
+        const next = seq[k];
+        k += 1;
+        return { ...next, order_no: k };
+      });
+    });
     try {
       await lectureApi.opsReorderLectures(ids);
-      load();
     } catch (e) {
+      setRows(prev); // 서버가 거절하면 화면 순서도 원래대로
       say(errorDetail(e, '순서 변경에 실패했어요.'));
     }
   };
@@ -524,11 +542,25 @@ export default function OpsLectures() {
                       drag?.id === lec.id ? ' op-lect-dragging' : ''
                     }`}
                     draggable={g.lectures.length > 1}
-                    onDragStart={() => setDrag({ id: lec.id, group: g.key })}
+                    onDragStart={(e) => {
+                      setDrag({ id: lec.id, group: g.key });
+                      // dataTransfer를 채워야 브라우저가 '유효한 이동 드래그'로 인정한다.
+                      // 종전엔 비워둬서 드래그가 시작되다 마는 경우가 있었다(파이어폭스는 필수).
+                      e.dataTransfer.effectAllowed = 'move';
+                      try {
+                        e.dataTransfer.setData('text/plain', lec.id);
+                      } catch {
+                        /* 일부 브라우저는 dragstart 밖 setData를 막는다 — 없어도 크롬은 동작 */
+                      }
+                    }}
                     onDragEnd={() => setDrag(null)}
                     onDragOver={(e) => {
-                      // 같은 그룹의 드래그일 때만 드롭 허용(다른 그룹으로는 못 옮긴다)
-                      if (drag && drag.group === g.key) e.preventDefault();
+                      // 같은 그룹의 드래그일 때만 드롭 허용(다른 그룹으로는 못 옮긴다).
+                      // preventDefault를 해야 이 요소가 드롭 대상이 된다 + 커서를 '이동'으로.
+                      if (drag && drag.group === g.key) {
+                        e.preventDefault();
+                        e.dataTransfer.dropEffect = 'move';
+                      }
                     }}
                     onDrop={(e) => {
                       e.preventDefault();
@@ -541,8 +573,6 @@ export default function OpsLectures() {
                           <i className="ph-bold ph-dots-six-vertical" />
                         </span>
                       )}
-                      {/* 순서 번호 — 목록이 목차순이라 idx+1이 곧 '몇 강'. 강사가 순서를 한눈에 본다 */}
-                      <span className="op-lect-orderno" title="강의 순서">{idx + 1}강</span>
                       <b>{lec.title}</b>
                       <small className="op-aimodel-desc">
                         {lec.video_ext} · {fmtBytes(lec.video_bytes)}
@@ -601,7 +631,7 @@ export default function OpsLectures() {
                         문항
                       </button>
                       <button
-                        className="op-btn op-btn--reject"
+                        className="op-btn op-lect-act op-lect-act--mat"
                         onClick={() => setModal({ mode: 'materials', lec })}
                       >
                         <i className="ph-bold ph-folder-open" />
@@ -610,7 +640,7 @@ export default function OpsLectures() {
                       {isOps ? (
                         // 운영자 모더레이션 — 공개/숨김만(수정·삭제는 저작이라 숨김)
                         <button
-                          className="op-btn op-btn--reject"
+                          className="op-btn op-lect-act op-lect-act--mod"
                           onClick={() => setLecStatus(lec, lec.status === 'active' ? 'hidden' : 'active')}
                           title="학생 화면에서 공개/숨김 전환(모더레이션)"
                         >
@@ -619,11 +649,17 @@ export default function OpsLectures() {
                         </button>
                       ) : (
                         <>
-                          <button className="op-btn op-btn--reject" onClick={() => setModal({ mode: 'edit', lec })}>
+                          <button
+                            className="op-btn op-lect-act op-lect-act--edit"
+                            onClick={() => setModal({ mode: 'edit', lec })}
+                          >
                             <i className="ph-bold ph-pencil-simple" />
                             수정
                           </button>
-                          <button className="op-btn op-btn--reject op-lect-danger" onClick={() => remove(lec)}>
+                          <button
+                            className="op-btn op-lect-act op-lect-act--del"
+                            onClick={() => remove(lec)}
+                          >
                             <i className="ph-bold ph-trash" />
                             삭제
                           </button>
@@ -1584,7 +1620,7 @@ function CoursesModal({
         <div className="op-lect-qtools">
           {!isOps && (
             <button
-              className="op-btn op-btn--approve"
+              className="op-btn op-btn--approve op-lect-btn-outline"
               onClick={() => {
                 setErr('');
                 setForm({ id: null, title: '', category: '', description: '', status: 'active' });
@@ -1696,7 +1732,7 @@ function CoursesModal({
               </span>
               <span className="op-col-right op-lect-actions">
                 <button
-                  className="op-btn op-btn--approve"
+                  className="op-btn op-btn--approve op-lect-btn-outline"
                   onClick={() => setExamCourse(c)}
                   title="이 코스의 수료 시험 문항을 관리해요"
                 >

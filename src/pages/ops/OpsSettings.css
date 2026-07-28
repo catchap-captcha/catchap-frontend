@@ -37,11 +37,11 @@
   font-size: 12px;
   font-weight: 800;
 }
-.ops-set-chip--ok { background: #e5f6ee; color: var(--ok-ink); }
-.ops-set-chip--off { background: #fff1ef; color: var(--danger); }
+.ops-set-chip--ok { background: var(--ok-soft); color: var(--ok-ink); }
+.ops-set-chip--off { background: var(--danger-soft); color: var(--danger); }
 .ops-set-desc { margin: 8px 0 0; font-size: 13px; color: var(--ink-2); font-weight: 600; line-height: 1.6; }
 .ops-set-src { margin: 6px 0 0; font-size: 12px; color: var(--ink-3); font-weight: 700; }
-.ops-set-src--bad { color: #d15448; }
+.ops-set-src--bad { color: var(--danger); }
 .ops-set-src--ok { color: #1f9d57; }
 .ops-set-section { margin: 24px 0 8px; font-size: 15px; font-weight: 800; color: var(--ink, #1a1f27); }
 .ops-set-prompt {
@@ -90,7 +90,7 @@
   font-weight: 700;
   margin-bottom: 14px;
 }
-.ops-set-banner--ok { background: #e5f6ee; color: var(--ok-ink); border: 1px solid var(--line); }
+.ops-set-banner--ok { background: var(--ok-soft); color: var(--ok-ink); border: 1px solid var(--line); }
 
 .ops-set-note {
   display: flex;
