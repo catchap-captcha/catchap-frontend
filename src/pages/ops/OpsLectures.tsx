@@ -26,7 +26,6 @@ import './OpsLectures.css';
 
 const SUBJECTS = ['국어', '영어', '수학', '과학', '사회', '생활'];
 // 코스 브라우징용 대분류(학교식 과목 대체) — 이수·수료 검증형 교육 기준. 자유롭게 조정 가능.
-const COURSE_CATEGORIES = ['법정의무교육', '자격증', '어학', '직무/기업교육', 'IT/개발', '기타'];
 
 /* (제거됨 0717) 시청 확인 간격 프리셋 — 출제 시점이 전부 핀(문항의 position_sec 고정)이
    되면서 무작위 간격 설정 자체가 사라졌다. 확인이 뜨는 시점은 문항 등록에서 지정한다.
@@ -51,7 +50,6 @@ type Modal =
   | { mode: 'edit'; lec: OpsLecture }
   | { mode: 'questions'; lec: OpsLecture }
   | { mode: 'materials'; lec: OpsLecture }
-  | { mode: 'courses' }
   | { mode: 'trash' }
   | null;
 
@@ -348,10 +346,8 @@ export default function OpsLectures() {
               <i className="ph-bold ph-question" />
               이용 안내
             </button>
-            <button className="op-lect-btn-secondary" onClick={() => setModal({ mode: 'courses' })}>
-              <i className="ph-bold ph-stack" />
-              코스 관리
-            </button>
+            {/* '코스 관리'는 상단 메뉴의 전용 화면(/ops/courses)으로 일원화 — 여기 버튼은 뺐다.
+                한 기능이 두 곳에 있으면 한쪽만 고쳐져 동작이 갈린다(실제로 가격 설정이 그랬다). */}
             <button className="op-btn op-btn--soft" onClick={() => setModal({ mode: 'trash' })}>
               <i className="ph-bold ph-trash" />
               휴지통
@@ -693,17 +689,6 @@ export default function OpsLectures() {
       )}
       {modal?.mode === 'materials' && (
         <MaterialsModal lec={modal.lec} onClose={() => setModal(null)} />
-      )}
-      {modal?.mode === 'courses' && (
-        <CoursesModal
-          courses={courses}
-          onClose={() => setModal(null)}
-          onChanged={() => {
-            loadCourses();
-            load(); // 코스 삭제로 강의가 미분류로 풀리면 강의 목록 태그도 갱신
-          }}
-          say={say}
-        />
       )}
       {modal?.mode === 'trash' && (
         <TrashModal
@@ -1368,18 +1353,6 @@ function LectureFormModal({
   );
 }
 
-/* ================= 강사 코스 관리 모달 =================
-   코스 = 한 강사·한 과목 고정(생성 때 과목 선택, 이후 못 바꿈 — 소속 강의와 어긋나므로).
-   강사는 자기 코스만(서버 스코프), 운영자는 전체를 감독. 삭제는 소프트 — 소속 강의는
-   미분류(course_id=null)로 풀려날 뿐 보존된다. 설계 배경: docs/product-direction.md §3.5 */
-interface CourseForm {
-  id: string | null; // null = 새 코스
-  title: string;
-  category: string; // 브라우징용 대분류('' = 미분류). 수정 가능(과목과 달리).
-  description: string;
-  status: string;
-}
-
 /* ================= 휴지통 모달 ================= */
 // 삭제한 강의를 복구하거나 완전 삭제한다. 조회 시 서버가 30일 지난 항목을 자동 완전삭제한다.
 function TrashModal({
@@ -1508,313 +1481,6 @@ function TrashModal({
           </ul>
         )}
       </div>
-    </div>
-  );
-}
-
-function CoursesModal({
-  courses,
-  onClose,
-  onChanged,
-  say,
-}: {
-  courses: OpsCourse[];
-  onClose: () => void;
-  onChanged: () => void;
-  say: (m: string) => void;
-}) {
-  const { me } = useAuth();
-  const isOps = me?.role === 'ops'; // 운영자는 저작 숨김 + 공개/숨김만(ops 권한 B)
-  const [form, setForm] = useState<CourseForm | null>(null); // null = 편집 폼 닫힘
-  const [err, setErr] = useState('');
-  const [saving, setSaving] = useState(false);
-  const [examCourse, setExamCourse] = useState<OpsCourse | null>(null); // 수료 시험 문항 모달 대상
-  const [priceCourse, setPriceCourse] = useState<OpsCourse | null>(null); // 수강료 설정 모달 대상
-  const editing = form?.id != null;
-
-  // 운영자 모더레이션 — 코스 공개/숨김만
-  const setCourseStatus = async (c: OpsCourse, status: 'active' | 'hidden') => {
-    try {
-      await lectureApi.opsCourseUpdate(c.id, { status });
-      say(status === 'hidden' ? '코스를 숨겼어요.' : '코스를 공개했어요.');
-      onChanged();
-    } catch (e) {
-      say(errorDetail(e, '상태 변경에 실패했어요.'));
-    }
-  };
-
-  const save = async () => {
-    if (!form) return;
-    if (!form.title.trim()) return setErr('코스 이름은 필수예요.');
-    setSaving(true);
-    setErr('');
-    try {
-      if (form.id) {
-        // 수정 — subject는 안 바꾼다(레거시 고정). 제목·분류(category)·소개·공개 상태.
-        await lectureApi.opsCourseUpdate(form.id, {
-          title: form.title.trim(),
-          category: form.category.trim() || null,
-          description: form.description,
-          status: form.status,
-        });
-        say('코스를 수정했어요.');
-      } else {
-        await lectureApi.opsCourseCreate({
-          title: form.title.trim(),
-          category: form.category.trim() || null,
-          description: form.description || null,
-        });
-        say('코스를 만들었어요.');
-      }
-      setForm(null);
-      onChanged();
-    } catch (e) {
-      // 미지원 과목 400 등 서버 사유를 그대로 노출
-      setErr(errorDetail(e, '코스 저장에 실패했어요.'));
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const remove = async (c: OpsCourse) => {
-    if (
-      !window.confirm(
-        `'${c.title}' 코스를 삭제할까요? 담긴 강의 ${c.lecture_count}개는 삭제되지 않고 '미분류'로 풀려요.`,
-      )
-    )
-      return;
-    try {
-      const res = await lectureApi.opsCourseDelete(c.id);
-      say(
-        res.lectures_unassigned > 0
-          ? `코스를 삭제했어요 — 강의 ${res.lectures_unassigned}개가 미분류로 풀렸어요.`
-          : '코스를 삭제했어요.',
-      );
-      if (form?.id === c.id) setForm(null); // 편집 중이던 코스가 사라졌으면 폼도 닫는다
-      onChanged();
-    } catch (e) {
-      say(errorDetail(e, '코스 삭제에 실패했어요.'));
-    }
-  };
-
-  const mRef = useModalA11y<HTMLDivElement>(() => { if (!saving) onClose(); });
-  return (
-    <div className="op-bh-overlay" onClick={() => !saving && onClose()}>
-      <div
-        className="op-formmodal op-lect-widemodal"
-        onClick={(e) => e.stopPropagation()}
-        ref={mRef}
-        tabIndex={-1}
-        role="dialog"
-        aria-modal="true"
-        aria-label="코스 관리"
-      >
-        <div className="op-bh-modal-h">
-          <span>
-            <i className="ph-fill ph-stack" /> 코스 관리
-          </span>
-          <button className="op-bh-modal-x" onClick={onClose} disabled={saving}>
-            <i className="ph-bold ph-x" />
-          </button>
-        </div>
-
-        <div className="op-lect-qtools">
-          {!isOps && (
-            <button
-              className="op-btn op-btn--approve op-lect-btn-outline"
-              onClick={() => {
-                setErr('');
-                setForm({ id: null, title: '', category: '', description: '', status: 'active' });
-              }}
-            >
-              <i className="ph-bold ph-plus" /> 코스 만들기
-            </button>
-          )}
-          <span className="lu-help">
-            {isOps
-              ? '운영자는 코스 저작을 하지 않아요 — 조회와 공개/숨김만 가능해요(저작은 강사).'
-              : '코스가 상품 단위예요. 분류(카테고리)는 카탈로그를 훑는 용도라 선택이에요.'}
-          </span>
-        </div>
-
-        {form && (
-          <div className="op-lect-qform">
-            <div className="op-form-grid">
-              <label className="ox-field op-form-span2">
-                코스 이름
-                <input
-                  value={form.title}
-                  onChange={(e) => setForm({ ...form, title: e.target.value })}
-                  placeholder="예: 수학 기초반"
-                />
-              </label>
-              <label className="ox-field">
-                분류 (선택)
-                <span className="lu-help">카탈로그 브라우징용 대분류 — 나중에 바꿀 수 있어요</span>
-                <select
-                  value={form.category}
-                  onChange={(e) => setForm({ ...form, category: e.target.value })}
-                >
-                  <option value="">미분류</option>
-                  {COURSE_CATEGORIES.map((c) => (
-                    <option key={c} value={c}>{c}</option>
-                  ))}
-                </select>
-              </label>
-              {editing && (
-                <label className="ox-field">
-                  공개 상태
-                  <select
-                    value={form.status}
-                    onChange={(e) => setForm({ ...form, status: e.target.value })}
-                  >
-                    <option value="active">공개</option>
-                    <option value="hidden">숨김</option>
-                  </select>
-                </label>
-              )}
-              <label className="ox-field op-form-span2">
-                코스 소개 (선택)
-                <input
-                  value={form.description}
-                  onChange={(e) => setForm({ ...form, description: e.target.value })}
-                  placeholder="예: 개념부터 차근차근 다지는 기초 과정"
-                />
-              </label>
-            </div>
-            {err && (
-              <div className="op-form-err">
-                <i className="ph-fill ph-warning-circle" /> {err}
-              </div>
-            )}
-            <div className="op-form-actions">
-              <button className="op-btn op-btn--reject" disabled={saving} onClick={() => setForm(null)}>
-                취소
-              </button>
-              <button className="op-btn op-btn--approve" disabled={saving} onClick={save}>
-                <i className="ph-bold ph-check" /> {saving ? '저장 중…' : editing ? '저장' : '만들기'}
-              </button>
-            </div>
-          </div>
-        )}
-
-        <div className="op-logcard">
-          <div className="op-loghead op-course-grid">
-            <span>코스</span>
-            <span>분류</span>
-            <span>강의</span>
-            <span>수강료</span>
-            <span>상태</span>
-            <span className="op-col-right">관리</span>
-          </div>
-          {courses.length === 0 && (
-            <div className="op-logrow">
-              아직 코스가 없어요. 위의 &lsquo;코스 만들기&rsquo;로 첫 코스를 만드세요.
-            </div>
-          )}
-          {courses.map((c) => (
-            <div key={c.id} className="op-logrow op-course-grid">
-              <span>
-                <b>{c.title}</b>
-                {c.description ? <small className="op-aimodel-desc">{c.description}</small> : null}
-              </span>
-              <span>{c.category ?? '—'}</span>
-              <span>
-                {c.lecture_count}개
-                <small className="op-course-enrolled">
-                  <i className="ph-fill ph-users" /> 수강 {c.enrolled_count ?? 0}명
-                </small>
-              </span>
-              {/* 수강료 — 할인 중이면 정상가에 취소선을 긋고 실제 청구 금액을 앞에 둔다 */}
-              <span className="op-course-price">
-                {!c.pricing ? (
-                  '—'
-                ) : c.pricing.is_free ? (
-                  <span className="op-course-free">무료</span>
-                ) : (
-                  <>
-                    <b>{c.pricing.effective_price.toLocaleString('ko-KR')}원</b>
-                    {c.pricing.sale_price != null && c.pricing.sale_price < c.pricing.price && (
-                      <s>{c.pricing.price.toLocaleString('ko-KR')}원</s>
-                    )}
-                  </>
-                )}
-              </span>
-              <span>
-                <span
-                  className={`op-sys-status op-sys-status--${c.status === 'active' ? 'ok' : 'warn'}`}
-                >
-                  {c.status === 'active' ? '공개' : '숨김'}
-                </span>
-              </span>
-              <span className="op-col-right op-lect-actions">
-                <button
-                  className="op-btn op-btn--approve op-lect-btn-outline"
-                  onClick={() => setExamCourse(c)}
-                  title="이 코스의 수료 시험 문항을 관리해요"
-                >
-                  <i className="ph-fill ph-exam" /> 수료 시험 문항
-                </button>
-                {isOps ? (
-                  <button
-                    className="op-btn op-btn--reject"
-                    onClick={() => setCourseStatus(c, c.status === 'active' ? 'hidden' : 'active')}
-                    title="코스 공개/숨김 전환(모더레이션)"
-                  >
-                    <i className={`ph-bold ${c.status === 'active' ? 'ph-eye-slash' : 'ph-eye'}`} />
-                    {c.status === 'active' ? '숨기기' : '공개'}
-                  </button>
-                ) : (
-                  <>
-                    <button
-                      className="op-btn op-btn--approve op-lect-btn-outline"
-                      onClick={() => setPriceCourse(c)}
-                      title="이 코스의 수강료를 정해요(학생 결제 금액의 정본)"
-                    >
-                      <i className="ph-fill ph-tag" /> 가격 설정
-                    </button>
-                    <button
-                      className="op-btn op-btn--reject"
-                      onClick={() => {
-                        setErr('');
-                        setForm({
-                          id: c.id,
-                          title: c.title,
-                          category: c.category ?? '',
-                          description: c.description ?? '',
-                          status: c.status,
-                        });
-                      }}
-                    >
-                      <i className="ph-bold ph-pencil-simple" /> 수정
-                    </button>
-                    <button className="op-btn op-btn--reject op-lect-danger" onClick={() => remove(c)}>
-                      <i className="ph-bold ph-trash" /> 삭제
-                    </button>
-                  </>
-                )}
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {examCourse && (
-        <ExamQuestionsModal
-          course={examCourse}
-          onClose={() => setExamCourse(null)}
-          say={say}
-        />
-      )}
-
-      {priceCourse && (
-        <PricingModal
-          course={priceCourse}
-          onClose={() => setPriceCourse(null)}
-          onSaved={onChanged}
-          say={say}
-        />
-      )}
     </div>
   );
 }
@@ -1998,7 +1664,7 @@ const EXAM_ORIGIN_LABEL: Record<ExamOrigin, string> = {
   llm: 'AI',
 };
 
-/** 코스 수료 시험 문항 모달 — '코스 관리'(OpsLectures 내 CoursesModal) 안에서 코스별
+/** 코스 수료 시험 문항 모달 — 코스 관리 화면(OpsCourses)에서 코스별
  *  '수료 시험 문항' 버튼으로 여는 것과 완전히 같은 컴포넌트를, 코스 관리 전용 화면
  *  (OpsCourses.tsx)의 '시험 문항' 버튼에서도 그대로 재사용한다(중복 구현 대신 export). */
 export function ExamQuestionsModal({

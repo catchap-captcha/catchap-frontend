@@ -7,6 +7,10 @@ import './OpsApproval.css';
 import './OpsRenewalShared.css';
 import './OpsCourses.css';
 
+/** 학생 카탈로그 브라우징용 대분류 — 과목(subject, 생성 후 불변)과 달리 언제든 바꿀 수 있다.
+ *  '강의 관리'의 코스 모달을 없애면서(상단 '코스 관리'로 일원화) 여기로 옮겨 왔다. */
+const COURSE_CATEGORIES = ['법정의무교육', '자격증', '어학', '직무/기업교육', 'IT/개발', '기타'];
+
 /**
  * 코스 관리 — CatChap '코스 관리' 리뉴얼 화면 그대로. 여러 강의를 코스로 묶어 학생 화면에
  * 하나의 과정으로 보여준다. 운영자(ops)는 감독만(공개/숨김) — 생성·내용 편집·삭제 버튼은
@@ -49,15 +53,24 @@ export default function OpsCourses() {
     id?: string;
     title: string;
     subject: string;
+    /** 브라우징용 대분류('' = 미분류). 과목과 달리 만든 뒤에도 바꿀 수 있다. */
+    category: string;
     description: string;
   } | null>(null);
   const [saving, setSaving] = useState(false);
   const [formErr, setFormErr] = useState('');
 
   const openCreate = () =>
-    setForm({ mode: 'create', title: '', subject: subjects[0] ?? '국어', description: '' });
+    setForm({ mode: 'create', title: '', subject: subjects[0] ?? '국어', category: '', description: '' });
   const openEdit = (c: OpsCourse) =>
-    setForm({ mode: 'edit', id: c.id, title: c.title, subject: c.subject, description: c.description ?? '' });
+    setForm({
+      mode: 'edit',
+      id: c.id,
+      title: c.title,
+      subject: c.subject,
+      category: c.category ?? '',
+      description: c.description ?? '',
+    });
   const closeForm = () => {
     setForm(null);
     setFormErr('');
@@ -73,12 +86,14 @@ export default function OpsCourses() {
         await lectureApi.opsCourseCreate({
           title: form.title.trim(),
           subject: form.subject,
+          category: form.category.trim() || null,
           description: form.description.trim() || null,
         });
         say('코스를 만들었어요.');
       } else if (form.id) {
         await lectureApi.opsCourseUpdate(form.id, {
           title: form.title.trim(),
+          category: form.category.trim() || null,
           description: form.description.trim() || null,
         });
         say('코스를 수정했어요.');
@@ -194,6 +209,19 @@ export default function OpsCourses() {
                   ))}
                 </select>
               </div>
+              <div>
+                <label className="crs-form-lb">분류 (선택)</label>
+                <select
+                  className="crs-form-sel"
+                  value={form.category}
+                  onChange={(e) => setForm({ ...form, category: e.target.value })}
+                >
+                  <option value="">미분류</option>
+                  {COURSE_CATEGORIES.map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+              </div>
             </div>
             <div className="crs-form-full">
               <label className="crs-form-lb">코스 소개 (선택)</label>
@@ -235,6 +263,8 @@ export default function OpsCourses() {
               <div key={c.id} className="crs-row">
                 <div style={{ minWidth: 0 }}>
                   <div className="crs-title">{c.title}</div>
+                  {/* 분류는 열을 하나 더 만들지 않고 제목 아래에 붙인다(관리 버튼 자리를 지키려고) */}
+                  {c.category && <div className="crs-cat">{c.category}</div>}
                   {c.description && <div className="crs-desc">{c.description}</div>}
                 </div>
                 <span className="crs-subject">{c.subject}</span>

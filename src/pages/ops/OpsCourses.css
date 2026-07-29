@@ -75,8 +75,11 @@
 .crs-table { overflow: hidden; }
 .crs-thead, .crs-row {
   display: grid;
-  /* 코스 / 과목 / 강의 / 수강료 / 상태 / 관리 */
-  grid-template-columns: 1fr 84px 62px 96px 76px 270px;
+  /* 코스 / 과목 / 강의 / 수강료 / 상태 / 관리
+     관리 열은 버튼 5개(시험 문항·가격 설정·수정·삭제·공개토글)가 실측 320px를 쓰므로
+     그보다 넉넉히 준다. 좁게 잡으면 flex-end 정렬이라 버튼이 왼쪽으로 삐져나와
+     상태 배지를 덮는다(실제로 270px일 때 5px 겹쳤다). */
+  grid-template-columns: minmax(150px, 1fr) 76px 58px 92px 68px 344px;
   gap: 12px;
   align-items: center;
 }
@@ -113,7 +116,8 @@
 .crs-badge--active { color: var(--ok); background: var(--ok-soft); }
 .crs-badge--hidden { color: var(--warn); background: var(--warn-soft); }
 
-.crs-rowactions { display: flex; gap: 6px; justify-content: flex-end; }
+/* 폭이 모자라면 겹치는 대신 줄바꿈한다(열 폭이 부족해도 배지를 덮지 않게 하는 안전장치) */
+.crs-rowactions { display: flex; gap: 6px; justify-content: flex-end; flex-wrap: wrap; min-width: 0; }
 .crs-abtn {
   display: inline-flex;
   align-items: center;
@@ -135,6 +139,19 @@
 .crs-abtn--exam:hover { border-color: var(--warn); color: var(--warn); }
 .crs-abtn--edit:hover { border-color: var(--brand); color: var(--brand-ink); }
 .crs-abtn--price:hover { border-color: var(--ok); color: var(--ok); }
+
+/* 분류(카테고리) — 열을 늘리지 않고 코스 제목 아래에 작은 칩으로 */
+.crs-cat {
+  display: inline-block;
+  margin-top: 3px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ink-3);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  padding: 1px 8px;
+  border-radius: 999px;
+}
 
 /* 수강료 열 — 할인 중이면 실제 청구 금액 아래 정상가를 취소선으로 */
 .crs-price {

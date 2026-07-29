@@ -2,11 +2,13 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { PATHS } from '../../routes/paths';
-import mascot from '../../assets/characters/catchap-logo.png';
-import './OpsLogin.css';
+import wordmarkWhite from '../../assets/brand/catchap-wordmark-white.png';
 import PasswordInput from '../../components/common/PasswordInput';
 import ForestCaptcha from '../../components/captcha/ForestCaptcha';
-import ThemeToggle from '../../components/common/ThemeToggle';
+// 학습자 로그인(/login)과 같은 화면 규격을 쓴다 — 문구만 다르고 레이아웃·색·간격은 동일(사용자 요청).
+// 그래서 전용 스타일시트(OpsLogin.css) 없이 LoginPage.css의 lg-* 를 그대로 재사용한다.
+import '../auth/LoginPage.css';
+import './OpsLogin.css';
 
 /**
  * 운영자(ops)·강사(instructor) 전용 로그인.
@@ -17,6 +19,9 @@ import ThemeToggle from '../../components/common/ThemeToggle';
  * 서버 에러(계정 중지·5회 실패 캡차 요구 등)는 원문을 그대로 보여준다 —
  * 전부 "정보가 올바르지 않습니다"로 뭉개면 임시비밀번호가 맞는데도
  * 원인을 모른 채 재설정만 반복하게 된다.
+ *
+ * 테마 토글은 App의 GlobalThemeToggle(로그인 전 전역 고정)이 담당 — 학습자 로그인과 동일.
+ * (종전엔 이 페이지가 토글을 하나 더 그려 같은 자리에 두 개가 겹쳐 있었다.)
  */
 export default function OpsLogin() {
   const navigate = useNavigate();
@@ -87,121 +92,108 @@ export default function OpsLogin() {
   };
 
   return (
-    <div className="opl-root">
-      <ThemeToggle className="theme-toggle--fixed" />
-
-      {/* LEFT — brand / context panel (handoff: dark #3D3935) */}
-      <div className="opl-left">
-        <div className="opl-left-deco">
-          <span className="opl-c1" />
-          <span className="opl-c2" />
-        </div>
-        <div className="opl-left-pin">
-          <div className="opl-brand">
-            <img src={mascot} alt="CatChap" className="opl-logo" />
-            <span className="opl-brand-name">CatChap</span>
-            <span className="opl-brand-tag">운영 콘솔</span>
-          </div>
-          <div className="opl-hero">
-            <span className="opl-pill">
-              <i className="ph-fill ph-lock-key" />
-              내부 전용 · 초대제
-            </span>
-            <h1 className="opl-hero-title">
+    <div className="lg-root">
+      {/* LEFT BRAND PANEL — 학습자 로그인과 같은 구조. 문구만 콘솔용. */}
+      <div className="lg-left">
+        <div className="lg-left-pin">
+          <Link to={PATHS.HOME} className="lg-brand" title="메인으로">
+            <img src={wordmarkWhite} alt="CATCHAP" className="lg-brand-wordmark" />
+          </Link>
+          <div className="lg-hero">
+            <h1 className="lg-hero-title">
               운영자와 강사를 위한
               <br />
               관리 콘솔
             </h1>
-            <p className="opl-hero-sub">
+            <p className="lg-hero-sub">
               기관 승인, 강의·문항 검수, 행동 데이터, 시스템 상태를 한곳에서 운영합니다. 접근
               권한은 계정 역할에 따라 자동으로 제한됩니다.
             </p>
           </div>
-          <div className="opl-badges">
-            <span className="opl-badge">
-              <i className="ph ph-shield-check" />
-              역할 기반 접근 제어
-            </span>
-            <span className="opl-badge">
-              <i className="ph ph-scroll" />
-              감사 로그 기록
-            </span>
+          <div className="lg-badges">
+            <span>내부 전용 · 초대제</span>
+            <span className="lg-badge-dot" />
+            <span>역할 기반 접근 제어</span>
+            <span className="lg-badge-dot" />
+            <span>감사 로그 기록</span>
           </div>
         </div>
       </div>
 
-      {/* RIGHT — form */}
-      <div className="opl-right">
-        <form className="opl-card" onSubmit={submit}>
-          <div className="opl-head">
-            <span className="opl-head-icon">
-              <i className="ph-fill ph-shield-star" />
-            </span>
-            <div>
-              <h2 className="opl-title">운영자·강사 로그인</h2>
-              <p className="opl-sub">내부 운영자와 초대받은 강사 전용 페이지입니다.</p>
-            </div>
-          </div>
+      {/* RIGHT PANEL — 학습자 로그인 폼과 동일 규격 */}
+      <div className="lg-right">
+        <form className="lg-login" onSubmit={submit}>
+          <h2 className="lg-h2">운영자·강사 로그인</h2>
+          <p className="lg-login-sub">내부 운영자와 초대받은 강사 전용 페이지입니다</p>
 
-          <label className="opl-label">아이디 (이메일)</label>
-          <div className="opl-field">
-            <i className="ph ph-user-circle" />
+          <label className="lg-label">아이디 (이메일)</label>
+          <div className="lg-field lg-mb16">
+            <i className="ph ph-user-circle lg-field-icon" />
             <input
               type="text"
               autoComplete="username"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="계정 이메일"
-              className="opl-input"
+              placeholder="계정 이메일을 입력해 주세요"
+              className="lg-input"
             />
           </div>
 
-          <label className="opl-label">비밀번호</label>
-          <div className="opl-field">
-            <i className="ph ph-lock-key" />
+          <label className="lg-label">비밀번호</label>
+          <div className="lg-field lg-mb12">
+            <i className="ph ph-lock-key lg-field-icon" />
             <PasswordInput
               autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="비밀번호"
-              className="opl-input"
+              placeholder="비밀번호를 입력해 주세요"
+              className="lg-input"
             />
           </div>
 
+          {/* 학습자 로그인의 '로그인 유지 / 찾기' 줄과 같은 자리.
+              콘솔 계정은 공용 PC 사용을 가정해 로그인 유지를 두지 않고 찾기 링크만 오른쪽에 둔다. */}
+          <div className="lg-rememberrow opl-findonly">
+            <span className="lg-findrow">
+              <Link to={PATHS.FIND_ID} className="lg-forgot">
+                아이디 찾기
+              </Link>
+              <span className="lg-findsep" aria-hidden="true" />
+              <Link to={PATHS.PASSWORD_RESET} className="lg-forgot">
+                비밀번호를 잊으셨나요?
+              </Link>
+            </span>
+          </div>
+
           {error && (
-            <div className="opl-error">
+            <div className="lg-formerr">
               <i className="ph-fill ph-warning-circle" />
               <span>{error}</span>
             </div>
           )}
 
-          <button type="submit" className="opl-btn" disabled={busy}>
+          <button type="submit" className="lg-primary" disabled={busy}>
             <i className="ph-bold ph-sign-in" />
             {busy ? '확인 중…' : captchaNeeded ? '보안 확인 후 로그인' : '로그인'}
           </button>
 
-          {/* 아이디(=계정 이메일)를 잊은 경우 — 일반 로그인과 같은 아이디 찾기 흐름으로 보낸다 */}
-          <div className="opl-findrow">
-            <Link to={PATHS.FIND_ID} className="opl-findlink">
-              <i className="ph ph-identification-card" /> 아이디 찾기
-            </Link>
-            <span className="opl-findsep" aria-hidden="true" />
-            <Link to={PATHS.PASSWORD_RESET} className="opl-findlink">
-              비밀번호 재설정
-            </Link>
+          <div className="lg-divider">
+            <div className="lg-divider-line" />
+            <span>또는</span>
+            <div className="lg-divider-line" />
           </div>
+          <button type="button" onClick={() => navigate(PATHS.LOGIN)} className="lg-secondary">
+            <i className="ph ph-student" />
+            학습자 로그인
+          </button>
 
-          <div className="opl-notice">
+          <div className="lg-notice">
             <i className="ph ph-info" />
             <p>
               이 페이지는 외부에 노출되지 않는 내부 진입구입니다. 접근 권한이 없으면 로그인이
               거부되며, 모든 시도는 감사 로그에 기록됩니다.
             </p>
           </div>
-
-          <p className="opl-footlink">
-            일반 학습자이신가요? <Link to={PATHS.LOGIN}>학습자 로그인</Link>
-          </p>
         </form>
       </div>
 
