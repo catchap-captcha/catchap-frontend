@@ -219,7 +219,7 @@ export default function StudentNotifications() {
           <div className="nt-headbtns">
             {/* '빈 상태 미리보기' 버튼은 사용자 요청으로 제거 — 빈 상태는 실제 알림이 없을 때만 표시 */}
             <button className="nt-markall" onClick={markAll}>
-              <i className="ph-fill ph-checks" />
+              <i className="ph-fill ph-check" />
               전체 읽음 처리
             </button>
           </div>

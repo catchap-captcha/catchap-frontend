@@ -201,6 +201,35 @@
   color: var(--ink-2);
 }
 .co-note i { color: var(--ink-3); }
+/* 진행을 막는 안내(예: 카카오페이 다중 결제) — 단순 안내와 구분되게 경고 톤 */
+.co-note--warn { color: var(--danger); }
+.co-note--warn i { color: var(--danger); }
+
+/* 토스 세부 수단(카드/계좌이체/간편결제) — 토스를 골랐을 때만 열린다 */
+.co-submethods {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+.co-submethod {
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink-2);
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 12.5px;
+  padding: 7px 14px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.co-submethod:hover { border-color: var(--ink-3); color: var(--ink); }
+.co-submethod--on {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: var(--on-brand);
+}
 
 /* ===== 약관 ===== */
 .co-agree {

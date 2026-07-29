@@ -870,6 +870,59 @@
   color: var(--warn-ink);
 }
 
+/* 수료 완료 카드만 div — 안에 '수료증' 버튼을 따로 두려면 버튼 중첩을 피해야 한다.
+   본문(.mr-compmain)만 클릭 영역이므로 카드 자체의 포인터 커서는 끈다. */
+.mr-comp--done {
+  cursor: default;
+}
+.mr-compmain {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  border: none;
+  background: none;
+  padding: 0;
+  margin: 0;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+/* 수료증 버튼 — 수료한 카드에만 노출. 배지 옆에서 배지보다 한 단계 강한 톤. */
+.mr-certbtn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 11px;
+  padding: 5px 11px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s var(--ap-ease), color 0.15s var(--ap-ease), border-color 0.15s var(--ap-ease);
+}
+.mr-certbtn i {
+  font-size: 13px;
+}
+.mr-certbtn:hover {
+  background: var(--brand);
+  color: var(--on-brand);
+  border-color: var(--brand);
+}
+
+@media (max-width: 560px) {
+  /* 좁은 화면에선 제목이 눌리지 않게 배지를 숨기고 수료증 버튼만 남긴다 */
+  .mr-comp--done .mr-compbadge { display: none; }
+}
+
 /* 상단 탭 — 요약 / 수료 현황 / 학습 통계 (0723 긴 스크롤 분할) */
 .mr-rectabs {
   max-width: min(2280px, 94vw);

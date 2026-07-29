@@ -154,14 +154,9 @@ export default function StudentMyPage() {
       <div className="mp-hub">
         {/* ===== 좌측 사이드바 ===== */}
         <aside className="mp-side">
+          {/* 아바타·이메일은 우측 프로필 카드와 중복이라 두지 않는다(사용자 요청) */}
           <div className="mp-side-user">
-            <div className="mp-avatar-sm" style={{ background: profileColor(me?.id) }}>
-              {name.charAt(0)}
-            </div>
-            <div className="mp-side-id">
-              <div className="mp-side-name">{name}</div>
-              <div className="mp-side-email">{email}</div>
-            </div>
+            <div className="mp-side-name">{name}</div>
           </div>
           <nav className="mp-tabs">
             {TABS.map((t) => (

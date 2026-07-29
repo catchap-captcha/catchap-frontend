@@ -53,6 +53,7 @@ export default function LoginPage() {
   const [birthDate, setBirthDate] = useState(''); // YYYY-MM-DD
   const [guardianEmail, setGuardianEmail] = useState('');
   const [guardianCodeSent, setGuardianCodeSent] = useState(false);
+  const [guardianVerified, setGuardianVerified] = useState(false);
   const [guardianSecondsLeft, setGuardianSecondsLeft] = useState(0);
   const [formError, setFormError] = useState('');
   const [loginError, setLoginError] = useState('');
@@ -259,7 +260,6 @@ export default function LoginPage() {
   };
 
   // 보호자(법정대리인) 동의 코드 발송 — 기존 계정 이메일도 허용(purpose=guardian).
-  // 코드는 가입 확정 시 서버가 1회 소비 — 별도 '확인' 단계 없이 입력만 받는다.
   const sendGuardianCode = () => {
     if (!isEmail(guardianEmail)) {
       setFormError('보호자 이메일을 올바른 형식으로 입력해 주세요.');
@@ -273,10 +273,27 @@ export default function LoginPage() {
       .sendEmailCode(guardianEmail, 'guardian')
       .then(() => {
         setGuardianCodeSent(true);
+        setGuardianVerified(false); // 재전송하면 이전 '인증됨' 표시는 무효
         setGuardianSecondsLeft(300);
         setFormError('');
       })
       .catch(() => setFormError('보호자 인증코드 발송에 실패했어요. 이메일을 확인해 주세요.'));
+  };
+
+  // 보호자 코드 확인 — 본인 이메일과 동일한 '확인 → 인증됨' 흐름.
+  // verify는 코드를 소비하지 않으므로(used_at 유지) 가입 확정 시 서버가 다시 1회 소비한다.
+  const verifyGuardianCode = () => {
+    if (guardianVerified) return;
+    const code = fieldVal('[data-req="보호자 인증코드"]');
+    authApi
+      .verifyEmailCode(guardianEmail, code, 'guardian')
+      .then((r) => {
+        if (r.verified) {
+          setGuardianVerified(true);
+          setFormError('');
+        } else setFormError('보호자 인증코드가 올바르지 않아요. 다시 확인해 주세요.');
+      })
+      .catch(() => setFormError('보호자 인증코드가 올바르지 않아요. 다시 확인해 주세요.'));
   };
 
   const verifyCode = () => {
@@ -628,15 +645,14 @@ export default function LoginPage() {
                         className="lg-input"
                       />
                     </div>
+                    {/* 본인 이메일 인증 블록과 같은 구조·문구 리듬으로 통일(사용자 요청).
+                        종전엔 노란 강조 박스(.lg-guardian) 안에 따로 있어 폼에서 튀었다. */}
                     {needsGuardian && (
-                      <div className="lg-guardian lg-mb15">
-                        <p className="lg-guardian-title">
-                          <i className="ph-fill ph-shield-check" /> 만 {signupAge}세는 보호자(법정대리인) 동의가 필요해요
-                        </p>
-                        <p className="lg-guardian-desc">
-                          보호자 이메일로 인증코드를 보내 동의를 확인해요. 동의 기록은 안전하게 보관됩니다.
-                        </p>
+                      <>
                         <label className="lg-label">보호자 이메일</label>
+                        <p className="lg-helper" style={{ margin: '-2px 0 8px' }}>
+                          만 {signupAge}세는 보호자(법정대리인) 동의가 필요해요. 보호자 이메일로 인증코드를 보내 드려요.
+                        </p>
                         <div className="lg-inline lg-mb12">
                           <div className="lg-field-grow">
                             <i className="ph-fill ph-envelope-simple lg-field-icon" />
@@ -654,35 +670,52 @@ export default function LoginPage() {
                             onClick={sendGuardianCode}
                             className={'lg-sendbtn' + (guardianCodeSent ? ' lg-sendbtn--sent' : '')}
                           >
-                            {guardianCodeSent ? '재전송' : '동의코드 받기'}
+                            {guardianCodeSent ? '재전송' : '인증코드 받기'}
                           </button>
                         </div>
                         {guardianCodeSent && (
                           <>
                             <label className="lg-label">보호자 인증코드</label>
-                            <div className="lg-field lg-mb9">
-                              <i className="ph-fill ph-shield-check lg-field-icon" />
-                              <input
-                                type="text"
-                                maxLength={6}
-                                data-req="보호자 인증코드"
-                                placeholder="보호자 이메일로 받은 6자리 코드"
-                                className="lg-input lg-input--otp"
-                              />
+                            <div className="lg-inline lg-mb9">
+                              <div className="lg-field-grow">
+                                <i className="ph-fill ph-shield-check lg-field-icon" />
+                                <input
+                                  type="text"
+                                  maxLength={6}
+                                  data-req="보호자 인증코드"
+                                  placeholder="6자리 코드"
+                                  className="lg-input lg-input--otp"
+                                />
+                              </div>
+                              <button
+                                type="button"
+                                onClick={verifyGuardianCode}
+                                className={'lg-codebtn' + (guardianVerified ? ' lg-codebtn--valid' : '')}
+                              >
+                                {guardianVerified ? '인증됨' : '확인'}
+                              </button>
                             </div>
-                            <div className="lg-notverified">
-                              <i className="ph-fill ph-timer" />
-                              {guardianSecondsLeft > 0 ? (
-                                <span>
-                                  동의코드를 보냈어요. 남은 시간 <b>{mmss(guardianSecondsLeft)}</b> · 가입 완료 시 확인돼요.
-                                </span>
-                              ) : (
-                                <span>동의코드가 만료됐어요. <b>재전송</b>을 눌러 새 코드를 받아 주세요.</span>
-                              )}
-                            </div>
+                            {guardianVerified && (
+                              <div className="lg-verified">
+                                <i className="ph-fill ph-check-circle" />
+                                <span>보호자 동의가 확인되었어요</span>
+                              </div>
+                            )}
+                            {!guardianVerified && (
+                              <div className="lg-notverified">
+                                <i className="ph-fill ph-timer" />
+                                {guardianSecondsLeft > 0 ? (
+                                  <span>
+                                    인증코드를 보냈어요. 남은 시간 <b>{mmss(guardianSecondsLeft)}</b> · 시간이 지나면 재전송해 주세요.
+                                  </span>
+                                ) : (
+                                  <span>인증코드가 만료됐어요. <b>재전송</b>을 눌러 새 코드를 받아 주세요.</span>
+                                )}
+                              </div>
+                            )}
                           </>
                         )}
-                      </div>
+                      </>
                     )}
                   </>
                 )}

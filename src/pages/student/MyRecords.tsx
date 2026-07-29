@@ -8,6 +8,7 @@ import { PATHS } from '../../routes/paths';
 import ChapterAccuracyChart, { type SubjectStat } from '../../components/student/ChapterAccuracyChart';
 import HabitTrendLine, { type HabitDay } from '../../components/student/HabitTrendLine';
 import CourseCover from '../../components/course/CourseCover';
+import CertificateModal from '../../components/course/CertificateModal';
 import './MyRecords.css';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -126,25 +127,36 @@ function fmtPassedAt(iso: string | null | undefined): string {
 const COMP_CAP = 4;
 
 /** 수료 현황 카드 1장 — 상태(수료/진행/잠김)에 따라 배지·문구가 갈린다. 클릭 시 그 코스 시험으로. */
-function CompCard({ c, navigate }: { c: StudentCourse; navigate: NavigateFunction }) {
+function CompCard({
+  c, navigate, onCertificate,
+}: {
+  c: StudentCourse; navigate: NavigateFunction; onCertificate: (c: StudentCourse) => void;
+}) {
   const ex = c.exam!;
   const go = () => navigate(`${PATHS.STUDENT_COURSE_EXAM}?course=${c.id}`);
   if (ex.passed) {
     const perfect = ex.perfect;
+    // 수료한 코스만 '수료증' 버튼을 함께 둔다(미수료 카드에는 노출하지 않음).
+    // 버튼 중첩은 불가하므로 카드를 div로 두고, 본문 영역만 별도 버튼으로 감싼다.
     return (
-      <button className={`mr-comp${perfect ? ' mr-comp--perfect' : ''}`} onClick={go}>
-        <CourseCover seed={c.id} label={c.title || c.subject} imageUrl={thumbnailSrc(c.thumbnail_url)} size="sm" className="mr-compcover" />
-        <span className="mr-compbody">
-          <span className="mr-comptitle">{c.title}</span>
-          <span className="mr-compmeta">
-            {c.subject} · 문항 {ex.question_count}개
-            {fmtPassedAt(ex.passed_at) && ` · ${fmtPassedAt(ex.passed_at)}`}
+      <div className={`mr-comp mr-comp--done${perfect ? ' mr-comp--perfect' : ''}`}>
+        <button className="mr-compmain" onClick={go}>
+          <CourseCover seed={c.id} label={c.title || c.subject} imageUrl={thumbnailSrc(c.thumbnail_url)} size="sm" className="mr-compcover" />
+          <span className="mr-compbody">
+            <span className="mr-comptitle">{c.title}</span>
+            <span className="mr-compmeta">
+              {c.subject} · 문항 {ex.question_count}개
+              {fmtPassedAt(ex.passed_at) && ` · ${fmtPassedAt(ex.passed_at)}`}
+            </span>
           </span>
-        </span>
+        </button>
         <span className={`mr-compbadge${perfect ? ' mr-compbadge--perfect' : ''}`}>
           {perfect ? '완벽 통과' : '수료'}
         </span>
-      </button>
+        <button className="mr-certbtn" onClick={() => onCertificate(c)}>
+          <i className="ph-fill ph-certificate" /> 수료증
+        </button>
+      </div>
     );
   }
   if (ex.available) {
@@ -177,9 +189,10 @@ function CompCard({ c, navigate }: { c: StudentCourse; navigate: NavigateFunctio
 
 /** 수료 현황 한 칸(수료 완료/진행 중/잠김) — 기본 COMP_CAP개만 보이고 넘치면 접었다 편다. */
 function CompGroup({
-  title, icon, items, navigate,
+  title, icon, items, navigate, onCertificate,
 }: {
   title: string; icon: string; items: StudentCourse[]; navigate: NavigateFunction;
+  onCertificate: (c: StudentCourse) => void;
 }) {
   const [showAll, setShowAll] = useState(false);
   if (!items.length) return null;
@@ -191,7 +204,7 @@ function CompGroup({
         <i className={icon} /> {title}
         <span className="mr-compgroupn">{items.length}</span>
       </div>
-      {shown.map((c) => <CompCard key={c.id} c={c} navigate={navigate} />)}
+      {shown.map((c) => <CompCard key={c.id} c={c} navigate={navigate} onCertificate={onCertificate} />)}
       {hidden > 0 && (
         <button className="mr-compmore" onClick={() => setShowAll(true)}>
           <i className="ph-bold ph-caret-down" /> {hidden}개 더 보기
@@ -344,6 +357,8 @@ export default function MyRecords() {
   const [habit, setHabit] = useState<{ days: HabitDay[]; streak: number } | null>(null);
   // 수료 시험이 있는 코스 — null=조회 전. 수료 완료/진행 중/잠김으로 나눠 보여준다(재중심화 핵심).
   const [examCourses, setExamCourses] = useState<StudentCourse[] | null>(null);
+  // 수료증 팝업 대상 코스 — null이면 닫힘. 수료한 카드의 '수료증' 버튼이 연다.
+  const [certCourse, setCertCourse] = useState<StudentCourse | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -447,6 +462,23 @@ export default function MyRecords() {
     '. ' +
     (up ? '꾸준히 오르고 있어요! 🎉' : '조금씩 다시 올려볼까요? 💪');
 
+  // 수료한 코스가 하나라도 있으면 '수료 현황'은 실데이터 — 데모(빈 상태)여도 탭을 살린다.
+  const hasCompletion = passedCourses.length > 0;
+  const emptyHero = (
+    <section className="mr-section">
+      <div className="mr-card mr-emptyhero">
+        <i className="ph ph-chart-line-up mr-emptyhero-icon" />
+        <h3 className="mr-h3">아직 학습 기록이 없어요</h3>
+        <p className="mr-emptyhero-sub">
+          강의를 듣고 확인 문제를 풀면 학습 통계·수료 현황이 여기에 쌓여요.
+        </p>
+        <button className="mr-comp-cta" onClick={() => navigate(PATHS.STUDENT_LECTURES)}>
+          <i className="ph-fill ph-television" /> 강의 시작하기
+        </button>
+      </div>
+    </section>
+  );
+
   return (
     <StudentLayout className="mr-root">
       {/* 데모 배너 제거(0723) — 실집계 없으면 가짜 데모 대신 아래 빈 상태를 보여준다 */}
@@ -467,20 +499,11 @@ export default function MyRecords() {
       </section>
 
       {/* 실집계가 없어 서버가 데모값을 내려주면(demo) 가짜 통계 대신 빈 상태를 보여준다.
-          아동 게임 잔재(그림찾기·숫자놀이터 등)를 실학습자에게 노출하지 않는다(0723). */}
-      {demo ? (
-        <section className="mr-section">
-          <div className="mr-card mr-emptyhero">
-            <i className="ph ph-chart-line-up mr-emptyhero-icon" />
-            <h3 className="mr-h3">아직 학습 기록이 없어요</h3>
-            <p className="mr-emptyhero-sub">
-              강의를 듣고 확인 문제를 풀면 학습 통계·수료 현황이 여기에 쌓여요.
-            </p>
-            <button className="mr-comp-cta" onClick={() => navigate(PATHS.STUDENT_LECTURES)}>
-              <i className="ph-fill ph-television" /> 강의 시작하기
-            </button>
-          </div>
-        </section>
+          아동 게임 잔재(그림찾기·숫자놀이터 등)를 실학습자에게 노출하지 않는다(0723).
+          단, 수료한 코스가 있으면 '수료 현황'은 실데이터이므로 탭은 살린다 — 그러지 않으면
+          문제은행 기록 없이 수료 시험만 통과한 학습자가 수료증에 접근할 길이 없다. */}
+      {demo && !hasCompletion ? (
+        emptyHero
       ) : (
       <>
       {/* 상단 탭 — 긴 스크롤을 요약/수료/통계로 분할 */}
@@ -497,8 +520,11 @@ export default function MyRecords() {
         ))}
       </div>
 
+      {/* 실집계가 없는 탭(요약·통계)은 가짜 숫자 대신 빈 상태 그대로 */}
+      {demo && recTab !== 'completion' && emptyHero}
+
       {/* ===== 요약 탭 ===== */}
-      {recTab === 'summary' && (
+      {recTab === 'summary' && !demo && (
       <section className="mr-section mr-stats">
         <div className="mr-statgrid">
           <div className="mr-stat">
@@ -576,9 +602,9 @@ export default function MyRecords() {
           ) : (
             <div className="mr-compgroups">
               {/* 행동 우선(0719): 지금 할 것(진행 중→잠김)을 위, 끝낸 것(수료 완료)을 아래 */}
-              <CompGroup title="진행 중" icon="ph-fill ph-hourglass-medium" items={inProgressCourses} navigate={navigate} />
-              <CompGroup title="잠김" icon="ph-fill ph-lock-simple" items={lockedCourses} navigate={navigate} />
-              <CompGroup title="수료 완료" icon="ph-fill ph-seal-check" items={passedCourses} navigate={navigate} />
+              <CompGroup title="진행 중" icon="ph-fill ph-hourglass-medium" items={inProgressCourses} navigate={navigate} onCertificate={setCertCourse} />
+              <CompGroup title="잠김" icon="ph-fill ph-lock-simple" items={lockedCourses} navigate={navigate} onCertificate={setCertCourse} />
+              <CompGroup title="수료 완료" icon="ph-fill ph-seal-check" items={passedCourses} navigate={navigate} onCertificate={setCertCourse} />
             </div>
           )}
         </div>
@@ -627,7 +653,7 @@ export default function MyRecords() {
       )}
 
       {/* ===== 학습 통계 탭 ===== */}
-      {recTab === 'stats' && (
+      {recTab === 'stats' && !demo && (
         <>
       {/* CATEGORY MASTERY + ACCURACY */}
       <section className="mr-section mr-row2">
@@ -800,7 +826,7 @@ export default function MyRecords() {
       )}
 
       {/* ===== 요약 탭: 최근 학습 기록 ===== */}
-      {recTab === 'summary' && (
+      {recTab === 'summary' && !demo && (
       <section className="mr-section mr-recent">
         <div className="mr-card">
           <div className="mr-rhead">
@@ -833,6 +859,15 @@ export default function MyRecords() {
       </section>
       )}
       </>
+      )}
+
+      {/* 수료증 팝업 — 수료한 코스에서만 열린다(발급 자격은 서버가 최종 판정) */}
+      {certCourse && (
+        <CertificateModal
+          courseId={certCourse.id}
+          autoTitle={certCourse.title}
+          onClose={() => setCertCourse(null)}
+        />
       )}
     </StudentLayout>
   );

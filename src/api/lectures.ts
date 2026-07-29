@@ -41,6 +41,16 @@ export interface LectureItem {
   thumbnail_url?: string | null;
 }
 
+/** 코스 가격 — 서버가 계산해 내려주는 정본. 할인 기간이면 effective_price=sale_price. */
+export interface CoursePricing {
+  price: number;
+  sale_price: number | null;
+  sale_ends_at: string | null;
+  /** 실제 청구 금액(할인 반영). 0이면 무료 코스. */
+  effective_price: number;
+  is_free: boolean;
+}
+
 /** 학생용 코스 — 활성 코스 + 강사 실명 + 활성 강의 수. GET /courses. */
 export interface StudentCourse {
   id: string;
@@ -61,6 +71,9 @@ export interface StudentCourse {
   /** 그중 이 학생이 완주한 강의의 문항 수 — >0이면 '이 코스 문제 풀기' 버튼,
    *  0인데 총>0이면 "강의 완주 시 열려요" 잠금 안내(배움→연습 순서를 화면이 말해준다) */
   unlocked_question_count?: number;
+  /** 코스 가격(서버 정본). effective_price가 실제 청구 금액이고 0이면 무료다.
+   *  결제 금액은 주문 생성 때 서버가 다시 정하므로 이 값은 표시 전용이다. */
+  pricing?: CoursePricing;
   /** 수료 시험 요약(#28) — 없음/잠김/응시가능(진행)/수료 카드 렌더의 원천.
    *  '나의 기록' 수료 현황(수료 완료/진행 중/잠김 칸)도 이 요약 하나로 그린다. */
   exam?: {

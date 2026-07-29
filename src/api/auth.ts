@@ -38,7 +38,7 @@ export const authApi = {
       })
       .then((r) => r.data),
 
-  verifyEmailCode: (email: string, code: string, purpose: 'signup' | 'reset' = 'signup') =>
+  verifyEmailCode: (email: string, code: string, purpose: 'signup' | 'reset' | 'guardian' = 'signup') =>
     client
       .post<{ verified: boolean }>('/auth/email/verify', { email, code, purpose })
       .then((r) => r.data),

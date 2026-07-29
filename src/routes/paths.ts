@@ -27,6 +27,11 @@ export const PATHS = {
   STUDENT_DAILY_QUIZ: '/student/daily-quiz', // 은퇴(Q 통합 0719) — 문제은행으로 리다이렉트만 남음
   STUDENT_LECTURES: '/student/lectures', // ?subject= — 과목별 강의 카탈로그(개념 설명 톤)
   STUDENT_CHECKOUT: '/student/checkout', // ?course= — 코스 수강 결제(주문→승인→수강신청)
+  // 결제 결과 착지 페이지 — 카카오페이 QR 승인/취소/실패 후 백엔드가 여기로 리다이렉트한다
+  // (?orderId=). 백엔드 PAYMENT_{SUCCESS,FAIL,CANCEL}_URL 기본값과 경로가 같아야 한다.
+  STUDENT_PAYMENT_SUCCESS: '/student/payment/success',
+  STUDENT_PAYMENT_FAIL: '/student/payment/fail',
+  STUDENT_PAYMENT_CANCEL: '/student/payment/cancel',
   STUDENT_LECTURE: '/student/lecture', // ?id= — 강의실(플레이어 + 시청 검증)
   STUDENT_COURSE_EXAM: '/student/course-exam', // ?course= — 코스 수료 시험(완전학습)
   STUDENT_ALL_LEARNING: '/student/all-learning',

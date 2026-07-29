@@ -9,14 +9,34 @@ import {
   fmtWon,
   type CheckoutInfo,
   type CreatedOrder,
+  type PaymentProvider,
 } from '../../api/payments';
 import './Checkout.css';
 
-/** 결제 수단(데모) — mock 결제에선 표시·기록용 선택값. 실제 토스 결제창은 자체 UI로 수단을 고른다. */
-const METHODS = [
-  { key: '간편결제', label: '간편결제', sub: '카카오페이 · 네이버페이 · 토스페이', icon: 'ph-fill ph-lightning' },
-  { key: '신용·체크카드', label: '신용 · 체크카드', sub: '국내 모든 카드', icon: 'ph-fill ph-credit-card' },
-  { key: '계좌이체', label: '계좌이체', sub: '실시간 계좌이체', icon: 'ph-fill ph-bank' },
+/** 결제 수단 — 서버가 키 설정으로 정한 available_providers 만 노출한다(없는 수단은 아예 안 보임). */
+const PROVIDER_UI: Record<PaymentProvider, { label: string; sub: string; icon: string }> = {
+  kakaopay: {
+    label: '카카오페이',
+    sub: 'PC에서 QR을 스캔해 휴대폰으로 결제',
+    icon: 'ph-fill ph-qr-code',
+  },
+  toss: {
+    label: '토스페이먼츠',
+    sub: '신용·체크카드 · 계좌이체 · 간편결제',
+    icon: 'ph-fill ph-credit-card',
+  },
+  mock: {
+    label: '모의 결제',
+    sub: '실제 결제 없이 승인 — 개발·데모 전용',
+    icon: 'ph-fill ph-flask',
+  },
+};
+
+/** 토스 결제창에 넘길 세부 수단 — 토스를 골랐을 때만 노출한다. */
+const TOSS_METHODS = [
+  { key: '간편결제', sdk: 'EASY_PAY' as const },
+  { key: '신용·체크카드', sdk: 'CARD' as const },
+  { key: '계좌이체', sdk: 'TRANSFER' as const },
 ];
 
 type Phase = 'loading' | 'ready' | 'confirming' | 'done' | 'error';
@@ -49,7 +69,9 @@ export default function Checkout() {
 
   const [phase, setPhase] = useState<Phase>('loading');
   const [items, setItems] = useState<CheckoutInfo[]>([]);
-  const [method, setMethod] = useState(METHODS[0].key);
+  // 결제 경로(PG)와, 토스를 골랐을 때 결제창에 넘길 세부 수단.
+  const [provider, setProvider] = useState<PaymentProvider | null>(null);
+  const [method, setMethod] = useState(TOSS_METHODS[0].key);
   const [agreeAll, setAgreeAll] = useState(false);
   const [errMsg, setErrMsg] = useState('');
   const [paidMethod, setPaidMethod] = useState<string | null>(null);
@@ -60,6 +82,21 @@ export default function Checkout() {
   const payable = useMemo(() => items.filter((i) => !i.already_enrolled), [items]);
   const total = useMemo(() => payable.reduce((n, i) => n + (i.amount || 0), 0), [payable]);
   const allEnrolled = items.length > 0 && payable.length === 0;
+
+  // 사용 가능한 결제수단 — 서버 설정이므로 코스마다 같지만, 안전하게 교집합을 쓴다.
+  const providers = useMemo<PaymentProvider[]>(() => {
+    if (!items.length) return [];
+    return items
+      .map((i) => i.available_providers ?? [])
+      .reduce((acc, list) => acc.filter((p) => list.includes(p)));
+  }, [items]);
+  // 서버 기본값을 초기 선택으로. 목록이 바뀌어 선택이 사라지면 첫 항목으로 되돌린다.
+  useEffect(() => {
+    if (!providers.length) return;
+    setProvider((cur) => (cur && providers.includes(cur) ? cur : items[0]?.provider ?? providers[0]));
+  }, [providers, items]);
+  // 카카오페이는 결제창이 주문 1건 단위라 장바구니 다중 결제와 함께 쓸 수 없다.
+  const kakaoMultiBlocked = provider === 'kakaopay' && payable.length > 1;
 
   // 토스 성공 리다이렉트 확정 — 되돌아온 값으로 서버 승인 확정(금액 대조는 서버가 한다).
   const confirmToss = useCallback(async () => {
@@ -117,11 +154,18 @@ export default function Checkout() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [courseIds.join(',')]);
 
-  const canPay = phase === 'ready' && payable.length > 0 && agreeAll;
+  const canPay =
+    phase === 'ready' && payable.length > 0 && agreeAll && !!provider && !kakaoMultiBlocked;
 
-  /** 결제하기 — 결제 대상 코스마다 주문 생성 후 mock 승인. 단일 코스가 toss면 토스 결제창으로. */
+  /**
+   * 결제하기 — 고른 PG에 따라 갈린다.
+   *  - kakaopay: 주문 생성 → ready → 카카오페이 QR 화면으로 이동(승인은 서버 콜백이 처리)
+   *  - toss    : 주문 생성 → 토스 결제창(리다이렉트) → 돌아와서 confirm
+   *  - mock    : 주문 생성 → 바로 confirm(개발·데모)
+   * 금액은 어느 경로든 서버가 확정·대조하므로 화면 값은 표시용이다.
+   */
   const pay = async () => {
-    if (!canPay) return;
+    if (!canPay || !provider) return;
     setErrMsg('');
     setPhase('confirming');
     try {
@@ -130,18 +174,28 @@ export default function Checkout() {
       for (const it of payable) {
         let order: CreatedOrder;
         try {
-          order = await paymentApi.createOrder(it.course_id);
+          order = await paymentApi.createOrder(it.course_id, provider);
         } catch (e) {
           throw new Error(errorDetail(e, '주문을 만들지 못했어요. 다시 시도해 주세요.'));
         }
+
+        if (order.provider === 'kakaopay') {
+          // 카카오페이 — PC URL이 QR 화면이다. 승인은 카카오가 서버 approval_url로 리다이렉트해
+          // 서버가 처리하고, 서버가 다시 /student/payment/success 로 보내 준다.
+          const ready = await paymentApi.kakaopayReady(order.order_uid);
+          window.location.href = ready.next_redirect_pc_url;
+          return;
+        }
+
         if (order.provider === 'toss') {
           // 실제 토스 결제창 — 단일 코스만. 성공하면 successUrl로 리다이렉트되어 confirmToss로 이어진다.
           if (payable.length > 1) {
-            throw new Error('여러 코스 동시 결제는 데모(mock) 환경에서만 지원돼요. 코스를 하나씩 결제해 주세요.');
+            throw new Error('토스 결제는 코스를 하나씩 결제해 주세요. 결제창이 주문 1건 단위로 열려요.');
           }
           await startTossPayment(order, method);
           return; // 결제창으로 전환(리다이렉트)
         }
+
         // mock 승인 — 실제 돈 이동 없이 결제 UX만 재현. 서버가 금액을 대조·확정하고 수강신청을 연다.
         const res = await paymentApi.confirm({
           order_uid: order.order_uid,
@@ -254,32 +308,69 @@ export default function Checkout() {
 
                 <section className="co-card">
                   <h2 className="co-cardhead">결제 수단</h2>
-                  <div className="co-methods">
-                    {METHODS.map((m) => (
-                      <label
-                        key={m.key}
-                        className={`co-method${method === m.key ? ' co-method--on' : ''}`}
-                      >
-                        <input
-                          type="radio"
-                          name="method"
-                          value={m.key}
-                          checked={method === m.key}
-                          onChange={() => setMethod(m.key)}
-                        />
-                        <i className={m.icon} />
-                        <span className="co-method-body">
-                          <span className="co-method-label">{m.label}</span>
-                          <span className="co-method-sub">{m.sub}</span>
-                        </span>
-                        <span className="co-method-dot" aria-hidden="true" />
-                      </label>
-                    ))}
-                  </div>
-                  {items.some((i) => i.provider === 'mock') && (
+                  {providers.length === 0 ? (
+                    <p className="co-note">
+                      <i className="ph-fill ph-warning-circle" />
+                      지금 사용할 수 있는 결제수단이 없어요. 잠시 후 다시 시도해 주세요.
+                    </p>
+                  ) : (
+                    <div className="co-methods">
+                      {providers.map((p) => (
+                        <label
+                          key={p}
+                          className={`co-method${provider === p ? ' co-method--on' : ''}`}
+                        >
+                          <input
+                            type="radio"
+                            name="provider"
+                            value={p}
+                            checked={provider === p}
+                            onChange={() => setProvider(p)}
+                          />
+                          <i className={PROVIDER_UI[p].icon} />
+                          <span className="co-method-body">
+                            <span className="co-method-label">{PROVIDER_UI[p].label}</span>
+                            <span className="co-method-sub">{PROVIDER_UI[p].sub}</span>
+                          </span>
+                          <span className="co-method-dot" aria-hidden="true" />
+                        </label>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* 토스는 결제창에 넘길 세부 수단을 여기서 고른다(카카오페이는 자체 화면) */}
+                  {provider === 'toss' && (
+                    <div className="co-submethods">
+                      {TOSS_METHODS.map((m) => (
+                        <button
+                          key={m.key}
+                          type="button"
+                          className={`co-submethod${method === m.key ? ' co-submethod--on' : ''}`}
+                          onClick={() => setMethod(m.key)}
+                        >
+                          {m.key}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {provider === 'kakaopay' && (
+                    <p className="co-note">
+                      <i className="ph-fill ph-qr-code" />
+                      결제하기를 누르면 카카오페이 화면으로 이동해요. PC에 뜬 QR을 휴대폰으로 스캔해
+                      결제를 마치면 자동으로 돌아옵니다.
+                    </p>
+                  )}
+                  {kakaoMultiBlocked && (
+                    <p className="co-note co-note--warn">
+                      <i className="ph-fill ph-warning-circle" />
+                      카카오페이는 코스를 하나씩 결제해 주세요. 결제창이 주문 1건 단위로 열려요.
+                    </p>
+                  )}
+                  {provider === 'mock' && (
                     <p className="co-note">
                       <i className="ph-fill ph-info" />
-                      데모 환경이라 실제 결제 없이 승인돼요(테스트 모드).
+                      개발 환경이라 실제 결제 없이 승인돼요(테스트 모드).
                     </p>
                   )}
                 </section>
@@ -419,7 +510,7 @@ async function startTossPayment(order: CreatedOrder, method: string): Promise<vo
   const payment = toss.payment({ customerKey: order.customer_key });
   const base = `${window.location.origin}${PATHS.STUDENT_CHECKOUT}`;
   await payment.requestPayment({
-    method: method === '계좌이체' ? 'TRANSFER' : method === '간편결제' ? 'EASY_PAY' : 'CARD',
+    method: TOSS_METHODS.find((m) => m.key === method)?.sdk ?? 'CARD',
     amount: { currency: 'KRW', value: order.amount },
     orderId: order.order_uid,
     orderName: order.course_title,

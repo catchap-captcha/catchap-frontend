@@ -9,8 +9,7 @@ import {
   type ExamState,
 } from '../../api/lectures';
 import { StudentNav } from '../../layouts/StudentLayout';
-import { drawCourseCertificate } from '../../utils/certificate';
-import { canvasToPdf } from '../../utils/pdf';
+import CertificateModal from '../../components/course/CertificateModal';
 import './CourseExam.css';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -43,33 +42,9 @@ export default function CourseExam() {
     progress: { mastered: number; total: number }; passed: boolean; perfect: boolean; stale: number;
   } | null>(null);
   const [startedAt, setStartedAt] = useState(0);
-  const [certBusy, setCertBusy] = useState(false);
-
-  // 수료증 발급 — 서버가 수료를 검증해 데이터를 내려주고(미수료 404), 프론트가 캔버스로 그려
-  // PDF로 저장한다. 위조 방지의 핵심은 서버 검증이라 클라이언트는 받은 값만 렌더한다.
-  const downloadCertificate = useCallback(async () => {
-    if (!courseId || certBusy) return;
-    setCertBusy(true);
-    setLoadErr('');
-    try {
-      const cert = await lectureApi.examCertificate(courseId);
-      const canvas = drawCourseCertificate({
-        studentName: cert.student_name,
-        courseTitle: cert.course_title,
-        subject: cert.subject,
-        instructorName: cert.instructor_name,
-        passedAt: cert.passed_at,
-        perfect: cert.perfect,
-        questionCount: cert.question_count,
-        serial: cert.serial,
-      });
-      await canvasToPdf(`수료증_${cert.course_title}.pdf`, canvas);
-    } catch (e: any) {
-      setLoadErr(e?.response?.data?.detail ?? '수료증을 발급하지 못했어요. 잠시 후 다시 시도해 주세요.');
-    } finally {
-      setCertBusy(false);
-    }
-  }, [courseId, certBusy]);
+  // 수료증 팝업 — 합격 직후 자동으로 열고(아래 submit), 인트로·결과지 버튼으로도 다시 연다.
+  // 발급 자체(서버 수료 검증 → 캔버스 렌더 → 저장)는 CertificateModal이 맡는다.
+  const [certOpen, setCertOpen] = useState(false);
 
   const loadState = useCallback(() => {
     if (!courseId) return;
@@ -127,6 +102,8 @@ export default function CourseExam() {
       });
       setResult(res as any);
       setPhase('result');
+      // 합격 처리 직후 수료증을 바로 보여준다(사용자 요청). 닫아도 인트로·나의 기록에서 다시 열 수 있다.
+      if ((res as any)?.passed) setCertOpen(true);
     } catch (e: any) {
       // 이미 제출된 회차(409) 등 — 정직하게 알리고 상태를 새로고침
       setLoadErr(e?.response?.data?.detail ?? '제출에 실패했어요. 다시 시도해 주세요.');
@@ -170,7 +147,7 @@ export default function CourseExam() {
 
         {/* ===== INTRO — 상태 카드 ===== */}
         {phase === 'intro' && state && (
-          <IntroCard state={state} onStart={start} onCertificate={downloadCertificate} certBusy={certBusy} />
+          <IntroCard state={state} onStart={start} onCertificate={() => setCertOpen(true)} />
         )}
         {phase === 'intro' && !state && !loadErr && <div className="ce-empty">불러오는 중…</div>}
 
@@ -312,8 +289,8 @@ export default function CourseExam() {
             <div className="ce-take-actions">
               <Link to={PATHS.STUDENT_LECTURES} className="ce-btn ce-btn--ghost">강의 목록으로</Link>
               {result.passed && (
-                <button className="ce-btn ce-btn--soft" onClick={downloadCertificate} disabled={certBusy}>
-                  <i className="ph-fill ph-certificate" /> {certBusy ? '발급 중…' : '수료증 다운로드'}
+                <button className="ce-btn ce-btn--soft" onClick={() => setCertOpen(true)}>
+                  <i className="ph-fill ph-certificate" /> 수료증 보기
                 </button>
               )}
               {!result.passed && (
@@ -336,18 +313,26 @@ export default function CourseExam() {
           </section>
         )}
       </div>
+
+      {/* 수료증 팝업 — 합격 직후 자동 노출 + 버튼으로 다시 열기 */}
+      {certOpen && (
+        <CertificateModal
+          courseId={courseId}
+          autoTitle={state?.title}
+          onClose={() => setCertOpen(false)}
+        />
+      )}
     </div>
   );
 }
 
 /** 인트로 — 응시 자격·진행·수료 상태를 한 카드에 (잠김/응시 가능/수료/완벽 도전). */
 function IntroCard({
-  state, onStart, onCertificate, certBusy,
+  state, onStart, onCertificate,
 }: {
   state: ExamState;
   onStart: (perfect?: boolean) => void;
   onCertificate: () => void;
-  certBusy: boolean;
 }) {
   if (!state.has_exam) {
     return (
@@ -387,8 +372,8 @@ function IntroCard({
               </button>
             </>
           )}
-          <button className="ce-btn ce-btn--soft ce-btn--lg" onClick={onCertificate} disabled={certBusy}>
-            <i className="ph-fill ph-certificate" /> {certBusy ? '발급 중…' : '수료증 다운로드'}
+          <button className="ce-btn ce-btn--soft ce-btn--lg" onClick={onCertificate}>
+            <i className="ph-fill ph-certificate" /> 수료증 보기
           </button>
           <Link to={PATHS.STUDENT_LECTURES} className="ce-btn ce-btn--ghost">강의 목록으로</Link>
         </>

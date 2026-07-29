@@ -136,9 +136,6 @@ export default function FindIdPage() {
     <div className="pr-page">
       {/* LEFT BRAND PANEL */}
       <div className="pr-left">
-        <div className="pr-deco-1"></div>
-        <div className="pr-deco-2"></div>
-
         <Link to={PATHS.LOGIN} className="pr-brand">
           <img src={wordmarkWhite} alt="CATCHAP" className="pr-brand-wordmark" />
         </Link>
@@ -156,13 +153,11 @@ export default function FindIdPage() {
           </p>
         </div>
 
+        {/* 로그인 패널 하단(.lg-badges)과 같은 '텍스트 · 점' 형태 */}
         <div className="pr-chips">
-          <span className="pr-chip">
-            <i className="ph-fill ph-envelope-simple pr-chip-icon"></i>이메일 본인확인
-          </span>
-          <span className="pr-chip">
-            <i className="ph-fill ph-identification-card pr-chip-icon"></i>아이디 안내
-          </span>
+          <span>이메일 본인확인</span>
+          <span className="pr-chip-dot" />
+          <span>아이디 안내</span>
         </div>
       </div>
 

@@ -109,9 +109,6 @@ export default function PasswordResetPage() {
     <div className="pr-page">
       {/* LEFT BRAND PANEL */}
       <div className="pr-left">
-        <div className="pr-deco-1"></div>
-        <div className="pr-deco-2"></div>
-
         <Link to={PATHS.LOGIN} className="pr-brand">
           <img src={wordmarkWhite} alt="CATCHAP" className="pr-brand-wordmark" />
         </Link>
@@ -128,13 +125,11 @@ export default function PasswordResetPage() {
           </p>
         </div>
 
+        {/* 로그인 패널 하단(.lg-badges)과 같은 '텍스트 · 점' 형태 */}
         <div className="pr-chips">
-          <span className="pr-chip">
-            <i className="ph-fill ph-envelope-simple pr-chip-icon"></i>이메일 본인확인
-          </span>
-          <span className="pr-chip">
-            <i className="ph-fill ph-shield-check pr-chip-icon"></i>안전한 비밀번호 보호
-          </span>
+          <span>이메일 본인확인</span>
+          <span className="pr-chip-dot" />
+          <span>안전한 비밀번호 보호</span>
         </div>
       </div>
 
