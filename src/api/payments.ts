@@ -1,11 +1,12 @@
 import { client } from './client';
 
 /** 결제 수단 — 서버가 키 설정 여부로 사용 가능 목록을 정한다(mock은 개발 환경에서만). */
-export type PaymentProvider = 'toss' | 'kakaopay' | 'mock';
+export type PaymentProvider = 'toss' | 'kakaopay' | 'portone' | 'mock';
 
 export const PROVIDER_LABEL: Record<PaymentProvider, string> = {
   toss: '토스페이먼츠',
   kakaopay: '카카오페이 QR',
+  portone: '카드·간편결제',
   mock: '모의 결제(개발용)',
 };
 
@@ -25,6 +26,10 @@ export interface CheckoutInfo {
   /** 토스 결제창 초기화용 공개 키(토스가 꺼져 있으면 빈 문자열) */
   toss_client_key: string;
   customer_key: string;
+  /** 포트원 브라우저 SDK 초기화용 공개값 — 꺼져 있으면 빈 문자열.
+   *  API Secret은 서버 전용이라 내려오지 않는다. */
+  portone_store_id: string;
+  portone_channel_key: string;
 }
 
 /** 주문 생성 응답 — 서버가 금액을 확정해 order_uid를 발급(pending). */
@@ -36,6 +41,8 @@ export interface CreatedOrder {
   course_title: string;
   toss_client_key: string;
   customer_key: string;
+  portone_store_id: string;
+  portone_channel_key: string;
 }
 
 /** 카카오페이 결제 준비 — PC URL을 열면 카카오페이가 QR을 띄운다. */
@@ -94,8 +101,9 @@ export const paymentApi = {
       .post<KakaoReady>('/payments/kakaopay/ready', { order_uid: orderUid })
       .then((r) => r.data),
 
-  /** 결제 확정(토스·mock) — 서버가 금액을 대조(위변조 방어)한 뒤 승인하고 수강신청을 활성화한다.
-   *  카카오페이는 이 경로를 쓰지 않는다(서버 리다이렉트 콜백에서 승인). */
+  /** 결제 확정(토스·포트원·mock) — 서버가 금액을 대조(위변조 방어)한 뒤 승인하고 수강신청을
+   *  활성화한다. 포트원은 payment_key 없이 order_uid만 보내면 서버가 그 번호로 PG를 조회해
+   *  검증한다. 카카오페이는 이 경로를 쓰지 않는다(서버 리다이렉트 콜백에서 승인). */
   confirm: (body: {
     order_uid: string;
     amount: number;

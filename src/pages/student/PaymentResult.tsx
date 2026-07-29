@@ -14,6 +14,10 @@ import './Checkout.css';
  * 서버에 주문 상태를 다시 물어본다(성공을 지어내지 않는다 — 실제 status가 paid일 때만 성공).
  *
  * 토스는 결제창이 Checkout 페이지로 되돌아와 그 자리에서 confirm 하므로 이 페이지를 안 거친다.
+ *
+ * 포트원은 PC에선 Checkout 이 그 자리에서 승인하지만, 모바일은 결제창이 브라우저를 통째로
+ * 넘겨받아 여기로 리다이렉트되므로 승인 요청이 뜬 채로 돌아온다. 그래서 주문이 아직 pending 이면
+ * 이 화면이 대신 승인을 요청한다(서버가 PG를 조회해 검증하므로, 여기서 보내는 값은 주문번호뿐이다).
  */
 export default function PaymentResult({ kind }: { kind: 'success' | 'fail' | 'cancel' }) {
   const [params] = useSearchParams();
@@ -28,8 +32,23 @@ export default function PaymentResult({ kind }: { kind: 'success' | 'fail' | 'ca
   useEffect(() => {
     if (!orderId) return;
     let alive = true;
-    paymentApi
-      .orderStatus(orderId)
+
+    // 모바일 포트원 복귀 — 아직 pending 이면 승인을 한 번 요청한 뒤 상태를 다시 읽는다.
+    // 웹훅이 먼저 도착해 이미 paid 면 그냥 그 값을 쓴다(중복 승인 요청을 하지 않는다).
+    const settle = async () => {
+      let o = await paymentApi.orderStatus(orderId);
+      if (kind === 'success' && o.status === 'pending' && o.provider === 'portone') {
+        try {
+          await paymentApi.confirm({ order_uid: o.order_uid, amount: o.amount });
+          o = await paymentApi.orderStatus(orderId);
+        } catch {
+          // 승인 실패는 아래 상태 표시가 pending/failed 그대로 정직하게 말해 준다.
+        }
+      }
+      return o;
+    };
+
+    settle()
       .then((o) => {
         if (alive) setOrder(o);
       })
@@ -42,7 +61,7 @@ export default function PaymentResult({ kind }: { kind: 'success' | 'fail' | 'ca
     return () => {
       alive = false;
     };
-  }, [orderId]);
+  }, [orderId, kind]);
 
   // 서버 주문 상태가 최종 판단 — URL이 success여도 paid가 아니면 성공으로 보여주지 않는다.
   const paid = order?.status === 'paid';

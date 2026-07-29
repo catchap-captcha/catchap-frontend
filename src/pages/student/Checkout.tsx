@@ -25,6 +25,11 @@ const PROVIDER_UI: Record<PaymentProvider, { label: string; sub: string; icon: s
     sub: '신용·체크카드 · 계좌이체 · 간편결제',
     icon: 'ph-fill ph-credit-card',
   },
+  portone: {
+    label: '카드·간편결제',
+    sub: '카드 · 계좌이체 · 간편결제 · 해외카드',
+    icon: 'ph-fill ph-wallet',
+  },
   mock: {
     label: '모의 결제',
     sub: '실제 결제 없이 승인 — 개발·데모 전용',
@@ -40,6 +45,20 @@ const TOSS_METHODS = [
 ];
 
 type Phase = 'loading' | 'ready' | 'confirming' | 'done' | 'error';
+
+/**
+ * 화면에 띄울 오류 문구.
+ *
+ * errorDetail 은 서버 응답(detail)만 읽어서, 우리가 직접 던진 Error("코스를 하나씩…")나
+ * 결제 SDK가 던진 원문("채널 정보를 조회하는데 실패…")을 통째로 버리고 기본 문구로 덮어썼다.
+ * 서버 detail 이 있으면 그걸 쓰고, 없으면 예외 자신의 메시지를 살린다.
+ */
+function payErrorMessage(e: unknown, fallback: string): string {
+  const detail = errorDetail(e, '');
+  if (detail) return detail;
+  const msg = (e as Error)?.message;
+  return typeof msg === 'string' && msg ? msg : fallback;
+}
 
 /**
  * 코스 수강 결제 페이지 — 주문 → 승인 → 수강신청.
@@ -96,7 +115,8 @@ export default function Checkout() {
     setProvider((cur) => (cur && providers.includes(cur) ? cur : items[0]?.provider ?? providers[0]));
   }, [providers, items]);
   // 카카오페이는 결제창이 주문 1건 단위라 장바구니 다중 결제와 함께 쓸 수 없다.
-  const kakaoMultiBlocked = provider === 'kakaopay' && payable.length > 1;
+  const kakaoMultiBlocked =
+    (provider === 'kakaopay' || provider === 'portone') && payable.length > 1;
 
   // 무료 코스(합계 0원)는 PG를 거치지 않는다 — 서버도 0원 주문을 400(free_course)으로 막고
   // "무료 코스는 결제 없이 수강신청해 주세요"라고 답한다. 결제수단이 하나도 설정되지 않은
@@ -223,6 +243,25 @@ export default function Checkout() {
           return; // 결제창으로 전환(리다이렉트)
         }
 
+        if (order.provider === 'portone') {
+          // 포트원 — 결제창은 SDK가 띄우고, 승인 검증은 서버가 order_uid로 조회해서 한다.
+          // 결제창도 주문 1건 단위라 다중 결제는 막는다(토스와 같은 이유).
+          if (payable.length > 1) {
+            throw new Error('이 결제수단은 코스를 하나씩 결제해 주세요. 결제창이 주문 1건 단위로 열려요.');
+          }
+          await startPortOnePayment(order);
+          // 결제창이 성공으로 닫혔을 뿐 아직 승인 전이다 — 서버가 PG를 조회해 확정한다.
+          const res = await paymentApi.confirm({
+            order_uid: order.order_uid,
+            amount: order.amount,
+          });
+          setPaidAmount(res.amount);
+          setPaidMethod(res.method);
+          setPaidCount(1);
+          setPhase('done');
+          return;
+        }
+
         // mock 승인 — 실제 돈 이동 없이 결제 UX만 재현. 서버가 금액을 대조·확정하고 수강신청을 연다.
         const res = await paymentApi.confirm({
           order_uid: order.order_uid,
@@ -237,7 +276,7 @@ export default function Checkout() {
       setPaidCount(payable.length);
       setPhase('done');
     } catch (e) {
-      setErrMsg(errorDetail(e, '결제 승인에 실패했어요. 다시 시도해 주세요.'));
+      setErrMsg(payErrorMessage(e, '결제 승인에 실패했어요. 다시 시도해 주세요.'));
       setPhase('error');
     }
   };
@@ -399,10 +438,18 @@ export default function Checkout() {
                       결제를 마치면 자동으로 돌아옵니다.
                     </p>
                   )}
+                  {provider === 'portone' && (
+                    <p className="co-note">
+                      <i className="ph-fill ph-shield-check" />
+                      결제하기를 누르면 결제창이 열려요. 카드·계좌이체·간편결제 중에서 고를 수 있고,
+                      결제가 끝나면 서버가 결제 내역을 직접 확인한 뒤 수강신청이 열립니다.
+                    </p>
+                  )}
                   {kakaoMultiBlocked && (
                     <p className="co-note co-note--warn">
                       <i className="ph-fill ph-warning-circle" />
-                      카카오페이는 코스를 하나씩 결제해 주세요. 결제창이 주문 1건 단위로 열려요.
+                      {PROVIDER_UI[provider!].label}는 코스를 하나씩 결제해 주세요. 결제창이 주문 1건
+                      단위로 열려요.
                     </p>
                   )}
                   {provider === 'mock' && (
@@ -577,6 +624,57 @@ function loadTossSdk(): Promise<(clientKey: string) => any> {
     const s = document.createElement('script');
     s.src = 'https://js.tosspayments.com/v2/standard';
     s.onload = () => (w.TossPayments ? resolve(w.TossPayments) : reject(new Error('SDK 로드 실패')));
+    s.onerror = () => reject(new Error('결제 모듈을 불러오지 못했어요.'));
+    document.head.appendChild(s);
+  });
+}
+
+/**
+ * 포트원(PortOne) V2 결제창 — 여러 PG를 한 연동으로 부르는 중개 레이어.
+ *
+ * 토스 직접 연동과 다른 점: 결제 요청은 브라우저 SDK가 하고 **승인은 서버가 조회로 검증**한다.
+ * paymentId 를 우리 order_uid 로 그대로 쓰기 때문에, 결제가 끝나면 서버가 그 번호로
+ * PortOne API를 조회해 금액·상태를 확인한다(프런트가 보낸 값을 신뢰하지 않는다).
+ *
+ * 반환값: 결제창이 성공으로 끝나면 true. 사용자가 닫거나 실패하면 예외를 던진다.
+ */
+async function startPortOnePayment(order: CreatedOrder): Promise<void> {
+  const sdk = await loadPortOneSdk();
+  let res: any;
+  try {
+    res = await sdk.requestPayment({
+      storeId: order.portone_store_id,
+      channelKey: order.portone_channel_key,
+      // paymentId = 서버 주문번호. 서버가 이 값으로 결제를 조회·검증한다.
+      paymentId: order.order_uid,
+      orderName: order.course_title,
+      totalAmount: order.amount,
+      currency: 'CURRENCY_KRW',
+      payMethod: 'CARD',
+      // 모바일은 결제창이 브라우저를 넘겨받아 이 주소로 되돌아온다. 그때는 아래 confirm 이
+      // 실행되지 않으므로 결과 페이지(PaymentResult)가 대신 승인을 요청한다.
+      redirectUrl: `${window.location.origin}${PATHS.STUDENT_PAYMENT_SUCCESS}?orderId=${order.order_uid}`,
+    });
+  } catch (e) {
+    // 채널 설정 오류 등은 예외로 올라온다(실측). 원문이 진단에 필요해 그대로 살린다.
+    throw new Error(
+      (e as Error)?.message || '결제창을 열지 못했어요. 잠시 후 다시 시도해 주세요.',
+    );
+  }
+  // 사용자가 창을 닫거나 결제가 거절되면 code/message 로 돌아온다 — 성공을 지어내지 않는다.
+  if (res?.code) {
+    throw new Error(res.message || '결제가 취소되었거나 실패했어요.');
+  }
+}
+
+/** 포트원 브라우저 SDK(v2) 동적 로드 — 한 번만 주입한다. */
+function loadPortOneSdk(): Promise<any> {
+  const w = window as any;
+  if (w.PortOne) return Promise.resolve(w.PortOne);
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdn.portone.io/v2/browser-sdk.js';
+    s.onload = () => (w.PortOne ? resolve(w.PortOne) : reject(new Error('SDK 로드 실패')));
     s.onerror = () => reject(new Error('결제 모듈을 불러오지 못했어요.'));
     document.head.appendChild(s);
   });
