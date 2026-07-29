@@ -180,6 +180,8 @@ export interface OpsCourse {
   lecture_count: number;
   /** 수강 인원(active) — 강사 운영 지표. 학생 화면엔 안 보이고 강사 콘솔에만 노출. */
   enrolled_count: number;
+  /** 수강료(서버 정본). 강사가 '가격 설정'으로 정한다. effective_price가 실제 청구 금액. */
+  pricing?: CoursePricing;
   /** 코스 대표 썸네일 서빙 URL(상대경로, thumbnailSrc로 절대화). null이면 자동 커버 폴백. */
   thumbnail_url?: string | null;
   created_at: string | null;
@@ -673,6 +675,14 @@ export const lectureApi = {
 
   /** 코스 소프트 삭제 — 소속 강의는 미분류(course_id=null)로 풀려날 뿐 삭제되지 않는다.
    *  lectures_unassigned = 풀려난 강의 수(사용자 안내용). */
+  /** 코스 수강료 설정(강사) — PUT /ops/courses/{id}/pricing.
+   *  서버가 이 값을 결제 금액의 정본으로 쓴다(주문 생성 시 스냅샷). 0이면 무료 코스.
+   *  sale_price는 sale_ends_at 전까지만 적용되고, 정상가보다 클 수 없다(서버 400). */
+  opsCourseSetPricing: (
+    courseId: string,
+    body: { price: number; sale_price?: number | null; sale_ends_at?: string | null },
+  ) => client.put<CoursePricing>(`/ops/courses/${courseId}/pricing`, body).then((r) => r.data),
+
   opsCourseDelete: (courseId: string) =>
     client
       .delete<{ ok: boolean; lectures_unassigned: number }>(`/ops/courses/${courseId}`)

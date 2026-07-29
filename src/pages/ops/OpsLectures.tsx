@@ -1529,6 +1529,7 @@ function CoursesModal({
   const [err, setErr] = useState('');
   const [saving, setSaving] = useState(false);
   const [examCourse, setExamCourse] = useState<OpsCourse | null>(null); // 수료 시험 문항 모달 대상
+  const [priceCourse, setPriceCourse] = useState<OpsCourse | null>(null); // 수강료 설정 모달 대상
   const editing = form?.id != null;
 
   // 운영자 모더레이션 — 코스 공개/숨김만
@@ -1702,6 +1703,7 @@ function CoursesModal({
             <span>코스</span>
             <span>분류</span>
             <span>강의</span>
+            <span>수강료</span>
             <span>상태</span>
             <span className="op-col-right">관리</span>
           </div>
@@ -1722,6 +1724,21 @@ function CoursesModal({
                 <small className="op-course-enrolled">
                   <i className="ph-fill ph-users" /> 수강 {c.enrolled_count ?? 0}명
                 </small>
+              </span>
+              {/* 수강료 — 할인 중이면 정상가에 취소선을 긋고 실제 청구 금액을 앞에 둔다 */}
+              <span className="op-course-price">
+                {!c.pricing ? (
+                  '—'
+                ) : c.pricing.is_free ? (
+                  <span className="op-course-free">무료</span>
+                ) : (
+                  <>
+                    <b>{c.pricing.effective_price.toLocaleString('ko-KR')}원</b>
+                    {c.pricing.sale_price != null && c.pricing.sale_price < c.pricing.price && (
+                      <s>{c.pricing.price.toLocaleString('ko-KR')}원</s>
+                    )}
+                  </>
+                )}
               </span>
               <span>
                 <span
@@ -1749,6 +1766,13 @@ function CoursesModal({
                   </button>
                 ) : (
                   <>
+                    <button
+                      className="op-btn op-btn--approve op-lect-btn-outline"
+                      onClick={() => setPriceCourse(c)}
+                      title="이 코스의 수강료를 정해요(학생 결제 금액의 정본)"
+                    >
+                      <i className="ph-fill ph-tag" /> 가격 설정
+                    </button>
                     <button
                       className="op-btn op-btn--reject"
                       onClick={() => {
@@ -1782,6 +1806,172 @@ function CoursesModal({
           say={say}
         />
       )}
+
+      {priceCourse && (
+        <PricingModal
+          course={priceCourse}
+          onClose={() => setPriceCourse(null)}
+          onSaved={onChanged}
+          say={say}
+        />
+      )}
+    </div>
+  );
+}
+
+/* ================= 코스 가격 설정 모달 =================
+   수강료의 서버 정본을 강사가 직접 정한다(PUT /ops/courses/{id}/pricing).
+   결제 금액은 주문 생성 때 서버가 이 값으로 다시 계산해 주문에 스냅샷하므로, 프런트가
+   다른 금액을 보내도 승인되지 않는다 — 여기 입력은 '정본을 바꾸는' 행위다.
+   0원이면 무료 코스가 되어 결제 없이 바로 수강신청된다(학생 화면 Checkout이 분기). */
+function PricingModal({
+  course,
+  onClose,
+  onSaved,
+  say,
+}: {
+  course: OpsCourse;
+  onClose: () => void;
+  onSaved: () => void;
+  say: (m: string) => void;
+}) {
+  const mRef = useModalA11y<HTMLDivElement>(onClose);
+  const cur = course.pricing;
+  const [price, setPrice] = useState(String(cur?.price ?? 0));
+  const [useSale, setUseSale] = useState(cur?.sale_price != null);
+  const [salePrice, setSalePrice] = useState(String(cur?.sale_price ?? ''));
+  // datetime-local 은 'YYYY-MM-DDTHH:mm' — 서버가 준 ISO에서 초 이하를 잘라 맞춘다.
+  const [saleEnds, setSaleEnds] = useState((cur?.sale_ends_at ?? '').slice(0, 16));
+  const [err, setErr] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  const priceNum = Number(price.replace(/[^\d]/g, '') || 0);
+  const saleNum = Number(salePrice.replace(/[^\d]/g, '') || 0);
+  const effective = useSale && saleNum > 0 ? saleNum : priceNum;
+
+  const save = async () => {
+    setErr('');
+    if (!Number.isFinite(priceNum) || priceNum < 0) return setErr('정상가를 올바르게 입력해 주세요.');
+    if (useSale) {
+      if (saleNum <= 0) return setErr('할인가를 입력하거나 할인 사용을 꺼 주세요.');
+      if (saleNum > priceNum) return setErr('할인가는 정상가보다 클 수 없어요.');
+      if (!saleEnds) return setErr('할인 종료일을 정해 주세요.');
+    }
+    setSaving(true);
+    try {
+      await lectureApi.opsCourseSetPricing(course.id, {
+        price: priceNum,
+        sale_price: useSale ? saleNum : null,
+        sale_ends_at: useSale ? saleEnds : null,
+      });
+      say(
+        priceNum === 0
+          ? `'${course.title}' 코스를 무료로 설정했어요.`
+          : `'${course.title}' 수강료를 ${effective.toLocaleString('ko-KR')}원으로 설정했어요.`,
+      );
+      onSaved();
+      onClose();
+    } catch (e) {
+      setErr(errorDetail(e, '가격을 저장하지 못했어요.'));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="op-bh-overlay" onClick={() => !saving && onClose()}>
+      <div
+        className="op-formmodal"
+        onClick={(e) => e.stopPropagation()}
+        ref={mRef}
+        tabIndex={-1}
+        role="dialog"
+        aria-modal="true"
+        aria-label="수강료 설정"
+      >
+        <div className="op-bh-modal-h">
+          <span>
+            <i className="ph-fill ph-tag" /> 수강료 설정
+          </span>
+          <button className="op-bh-modal-x" onClick={onClose} disabled={saving}>
+            <i className="ph-bold ph-x" />
+          </button>
+        </div>
+
+        <div className="op-lect-qform">
+          <p className="lu-help op-price-course">
+            <i className="ph-fill ph-stack" /> {course.title}
+          </p>
+
+          <div className="op-form-grid">
+            <label className="ox-field">
+              정상가 (원)
+              <span className="lu-help">0으로 두면 무료 코스가 돼요(결제 없이 바로 수강신청)</span>
+              <input
+                inputMode="numeric"
+                value={price}
+                onChange={(e) => setPrice(e.target.value.replace(/[^\d]/g, ''))}
+                placeholder="예: 49000"
+              />
+            </label>
+
+            <label className="ox-field">
+              할인 적용
+              <span className="lu-help">기간 한정 할인가를 따로 둘 수 있어요</span>
+              <select value={useSale ? 'y' : 'n'} onChange={(e) => setUseSale(e.target.value === 'y')}>
+                <option value="n">사용 안 함</option>
+                <option value="y">사용</option>
+              </select>
+            </label>
+
+            {useSale && (
+              <>
+                <label className="ox-field">
+                  할인가 (원)
+                  <input
+                    inputMode="numeric"
+                    value={salePrice}
+                    onChange={(e) => setSalePrice(e.target.value.replace(/[^\d]/g, ''))}
+                    placeholder="예: 39000"
+                  />
+                </label>
+                <label className="ox-field">
+                  할인 종료
+                  <span className="lu-help">이 시각이 지나면 정상가로 돌아가요</span>
+                  <input
+                    type="datetime-local"
+                    value={saleEnds}
+                    onChange={(e) => setSaleEnds(e.target.value)}
+                  />
+                </label>
+              </>
+            )}
+          </div>
+
+          <div className="op-price-preview">
+            <span>학생에게 보이는 금액</span>
+            <strong>{effective === 0 ? '무료' : `${effective.toLocaleString('ko-KR')}원`}</strong>
+            {useSale && saleNum > 0 && priceNum > saleNum && (
+              <s>{priceNum.toLocaleString('ko-KR')}원</s>
+            )}
+          </div>
+
+          {err && (
+            <div className="op-form-err">
+              <i className="ph-fill ph-warning-circle" /> {err}
+            </div>
+          )}
+
+          <div className="op-form-actions">
+            <button className="op-btn op-btn--reject" disabled={saving} onClick={onClose}>
+              취소
+            </button>
+            <button className="op-btn op-btn--approve" disabled={saving} onClick={save}>
+              <i className="ph-bold ph-check" /> {saving ? '저장 중…' : '저장'}
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

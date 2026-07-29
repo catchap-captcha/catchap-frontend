@@ -265,11 +265,71 @@
 .op-lect-movebtn:disabled { opacity: 0.35; cursor: default; }
 
 /* 코스 목록 그리드 — 코스 / 과목 / 강의수 / 상태 / 관리 */
+/* 코스 / 분류 / 강의 / 수강료 / 상태 / 관리 */
 .op-course-grid {
   display: grid;
-  grid-template-columns: minmax(200px, 2fr) 72px 64px 76px minmax(150px, 1fr);
+  grid-template-columns: minmax(180px, 2fr) 68px 62px 96px 72px minmax(210px, 1.2fr);
   gap: 10px;
   align-items: center;
+}
+
+/* 수강료 열 — 할인 중이면 실제 금액 아래에 정상가를 취소선으로 */
+.op-course-price {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.op-course-price s {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ink-3);
+}
+.op-course-free {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--ok);
+  background: var(--ok-soft);
+  padding: 2px 8px;
+  border-radius: 999px;
+  align-self: flex-start;
+}
+
+/* 수강료 설정 모달 */
+.op-price-course {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 12px;
+  font-weight: 700;
+  color: var(--ink-2);
+}
+.op-price-preview {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-top: 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-2);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+.op-price-preview strong {
+  margin-left: auto;
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+}
+.op-price-preview s {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-3);
 }
 
 /* 업로드 진행률 */
