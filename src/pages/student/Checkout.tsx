@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
 import { StudentNav } from '../../layouts/StudentLayout';
 import CourseCover from '../../components/course/CourseCover';
-import { errorDetail } from '../../api/lectures';
+import { errorDetail, lectureApi } from '../../api/lectures';
 import {
   paymentApi,
   fmtWon,
@@ -98,6 +98,11 @@ export default function Checkout() {
   // 카카오페이는 결제창이 주문 1건 단위라 장바구니 다중 결제와 함께 쓸 수 없다.
   const kakaoMultiBlocked = provider === 'kakaopay' && payable.length > 1;
 
+  // 무료 코스(합계 0원)는 PG를 거치지 않는다 — 서버도 0원 주문을 400(free_course)으로 막고
+  // "무료 코스는 결제 없이 수강신청해 주세요"라고 답한다. 결제수단이 하나도 설정되지 않은
+  // 환경에서도 무료 코스 수강신청은 막히면 안 되므로, 이 경우 수강신청 API로 바로 간다.
+  const freeOnly = payable.length > 0 && total === 0;
+
   // 토스 성공 리다이렉트 확정 — 되돌아온 값으로 서버 승인 확정(금액 대조는 서버가 한다).
   const confirmToss = useCallback(async () => {
     setPhase('confirming');
@@ -155,7 +160,10 @@ export default function Checkout() {
   }, [courseIds.join(',')]);
 
   const canPay =
-    phase === 'ready' && payable.length > 0 && agreeAll && !!provider && !kakaoMultiBlocked;
+    phase === 'ready' &&
+    payable.length > 0 &&
+    agreeAll &&
+    (freeOnly || (!!provider && !kakaoMultiBlocked));
 
   /**
    * 결제하기 — 고른 PG에 따라 갈린다.
@@ -165,9 +173,28 @@ export default function Checkout() {
    * 금액은 어느 경로든 서버가 확정·대조하므로 화면 값은 표시용이다.
    */
   const pay = async () => {
-    if (!canPay || !provider) return;
+    if (!canPay) return;
     setErrMsg('');
     setPhase('confirming');
+
+    // 무료 코스 — 결제를 만들지 않고 바로 수강신청한다(PG 설정과 무관하게 항상 가능).
+    if (freeOnly) {
+      try {
+        for (const it of payable) {
+          await lectureApi.enrollCourse(it.course_id);
+        }
+        setPaidAmount(0);
+        setPaidMethod(null);
+        setPaidCount(payable.length);
+        setPhase('done');
+      } catch (e) {
+        setErrMsg(errorDetail(e, '수강신청에 실패했어요. 다시 시도해 주세요.'));
+        setPhase('error');
+      }
+      return;
+    }
+
+    if (!provider) return;
     try {
       let paidSum = 0;
       let lastMethod: string | null = null;
@@ -231,6 +258,7 @@ export default function Checkout() {
             firstTitle={payable[0]?.course_title ?? items[0]?.course_title ?? null}
             amount={paidAmount}
             method={paidMethod}
+            free={paidAmount === 0}
             onWatch={() => navigate(PATHS.STUDENT_HOME)}
             onMy={() => navigate(PATHS.STUDENT_MYPAGE)}
           />
@@ -306,6 +334,16 @@ export default function Checkout() {
                   </div>
                 </section>
 
+                {/* 무료 코스는 결제수단 자체가 필요 없다 — 결제 UI 대신 안내만 둔다 */}
+                {freeOnly ? (
+                  <section className="co-card">
+                    <h2 className="co-cardhead">결제 수단</h2>
+                    <p className="co-note">
+                      <i className="ph-fill ph-gift" />
+                      무료 코스예요. 결제 없이 바로 수강신청됩니다.
+                    </p>
+                  </section>
+                ) : (
                 <section className="co-card">
                   <h2 className="co-cardhead">결제 수단</h2>
                   {providers.length === 0 ? (
@@ -374,6 +412,7 @@ export default function Checkout() {
                     </p>
                   )}
                 </section>
+                )}
 
                 <section className="co-card">
                   <label className="co-agree">
@@ -419,7 +458,12 @@ export default function Checkout() {
                   >
                     {phase === 'confirming' ? (
                       <>
-                        <span className="co-spinner co-spinner--sm" /> 결제 처리 중…
+                        <span className="co-spinner co-spinner--sm" />{' '}
+                        {freeOnly ? '수강신청 중…' : '결제 처리 중…'}
+                      </>
+                    ) : freeOnly ? (
+                      <>
+                        <i className="ph-fill ph-check-circle" /> 무료로 수강신청
                       </>
                     ) : (
                       <>
@@ -443,12 +487,14 @@ export default function Checkout() {
   );
 }
 
-/** 결제 완료 카드 — 수강신청까지 끝난 상태. 여러 코스면 'N개 코스'로 표기. */
+/** 완료 카드 — 수강신청까지 끝난 상태. 여러 코스면 'N개 코스'로 표기.
+ *  free=true(무료 코스)면 결제하지 않았으므로 '결제 완료'라고 말하지 않는다. */
 function SuccessCard({
   count,
   firstTitle,
   amount,
   method,
+  free,
   onWatch,
   onMy,
 }: {
@@ -456,6 +502,7 @@ function SuccessCard({
   firstTitle: string | null;
   amount: number;
   method: string | null;
+  free: boolean;
   onWatch: () => void;
   onMy: () => void;
 }) {
@@ -470,14 +517,17 @@ function SuccessCard({
       <div className="co-success-check">
         <i className="ph-fill ph-check-fat" />
       </div>
-      <h1 className="co-success-title">결제가 완료됐어요</h1>
+      <h1 className="co-success-title">{free ? '수강신청이 완료됐어요' : '결제가 완료됐어요'}</h1>
       <p className="co-success-sub">
-        {label && `${label} `}수강신청이 완료됐어요. 지금 바로 학습을 시작할 수 있어요.
+        {label && `${label} `}
+        {free
+          ? '무료 코스라 결제 없이 바로 신청됐어요. 지금 바로 학습을 시작할 수 있어요.'
+          : '수강신청이 완료됐어요. 지금 바로 학습을 시작할 수 있어요.'}
       </p>
       <div className="co-receipt">
         <div className="co-sumrow">
-          <span>결제 금액</span>
-          <strong>{fmtWon(amount)}</strong>
+          <span>{free ? '수강료' : '결제 금액'}</span>
+          <strong>{free ? '무료' : fmtWon(amount)}</strong>
         </div>
         {method && (
           <div className="co-sumrow co-sumrow--muted">
