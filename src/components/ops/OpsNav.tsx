@@ -62,7 +62,10 @@ const GROUPS: NavGroup[] = [
 /** 강사 상단바 — 평평한 탭 4개(핸드오프: 강사 상단바). */
 const INSTRUCTOR_TABS: NavItem[] = [
   { to: PATHS.OPS_INSTRUCTOR_HOME, icon: 'ph-squares-four', label: '강사 홈' },
-  { to: PATHS.OPS_LECTURES, icon: 'ph-video-camera', label: '강의 관리', match: [PATHS.OPS_COURSES] },
+  { to: PATHS.OPS_LECTURES, icon: 'ph-video-camera', label: '강의 관리' },
+  // 코스 관리는 전용 화면(/ops/courses)이 있는데 '강의 관리' 안에만 묻혀 있었다.
+  // 코스가 상품 단위(수강료·수료 시험이 붙는 곳)라 상단에서 바로 갈 수 있게 뺀다.
+  { to: PATHS.OPS_COURSES, icon: 'ph-stack', label: '코스 관리' },
   { to: PATHS.OPS_QUESTION_REVIEW, icon: 'ph-seal-question', label: '문항 검수' },
   { to: PATHS.OPS_LEARNING_ANALYTICS, icon: 'ph-chart-bar', label: '학습 분석' },
 ];

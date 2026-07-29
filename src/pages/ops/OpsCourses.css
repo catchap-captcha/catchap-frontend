@@ -75,7 +75,8 @@
 .crs-table { overflow: hidden; }
 .crs-thead, .crs-row {
   display: grid;
-  grid-template-columns: 1fr 90px 70px 84px 210px;
+  /* 코스 / 과목 / 강의 / 수강료 / 상태 / 관리 */
+  grid-template-columns: 1fr 84px 62px 96px 76px 270px;
   gap: 12px;
   align-items: center;
 }
@@ -133,6 +134,31 @@
 .crs-abtn:hover { transform: translateY(-2px); }
 .crs-abtn--exam:hover { border-color: var(--warn); color: var(--warn); }
 .crs-abtn--edit:hover { border-color: var(--brand); color: var(--brand-ink); }
+.crs-abtn--price:hover { border-color: var(--ok); color: var(--ok); }
+
+/* 수강료 열 — 할인 중이면 실제 청구 금액 아래 정상가를 취소선으로 */
+.crs-price {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.crs-price s {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ink-3);
+}
+.crs-free {
+  align-self: flex-start;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--ok);
+  background: var(--ok-soft);
+  padding: 2px 8px;
+  border-radius: 999px;
+}
 .crs-abtn--icon { justify-content: center; color: var(--ink-3); padding: 7px 9px; }
 .crs-abtn--icon:hover { border-color: var(--brand); color: var(--brand); }
 .crs-abtn:disabled { opacity: 0.5; cursor: default; transform: none; }

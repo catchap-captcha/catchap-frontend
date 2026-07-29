@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { lectureApi, type OpsCourse } from '../../api/lectures';
 import OpsNav from '../../components/ops/OpsNav';
-import { ExamQuestionsModal } from './OpsLectures';
+import { ExamQuestionsModal, PricingModal } from './OpsLectures';
 import './OpsApproval.css';
 import './OpsRenewalShared.css';
 import './OpsCourses.css';
@@ -96,6 +96,8 @@ export default function OpsCourses() {
   const [busyId, setBusyId] = useState<string | null>(null);
   // 수료 시험 문항 — '강의 관리' 코스 관리 모달과 완전히 같은 컴포넌트를 그대로 띄운다.
   const [examCourse, setExamCourse] = useState<OpsCourse | null>(null);
+  // 수강료 설정 — 같은 이유로 PricingModal 도 그대로 공유한다(두 화면의 동작이 갈리지 않게).
+  const [priceCourse, setPriceCourse] = useState<OpsCourse | null>(null);
 
   const toggleStatus = async (c: OpsCourse) => {
     const next = c.status === 'active' ? 'hidden' : 'active';
@@ -216,7 +218,7 @@ export default function OpsCourses() {
 
         <div className="orn-card crs-table">
           <div className="crs-thead">
-            <span>코스</span><span>과목</span><span>강의</span><span>상태</span>
+            <span>코스</span><span>과목</span><span>강의</span><span>수강료</span><span>상태</span>
             <span style={{ textAlign: 'right' }}>관리</span>
           </div>
 
@@ -237,6 +239,21 @@ export default function OpsCourses() {
                 </div>
                 <span className="crs-subject">{c.subject}</span>
                 <span className="crs-count">{c.lecture_count}개</span>
+                {/* 수강료 — 할인 중이면 실제 청구 금액 아래 정상가를 취소선으로 */}
+                <span className="crs-price">
+                  {!c.pricing ? (
+                    '—'
+                  ) : c.pricing.is_free ? (
+                    <span className="crs-free">무료</span>
+                  ) : (
+                    <>
+                      <b>{c.pricing.effective_price.toLocaleString('ko-KR')}원</b>
+                      {c.pricing.sale_price != null && c.pricing.sale_price < c.pricing.price && (
+                        <s>{c.pricing.price.toLocaleString('ko-KR')}원</s>
+                      )}
+                    </>
+                  )}
+                </span>
                 <span className={`crs-badge crs-badge--${c.status === 'active' ? 'active' : 'hidden'}`}>
                   {c.status === 'active' ? '공개' : '숨김'}
                 </span>
@@ -248,6 +265,16 @@ export default function OpsCourses() {
                   >
                     <i className="ph ph-exam" />시험 문항
                   </button>
+                  {!isOps && (
+                    <button
+                      className="crs-abtn crs-abtn--price"
+                      disabled={busyId === c.id}
+                      onClick={() => setPriceCourse(c)}
+                      title="이 코스의 수강료를 정해요(학생 결제 금액의 정본)"
+                    >
+                      <i className="ph ph-tag" />가격 설정
+                    </button>
+                  )}
                   {!isOps && (
                     <button className="crs-abtn crs-abtn--edit" disabled={busyId === c.id} onClick={() => openEdit(c)}>
                       <i className="ph ph-pencil-simple" />수정
@@ -281,6 +308,15 @@ export default function OpsCourses() {
         <ExamQuestionsModal
           course={examCourse}
           onClose={() => setExamCourse(null)}
+          say={say}
+        />
+      )}
+
+      {priceCourse && (
+        <PricingModal
+          course={priceCourse}
+          onClose={() => setPriceCourse(null)}
+          onSaved={load}
           say={say}
         />
       )}

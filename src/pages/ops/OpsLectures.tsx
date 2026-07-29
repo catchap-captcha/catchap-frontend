@@ -1824,7 +1824,7 @@ function CoursesModal({
    결제 금액은 주문 생성 때 서버가 이 값으로 다시 계산해 주문에 스냅샷하므로, 프런트가
    다른 금액을 보내도 승인되지 않는다 — 여기 입력은 '정본을 바꾸는' 행위다.
    0원이면 무료 코스가 되어 결제 없이 바로 수강신청된다(학생 화면 Checkout이 분기). */
-function PricingModal({
+export function PricingModal({
   course,
   onClose,
   onSaved,
