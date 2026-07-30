@@ -267,6 +267,12 @@ export default function OpsNav() {
             <i className={theme === 'dark' ? 'ph ph-sun' : 'ph ph-moon'} />
           </button>
           <div className="op-top-divider" />
+          {/* 문의하기 — 프로필 왼쪽(사용자 요청). 옆 아이콘 버튼들과 구분되게 테두리 알약 + 글자로
+              '누를 수 있는 것'이 바로 읽히게 한다. 좁은 화면에선 글자를 접고 아이콘만 남긴다. */}
+          <Link to={PATHS.OPS_INQUIRY} className="op-top-inquiry" title="문의하기">
+            <i className="ph-fill ph-chat-circle-text" />
+            <span className="op-top-inquiry-label">문의하기</span>
+          </Link>
           {isInstructor ? (
             <Link to={PATHS.OPS_INSTRUCTOR_PROFILE} className="op-top-me" title="강사 프로필">
               <span className="op-top-avatar">{avatarInitial}</span>
@@ -284,12 +290,6 @@ export default function OpsNav() {
               </span>
             </Link>
           )}
-          {/* 문의하기 — 프로필 오른쪽(사용자 요청). 콘솔 안에서 막혔을 때 찾는 출구라
-              아이콘만 두면 눈에 안 들어와 글자를 함께 둔다. 좁은 화면에선 글자를 접는다. */}
-          <Link to={PATHS.OPS_INQUIRY} className="op-top-inquiry" title="문의하기">
-            <i className="ph-fill ph-chat-circle-text" />
-            <span className="op-top-inquiry-label">문의하기</span>
-          </Link>
           <button type="button" className="op-top-icbtn" onClick={onLogout} title="로그아웃">
             <i className="ph ph-sign-out" />
           </button>
