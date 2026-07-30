@@ -127,6 +127,14 @@ export default function OpsInstructorHome() {
                     <i className="ph-bold ph-list-magnifying-glass" />
                     <h2 className="ih-card-title">표본 검수</h2>
                   </div>
+                  {/* 옆 '검수 대기' 카드와 같은 자리·같은 형식의 요약 한 줄. 제목이 같은 강의가
+                      있을 수 있어 title 이 아니라 lecture_id 로 센다. */}
+                  <div className="ih-todo">
+                    <span className="ih-todo-break">
+                      표본 {data.review_sample.length}개 · 강의{' '}
+                      {new Set(data.review_sample.map((q) => q.lecture_id)).size}개
+                    </span>
+                  </div>
                   <ul className="ih-sample-list">
                     {data.review_sample.map((q) => (
                       <li key={q.question_id} className="ih-sample-row">

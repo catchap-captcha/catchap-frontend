@@ -288,6 +288,9 @@
 
 /* 표본 검수 — 검수 대기 문항 무작위 표본 (문제은행 2단계) */
 .ih-sample-list { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+/* 위 12px 은 제목 바로 아래 올 때의 간격이다. 요약 줄(.ih-todo)이 앞에 오면 그 아래 여백
+   12px 과 겹쳐 24px 이 되어 옆 '검수 대기' 카드(12px)와 어긋난다. */
+.ih-todo + .ih-sample-list { margin-top: 0; }
 .ih-sample-row {
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
   /* 규격은 .ih-lec-row와 동일하게 유지(위 주석 참고). 종전엔 여기만 흰 배경 + 1px 테두리
