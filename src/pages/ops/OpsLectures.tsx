@@ -1490,6 +1490,13 @@ function TrashModal({
    결제 금액은 주문 생성 때 서버가 이 값으로 다시 계산해 주문에 스냅샷하므로, 프런트가
    다른 금액을 보내도 승인되지 않는다 — 여기 입력은 '정본을 바꾸는' 행위다.
    0원이면 무료 코스가 되어 결제 없이 바로 수강신청된다(학생 화면 Checkout이 분기). */
+/** PG 최소 결제금액(원). 카드는 100원, 계좌이체는 200원 미만을 승인하지 않는다.
+ *  0원(무료)은 결제를 거치지 않으므로 예외. 서버도 같은 값으로 막는다(lectures.py). */
+const MIN_PAID_PRICE = 100;
+const TOO_LOW_MSG = (label: string) =>
+  `${label}는 0원(무료) 또는 ${MIN_PAID_PRICE}원 이상이어야 해요. ` +
+  `결제대행사가 ${MIN_PAID_PRICE}원 미만은 승인하지 않아 수강신청이 막혀요.`;
+
 export function PricingModal({
   course,
   onClose,
@@ -1514,12 +1521,19 @@ export function PricingModal({
   const priceNum = Number(price.replace(/[^\d]/g, '') || 0);
   const saleNum = Number(salePrice.replace(/[^\d]/g, '') || 0);
   const effective = useSale && saleNum > 0 ? saleNum : priceNum;
+  // 1~99원은 결제창까지 갔다가 PG가 거절해 수강신청이 막힌다(카드 최소 100원).
+  // 0원은 무료 코스라 결제를 아예 거치지 않으므로 허용한다. 서버도 같은 규칙으로 막는다.
+  const belowMin = (n: number) => n > 0 && n < MIN_PAID_PRICE;
+  const priceTooLow = belowMin(priceNum);
+  const saleTooLow = useSale && belowMin(saleNum);
 
   const save = async () => {
     setErr('');
     if (!Number.isFinite(priceNum) || priceNum < 0) return setErr('정상가를 올바르게 입력해 주세요.');
+    if (priceTooLow) return setErr(TOO_LOW_MSG('정상가'));
     if (useSale) {
       if (saleNum <= 0) return setErr('할인가를 입력하거나 할인 사용을 꺼 주세요.');
+      if (saleTooLow) return setErr(TOO_LOW_MSG('할인가'));
       if (saleNum > priceNum) return setErr('할인가는 정상가보다 클 수 없어요.');
       if (!saleEnds) return setErr('할인 종료일을 정해 주세요.');
     }
@@ -1572,13 +1586,22 @@ export function PricingModal({
           <div className="op-form-grid">
             <label className="ox-field">
               정상가 (원)
-              <span className="lu-help">0으로 두면 무료 코스가 돼요(결제 없이 바로 수강신청)</span>
+              <span className="lu-help">
+                0원(무료) 또는 {MIN_PAID_PRICE}원 이상. 무료면 결제 없이 바로 수강신청돼요
+              </span>
               <input
                 inputMode="numeric"
+                className={priceTooLow ? 'op-price-bad' : undefined}
+                aria-invalid={priceTooLow || undefined}
                 value={price}
                 onChange={(e) => setPrice(e.target.value.replace(/[^\d]/g, ''))}
                 placeholder="예: 49000"
               />
+              {priceTooLow && (
+                <span className="op-price-warn">
+                  <i className="ph-fill ph-warning-circle" /> {TOO_LOW_MSG('정상가')}
+                </span>
+              )}
             </label>
 
             <label className="ox-field">
@@ -1594,12 +1617,20 @@ export function PricingModal({
               <>
                 <label className="ox-field">
                   할인가 (원)
+                  <span className="lu-help">학생이 실제로 결제하는 금액이라 같은 하한이 적용돼요</span>
                   <input
                     inputMode="numeric"
+                    className={saleTooLow ? 'op-price-bad' : undefined}
+                    aria-invalid={saleTooLow || undefined}
                     value={salePrice}
                     onChange={(e) => setSalePrice(e.target.value.replace(/[^\d]/g, ''))}
                     placeholder="예: 39000"
                   />
+                  {saleTooLow && (
+                    <span className="op-price-warn">
+                      <i className="ph-fill ph-warning-circle" /> {TOO_LOW_MSG('할인가')}
+                    </span>
+                  )}
                 </label>
                 <label className="ox-field">
                   할인 종료
@@ -1632,7 +1663,11 @@ export function PricingModal({
             <button className="op-btn op-btn--reject" disabled={saving} onClick={onClose}>
               취소
             </button>
-            <button className="op-btn op-btn--approve" disabled={saving} onClick={save}>
+            <button
+              className="op-btn op-btn--approve"
+              disabled={saving || priceTooLow || saleTooLow}
+              onClick={save}
+            >
               <i className="ph-bold ph-check" /> {saving ? '저장 중…' : '저장'}
             </button>
           </div>

@@ -334,6 +334,26 @@
   font-weight: 500;
   color: var(--ink-3);
 }
+/* PG 최소 결제금액(100원) 미만 입력 — 저장 전에 입력칸에서 바로 알려준다.
+   0원은 무료 코스라 정상이므로 경고하지 않는다. */
+.op-lect-qform input.op-price-bad {
+  border-color: var(--danger);
+  background: var(--danger-soft);
+}
+.op-price-warn {
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+  margin-top: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--danger-ink);
+}
+.op-price-warn i {
+  flex: none;
+  margin-top: 1px;
+}
 
 /* 업로드 진행률 */
 .op-lect-progress { margin-top: 12px; display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 12.5px; color: var(--ink-2); }
