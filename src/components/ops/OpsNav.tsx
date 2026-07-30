@@ -284,6 +284,12 @@ export default function OpsNav() {
               </span>
             </Link>
           )}
+          {/* 문의하기 — 프로필 오른쪽(사용자 요청). 콘솔 안에서 막혔을 때 찾는 출구라
+              아이콘만 두면 눈에 안 들어와 글자를 함께 둔다. 좁은 화면에선 글자를 접는다. */}
+          <Link to={PATHS.OPS_INQUIRY} className="op-top-inquiry" title="문의하기">
+            <i className="ph-fill ph-chat-circle-text" />
+            <span className="op-top-inquiry-label">문의하기</span>
+          </Link>
           <button type="button" className="op-top-icbtn" onClick={onLogout} title="로그아웃">
             <i className="ph ph-sign-out" />
           </button>

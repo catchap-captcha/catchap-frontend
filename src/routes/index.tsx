@@ -60,6 +60,7 @@ const OpsLlmPrompts = lazy(() => import('../pages/ops/OpsLlmPrompts'));
 const OpsLectures = lazy(() => import('../pages/ops/OpsLectures'));
 const OpsInstructorHome = lazy(() => import('../pages/ops/OpsInstructorHome'));
 const OpsInstructorProfile = lazy(() => import('../pages/ops/OpsInstructorProfile'));
+const OpsInquiry = lazy(() => import('../pages/ops/OpsInquiry'));
 const OpsOperators = lazy(() => import('../pages/ops/OpsOperators'));
 const OpsInstructors = lazy(() => import('../pages/ops/OpsInstructors'));
 // 리뉴얼 상단바(2026-07-24) 신규 콘솔 화면
@@ -167,6 +168,7 @@ export default function AppRoutes() {
         <Route element={<ProtectedRoute roles={['ops', 'instructor']} />}>
           <Route path={PATHS.OPS_INSTRUCTOR_HOME} element={<OpsInstructorHome />} />
           <Route path={PATHS.OPS_INSTRUCTOR_PROFILE} element={<OpsInstructorProfile />} />
+          <Route path={PATHS.OPS_INQUIRY} element={<OpsInquiry />} />
           <Route path={PATHS.OPS_LECTURES} element={<OpsLectures />} />
           <Route path={PATHS.OPS_QUESTION_METRICS} element={<OpsQuestionMetrics />} />
           <Route path={PATHS.OPS_COURSES} element={<OpsCourses />} />
