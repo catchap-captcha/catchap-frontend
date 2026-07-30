@@ -143,7 +143,9 @@ export default function ContactPage() {
                 <button onClick={reset} className="ct-reset-btn">새 문의 작성하기</button>
               </div>
             ) : (
-              <div>
+              /* ct-form-body — 카드 높이를 오른쪽 열에 맞추려면 이 중간 래퍼도 늘어나야
+                 문의 내용 입력칸까지 flex 사슬이 이어진다 */
+              <div className="ct-form-body">
                 <div className="ct-field-group">
                   <label className="ct-type-label">문의 유형</label>
                   <div className="ct-type-row">

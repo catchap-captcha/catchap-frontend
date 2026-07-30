@@ -147,7 +147,10 @@
   display: grid;
   grid-template-columns: 1.5fr 1fr;
   gap: 20px;
-  align-items: start;
+  /* stretch — 양식 카드가 오른쪽 열(연락처+FAQ)보다 짧아 바닥선이 어긋나 보였다.
+     두 열을 같은 높이로 두고, 남는 세로 공간은 '문의 내용' 입력칸이 흡수한다
+     (길게 쓸 수 있어 이득인 유일한 칸이라). */
+  align-items: stretch;
 }
 
 /* FORM */
@@ -156,11 +159,25 @@
   border: 1px solid var(--line);
   border-radius: 16px;
   padding: 28px 30px;
+  /* 카드 → 본문 → 입력칸으로 이어지는 flex 사슬의 시작점 (.ct-grid stretch 참고) */
+  display: flex;
+  flex-direction: column;
+}
+.ct-form-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
 }
 .ct-sent {
   text-align: center;
   padding: 36px 12px;
   animation: ctPop 0.4s ease;
+  /* 접수 완료 화면엔 늘릴 입력칸이 없다 — 늘어난 카드 한가운데 놓는다 */
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 .ct-sent-icon {
   width: 64px;
@@ -277,9 +294,15 @@
 }
 .ct-textarea-group {
   margin-bottom: 18px;
+  /* 남는 세로 공간을 받아 아래 textarea 로 넘긴다 */
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
 }
 .ct-textarea {
   width: 100%;
+  box-sizing: border-box;
   border: 1px solid var(--line-strong);
   background: var(--bg);
   border-radius: 10px;
@@ -289,6 +312,9 @@
   font-family: inherit;
   resize: vertical;
   line-height: 1.6;
+  /* 오른쪽 열이 짧을 때(FAQ 전부 접힘) rows=5 아래로 쪼그라들지 않게 바닥을 깐다 */
+  flex: 1;
+  min-height: 132px;
 }
 .ct-textarea:focus {
   border-color: var(--brand);

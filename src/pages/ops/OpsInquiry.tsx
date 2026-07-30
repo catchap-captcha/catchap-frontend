@@ -117,7 +117,8 @@ export default function OpsInquiry() {
   return (
     <div className="op-root ops-inquiry">
       <OpsNav />
-      <div className="op-wrap">
+      {/* 폭·여백은 콘솔 공용 .op-main 그대로 — 다른 콘솔 화면과 좌우 정렬선을 맞춘다 */}
+      <main className="op-main">
         <div className="op-head">
           <div>
             <h1 className="op-title">문의하기</h1>
@@ -243,7 +244,7 @@ export default function OpsInquiry() {
             </aside>
           </div>
         )}
-      </div>
+      </main>
     </div>
   );
 }
