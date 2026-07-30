@@ -23,7 +23,7 @@ import './CourseExam.css';
  * 상태 흐름: intro(상태 카드) → taking(회차 응시) → result(결과지 + 진행/수료).
  * 틀린 문항은 다음 회차에 다시 나오고, 전 문항을 누적 정답하면 수료.
  */
-type Phase = 'intro' | 'taking' | 'result';
+type Phase = 'intro' | 'taking' | 'result' | 'cooldown';
 
 export default function CourseExam() {
   const [params] = useSearchParams();
@@ -45,6 +45,10 @@ export default function CourseExam() {
   // 수료증 팝업 — 합격 직후 자동으로 열고(아래 submit), 인트로·결과지 버튼으로도 다시 연다.
   // 발급 자체(서버 수료 검증 → 캔버스 렌더 → 저장)는 CertificateModal이 맡는다.
   const [certOpen, setCertOpen] = useState(false);
+  // 오답 쿨다운 남은 시간(초). 방금 틀린 문항은 잠시 뒤에 다시 나온다 — 빈 시험을 보여주는
+  // 대신 언제 열리는지 알려주고 초 단위로 줄여 준다.
+  const [cooldownLeft, setCooldownLeft] = useState(0);
+  const [cooldownMin, setCooldownMin] = useState(0);
 
   const loadState = useCallback(() => {
     if (!courseId) return;
@@ -67,12 +71,20 @@ export default function CourseExam() {
         loadState();
         return;
       }
+      if (s.cooldown) {
+        // 남은 문항이 전부 쿨다운 중이라 회차가 없다. 몇 초 뒤에 열리는지 보여준다.
+        setCooldownLeft(Math.max(0, s.retry_after_sec ?? 0));
+        setCooldownMin(s.cooldown_minutes ?? 0);
+        setPhase('cooldown');
+        return;
+      }
       setSession(s);
       setPicks({});
       setStartedAt(Date.now());
       setPhase('taking');
     } catch (e: any) {
-      setLoadErr(e?.response?.data?.detail ?? '시험을 시작하지 못했어요.');
+      const d = e?.response?.data?.detail;
+      setLoadErr((typeof d === 'string' ? d : d?.message) ?? '시험을 시작하지 못했어요.');
     }
   };
 
@@ -105,14 +117,34 @@ export default function CourseExam() {
       // 합격 처리 직후 수료증을 바로 보여준다(사용자 요청). 닫아도 인트로·나의 기록에서 다시 열 수 있다.
       if ((res as any)?.passed) setCertOpen(true);
     } catch (e: any) {
-      // 이미 제출된 회차(409) 등 — 정직하게 알리고 상태를 새로고침
-      setLoadErr(e?.response?.data?.detail ?? '제출에 실패했어요. 다시 시도해 주세요.');
-      loadState();
-      setPhase('intro');
+      const detail = e?.response?.data?.detail;
+      // detail 은 문자열일 수도, {message, ...} 객체일 수도 있다. 객체를 그대로 렌더하면
+      // React 가 죽으므로 문구만 꺼낸다.
+      const msg =
+        (typeof detail === 'string' ? detail : detail?.message) ??
+        '제출에 실패했어요. 다시 시도해 주세요.';
+      if (e?.response?.status === 429) {
+        // 너무 빨리 제출했거나 응시 상한 — 답안을 살려 둔 채 그 자리에서 알린다.
+        // 인트로로 되돌리면 고른 답이 전부 날아간다.
+        setLoadErr(msg);
+      } else {
+        // 이미 제출된 회차(409) 등 — 정직하게 알리고 상태를 새로고침
+        setLoadErr(msg);
+        loadState();
+        setPhase('intro');
+      }
     } finally {
       setSubmitting(false);
     }
   };
+
+  // 쿨다운 카운트다운 — 1초씩 줄이고 0이 되면 멈춘다(자동 재시도는 하지 않는다.
+  // 학생이 직접 누르게 두는 편이 '갑자기 시험이 시작됨'보다 낫다).
+  useEffect(() => {
+    if (phase !== 'cooldown' || cooldownLeft <= 0) return;
+    const t = setInterval(() => setCooldownLeft((n) => Math.max(0, n - 1)), 1000);
+    return () => clearInterval(t);
+  }, [phase, cooldownLeft]);
 
   const answeredCount = useMemo(
     () => (session?.questions ?? []).filter((q) => (picks[q.question_id] ?? []).length > 0).length,
@@ -150,6 +182,45 @@ export default function CourseExam() {
           <IntroCard state={state} onStart={start} onCertificate={() => setCertOpen(true)} />
         )}
         {phase === 'intro' && !state && !loadErr && <div className="ce-empty">불러오는 중…</div>}
+
+        {/* ===== COOLDOWN — 방금 틀린 문항이 다시 나올 때까지 ===== */}
+        {phase === 'cooldown' && (
+          <section className="ce-cooldown">
+            <i className="ph-fill ph-hourglass-medium" />
+            <h1 className="ce-cd-title">잠시 뒤에 다시 풀 수 있어요</h1>
+            <p className="ce-cd-sub">
+              방금 틀린 문항은 해설을 충분히 읽도록 {cooldownMin}분 뒤에 다시 나와요.
+              <br />
+              바로 다시 찍는 것보다, 결과지에서 해설을 보고 오면 훨씬 잘 풀려요.
+            </p>
+            <div className="ce-cd-clock" role="timer" aria-live="polite">
+              {cooldownLeft > 0
+                ? `${String(Math.floor(cooldownLeft / 60)).padStart(2, '0')}:${String(
+                    cooldownLeft % 60,
+                  ).padStart(2, '0')}`
+                : '지금 열렸어요'}
+            </div>
+            <div className="ce-cd-actions">
+              <button
+                className="ce-btn ce-btn--primary"
+                onClick={() => start()}
+                disabled={cooldownLeft > 0}
+              >
+                <i className="ph-fill ph-play-circle" />
+                {cooldownLeft > 0 ? '기다리는 중…' : '이어서 풀기'}
+              </button>
+              <button
+                className="ce-btn ce-btn--ghost"
+                onClick={() => {
+                  setPhase('intro');
+                  loadState();
+                }}
+              >
+                나가기
+              </button>
+            </div>
+          </section>
+        )}
 
         {/* ===== TAKING — 회차 응시 ===== */}
         {phase === 'taking' && session?.questions && (

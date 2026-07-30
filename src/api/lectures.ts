@@ -390,6 +390,11 @@ export interface ExamSession {
   /** 완벽 도전 회차(전 문항 한 판) 여부 — 화면 문구를 '완벽 도전'으로 바꾼다 */
   perfect_challenge?: boolean;
   progress?: { mastered: number; total: number };
+  /** 남은 미정복이 전부 오답 쿨다운 중 — 낼 문항이 없어 회차를 발급하지 않았다.
+   *  빈 시험을 보여주는 대신 언제 다시 열리는지 안내한다(자동화 방어). */
+  cooldown?: boolean;
+  retry_after_sec?: number;
+  cooldown_minutes?: number;
 }
 export interface ExamSubmitInput {
   sitting_id: string;
