@@ -90,18 +90,10 @@
   flex-wrap: wrap;
   margin: 14px 0 12px;
 }
-.ih-todo-big {
-  font-family: var(--font-display); font-weight: 800;
-  font-size: 40px;
-  color: var(--brand-strong);
-  line-height: 1;
-}
-.ih-todo-unit {
-  font-weight: 800;
-  color: var(--ink-2);
-}
+/* 종전엔 큰 숫자(.ih-todo-big/.ih-todo-unit)가 왼쪽에 서고 이 내역이 margin-left:auto 로
+   오른쪽 끝에 붙었다. 큰 숫자를 걷어냈으므로 auto 도 함께 뺀다 — 남겨두면 내역만
+   덩그러니 오른쪽 정렬되어 제목·경고와 시작선이 어긋난다. */
 .ih-todo-break {
-  margin-left: auto;
   font-weight: 700;
   font-size: 12.5px;
   color: var(--ink-2);

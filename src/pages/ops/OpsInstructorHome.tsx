@@ -86,9 +86,9 @@ export default function OpsInstructorHome() {
                   <i className="ph-bold ph-checks" />
                   <h2 className="ih-card-title">검수 대기</h2>
                 </div>
+                {/* 총 건수를 큰 숫자로 따로 세우지 않는다(사용자 요청) — 아래 내역이
+                    같은 수를 종류별로 이미 말해 주고, 강의별 건수도 목록에 다시 나온다. */}
                 <div className="ih-todo">
-                  <span className="ih-todo-big">{data.draft_question_count}</span>
-                  <span className="ih-todo-unit">건</span>
                   <span className="ih-todo-break">
                     확인문항 {data.draft_lecture_questions} · 수료 시험 문항 {data.draft_exam_questions}
                   </span>
