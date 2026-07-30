@@ -134,6 +134,12 @@ export function StudentNav({
               </button>
             </div>
           </div>
+          {/* 문의하기 — 프로필 오른쪽(사용자 요청). 아이콘만 있는 왼쪽 버튼들과 달리 글자를 두는
+              이유는, 학생이 막혔을 때 찾는 출구라 아이콘만으로는 눈에 안 들어오기 때문이다. */}
+          <Link to={PATHS.CONTACT} title="문의하기" className="sl-contact">
+            <i className="ph-fill ph-chat-circle-text" />
+            <span className="sl-contact-label">문의하기</span>
+          </Link>
         </div>
       </div>
     </div>

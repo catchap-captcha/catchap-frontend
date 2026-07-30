@@ -127,6 +127,30 @@
   gap: 14px;
 }
 
+/* 문의하기 — 프로필 오른쪽. 아이콘만 있는 왼쪽 버튼들과 구분되게 테두리를 두른 알약형으로,
+   '누를 수 있는 것'임이 바로 읽히게 한다. 좁은 화면에서는 글자를 접고 아이콘만 남긴다. */
+.sl-contact {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 13px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink-2);
+  font-weight: 700;
+  font-size: 13px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.sl-contact:hover {
+  border-color: var(--brand);
+  color: var(--brand-ink);
+}
+.sl-contact i {
+  font-size: 15px;
+}
+
 .sl-iconbtn {
   display: flex;
   align-items: center;
@@ -283,6 +307,13 @@
     margin-left: auto;
     order: 2;
     gap: 10px;
+  }
+  /* 좁은 화면 — 글자를 접고 아이콘만. 상단바가 밀려 프로필 이름이 잘리는 것을 막는다. */
+  .sl-contact {
+    padding: 7px 9px;
+  }
+  .sl-contact-label {
+    display: none;
   }
 
   .sl-profilename {

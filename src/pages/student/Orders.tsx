@@ -182,7 +182,7 @@ export default function Orders() {
             </li>
             <li>환불은 결제하신 수단으로 돌려드려요. 카드는 3~5영업일이 걸릴 수 있어요.</li>
             <li>
-              위 조건에 해당하지 않아도 사정이 있다면 <Link to={PATHS.SUPPORT}>고객 지원</Link>으로
+              위 조건에 해당하지 않아도 사정이 있다면 <Link to={PATHS.CONTACT}>문의하기</Link>으로
               문의해 주세요.
             </li>
           </ul>

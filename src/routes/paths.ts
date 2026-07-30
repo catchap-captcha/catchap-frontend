@@ -8,6 +8,7 @@ export const PATHS = {
   // 공개 — handoff: CatChap 메인/문의하기/고객지원/이용약관/개인정보처리방침
   HOME: '/',
   CONTACT: '/contact',
+  // 접힌 페이지 — /contact 로 리다이렉트만 한다(북마크·이메일에 남은 링크 보호). 새 링크는 CONTACT 를 쓴다.
   SUPPORT: '/support',
   TERMS: '/terms',
   PRIVACY: '/privacy',
@@ -89,7 +90,8 @@ export const PATHS = {
 export const HANDOFF_ROUTE_MAP: Record<string, string> = {
   'CatChap 메인.dc.html': PATHS.HOME,
   'CatChap 문의하기.dc.html': PATHS.CONTACT,
-  'CatChap 고객지원.dc.html': PATHS.SUPPORT,
+  // 고객지원 페이지는 접었다(0730) — 문의하기로 합쳐졌고 /support 는 리다이렉트만 남았다.
+  'CatChap 고객지원.dc.html': PATHS.CONTACT,
   'CatChap 이용약관.dc.html': PATHS.TERMS,
   'CatChap 개인정보처리방침.dc.html': PATHS.PRIVACY,
   'CatChap 로그인.dc.html': PATHS.LOGIN,

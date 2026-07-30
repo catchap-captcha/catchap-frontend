@@ -7,7 +7,39 @@ import wordmark from '../../assets/brand/catchap-wordmark.png';
 import wordmarkWhite from '../../assets/brand/catchap-wordmark-white.png';
 import './ContactPage.css';
 
-const TYPES = ['기관·기업 도입 상담', '요금·결제 문의', '기술 지원', '기타 문의'];
+/* 서버는 inquiry_type 을 자유 문자열(30자)로 받으므로 여기 문구가 곧 운영 콘솔에 보이는 분류다.
+   학습자가 실제로 겪는 순서대로 둔다 — 수강·결제가 가장 많고, 도입 상담은 기관 담당자용이다. */
+const TYPES = ['수강·학습 문의', '결제·환불 문의', '기술 지원', '기관·기업 도입', '기타 문의'];
+
+/* 자주 묻는 질문 — 고객지원 페이지를 접으면서 이쪽으로 옮겼다(0730).
+   옛 내용(자녀 계정 연결·눈 보호 모드·게임 화면)은 게임형 아동 서비스 시절 것이라 걷어내고,
+   지금 서비스(시청 검증형 강의)에서 실제로 묻는 것으로 다시 썼다. */
+const FAQ = [
+  {
+    q: '수강 신청한 강의는 어디서 보나요?',
+    a: '결제가 끝나면 바로 수강할 수 있어요. 로그인 후 [강의 홈]에서 신청한 코스가 보이고, 강의를 누르면 이어보기 지점부터 재생됩니다.',
+  },
+  {
+    q: '강의를 보다가 확인 문제가 뜨는 이유가 뭔가요?',
+    a: '캣챱은 영상을 실제로 보셨는지 확인합니다. 재생 중 정해진 지점에서 방금 본 내용에 대한 확인 문제가 나오고, 맞히면 그대로 이어서 보실 수 있어요. 틀리면 해당 대목으로 조금 되돌아갑니다.',
+  },
+  {
+    q: '수료증은 어떻게 받나요?',
+    a: '코스의 강의를 모두 완주한 뒤 수료 시험을 통과하면 발급됩니다. [나의 기록 > 수료 현황]에서 언제든 다시 내려받을 수 있어요.',
+  },
+  {
+    q: '결제한 강의를 환불받을 수 있나요?',
+    a: '결제 후 7일 이내이고 아직 강의를 재생하지 않으셨다면 전액 환불됩니다. [마이페이지 > 계정·개인정보 > 결제 내역·환불]에서 직접 요청하실 수 있어요. 이미 수강을 시작하셨다면 이 문의 양식으로 사정을 알려주세요.',
+  },
+  {
+    q: '비밀번호를 잊어버렸어요.',
+    a: '로그인 화면의 [비밀번호를 잊으셨나요?]를 눌러 가입하신 이메일로 인증코드를 받으면 새 비밀번호를 설정할 수 있어요.',
+  },
+  {
+    q: '영상이 멈추거나 화면이 하얗게 보여요.',
+    a: '브라우저를 최신 버전으로 업데이트하고 새로고침해 보세요. 그래도 안 되면 사용 중인 기기·브라우저와 강의명을 알려주시면 빠르게 확인하겠습니다.',
+  },
+];
 
 /** 필수 필드 오류 표시 — 시맨틱 위험색 토큰(리뉴얼) */
 const BAD_STYLE = { borderColor: 'var(--danger)', background: 'var(--danger-soft)' } as const;
@@ -18,6 +50,8 @@ function isEmail(v: string) {
 
 export default function ContactPage() {
   const { theme } = useTheme();
+  // 펼친 FAQ 인덱스(-1 = 전부 접힘). 한 번에 하나만 열어 옆 문의 양식을 밀어내지 않는다.
+  const [faqOpen, setFaqOpen] = useState(-1);
   const [type, setType] = useState(0);
   const [sent, setSent] = useState(false);
   const [formError, setFormError] = useState('');
@@ -95,7 +129,7 @@ export default function ContactPage() {
         <div className="ct-header">
           <span className="ct-header-badge"><i className="ph-fill ph-chat-circle-text" />문의하기</span>
           <h1 className="ct-header-title">무엇을 도와드릴까요?</h1>
-          <p className="ct-header-sub">도입 상담부터 기술 지원까지, CatChap 팀이 빠르게 답해 드립니다.</p>
+          <p className="ct-header-sub">수강·결제부터 기관 도입까지, 캣챱 팀이 빠르게 답해 드립니다.</p>
         </div>
 
         <div className="ct-grid">
@@ -198,23 +232,27 @@ export default function ContactPage() {
                 <span className="ct-faq-head-icon"><i className="ph ph-question" /></span>
                 <span className="ct-faq-head-title">자주 묻는 질문</span>
               </div>
+              {/* 종전엔 고객지원 페이지로 넘기는 링크였는데 그 페이지를 접었다(0730).
+                  갈 곳이 없어졌으므로 여기서 바로 펼쳐 읽게 한다 — 답을 보려고 페이지를
+                  옮기는 것보다 문의 양식 옆에서 바로 확인하는 편이 낫다. */}
               <div className="ct-faq-list">
-                <Link to={PATHS.SUPPORT} className="ct-faq-item">
-                  <span className="ct-faq-q">기관·기업 도입은 어떻게 시작하나요?</span>
-                  <i className="ph-bold ph-caret-right ct-faq-caret" />
-                </Link>
-                <Link to={PATHS.SUPPORT} className="ct-faq-item">
-                  <span className="ct-faq-q">요금제와 결제는 어떻게 하나요?</span>
-                  <i className="ph-bold ph-caret-right ct-faq-caret" />
-                </Link>
-                <Link to={PATHS.SUPPORT} className="ct-faq-item">
-                  <span className="ct-faq-q">학습자 정보는 안전하게 관리되나요?</span>
-                  <i className="ph-bold ph-caret-right ct-faq-caret" />
-                </Link>
+                {FAQ.map((f, i) => (
+                  <div key={f.q} className="ct-faq-item">
+                    <button
+                      type="button"
+                      className="ct-faq-qbtn"
+                      aria-expanded={faqOpen === i}
+                      onClick={() => setFaqOpen(faqOpen === i ? -1 : i)}
+                    >
+                      <span className="ct-faq-q">{f.q}</span>
+                      <i
+                        className={`ph-bold ${faqOpen === i ? 'ph-caret-up' : 'ph-caret-down'} ct-faq-caret`}
+                      />
+                    </button>
+                    {faqOpen === i && <p className="ct-faq-a">{f.a}</p>}
+                  </div>
+                ))}
               </div>
-              <Link to={PATHS.SUPPORT} className="ct-faq-more">
-                자주 묻는 질문 전체 보기 <i className="ph-bold ph-arrow-right" />
-              </Link>
             </div>
           </div>
         </div>

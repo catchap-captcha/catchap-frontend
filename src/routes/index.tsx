@@ -6,7 +6,6 @@ import { PATHS } from './paths';
 // 공개
 const MainPage = lazy(() => import('../pages/public/MainPage'));
 const ContactPage = lazy(() => import('../pages/public/ContactPage'));
-const SupportPage = lazy(() => import('../pages/public/SupportPage'));
 const TermsPage = lazy(() => import('../pages/public/TermsPage'));
 const PrivacyPage = lazy(() => import('../pages/public/PrivacyPage'));
 
@@ -80,7 +79,9 @@ export default function AppRoutes() {
         {/* 공개 */}
         <Route path={PATHS.HOME} element={<MainPage />} />
         <Route path={PATHS.CONTACT} element={<ContactPage />} />
-        <Route path={PATHS.SUPPORT} element={<SupportPage />} />
+        {/* 고객지원 페이지는 접었다(0730) — 문의 양식·FAQ가 문의하기로 합쳐졌다.
+            404 대신 리다이렉트로 둔다: 마이페이지·이메일·외부에 /support 링크가 남아 있다. */}
+        <Route path={PATHS.SUPPORT} element={<Navigate to={PATHS.CONTACT} replace />} />
         <Route path={PATHS.TERMS} element={<TermsPage />} />
         <Route path={PATHS.PRIVACY} element={<PrivacyPage />} />
         <Route path={PATHS.LOGIN} element={<LoginPage />} />

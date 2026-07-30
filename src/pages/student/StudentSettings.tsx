@@ -65,7 +65,7 @@ const LINK_ROWS = [
   { title: '비밀번호 변경', sub: '로그인 비밀번호를 바꿉니다', icon: 'ph-fill ph-lock-key', bg: 'var(--brand-soft)', color: 'var(--brand)', to: PATHS.PASSWORD_RESET },
   { title: '개인정보 처리방침', sub: '내 정보가 어떻게 쓰이는지 확인합니다', icon: 'ph-fill ph-shield-check', bg: 'var(--ok-soft)', color: 'var(--ok)', to: PATHS.PRIVACY },
   { title: '이용약관', sub: '서비스 이용 규칙을 확인합니다', icon: 'ph-fill ph-scroll', bg: 'var(--info-soft)', color: 'var(--info)', to: PATHS.TERMS },
-  { title: '고객 지원', sub: '궁금한 점을 문의합니다', icon: 'ph-fill ph-lifebuoy', bg: 'var(--warn-soft)', color: 'var(--warn)', to: PATHS.SUPPORT },
+  { title: '문의하기', sub: '궁금한 점을 문의합니다', icon: 'ph-fill ph-chat-circle-text', bg: 'var(--warn-soft)', color: 'var(--warn)', to: PATHS.CONTACT },
 ];
 
 const FONT_LABELS = ['작게', '보통', '크게'];

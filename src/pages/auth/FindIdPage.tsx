@@ -285,11 +285,11 @@ export default function FindIdPage() {
                     </p>
                     <ul>
                       <li>운영자·강사·학부모 계정은 아이디가 가입 이메일 주소와 같아요.</li>
-                      <li>학습자 아이디는 고객지원으로 문의하면 확인해 드려요.</li>
+                      <li>학습자 아이디는 문의하기로 알려주시면 확인해 드려요.</li>
                     </ul>
                   </div>
-                  <Link className="pr-done-btn" to={PATHS.SUPPORT}>
-                    고객지원 문의하기
+                  <Link className="pr-done-btn" to={PATHS.CONTACT}>
+                    문의하기
                   </Link>
                 </>
               ) : accounts.length > 0 ? (

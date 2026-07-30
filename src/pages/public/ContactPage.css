@@ -455,16 +455,25 @@
   display: flex;
   flex-direction: column;
 }
+/* 링크에서 펼침(아코디언)으로 바뀌었다 — 고객지원 페이지를 접으면서 답을 여기서 바로 읽는다. */
 .ct-faq-item {
-  text-decoration: none;
+  border-top: 1px solid var(--line);
+}
+.ct-faq-qbtn {
+  width: 100%;
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 12px 0;
-  border-top: 1px solid var(--line);
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
   color: inherit;
 }
-.ct-faq-item:hover {
+.ct-faq-qbtn:hover .ct-faq-q,
+.ct-faq-qbtn:hover .ct-faq-caret {
   color: var(--brand-ink);
 }
 .ct-faq-q {
@@ -473,12 +482,18 @@
   font-size: 13.5px;
   color: var(--ink);
 }
-.ct-faq-item:hover .ct-faq-q {
-  color: var(--brand-ink);
-}
 .ct-faq-caret {
+  flex: none;
   font-size: 13px;
   color: var(--ink-3);
+}
+.ct-faq-a {
+  margin: 0 0 14px;
+  padding-right: 22px;
+  font-size: 13px;
+  line-height: 1.75;
+  font-weight: 500;
+  color: var(--ink-2);
 }
 
 .ct-faq-more {
