@@ -663,7 +663,9 @@
 .sp-contact-link:hover { background: var(--surface-2); }
 .sp-login-link { border: 1px solid var(--line-strong); border-radius: 999px; }
 
-.sp-hero { border-bottom: 1px solid var(--line); }
+/* (제거) .sp-hero border-bottom — 히어로가 흰 슬래브였을 때 본문과 나누던 선이다.
+   배경을 걷어내 본문 컬럼의 머리말이 된 뒤로는 제목과 카테고리 사이에 선만 남아
+   문의하기(.ct-header, 선 없음)와 어긋난다. 위 .sp-hero 정의 참고. */
 .sp-hero-badge { border: 1px solid var(--line); box-shadow: var(--shadow-md); }
 .sp-hero-title { font-weight: 700; }
 .sp-search-input { border: 1px solid var(--line-strong); border-radius: 14px; }
