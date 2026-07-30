@@ -19,7 +19,9 @@
   z-index: 60;
 }
 .tm-nav-inner {
-  max-width: 1080px;
+  /* 공개 페이지 공통 본문 폭 — 메인(.mn-*-inner)과 같은 1200px.
+     종전 1080px 이라 메인에서 넘어오면 양쪽이 120px 씩 좁아졌다. */
+  max-width: 1200px;
   margin: 0 auto;
   padding: 13px 28px;
   display: flex;

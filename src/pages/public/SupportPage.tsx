@@ -2,7 +2,9 @@ import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
 import { inquiryApi } from '../../api/misc';
-import mascot from '../../assets/characters/catchap-logo.png';
+import { useTheme } from '../../hooks/useTheme';
+import wordmark from '../../assets/brand/catchap-wordmark.png';
+import wordmarkWhite from '../../assets/brand/catchap-wordmark-white.png';
 import './SupportPage.css';
 
 /** 원본 DCLogic의 TAG 색상 매핑 → 접두사 클래스 */
@@ -27,6 +29,7 @@ function isEmail(v: string) {
 }
 
 export default function SupportPage() {
+  const { theme } = useTheme();
   const [open, setOpen] = useState(0);
   const [sent, setSent] = useState(false);
   const [sending, setSending] = useState(false);
@@ -79,8 +82,12 @@ export default function SupportPage() {
           <Link to={PATHS.HOME} className="sp-back-link"><i className="ph-bold ph-arrow-left" />뒤로</Link>
           <div className="sp-nav-divider"></div>
           <Link to={PATHS.HOME} className="sp-brand">
-            <img src={mascot} alt="CatChap" className="sp-brand-logo" />
-            <span className="sp-brand-name">CatChap</span>
+            {/* 마스코트+텍스트가 아니라 현재 워드마크. 메인·문의하기와 같은 마크를 쓴다. */}
+            <img
+              src={theme === 'dark' ? wordmarkWhite : wordmark}
+              alt="CATCHAP"
+              className="sp-brand-wordmark"
+            />
           </Link>
           <Link to={PATHS.CONTACT} className="sp-contact-link">문의하기</Link>
           <Link to={PATHS.LOGIN} className="sp-login-link">로그인</Link>
@@ -223,11 +230,14 @@ export default function SupportPage() {
       <footer className="sp-footer">
         <div className="sp-footer-inner">
           <div className="sp-footer-brand">
-            <img src={mascot} alt="CatChap" className="sp-footer-logo" />
-            <div>
-              <div className="sp-footer-name">CatChap</div>
-              <div className="sp-footer-tagline">놀면서 배우는 어린이 캡챠 학습 서비스</div>
-            </div>
+            <img
+              src={theme === 'dark' ? wordmarkWhite : wordmark}
+              alt="CATCHAP"
+              className="sp-footer-wordmark"
+            />
+            {/* 종전 '놀면서 배우는 어린이 캡챠 학습 서비스' — 서비스 방향이 바뀐 뒤
+                이 페이지에만 남아 있던 옛 문구다. 메인 푸터와 같은 문장으로 맞춘다. */}
+            <span className="sp-footer-tagline">영상 시청을 검증하는 강의 플랫폼</span>
           </div>
           <div className="sp-footer-links">
             <Link to={PATHS.PRIVACY} className="sp-footer-link">개인정보 보호</Link>

@@ -24,7 +24,9 @@
   border-bottom: 1px solid var(--line);
 }
 .sp-nav-inner {
-  max-width: 1080px;
+  /* 공개 페이지 공통 본문 폭 — 메인(.mn-*-inner)과 같은 1200px.
+     종전 1080px 이라 메인에서 넘어오면 양쪽이 120px 씩 좁아졌다. */
+  max-width: 1200px;
   margin: 0 auto;
   padding: 13px 28px;
   display: flex;
@@ -58,17 +60,11 @@
   text-decoration: none;
   color: inherit;
 }
-.sp-brand-logo {
-  width: 28px;
-  height: 28px;
-  border-radius: 7px;
-}
-.sp-brand-name {
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: 17px;
-  color: var(--ink);
-  letter-spacing: -0.02em;
+/* 워드마크 — 문의하기(.ct-brand-wordmark)와 같은 규격. 마스코트+텍스트 조합을 대체한다. */
+.sp-brand-wordmark {
+  height: 20px;
+  width: auto;
+  display: block;
 }
 .sp-contact-link {
   margin-left: auto;
@@ -103,7 +99,7 @@
    종전엔 820px 흰 슬래브(surface + border-bottom)라 아래 카드 열(1080px)과 좌우가 어긋나
    페이지 위에 다른 판이 얹힌 것처럼 보였다. 폭을 맞추고 배경을 걷어내 한 장으로 읽히게 한다. */
 .sp-hero {
-  max-width: 1080px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 44px 28px 0;
   text-align: center;
@@ -196,7 +192,7 @@
 
 /* QUICK CATEGORIES */
 .sp-cats {
-  max-width: 1080px;
+  max-width: 1200px;
   margin: 0 auto;
   /* 히어로가 같은 컬럼 안으로 들어와 위 여백을 직접 맡는다(문의하기 .ct-header 의 36px 과 동일) */
   padding: 36px 28px 0;
@@ -249,7 +245,7 @@
 
 /* FAQ + CONTACT */
 .sp-main {
-  max-width: 1080px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 0 28px 60px;
   display: grid;
@@ -591,7 +587,7 @@
 
 /* FOOTER */
 .sp-footer {
-  max-width: 1080px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 0 28px;
 }
@@ -609,16 +605,11 @@
   align-items: center;
   gap: 11px;
 }
-.sp-footer-logo {
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
-}
-.sp-footer-name {
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: 16px;
-  color: var(--ink);
+/* 푸터도 마스코트+이름 대신 워드마크 하나로(메인 푸터와 같은 구성) */
+.sp-footer-wordmark {
+  height: 18px;
+  width: auto;
+  display: block;
 }
 .sp-footer-tagline {
   font-size: 12px;
