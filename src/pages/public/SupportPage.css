@@ -99,19 +99,22 @@
 }
 
 /* HERO */
+/* 히어로는 배경 없이 본문 컬럼 안의 가운데 정렬 머리말이다 — 문의하기(.ct-header)와 같은 규격.
+   종전엔 820px 흰 슬래브(surface + border-bottom)라 아래 카드 열(1080px)과 좌우가 어긋나
+   페이지 위에 다른 판이 얹힌 것처럼 보였다. 폭을 맞추고 배경을 걷어내 한 장으로 읽히게 한다. */
 .sp-hero {
-  border-bottom: 1px solid var(--line);
-  background: var(--surface);
-  max-width: 820px;
+  max-width: 1080px;
   margin: 0 auto;
-  padding: 52px 28px;
+  padding: 44px 28px 0;
   text-align: center;
 }
 .sp-hero-badge {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  background: var(--bg);
+  /* 히어로 배경을 걷어냈으므로 배지가 페이지 배경(--bg) 위에 놓인다 — 종전 --bg 를 그대로
+     두면 배경과 같은 색이라 테두리만 남아 떠 보인다. 문의하기 배지와 같은 --surface. */
+  background: var(--surface);
   border: 1px solid var(--line);
   color: var(--brand-ink);
   font-weight: 700;
@@ -153,7 +156,9 @@
 .sp-search-input {
   width: 100%;
   border: 1px solid var(--line-strong);
-  background: var(--bg);
+  /* 히어로가 흰 판이던 시절엔 --bg 로 눌러 담았지만, 이제 페이지 배경 위라 같은 색이 되어
+     입력칸이 사라진다. 카드들과 같은 --surface 로 띄운다. */
+  background: var(--surface);
   border-radius: 12px;
   padding: 15px 16px 15px 46px;
   font-size: 15px;
@@ -180,7 +185,8 @@
   font-weight: 600;
   padding: 6px 13px;
   border-radius: var(--r-pill);
-  background: var(--bg);
+  /* 검색창·배지와 같은 이유로 --surface (종전 --bg 는 이제 페이지 배경과 같은 색) */
+  background: var(--surface);
   color: var(--ink-2);
 }
 .sp-hero-chip:hover {
@@ -192,7 +198,8 @@
 .sp-cats {
   max-width: 1080px;
   margin: 0 auto;
-  padding: 40px 28px 0;
+  /* 히어로가 같은 컬럼 안으로 들어와 위 여백을 직접 맡는다(문의하기 .ct-header 의 36px 과 동일) */
+  padding: 36px 28px 0;
 }
 .sp-cats-grid {
   display: grid;
