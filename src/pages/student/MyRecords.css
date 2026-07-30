@@ -171,7 +171,9 @@
 /* 2단 카드 행 */
 .mr-row2 {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  /* minmax(0, 1fr) — 그냥 1fr 은 최솟값이 '내용 최소 폭'이라 한쪽에 긴 코스명이 들어오면
+     그 칸이 밀려 커진다. 0 으로 내려 항상 정확히 1:1. */
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 16px;
 }
 
@@ -668,6 +670,8 @@
   text-align: center;
   gap: 10px;
   padding: 28px 16px;
+  /* 카드가 옆 달력 높이에 맞춰 늘어나므로, 빈 상태가 위에 붙지 않고 남는 높이를 채운다 */
+  flex: 1;
   color: var(--ink-3);
 }
 .mr-comp-empty i {
@@ -716,9 +720,14 @@
   flex-direction: column;
   gap: 16px;
 }
-/* 이 행만 위 정렬 — 수료 현황 카드가 '더 보기'로 길어져도 달력이 함께 늘지 않게 */
-.mr-row2--start {
-  align-items: start;
+/* 두 칸 높이를 맞춘다(사용자 요청). 종전엔 align-items:start 로 각자 내용 높이를 썼는데,
+   수료 시험이 없는 계정에서는 왼쪽 카드가 빈 상태라 짧고 오른쪽 달력만 길어 어긋나 보였다.
+   원래 의도였던 '수료 현황이 더 보기로 길어져도 달력이 딸려 늘지 않게'는 반대 방향의 걱정인데,
+   그때 생기는 여백은 달력 아래(시선이 끝난 자리)에 남으므로 어긋나 보이는 것보다 낫다.
+   대신 짧은 쪽 내용이 위에 붙어 뜨지 않도록 아래에서 세로 가운데로 채운다. */
+.mr-row2--start > .mr-card {
+  display: flex;
+  flex-direction: column;
 }
 .mr-compmore {
   align-self: flex-start;
