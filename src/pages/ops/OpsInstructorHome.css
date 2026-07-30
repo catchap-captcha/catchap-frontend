@@ -39,13 +39,18 @@
 
 .ih-cols {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  /* minmax(0, 1fr) — 그냥 1fr 은 minmax(auto, 1fr) 이라 최솟값이 '내용 최소 폭'이다.
+     그래서 한쪽 카드에 줄바꿈 지점 없는 긴 토큰이 들어오면 그 컬럼이 밀려 커지고
+     반대쪽이 좁아진다. 표본 검수는 새로고침마다 무작위 표본을 보여주므로 내용 길이가
+     매번 달라져, 폭이 로드할 때마다 흔들렸다(실측 425px / 691px 까지 벌어짐).
+     최솟값을 0 으로 내리면 내용과 무관하게 항상 정확히 1:1 이다. */
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 16px;
   padding-bottom: 32px;
 }
 @media (max-width: 960px) {
   .ih-cols {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -303,7 +308,12 @@
   font-weight: 700; font-size: 13.5px; color: var(--ink);
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
-.ih-sample-lec { font-size: 11.5px; font-weight: 600; color: var(--ink-3); }
+/* 컬럼이 minmax(0,1fr) 이라 더는 내용이 폭을 밀지 못한다 — 대신 긴 강의명이 카드 밖으로
+   삐져나갈 수 있으므로 위 .ih-sample-prompt 와 같은 방식으로 잘라 준다. */
+.ih-sample-lec {
+  font-size: 11.5px; font-weight: 600; color: var(--ink-3);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
 .ih-verdict {
   flex-shrink: 0; font-weight: 700; font-size: 11px; padding: 3px 9px; border-radius: 999px; white-space: nowrap;
 }
