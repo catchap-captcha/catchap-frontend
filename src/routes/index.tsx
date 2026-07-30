@@ -29,6 +29,7 @@ const Checkout = lazy(() => import('../pages/student/Checkout'));
 const PaymentResult = lazy(() => import('../pages/student/PaymentResult'));
 const LecturePlayer = lazy(() => import('../pages/student/LecturePlayer'));
 const CourseExam = lazy(() => import('../pages/student/CourseExam'));
+const Orders = lazy(() => import('../pages/student/Orders'));
 const AllLearning = lazy(() => import('../pages/student/AllLearning'));
 const MyRecords = lazy(() => import('../pages/student/MyRecords'));
 const WrongNotes = lazy(() => import('../pages/student/WrongNotes'));
@@ -107,6 +108,7 @@ export default function AppRoutes() {
           <Route path={PATHS.STUDENT_PAYMENT_CANCEL} element={<PaymentResult kind="cancel" />} />
           <Route path={PATHS.STUDENT_LECTURE} element={<LecturePlayer />} />
           <Route path={PATHS.STUDENT_COURSE_EXAM} element={<CourseExam />} />
+          <Route path={PATHS.STUDENT_ORDERS} element={<Orders />} />
           <Route path={PATHS.STUDENT_ALL_LEARNING} element={<AllLearning />} />
           {/* 개념 설명·취약문제추천 은퇴(성인화 0720, 초등 커리큘럼) — 옛 링크는 문제은행으로 */}
           <Route

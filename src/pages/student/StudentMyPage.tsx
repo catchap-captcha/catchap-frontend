@@ -67,6 +67,7 @@ const SOUND_ROWS: ToggleRow[] = [
   { key: 'voice', title: '음성 안내', sub: 'AI 선생님이 음성으로 안내합니다', icon: 'ph-fill ph-microphone', bg: 'var(--info-soft)', color: 'var(--info)' },
 ];
 const LINK_ROWS = [
+  { title: '결제 내역 · 환불', sub: '수강 결제 기록을 보고 환불을 요청합니다', icon: 'ph-fill ph-receipt', bg: 'var(--info-soft)', color: 'var(--info)', to: PATHS.STUDENT_ORDERS },
   { title: '비밀번호 변경', sub: '로그인 비밀번호를 바꿉니다', icon: 'ph-fill ph-lock-key', bg: 'var(--brand-soft)', color: 'var(--brand)', to: PATHS.PASSWORD_RESET },
   { title: '개인정보 처리방침', sub: '내 정보가 어떻게 쓰이는지 확인합니다', icon: 'ph-fill ph-shield-check', bg: 'var(--ok-soft)', color: 'var(--ok)', to: PATHS.PRIVACY },
   { title: '이용약관', sub: '서비스 이용 규칙을 확인합니다', icon: 'ph-fill ph-scroll', bg: 'var(--info-soft)', color: 'var(--info)', to: PATHS.TERMS },

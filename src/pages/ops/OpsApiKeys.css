@@ -429,7 +429,23 @@
   border-radius: 9px;
 }
 .ops-apikeys .op-bh-select:focus { outline: none; border-color: var(--brand); background: var(--surface); }
-.ak-list-filter { border-radius: 9px; }
+/* 기관 필터 — 화살표를 왼쪽에 둔다(사용자 요청).
+   <select> 의 기본 화살표는 브라우저가 오른쪽에 그리고 위치를 바꿀 수 없으므로,
+   appearance:none 으로 끄고 배경 이미지로 직접 그린다. 그만큼 좌우 padding 을 맞바꾼다.
+   data URI 라 currentColor 를 못 쓰므로 테마별로 색을 따로 준다(--ink-3 값과 같게). */
+.ops-apikeys .ak-list-filter {
+  border-radius: 9px;
+  appearance: none;
+  -webkit-appearance: none;
+  padding-left: 30px;
+  padding-right: 12px;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1.5 6 6.5 11 1.5' fill='none' stroke='%238e8e93' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  background-repeat: no-repeat;
+  background-position: left 11px center;
+}
+:root[data-theme='dark'] .ops-apikeys .ak-list-filter {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1.5 6 6.5 11 1.5' fill='none' stroke='%23757575' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+}
 
 /* ── 빈 상태 / 토스트(공용 재정의) ── */
 .ops-apikeys .op-empty i { color: var(--ink-3); }

@@ -81,7 +81,24 @@ export interface OrderStatus {
   fail_reason: string | null;
 }
 
+/** 결제 내역 한 줄 — GET /payments/orders. 환불 화면의 원천. */
+export interface MyOrder extends OrderStatus {
+  course_title: string;
+  /** 서버 환불 정책의 결과. 프런트가 상태·날짜를 보고 따로 추론하지 않는다. */
+  refundable: boolean;
+  /** 불가 사유 — 문구는 화면이 고른다 */
+  refund_blocked: 'not_paid' | 'window_over' | 'already_watched' | null;
+  /** 환불 기한(ISO). 남은 기간 안내용 */
+  refund_deadline: string | null;
+  /** 환불하면 잃는 것 — 누르기 전에 보여준다 */
+  enrolled: boolean;
+  completed: boolean;
+}
+
 export const paymentApi = {
+  /** 내 결제 내역(최근순). pending·failed 는 서버가 제외한다. */
+  myOrders: () => client.get<MyOrder[]>('/payments/orders').then((r) => r.data),
+
   /** 결제 화면 요약(코스명·강사·강의 수·금액·이미 수강 여부·사용 가능한 결제수단). */
   checkoutInfo: (courseId: string) =>
     client.get<CheckoutInfo>(`/courses/${courseId}/checkout`).then((r) => r.data),
