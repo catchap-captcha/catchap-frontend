@@ -37,7 +37,7 @@ export default function OpsLogin() {
   // 이미 운영자/강사로 로그인돼 있으면 각자 콘솔로 보냄. (다른 역할이면 여기 머무름)
   useEffect(() => {
     if (loading) return;
-    if (me?.role === 'ops') navigate(PATHS.OPS_APPROVAL, { replace: true });
+    if (me?.role === 'ops') navigate(PATHS.OPS_DASHBOARD, { replace: true });
     else if (me?.role === 'instructor') navigate(PATHS.OPS_LECTURES, { replace: true });
   }, [loading, me, navigate]);
 
@@ -49,7 +49,7 @@ export default function OpsLogin() {
       setCaptchaNeeded(false);
       const dest =
         loaded.role === 'ops'
-          ? PATHS.OPS_APPROVAL
+          ? PATHS.OPS_DASHBOARD
           : loaded.role === 'instructor'
             ? PATHS.OPS_LECTURES
             : PATHS.HOME;

@@ -26,7 +26,9 @@ export const PATHS = {
   STUDENT_GAME: '/student/game', // ?subject=&chapter=
   STUDENT_RESULT: '/student/result', // ?subject=
   STUDENT_DAILY_QUIZ: '/student/daily-quiz', // 은퇴(Q 통합 0719) — 문제은행으로 리다이렉트만 남음
-  STUDENT_LECTURES: '/student/lectures', // ?subject= — 과목별 강의 카탈로그(개념 설명 톤)
+  STUDENT_LECTURES: '/student/lectures', // ?subject= — 과목별 강의 카탈로그(개념 설명 톤). 홈 '전체 보기'로 진입
+  STUDENT_MY_COURSES: '/student/my-courses', // 내 강의 — 수강 중/완료 + 진도율 + 계속 학습('내 학습' 그룹)
+  STUDENT_INQUIRY: '/student/inquiry', // 학생 콘솔 문의하기 — 콘솔 안에서(공개 /contact 와 별개, 학생 유형)
   STUDENT_CHECKOUT: '/student/checkout', // ?course= — 코스 수강 결제(주문→승인→수강신청)
   // 결제 결과 착지 페이지 — 카카오페이 QR 승인/취소/실패 후 백엔드가 여기로 리다이렉트한다
   // (?orderId=). 백엔드 PAYMENT_{SUCCESS,FAIL,CANCEL}_URL 기본값과 경로가 같아야 한다.
@@ -55,6 +57,7 @@ export const PATHS = {
 
   // 운영자(ops)
   OPS_LOGIN: '/ops/login', // 숨겨진 운영자 전용 로그인 (공개 라우트, 링크 노출 안 함)
+  OPS_DASHBOARD: '/ops/dashboard', // 운영 홈 — 운영자 로그인 착지(처리 대기·헬스·감사로그). 강사 홈(/ops/home)과 별개
   OPS_APPROVAL: '/ops/approvals',
   OPS_ORGS: '/ops/orgs',
   OPS_API_KEYS: '/ops/api-keys',

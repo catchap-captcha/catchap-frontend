@@ -120,6 +120,69 @@
   .sl-navlink::before { transition: none; }
 }
 
+/* ── 상단 카테고리 드롭다운 그룹 (내 학습·수료) — 운영 콘솔 드롭다운을 학생 톤으로 이식.
+      버튼은 .sl-navlink 규격을 그대로 상속하고, 펼침 메뉴는 프로필 드롭다운(.sl-dropdown)과 같은 카드다. */
+.sl-navgroup { position: relative; display: inline-flex; }
+.sl-gbtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+.sl-caret { font-size: 11px; transition: transform 0.3s cubic-bezier(0.34, 1.4, 0.5, 1); }
+.sl-navgroup-open .sl-caret { transform: rotate(180deg); }
+.sl-groupmenu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  min-width: 224px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  box-shadow: var(--shadow-md);
+  padding: 7px;
+  display: none;
+  flex-direction: column;
+  z-index: 110;
+}
+/* 버튼↔메뉴 사이 8px 빈틈을 히트영역으로 덮어 hover가 끊기지 않게 */
+.sl-groupmenu::before { content: ''; position: absolute; top: -10px; left: 0; right: 0; height: 10px; }
+.sl-navgroup-open .sl-groupmenu { display: flex; }
+.sl-gitem {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 9px 11px;
+  border-radius: calc(var(--r) - 4px);
+  text-decoration: none;
+  transition: background 0.15s;
+}
+.sl-gitem:hover { background: var(--bg); }
+.sl-gitem > i { font-size: 18px; color: var(--ink-3); margin-top: 1px; }
+.sl-gitem-body { display: flex; flex-direction: column; }
+.sl-gitem-label { font-size: 14px; font-weight: 600; color: var(--ink); }
+.sl-gitem-desc { font-size: 12px; color: var(--ink-3); margin-top: 1px; }
+.sl-gitem-on { background: var(--bg); }
+.sl-gitem-on .sl-gitem-label { color: var(--brand-ink); }
+
+/* 모바일 햄버거 안에서는 드롭다운 대신 인라인으로 평평하게 펼친다 */
+@media (max-width: 768px) {
+  .sl-navgroup { width: 100%; flex-direction: column; }
+  .sl-gbtn { width: 100%; justify-content: space-between; }
+  .sl-caret { display: none; }
+  .sl-groupmenu {
+    position: static;
+    display: flex;
+    box-shadow: none;
+    border: none;
+    padding: 2px 0 6px 12px;
+    min-width: 0;
+  }
+}
+
 .sl-right {
   margin-left: auto;
   display: flex;

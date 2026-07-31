@@ -1,5 +1,5 @@
 import { useState, type CSSProperties, type ReactNode } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { PATHS } from '../routes/paths';
 import { useAuth } from '../hooks/useAuth';
 import { useUnreadNotifications } from '../hooks/useUnreadNotifications';
@@ -17,14 +17,6 @@ import './StudentLayout.css';
  */
 export type StudentNavKey = 'home' | 'lectures' | 'all' | 'records';
 
-// 성인화(2026-07-20): '개념 설명'(초등 커리큘럼) 은퇴, '강의' 추가
-const ROUTE_ACTIVE: Record<string, StudentNavKey> = {
-  [PATHS.STUDENT_HOME]: 'home',
-  [PATHS.STUDENT_LECTURES]: 'lectures',
-  [PATHS.STUDENT_ALL_LEARNING]: 'all',
-  [PATHS.STUDENT_RECORDS]: 'records',
-};
-
 export function StudentNav({
   active,
   onHomeClick,
@@ -37,8 +29,11 @@ export function StudentNav({
   const { me, logout } = useAuth();
   const { theme } = useTheme();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false); // 모바일 햄버거 메뉴 열림 상태
+  // 상단 카테고리 드롭다운(내 학습·수료) 열림 그룹. 운영 콘솔 상단바와 같은 방식.
+  const [openGroup, setOpenGroup] = useState<string | null>(null);
   const unread = useUnreadNotifications(); // 서버 read_at 기준 — 재로그인해도 유지
 
   // 프로필 드롭다운 — hover(데스크톱)와 클릭(터치) 모두 지원. 로그아웃을 어디서든 접근 가능하게.
@@ -51,11 +46,43 @@ export function StudentNav({
     }
   };
 
-  const current = active === undefined ? (ROUTE_ACTIVE[location.pathname] ?? null) : active;
   const name = (me?.name ?? '').trim() || '학습자';
+  const closeMenu = () => {
+    setMenuOpen(false);
+    setOpenGroup(null);
+  };
 
-  const cls = (key: StudentNavKey) => `sl-navlink${current === key ? ' sl-active' : ''}`;
-  const closeMenu = () => setMenuOpen(false);
+  // 활성 판정 — '나의 기록'과 '수료 현황'은 같은 /student/records라 tab 쿼리로 가른다.
+  const path = location.pathname;
+  const onCompletion =
+    path === PATHS.STUDENT_RECORDS && searchParams.get('tab') === 'completion';
+  const onRecords = path === PATHS.STUDENT_RECORDS && !onCompletion;
+  const homeOn = active === 'home' || (active === undefined && path === PATHS.STUDENT_HOME);
+  const learnOn =
+    path === PATHS.STUDENT_MY_COURSES || path === PATHS.STUDENT_ALL_LEARNING || onRecords;
+
+  // 상단바 그룹 — 운영 콘솔식 드롭다운. 비슷한 화면을 '내 학습'·'수료'로 묶는다.
+  const GROUPS = [
+    {
+      key: 'learn',
+      label: '내 학습',
+      on: learnOn,
+      items: [
+        { to: PATHS.STUDENT_MY_COURSES, label: '내 강의', icon: 'ph-books', desc: '수강 중·진도·이어보기', on: path === PATHS.STUDENT_MY_COURSES },
+        { to: PATHS.STUDENT_RECORDS, label: '나의 기록', icon: 'ph-chart-bar', desc: '학습 통계·달력', on: onRecords },
+        { to: PATHS.STUDENT_ALL_LEARNING, label: '문제은행', icon: 'ph-cards-three', desc: '확인 문제 풀기', on: path === PATHS.STUDENT_ALL_LEARNING },
+      ],
+    },
+    {
+      key: 'cert',
+      label: '수료',
+      on: onCompletion,
+      items: [
+        { to: `${PATHS.STUDENT_RECORDS}?tab=completion`, label: '수료시험', icon: 'ph-exam', desc: '응시·수료 현황', on: onCompletion },
+        { to: `${PATHS.STUDENT_RECORDS}?tab=completion`, label: '수료증', icon: 'ph-certificate', desc: '발급·다운로드', on: onCompletion },
+      ],
+    },
+  ];
 
   return (
     <div className="sl-navbar">
@@ -70,23 +97,57 @@ export function StudentNav({
         </Link>
         <nav className={`sl-menu${menuOpen ? ' sl-menu-open' : ''}`}>
           {onHomeClick ? (
-            <a href="#" onClick={() => { closeMenu(); onHomeClick(); }} className={cls('home')}>
-              강의 홈
+            <a
+              href="#"
+              onClick={() => { closeMenu(); onHomeClick(); }}
+              className={`sl-navlink${homeOn ? ' sl-active' : ''}`}
+            >
+              홈
             </a>
           ) : (
-            <Link to={PATHS.STUDENT_HOME} className={cls('home')} onClick={closeMenu}>
-              강의 홈
+            <Link
+              to={PATHS.STUDENT_HOME}
+              className={`sl-navlink${homeOn ? ' sl-active' : ''}`}
+              onClick={closeMenu}
+            >
+              홈
             </Link>
           )}
-          <Link to={PATHS.STUDENT_LECTURES} className={cls('lectures')} onClick={closeMenu}>
-            강의 신청
-          </Link>
-          <Link to={PATHS.STUDENT_ALL_LEARNING} className={cls('all')} onClick={closeMenu}>
-            문제은행
-          </Link>
-          <Link to={PATHS.STUDENT_RECORDS} className={cls('records')} onClick={closeMenu}>
-            나의 기록
-          </Link>
+          {GROUPS.map((g) => (
+            <div
+              key={g.key}
+              className={`sl-navgroup${openGroup === g.key ? ' sl-navgroup-open' : ''}`}
+              onMouseEnter={() => setOpenGroup(g.key)}
+              onMouseLeave={() => setOpenGroup((k) => (k === g.key ? null : k))}
+            >
+              <button
+                type="button"
+                className={`sl-navlink sl-gbtn${g.on ? ' sl-active' : ''}`}
+                onClick={() => setOpenGroup(openGroup === g.key ? null : g.key)}
+                aria-expanded={openGroup === g.key}
+              >
+                {g.label}
+                <i className="ph-bold ph-caret-down sl-caret" />
+              </button>
+              <div className="sl-groupmenu" role="menu">
+                {g.items.map((it) => (
+                  <Link
+                    key={it.label}
+                    to={it.to}
+                    role="menuitem"
+                    className={`sl-gitem${it.on ? ' sl-gitem-on' : ''}`}
+                    onClick={closeMenu}
+                  >
+                    <i className={`ph-fill ${it.icon}`} />
+                    <span className="sl-gitem-body">
+                      <span className="sl-gitem-label">{it.label}</span>
+                      <span className="sl-gitem-desc">{it.desc}</span>
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          ))}
         </nav>
         <button
           type="button"
@@ -110,7 +171,7 @@ export function StudentNav({
           </Link>
           {/* 문의하기 — 프로필 왼쪽(사용자 요청). 아이콘만 있는 왼쪽 버튼들과 달리 글자를 두는
               이유는, 학생이 막혔을 때 찾는 출구라 아이콘만으로는 눈에 안 들어오기 때문이다. */}
-          <Link to={PATHS.CONTACT} title="문의하기" className="sl-contact">
+          <Link to={PATHS.STUDENT_INQUIRY} title="문의하기" className="sl-contact">
             <i className="ph-fill ph-chat-circle-text" />
             <span className="sl-contact-label">문의하기</span>
           </Link>

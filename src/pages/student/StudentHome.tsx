@@ -90,10 +90,21 @@ export default function StudentHome() {
       }))
       .filter((g) => g.lectures.length > 0);
   };
-  // '내 코스' = 실제 수강신청한 코스. '이런 코스는 어때요' = 아직 신청 안 한 코스(미리보기 잠금).
-  const enrolledGroups = useMemo(() => groupsFor(true), [courses, lectures]);
+  // '강의 둘러보기' = 아직 신청 안 한 코스(미리보기 잠금). 수강 중인 코스는 '내 강의' 화면으로 분리했다.
   const discoverGroups = useMemo(() => groupsFor(false), [courses, lectures]);
   const enrolledCount = useMemo(() => (courses ?? []).filter((c) => c.enrolled).length, [courses]);
+
+  // 강의 둘러보기 분야 칩 — 미신청 코스의 subject로 필터(홈 버전 태그 필터). 전체 조건 필터는
+  // '전체 보기'의 카탈로그(강의 신청)에서. 없는 분야를 만들지 않게 실제 코스 subject만 칩으로.
+  const [browseCat, setBrowseCat] = useState('전체');
+  const browseCats = useMemo(() => {
+    const subs = Array.from(new Set(discoverGroups.map((g) => g.course.subject).filter(Boolean)));
+    return ['전체', ...subs];
+  }, [discoverGroups]);
+  const shownDiscover =
+    browseCat === '전체'
+      ? discoverGroups
+      : discoverGroups.filter((g) => g.course.subject === browseCat);
 
   // 강사 소개 모달 — '내 코스'·'이런 코스는 어때요' 양쪽 코스 머리의 버튼이 연다.
   const [bioFor, setBioFor] = useState<{ name: string; courseTitle: string | null } | null>(null);
@@ -284,66 +295,81 @@ export default function StudentHome() {
             </h2>
           </div>
           <div className="sh2-railscroll">
-            {watchingLecs.map((l) => (
-              <button key={l.id} className="sh2-railcard" onClick={() => goWatch(l.id)}>
-                <CourseCover
-                  seed={l.course_id || l.id}
-                  label={l.title}
-                  imageUrl={thumbnailSrc(l.thumbnail_url)}
-                  size="md"
-                  className="sh2-railcover"
-                />
-                <div className="sh2-railbody">
-                  <span className="sh2-railtitle">{l.title}</span>
-                  <span className="sh2-railmeta">{l.subject}</span>
-                </div>
-              </button>
-            ))}
+            {watchingLecs.map((l) => {
+              // 어디까지 봤는지 — watched_max_sec / duration_sec. 0나눗셈·초과는 클램프.
+              const pct =
+                l.duration_sec > 0 && l.progress
+                  ? Math.min(100, Math.max(0, Math.round((l.progress.watched_max_sec / l.duration_sec) * 100)))
+                  : 0;
+              return (
+                <button key={l.id} className="sh2-railcard" onClick={() => goWatch(l.id)}>
+                  <CourseCover
+                    seed={l.course_id || l.id}
+                    label={l.title}
+                    imageUrl={thumbnailSrc(l.thumbnail_url)}
+                    size="md"
+                    className="sh2-railcover"
+                  />
+                  <div className="sh2-railbody">
+                    <span className="sh2-railtitle">{l.title}</span>
+                    <span className="sh2-railmeta">{l.subject}</span>
+                    <div className="sh2-railprog">
+                      <div className="sh2-railprog-bar">
+                        <div className="sh2-railprog-fill" style={{ width: `${pct}%` }} />
+                      </div>
+                      <span className="sh2-railprog-pct">{pct}%</span>
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
           </div>
         </section>
       )}
 
-      {/* ===== 내 코스 — 수강 신청한 코스(수료 완료 포함) ===== */}
+      {/* ===== 강의 둘러보기 — 미신청 코스 미리보기 + 분야 칩 필터. '내 코스'는 상단 '내 학습 > 내 강의'로
+             분리했고(2026-07-31 상단바 개편), 홈은 이어보기 + 새 강의 탐색 중심으로 둔다. ===== */}
       <section className="sh2-courses">
         <div className="sh2-sec-head">
           <h2 className="sh2-sec-title">
-            <i className="ph-fill ph-stack" /> 내 코스
+            <i className="ph-fill ph-compass" /> 강의 둘러보기
           </h2>
+          <button className="sh2-sec-more" onClick={() => navigate(PATHS.STUDENT_LECTURES)}>
+            전체 보기 <i className="ph-bold ph-arrow-right" />
+          </button>
         </div>
 
         {state === 'loading' && <div className="sh2-empty">불러오는 중…</div>}
         {state === 'error' && (
           <div className="sh2-empty">강의를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.</div>
         )}
-        {state === 'ready' && enrolledGroups.length === 0 && (
-          <div className="sh2-empty">
-            아직 수강 중인 코스가 없어요. 아래에서 관심 있는 코스를 시작해 보세요.
-          </div>
+        {state === 'ready' && discoverGroups.length === 0 && (
+          <div className="sh2-empty">지금은 둘러볼 새 강의가 없어요.</div>
         )}
 
-        {state === 'ready' && enrolledGroups.length > 0 && (
-          <div className="sh2-lecgroups">
-            {enrolledGroups.map((g) => renderGroup(g, false))}
-          </div>
+        {state === 'ready' && discoverGroups.length > 0 && (
+          <>
+            {/* 분야 칩 — 코스 subject로 클라이언트 필터(홈 버전 태그). 상세 조건 필터는 '전체 보기' 카탈로그에서. */}
+            {browseCats.length > 1 && (
+              <div className="sh2-cats">
+                {browseCats.map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    className={`sh2-cat${browseCat === c ? ' sh2-cat-on' : ''}`}
+                    onClick={() => setBrowseCat(c)}
+                  >
+                    {c}
+                  </button>
+                ))}
+              </div>
+            )}
+            <div className="sh2-lecgroups">
+              {shownDiscover.map((g) => renderGroup(g, true))}
+            </div>
+          </>
         )}
       </section>
-
-      {/* ===== 이런 코스는 어때요 — 미신청 코스의 강의를 미리보기(잠금)로 노출(2026-07-27) ===== */}
-      {state === 'ready' && discoverGroups.length > 0 && (
-        <section className="sh2-courses">
-          <div className="sh2-sec-head">
-            <h2 className="sh2-sec-title">
-              <i className="ph-fill ph-compass" /> 이런 코스는 어때요
-            </h2>
-            <button className="sh2-sec-more" onClick={() => navigate(PATHS.STUDENT_LECTURES)}>
-              강의 신청 <i className="ph-bold ph-arrow-right" />
-            </button>
-          </div>
-          <div className="sh2-lecgroups">
-            {discoverGroups.map((g) => renderGroup(g, true))}
-          </div>
-        </section>
-      )}
 
       {bioFor && (
         <InstructorBioModal

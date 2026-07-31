@@ -103,7 +103,8 @@ export default function OpsNav() {
   // 학생 상단 NAV(StudentNav)도 공용 레이아웃이 아니라 페이지마다 렌더돼 매번 재생되고,
   // 사용자가 그쪽을 기준으로 잡았다(2026-07-27). 운영자 드롭다운 그룹은 첫 진입에만 유지.
   const intro = isInstructor || firstEntry;
-  const home = isInstructor ? PATHS.OPS_INSTRUCTOR_HOME : PATHS.OPS_APPROVAL;
+  // 강사는 강사 홈(/ops/home), 운영자는 운영 홈(/ops/dashboard)으로. 로고 클릭도 이 값으로 간다.
+  const home = isInstructor ? PATHS.OPS_INSTRUCTOR_HOME : PATHS.OPS_DASHBOARD;
 
   // 알림 — 콘솔 벨. 안읽음 배지(useUnreadNotifications) + 패널에서 목록·읽음 처리.
   // 문항 자동 생성 완료/실패 알림(비동기 잡)이 여기로 온다(강사가 떠나 있어도 확인).
@@ -205,7 +206,19 @@ export default function OpsNav() {
                   </Link>
                 );
               })
-            : GROUPS.map((g) => {
+            : (
+              <>
+                {/* 운영 홈 — 운영자 착지 대시보드 탭(드롭다운 아님). '운영' 그룹 왼쪽에 둔다. */}
+                <Link
+                  to={PATHS.OPS_DASHBOARD}
+                  className={'op-top-tab' + (pathname === PATHS.OPS_DASHBOARD ? ' op-top-tab--on' : '')}
+                  aria-current={pathname === PATHS.OPS_DASHBOARD ? 'page' : undefined}
+                  onClick={() => setOpenGroup(null)}
+                >
+                  <i className="ph ph-squares-four" />
+                  <span>운영 홈</span>
+                </Link>
+                {GROUPS.map((g) => {
                 const gon = groupActive(g, pathname);
                 const open = openGroup === g.key;
                 return (
@@ -251,6 +264,8 @@ export default function OpsNav() {
                   </div>
                 );
               })}
+              </>
+            )}
         </nav>
 
         <div className="op-top-right">

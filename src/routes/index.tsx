@@ -20,6 +20,8 @@ const InvitePage = lazy(() => import('../pages/auth/InvitePage'));
 // 학생 — 게임화 잔재(챕터 지도·연습장·배지·아바타 꾸미기·AI선생님)는 제품 전환으로 제거.
 // 전체학습·퀴즈·게임화면은 강의 문항 재편 대상이라 유지(0716 결정).
 const StudentHome = lazy(() => import('../pages/student/StudentHome'));
+const MyCourses = lazy(() => import('../pages/student/MyCourses'));
+const StudentInquiry = lazy(() => import('../pages/student/StudentInquiry'));
 const GameScreen = lazy(() => import('../pages/student/GameScreen'));
 const GameResult = lazy(() => import('../pages/student/GameResult'));
 // 오늘의퀴즈 페이지는 Q 통합(0719 결정)으로 은퇴 — 옛 경로는 문제은행으로 보낸다(아래 라우트)
@@ -45,6 +47,7 @@ const SchoolSunset = lazy(() => import('../pages/public/SchoolSunset'));
 
 // 운영자
 const OpsLogin = lazy(() => import('../pages/ops/OpsLogin'));
+const OpsHome = lazy(() => import('../pages/ops/OpsHome'));
 const OpsApproval = lazy(() => import('../pages/ops/OpsApproval'));
 const OpsOrgs = lazy(() => import('../pages/ops/OpsOrgs'));
 const OpsApiKeys = lazy(() => import('../pages/ops/OpsApiKeys'));
@@ -95,6 +98,8 @@ export default function AppRoutes() {
         {/* 학생 */}
         <Route element={<ProtectedRoute roles={['student']} />}>
           <Route path={PATHS.STUDENT_HOME} element={<StudentHome />} />
+          <Route path={PATHS.STUDENT_MY_COURSES} element={<MyCourses />} />
+          <Route path={PATHS.STUDENT_INQUIRY} element={<StudentInquiry />} />
           <Route path={PATHS.STUDENT_GAME} element={<GameScreen />} />
           <Route path={PATHS.STUDENT_RESULT} element={<GameResult />} />
           {/* 오늘의퀴즈 은퇴(Q 통합 2단계) — 북마크·옛 링크는 문제은행(오늘의 Q)으로 */}
@@ -143,6 +148,7 @@ export default function AppRoutes() {
 
         {/* 운영자 (ops) */}
         <Route element={<ProtectedRoute roles={['ops']} />}>
+          <Route path={PATHS.OPS_DASHBOARD} element={<OpsHome />} />
           <Route path={PATHS.OPS_APPROVAL} element={<OpsApproval />} />
           <Route path={PATHS.OPS_ORGS} element={<OpsOrgs />} />
           <Route path={PATHS.OPS_API_KEYS} element={<OpsApiKeys />} />
