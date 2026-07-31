@@ -235,6 +235,28 @@
   cursor: default;
 }
 
+/* 인트로 하단 액션 — '수료증 보기'·'강의 목록으로'를 한 행에서 같은 폭으로 맞춘다
+   (종전엔 인라인이라 내용 길이대로 폭이 달랐다). 둘 다 ce-btn--lg로 높이도 동일. */
+.ce-intro-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 18px;
+}
+.ce-intro-actions .ce-btn {
+  flex: 1 1 0;
+  min-width: 170px;
+  max-width: 230px;
+  margin-top: 0;
+}
+@media (max-width: 600px) {
+  .ce-intro-actions .ce-btn {
+    flex-basis: 100%;
+    max-width: none;
+  }
+}
+
 /* ===== TAKING ===== */
 .ce-take-head {
   display: flex;

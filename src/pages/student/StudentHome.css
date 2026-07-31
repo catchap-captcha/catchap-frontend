@@ -84,6 +84,54 @@
 .sh2-cat:hover { border-color: var(--ink-3); color: var(--ink); }
 .sh2-cat-on { background: var(--brand); color: var(--on-brand); border-color: var(--brand); }
 
+/* ── 코스 카드 (홈 강의 둘러보기 — 코스 단위로 간결하게, 강의 낱개 나열 대신) ── */
+.sh2-ccard-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 16px; }
+.sh2-ccard {
+  text-align: left;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: var(--surface);
+  box-shadow: var(--shadow-md);
+  padding: 0;
+  overflow: hidden;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  font-family: inherit;
+  transition: transform 0.18s var(--ap-spring, ease), border-color 0.2s ease;
+}
+.sh2-ccard:hover { border-color: var(--line-strong); transform: translateY(-2px); }
+.sh2-ccover.cover--md { aspect-ratio: 16 / 9; border-radius: 0; }
+.sh2-ccard-body { padding: 13px 15px 15px; display: flex; flex-direction: column; gap: 4px; }
+.sh2-ccard-title {
+  font-weight: 700;
+  font-size: 14.5px;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.sh2-ccard-meta { font-weight: 500; font-size: 12px; color: var(--ink-3); }
+.sh2-ccard-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 8px;
+  align-self: flex-start;
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--ink);
+  padding: 7px 13px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.sh2-ccard:hover .sh2-ccard-cta { background: var(--brand); color: var(--on-brand); border-color: var(--brand); }
+.sh2-ccard-cta i { font-size: 14px; }
+
 /* ===== 레일(이어서 학습 / 추천 코스) ===== */
 .sh2-rail { max-width: min(2280px, 94vw); margin: 0 auto 34px; padding: 0 28px; }
 .sh2-railscroll {

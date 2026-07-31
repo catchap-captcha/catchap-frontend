@@ -22,6 +22,8 @@ const InvitePage = lazy(() => import('../pages/auth/InvitePage'));
 const StudentHome = lazy(() => import('../pages/student/StudentHome'));
 const MyCourses = lazy(() => import('../pages/student/MyCourses'));
 const StudentInquiry = lazy(() => import('../pages/student/StudentInquiry'));
+const StudentExams = lazy(() => import('../pages/student/StudentExams'));
+const StudentCertificates = lazy(() => import('../pages/student/StudentCertificates'));
 const GameScreen = lazy(() => import('../pages/student/GameScreen'));
 const GameResult = lazy(() => import('../pages/student/GameResult'));
 // 오늘의퀴즈 페이지는 Q 통합(0719 결정)으로 은퇴 — 옛 경로는 문제은행으로 보낸다(아래 라우트)
@@ -100,6 +102,8 @@ export default function AppRoutes() {
           <Route path={PATHS.STUDENT_HOME} element={<StudentHome />} />
           <Route path={PATHS.STUDENT_MY_COURSES} element={<MyCourses />} />
           <Route path={PATHS.STUDENT_INQUIRY} element={<StudentInquiry />} />
+          <Route path={PATHS.STUDENT_EXAMS} element={<StudentExams />} />
+          <Route path={PATHS.STUDENT_CERTIFICATES} element={<StudentCertificates />} />
           <Route path={PATHS.STUDENT_GAME} element={<GameScreen />} />
           <Route path={PATHS.STUDENT_RESULT} element={<GameResult />} />
           {/* 오늘의퀴즈 은퇴(Q 통합 2단계) — 북마크·옛 링크는 문제은행(오늘의 Q)으로 */}

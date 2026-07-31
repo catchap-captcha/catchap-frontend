@@ -1,29 +1,48 @@
 .htl { display: flex; flex-direction: column; gap: 10px; }
 .htl-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
-.htl-streak { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; color: var(--brand-ink); }
-.htl-streak i { color: var(--brand); }
-.htl-streak b { color: var(--brand); font-weight: 800; }
-.htl-cap { font-size: 12px; color: var(--ink-2); }
+.htl-streak { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; color: var(--ink); }
+.htl-streak i { color: var(--ink-2); }
+.htl-streak b { color: var(--ink); font-weight: 800; }
+.htl-cap { font-size: 12px; color: var(--ink-3); }
 
-.htl-svg { width: 100%; height: 96px; display: block; }
-.htl-grid { stroke: var(--line); stroke: var(--line); stroke-width: 1; stroke-dasharray: 3 4; }
-.htl-area { fill: rgba(255, 107, 61, 0.10); stroke: none; }
-.htl-line { fill: none; stroke: var(--brand); stroke-width: 2.4; stroke-linejoin: round; stroke-linecap: round; }
-.htl-dot { fill: var(--brand); }
-.htl-dot-full { fill: var(--ok); stroke: var(--surface); stroke-width: 1.2; }
-
-.htl-empty { padding: 22px 12px; text-align: center; color: var(--ink-2); font-size: 13px; background: var(--surface); border-radius: 10px; }
-
-.htl-legend { display: flex; gap: 14px; font-size: 11.5px; color: var(--ink-2); }
-.htl-legend span { display: inline-flex; align-items: center; gap: 5px; }
-.htl-lg-line { width: 14px; height: 3px; border-radius: 2px; background: var(--brand); display: inline-block; }
-.htl-lg-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
-.htl-lg-full { background: var(--ok); }
-
-@media (prefers-color-scheme: dark) {
-  .htl-streak { color: #F1EBE2; }
-  .htl-cap, .htl-legend, .htl-empty { color: var(--ink-3); }
-  .htl-grid { stroke: #362D24; }
-  .htl-dot-full { stroke: #211B16; }
-  .htl-empty { background: #1d1712; }
+/* ── 정답률 라인 (모노크롬 잉크) ── */
+.htl-svg { width: 100%; height: 72px; display: block; }
+.htl-grid { stroke: var(--line); stroke-width: 1; }
+.htl-area { fill: color-mix(in srgb, var(--ink) 6%, transparent); stroke: none; }
+.htl-line {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 2.4;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  /* 가로로 늘어나도 선 두께는 일정하게 */
+  vector-effect: non-scaling-stroke;
 }
+
+/* ── 일별 활동 스트립 (사각 셀 — 늘어남과 무관하게 또렷) ── */
+.htl-strip { display: flex; gap: 3px; margin-top: 2px; }
+.htl-cell {
+  flex: 1;
+  height: 7px;
+  border-radius: 3px;
+  background: var(--bg);
+  min-width: 0;
+}
+.htl-cell-act { background: color-mix(in srgb, var(--ink) 22%, transparent); }
+.htl-cell-goal { background: var(--ok); }
+
+.htl-empty {
+  padding: 22px 12px;
+  text-align: center;
+  color: var(--ink-3);
+  font-size: 13px;
+  background: var(--bg);
+  border-radius: 10px;
+}
+
+.htl-legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 11.5px; color: var(--ink-3); }
+.htl-legend span { display: inline-flex; align-items: center; gap: 5px; }
+.htl-lg-line { width: 14px; height: 3px; border-radius: 2px; background: var(--ink); display: inline-block; }
+.htl-lg-cell { width: 11px; height: 8px; border-radius: 3px; display: inline-block; }
+.htl-lg-goal { background: var(--ok); }
+.htl-lg-act { background: color-mix(in srgb, var(--ink) 22%, transparent); }

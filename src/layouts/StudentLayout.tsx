@@ -1,5 +1,5 @@
 import { useState, type CSSProperties, type ReactNode } from 'react';
-import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { PATHS } from '../routes/paths';
 import { useAuth } from '../hooks/useAuth';
 import { useUnreadNotifications } from '../hooks/useUnreadNotifications';
@@ -29,7 +29,6 @@ export function StudentNav({
   const { me, logout } = useAuth();
   const { theme } = useTheme();
   const location = useLocation();
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false); // 모바일 햄버거 메뉴 열림 상태
   // 상단 카테고리 드롭다운(내 학습·수료) 열림 그룹. 운영 콘솔 상단바와 같은 방식.
@@ -52,11 +51,9 @@ export function StudentNav({
     setOpenGroup(null);
   };
 
-  // 활성 판정 — '나의 기록'과 '수료 현황'은 같은 /student/records라 tab 쿼리로 가른다.
+  // 활성 판정. '수료 현황'은 나의 기록의 한 탭이라 records 전체를 '내 학습 > 나의 기록'으로 본다.
   const path = location.pathname;
-  const onCompletion =
-    path === PATHS.STUDENT_RECORDS && searchParams.get('tab') === 'completion';
-  const onRecords = path === PATHS.STUDENT_RECORDS && !onCompletion;
+  const onRecords = path === PATHS.STUDENT_RECORDS;
   const homeOn = active === 'home' || (active === undefined && path === PATHS.STUDENT_HOME);
   const learnOn =
     path === PATHS.STUDENT_MY_COURSES || path === PATHS.STUDENT_ALL_LEARNING || onRecords;
@@ -69,17 +66,17 @@ export function StudentNav({
       on: learnOn,
       items: [
         { to: PATHS.STUDENT_MY_COURSES, label: '내 강의', icon: 'ph-books', desc: '수강 중·진도·이어보기', on: path === PATHS.STUDENT_MY_COURSES },
-        { to: PATHS.STUDENT_RECORDS, label: '나의 기록', icon: 'ph-chart-bar', desc: '학습 통계·달력', on: onRecords },
+        { to: PATHS.STUDENT_RECORDS, label: '나의 기록', icon: 'ph-chart-bar', desc: '통계·수료 현황·달력', on: onRecords },
         { to: PATHS.STUDENT_ALL_LEARNING, label: '문제은행', icon: 'ph-cards-three', desc: '확인 문제 풀기', on: path === PATHS.STUDENT_ALL_LEARNING },
       ],
     },
     {
       key: 'cert',
       label: '수료',
-      on: onCompletion,
+      on: path === PATHS.STUDENT_EXAMS || path === PATHS.STUDENT_CERTIFICATES,
       items: [
-        { to: `${PATHS.STUDENT_RECORDS}?tab=completion`, label: '수료시험', icon: 'ph-exam', desc: '응시·수료 현황', on: onCompletion },
-        { to: `${PATHS.STUDENT_RECORDS}?tab=completion`, label: '수료증', icon: 'ph-certificate', desc: '발급·다운로드', on: onCompletion },
+        { to: PATHS.STUDENT_EXAMS, label: '수료시험', icon: 'ph-exam', desc: '강의 완주 후 응시', on: path === PATHS.STUDENT_EXAMS },
+        { to: PATHS.STUDENT_CERTIFICATES, label: '수료증', icon: 'ph-certificate', desc: '발급·다운로드', on: path === PATHS.STUDENT_CERTIFICATES },
       ],
     },
   ];

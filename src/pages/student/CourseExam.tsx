@@ -443,10 +443,14 @@ function IntroCard({
               </button>
             </>
           )}
-          <button className="ce-btn ce-btn--soft ce-btn--lg" onClick={onCertificate}>
-            <i className="ph-fill ph-certificate" /> 수료증 보기
-          </button>
-          <Link to={PATHS.STUDENT_LECTURES} className="ce-btn ce-btn--ghost">강의 목록으로</Link>
+          <div className="ce-intro-actions">
+            <button className="ce-btn ce-btn--soft ce-btn--lg" onClick={onCertificate}>
+              <i className="ph-fill ph-certificate" /> 수료증 보기
+            </button>
+            <Link to={PATHS.STUDENT_LECTURES} className="ce-btn ce-btn--ghost ce-btn--lg">
+              강의 목록으로
+            </Link>
+          </div>
         </>
       ) : state.available ? (
         <>

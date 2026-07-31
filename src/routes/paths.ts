@@ -29,6 +29,8 @@ export const PATHS = {
   STUDENT_LECTURES: '/student/lectures', // ?subject= — 과목별 강의 카탈로그(개념 설명 톤). 홈 '전체 보기'로 진입
   STUDENT_MY_COURSES: '/student/my-courses', // 내 강의 — 수강 중/완료 + 진도율 + 계속 학습('내 학습' 그룹)
   STUDENT_INQUIRY: '/student/inquiry', // 학생 콘솔 문의하기 — 콘솔 안에서(공개 /contact 와 별개, 학생 유형)
+  STUDENT_EXAMS: '/student/exams', // 수료시험 — 응시 가능한 코스 목록에서 응시(수료 현황=나의 기록 탭과 별개)
+  STUDENT_CERTIFICATES: '/student/certificates', // 수료증 — 수료한 코스 목록 + 발급·다운로드('수료' 그룹)
   STUDENT_CHECKOUT: '/student/checkout', // ?course= — 코스 수강 결제(주문→승인→수강신청)
   // 결제 결과 착지 페이지 — 카카오페이 QR 승인/취소/실패 후 백엔드가 여기로 리다이렉트한다
   // (?orderId=). 백엔드 PAYMENT_{SUCCESS,FAIL,CANCEL}_URL 기본값과 경로가 같아야 한다.

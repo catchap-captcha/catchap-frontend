@@ -151,7 +151,7 @@ function CompCard({
           </span>
         </button>
         <span className={`mr-compbadge${perfect ? ' mr-compbadge--perfect' : ''}`}>
-          {perfect ? '완벽 통과' : '수료'}
+          {perfect ? '만점 수료' : '수료'}
         </span>
         <button className="mr-certbtn" onClick={() => onCertificate(c)}>
           <i className="ph-fill ph-certificate" /> 수료증
@@ -548,7 +548,7 @@ export default function MyRecords() {
               <span className="mr-statunit">개</span>
             </div>
             <div className="mr-statlabel">
-              수료한 코스{perfectCount > 0 && <span className="mr-stathl"> · 완벽 {perfectCount}</span>}
+              수료한 코스{perfectCount > 0 && <span className="mr-stathl"> · 만점 {perfectCount}</span>}
             </div>
           </div>
           <div className="mr-stat">

@@ -1,0 +1,143 @@
+/* 수료증 — 전역 theme.css 토큰(학생 모노크롬). 카드 룩은 '내 강의'와 통일. */
+.sc-wrap {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 26px 28px 44px;
+}
+.sc-head {
+  margin-bottom: 18px;
+}
+.sc-title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 24px;
+  color: var(--ink);
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+.sc-sub {
+  font-size: 14px;
+  color: var(--ink-2);
+  margin: 6px 0 0;
+}
+
+.sc-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.sc-card {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 15px 18px;
+  box-shadow: var(--shadow-md);
+}
+.sc-cover {
+  width: 84px;
+  height: 60px;
+  border-radius: 10px;
+  flex: none;
+}
+.sc-cbody {
+  flex: 1;
+  min-width: 0;
+}
+.sc-ctop {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.sc-ctitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sc-badge {
+  flex: none;
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: var(--ok-soft);
+  color: var(--ok-ink);
+}
+.sc-badge-perfect {
+  background: var(--brand);
+  color: var(--on-brand);
+}
+.sc-meta {
+  font-size: 12.5px;
+  color: var(--ink-3);
+  margin-top: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sc-btn {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  background: var(--brand);
+  color: var(--on-brand);
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 13.5px;
+  padding: 9px 15px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.sc-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+  color: var(--ink-3);
+  padding: 48px 20px;
+  font-size: 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+}
+.sc-empty-ic {
+  font-size: 42px;
+  color: var(--ink-3);
+}
+.sc-empty-txt {
+  margin: 0;
+  line-height: 1.7;
+}
+.sc-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink);
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 10px 18px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+@media (max-width: 640px) {
+  .sc-card {
+    flex-wrap: wrap;
+  }
+  .sc-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}

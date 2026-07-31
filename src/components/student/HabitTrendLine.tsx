@@ -1,8 +1,6 @@
 import { useMemo } from 'react';
 import './HabitTrendLine.css';
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 export interface HabitDay {
   date: string;
   attempts: number;
@@ -11,11 +9,17 @@ export interface HabitDay {
   accuracy: number | null;
 }
 
-/** 오늘의 퀴즈(습관 축) 일별 정답률 라인 + 완료 과목 점 오버레이 — 나의 기록 습관 섹션.
- * 정답률 없는 날(미학습)은 선을 끊고, 활동한 날만 점을 찍는다. 순수 SVG(라이브러리 없음). */
+/**
+ * 오늘의 Q(습관 축) — 일별 정답률 라인 + 일별 활동 스트립.
+ *
+ * 종전엔 정답률 라인 위에 완료 '점'을 찍었는데, preserveAspectRatio="none"으로 SVG가 가로로
+ * 늘어나 원이 알약처럼 찌그러졌고(특히 데이터가 적은 날), 코랄 area·점선 그리드가 모노크롬
+ * 리뉴얼과 어긋났다. 이제 라인은 잉크로 두고, '목표 달성/학습/미학습'은 아래 사각 셀 스트립으로
+ * 옮겨 늘어남과 무관하게 또렷하게 보인다(라이브러리 없이 순수 SVG + HTML).
+ */
 export default function HabitTrendLine({ days, streak }: { days: HabitDay[]; streak: number }) {
   const W = 320;
-  const H = 96;
+  const H = 74;
   const PAD = 6;
   const pts = useMemo(() => {
     const n = Math.max(1, days.length);
@@ -40,10 +44,14 @@ export default function HabitTrendLine({ days, streak }: { days: HabitDay[]; str
   if (seg.length) segments.push(seg);
 
   const hasData = pts.some((p) => p.y != null);
+  // area는 연속 구간이 하나로 이어질 때만(끊긴 구간은 채우면 이상해진다)
   const areaPath =
     segments.length === 1
       ? `M${segments[0].map((p) => `${p.x},${p.y}`).join(' L')} L${segments[0][segments[0].length - 1].x},${H - PAD} L${segments[0][0].x},${H - PAD} Z`
       : '';
+
+  const cellTitle = (d: HabitDay) =>
+    `${d.date} · ${d.accuracy != null ? `정답률 ${d.accuracy}%` : '미학습'}${d.goal_met ? ' · 목표 달성' : ''}`;
 
   return (
     <div className="htl">
@@ -54,32 +62,55 @@ export default function HabitTrendLine({ days, streak }: { days: HabitDay[]; str
         </div>
         <span className="htl-cap">최근 {days.length}일 · 일별 정답률</span>
       </div>
+
       {hasData ? (
-        <svg viewBox={`0 0 ${W} ${H}`} className="htl-svg" preserveAspectRatio="none" role="img"
-             aria-label="일별 오늘의 Q 정답률 추세">
-          {[25, 50, 75].map((g) => (
-            <line key={g} x1={PAD} x2={W - PAD} y1={H - PAD - (g / 100) * (H - PAD * 2)}
-                  y2={H - PAD - (g / 100) * (H - PAD * 2)} className="htl-grid" />
-          ))}
-          {areaPath && <path d={areaPath} className="htl-area" />}
-          {segments.map((s, i) => (
-            <polyline key={i} points={s.map((p) => `${p.x},${p.y}`).join(' ')} className="htl-line" />
-          ))}
-          {pts.map((p, i) =>
-            p.y == null ? null : (
-              <circle key={i} cx={p.x} cy={p.y} r={p.d.goal_met ? 3.6 : 2.4}
-                      className={`htl-dot${p.d.goal_met ? ' htl-dot-full' : ''}`}>
-                <title>{`${p.d.date} · 정답률 ${p.d.accuracy}%${p.d.goal_met ? ' · 목표 달성' : ''}`}</title>
-              </circle>
-            ),
-          )}
-        </svg>
+        <>
+          <svg
+            viewBox={`0 0 ${W} ${H}`}
+            className="htl-svg"
+            preserveAspectRatio="none"
+            role="img"
+            aria-label="일별 오늘의 Q 정답률 추세"
+          >
+            {/* 가운데 한 줄만 옅게(점선 대신 실선) — 데이터가 적어도 시끄럽지 않게 */}
+            <line
+              className="htl-grid"
+              x1={PAD}
+              x2={W - PAD}
+              y1={H - PAD - 0.5 * (H - PAD * 2)}
+              y2={H - PAD - 0.5 * (H - PAD * 2)}
+            />
+            {areaPath && <path d={areaPath} className="htl-area" />}
+            {segments.map((s, i) => (
+              <polyline key={i} points={s.map((p) => `${p.x},${p.y}`).join(' ')} className="htl-line" />
+            ))}
+          </svg>
+
+          {/* 일별 활동 스트립 — 목표 달성(초록)·학습만(회색)·미학습(빈칸) */}
+          <div className="htl-strip">
+            {days.map((d, i) => (
+              <span
+                key={i}
+                className={`htl-cell${d.goal_met ? ' htl-cell-goal' : d.attempts > 0 ? ' htl-cell-act' : ''}`}
+                title={cellTitle(d)}
+              />
+            ))}
+          </div>
+        </>
       ) : (
-        <div className="htl-empty">아직 오늘의 퀴즈 기록이 없어요. 한 판 풀면 추세가 그려져요!</div>
+        <div className="htl-empty">아직 오늘의 Q 기록이 없어요. 한 판 풀면 추세가 그려져요!</div>
       )}
+
       <div className="htl-legend">
-        <span><i className="htl-lg-line" /> 정답률</span>
-        <span><i className="htl-lg-dot htl-lg-full" /> 6과목 완료한 날</span>
+        <span>
+          <i className="htl-lg-line" /> 정답률
+        </span>
+        <span>
+          <i className="htl-lg-cell htl-lg-goal" /> 목표 달성
+        </span>
+        <span>
+          <i className="htl-lg-cell htl-lg-act" /> 학습한 날
+        </span>
       </div>
     </div>
   );
