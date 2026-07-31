@@ -5,6 +5,19 @@ export const studentApi = {
   /** 학습 홈 blob (진행/과목/성장/랭킹/배지 요약) */
   dashboard: () => client.get<any>('/students/me/dashboard').then((r) => r.data),
 
+  /** 관심사 + 온보딩 여부 — onboarded=false면 최초 로그인(관심사 선택 모달 노출) */
+  getInterests: () =>
+    client
+      .get<{ onboarded: boolean; interests: string[] }>('/students/me/interests')
+      .then((r) => r.data),
+  /** 관심사 저장(= 온보딩 완료). 빈 배열(스킵)도 저장하면 모달이 다시 안 뜬다. */
+  saveInterests: (interests: string[]) =>
+    client
+      .put<{ ok: boolean; onboarded: boolean; interests: string[] }>('/students/me/interests', {
+        interests,
+      })
+      .then((r) => r.data),
+
   /** 챕터지도·전체학습 진도 */
   progress: (subject?: string) =>
     client.get<any>('/students/me/progress', { params: { subject } }).then((r) => r.data),

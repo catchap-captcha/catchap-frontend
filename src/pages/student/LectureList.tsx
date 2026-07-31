@@ -101,8 +101,9 @@ export default function LectureList() {
   );
   const visibleCategories = tab === '전체' ? presentCategories : [tab];
 
-  // 미신청 코스라 재생이 아니라 수강신청(결제)로 보낸다 — 강의 카드도 그 코스의 결제 화면으로.
-  const goEnroll = (courseId: string) => navigate(`${PATHS.STUDENT_CHECKOUT}?course=${courseId}`);
+  // 미신청 코스라 재생이 아니라 코스 상세(커리큘럼)로 보낸다 — 소개·강의 목록·가격을 보고 거기서
+  // 수강신청→결제로(둘러보기→상세→결제). 여러 개 담아 바로 사려면 코스 머리의 장바구니를 쓴다.
+  const goDetail = (courseId: string) => navigate(`${PATHS.STUDENT_COURSE_DETAIL}?id=${courseId}`);
 
   // 장바구니 — 구매(수강신청)할 코스를 여러 개 담는다. 코스 머리의 체크박스로 토글하고,
   // 하단 바의 '구매하기'가 선택 코스들을 결제(Checkout) 페이지로 넘긴다(?cart=id1,id2).
@@ -146,11 +147,11 @@ export default function LectureList() {
     // 코스 안 순서는 그룹 내 위치(1강·2강…)로 센다 — order_no는 과목 전역이라 코스로 묶으면
     // 2강·3강처럼 건너뛰어 보인다(정렬 순서는 이미 order_no로 맞춰져 있어 위치가 곧 강 순서).
     const num = i + 1;
-    const enroll = () => l.course_id && goEnroll(l.course_id);
+    const openDetail = () => l.course_id && goDetail(l.course_id);
     // 썸네일 인프라(Object Storage)가 없어 코스별 결정적 커버로 색을 준다 — 같은 코스 강의는
     // 같은 색 계열(cohesive), 코스가 없으면 강의 id로.
     return (
-      <div key={l.id} className="ll-card" onClick={enroll}>
+      <div key={l.id} className="ll-card" onClick={openDetail}>
         <div className="ll-thumb">
           {/* 앱 전체와 일관된 CourseCover(모노그램 커버) — 복제본 랩 커버 룩 */}
           <CourseCover
@@ -177,10 +178,10 @@ export default function LectureList() {
               className="ll-cardwatch ll-cardenroll"
               onClick={(e) => {
                 e.stopPropagation();
-                enroll();
+                openDetail();
               }}
             >
-              수강신청
+              자세히 보기
               <i className="ph-bold ph-arrow-right" />
             </button>
           </div>

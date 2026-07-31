@@ -1,0 +1,259 @@
+/* 코스 상세(커리큘럼) — 학생 모노크롬. 구매 흐름 단계라 폭은 결제(Checkout)와 같은 규격. */
+.cd-wrap {
+  max-width: min(1080px, 94vw);
+  margin: 0 auto;
+  padding: 24px 28px 56px;
+}
+.cd-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  background: none;
+  padding: 6px 0;
+  color: var(--ink-3);
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 13.5px;
+  cursor: pointer;
+  margin-bottom: 16px;
+}
+.cd-back:hover {
+  color: var(--ink);
+}
+
+.cd-hero {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: var(--shadow-md);
+}
+/* .cover--md(width:100%)보다 특이도를 높여 히어로 커버를 고정폭으로 — aspect-ratio는 그대로 16/9. */
+.cd-hero .cd-cover {
+  width: 300px;
+  flex: none;
+  border-radius: 14px;
+}
+.cd-hero-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.cd-cat {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-2);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  padding: 3px 10px;
+  border-radius: 999px;
+  margin-bottom: 10px;
+}
+.cd-title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 26px;
+  color: var(--ink);
+  margin: 0 0 8px;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+.cd-meta {
+  font-size: 14px;
+  color: var(--ink-2);
+  font-weight: 600;
+  margin: 0 0 16px;
+}
+.cd-price {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+.cd-price-now {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+}
+.cd-price-free {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--ok);
+}
+.cd-price-orig {
+  font-size: 15px;
+  color: var(--ink-3);
+  font-weight: 500;
+}
+
+.cd-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: none;
+  background: var(--brand);
+  color: var(--on-brand);
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 15px;
+  padding: 12px 26px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.cd-cta:hover {
+  opacity: 0.92;
+}
+.cd-cta--watch {
+  background: var(--surface);
+  color: var(--ink);
+  border: 1.5px solid var(--line-strong);
+}
+.cd-cta--lg {
+  width: 100%;
+  padding: 15px;
+  font-size: 16px;
+}
+.cd-enrolled {
+  margin-top: 8px;
+  font-size: 12.5px;
+  color: var(--ink-3);
+  font-weight: 600;
+}
+
+.cd-desc {
+  margin: 22px 2px 0;
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--ink-2);
+  white-space: pre-wrap;
+}
+
+.cd-curriculum {
+  margin-top: 28px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 22px 24px;
+  box-shadow: var(--shadow-md);
+}
+.cd-cur-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.cd-cur-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--ink);
+  margin: 0;
+}
+.cd-cur-title i {
+  font-size: 19px;
+}
+.cd-cur-count {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink-3);
+}
+.cd-lec-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.cd-lec {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 4px;
+  border-top: 1px solid var(--line);
+}
+.cd-lec:first-child {
+  border-top: none;
+}
+.cd-lec-num {
+  width: 26px;
+  height: 26px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--ink-2);
+  font-size: 12.5px;
+  font-weight: 800;
+}
+.cd-lec-title {
+  flex: 1;
+  min-width: 0;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cd-lec-time {
+  font-size: 12.5px;
+  color: var(--ink-3);
+  font-weight: 600;
+  flex: none;
+}
+.cd-lec-ic {
+  font-size: 18px;
+  color: var(--ink-3);
+  flex: none;
+}
+.cd-cur-note {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 14px 0 0;
+  font-size: 12.5px;
+  color: var(--ink-3);
+  font-weight: 600;
+}
+
+.cd-bottom {
+  margin-top: 22px;
+}
+
+.cd-empty {
+  text-align: center;
+  color: var(--ink-3);
+  padding: 40px 16px;
+  font-size: 14px;
+  font-weight: 500;
+}
+.cd-empty .cd-cta {
+  margin-top: 12px;
+}
+
+@media (max-width: 720px) {
+  .cd-hero {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .cd-hero .cd-cover {
+    width: 100%;
+  }
+  .cd-hero-info {
+    align-items: stretch;
+  }
+  .cd-cta {
+    width: 100%;
+  }
+}

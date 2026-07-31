@@ -1,13 +1,14 @@
-/* 결제 내역 · 환불 — 결제 화면(Checkout.css)과 같은 규격을 쓴다.
-   같은 흐름(결제 → 내역 → 환불)이라 카드·버튼·여백이 튀면 다른 화면처럼 읽힌다. */
+/* 결제 내역 · 환불 — 본문 폭을 다른 학생 화면(홈·내 강의·나의 기록)과 동일한 min(2280px,94vw)로
+   맞춘다(종전 860px라 상단바 다른 메뉴에서 넘어오면 폭이 좁아 튀었다). 구매 집중 흐름인 결제
+   (Checkout)는 좁게 두고, 목록/환불 화면인 여기는 콘솔 목록 규격을 따른다. */
 .od-root {
   min-height: 100vh;
   background: var(--bg);
 }
 .od-container {
-  max-width: 860px;
+  max-width: min(2280px, 94vw);
   margin: 0 auto;
-  padding: 28px 20px 64px;
+  padding: 28px 28px 64px;
 }
 
 .od-back {

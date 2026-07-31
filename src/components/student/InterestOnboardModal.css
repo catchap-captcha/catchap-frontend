@@ -1,0 +1,148 @@
+/* 관심사 선택 온보딩 모달 — 학생 모노크롬. 최초 로그인 1회 노출. */
+.iom-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 20px;
+  animation: iom-fade 0.18s ease-out;
+}
+@keyframes iom-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.iom-modal {
+  width: 100%;
+  max-width: 480px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  padding: 28px 28px 22px;
+  box-shadow: var(--shadow-lg, 0 20px 60px rgba(0, 0, 0, 0.25));
+  animation: iom-pop 0.2s cubic-bezier(0.2, 0.9, 0.3, 1.1);
+}
+@keyframes iom-pop {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.iom-head {
+  margin-bottom: 18px;
+}
+.iom-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--ink-2);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  padding: 5px 11px;
+  border-radius: 999px;
+  margin-bottom: 12px;
+}
+.iom-title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 22px;
+  color: var(--ink);
+  margin: 0 0 6px;
+  letter-spacing: -0.02em;
+}
+.iom-sub {
+  font-size: 14px;
+  color: var(--ink-2);
+  font-weight: 500;
+  margin: 0;
+  line-height: 1.6;
+}
+.iom-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-bottom: 22px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+.iom-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 1.5px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink-2);
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 9px 15px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: border-color 0.14s, background 0.14s, color 0.14s;
+}
+.iom-chip:hover {
+  border-color: var(--brand);
+}
+.iom-chip--on {
+  background: var(--brand);
+  color: var(--on-brand);
+  border-color: var(--brand);
+}
+.iom-empty {
+  font-size: 14px;
+  color: var(--ink-3);
+  font-weight: 500;
+  margin: 8px 0 22px;
+}
+.iom-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+.iom-skip {
+  border: none;
+  background: none;
+  color: var(--ink-3);
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+.iom-skip:hover:not(:disabled) {
+  color: var(--ink);
+}
+.iom-done {
+  border: none;
+  background: var(--brand);
+  color: var(--on-brand);
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 14.5px;
+  padding: 12px 22px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.iom-done:hover:not(:disabled) {
+  opacity: 0.92;
+}
+.iom-done:disabled,
+.iom-skip:disabled {
+  opacity: 0.5;
+  cursor: default;
+}

@@ -4,8 +4,10 @@ import StudentLayout from '../../layouts/StudentLayout';
 import { PATHS } from '../../routes/paths';
 import { useAuth } from '../../hooks/useAuth';
 import { lectureApi, thumbnailSrc, type LectureItem, type StudentCourse } from '../../api/lectures';
+import { studentApi } from '../../api/students';
 import CourseCover from '../../components/course/CourseCover';
 import CountUp from '../../components/motion/CountUp';
+import InterestOnboardModal from '../../components/student/InterestOnboardModal';
 import './StudentHome.css';
 
 /** 코스별 강의 묶음 — 홈의 '강의 둘러보기'가 코스 카드로 쓴다. */
@@ -44,6 +46,29 @@ export default function StudentHome() {
       alive = false;
     };
   }, []);
+
+  // 관심사(온보딩) — interests가 null이면 최초 로그인이라 선택 모달을 띄운다. 실패해도 홈은 정상.
+  const [interests, setInterests] = useState<string[] | null>(null);
+  const [onboardNeeded, setOnboardNeeded] = useState(false);
+  useEffect(() => {
+    let alive = true;
+    studentApi
+      .getInterests()
+      .then((d) => {
+        if (!alive) return;
+        setInterests(d.interests);
+        if (!d.onboarded) setOnboardNeeded(true);
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, []);
+  const saveOnboard = async (chosen: string[]) => {
+    const res = await studentApi.saveInterests(chosen);
+    setInterests(res.interests);
+    setOnboardNeeded(false);
+  };
 
   const name = (me?.name ?? '').trim() || '학습자';
 
@@ -84,6 +109,20 @@ export default function StudentHome() {
   const discoverGroups = useMemo(() => groupsFor(false), [courses, lectures]);
   const enrolledCount = useMemo(() => (courses ?? []).filter((c) => c.enrolled).length, [courses]);
 
+  // 관심사 추천 — 고른 관심사(코스 분류 category)에 맞는 미신청 코스를 홈 상단에 따로 노출한다.
+  const recommendedGroups = useMemo(() => {
+    if (!interests || interests.length === 0) return [];
+    return discoverGroups.filter((g) =>
+      interests.includes(g.course.category || g.course.subject || '기타'),
+    );
+  }, [discoverGroups, interests]);
+  // 관심사 선택 모달 후보 — 전체 코스의 분류(처음엔 아무 코스도 안 들었으므로 신청 여부 무관).
+  const allCats = useMemo(() => {
+    const set = new Set<string>();
+    (courses ?? []).forEach((c) => set.add(c.category || c.subject || '기타'));
+    return [...set];
+  }, [courses]);
+
   // 강의 둘러보기 분야 칩 — 미신청 코스의 subject로 필터(홈 버전 태그 필터). 전체 조건 필터는
   // '전체 보기'의 카탈로그(강의 신청)에서. 없는 분야를 만들지 않게 실제 코스 subject만 칩으로.
   const [browseCat, setBrowseCat] = useState('전체');
@@ -111,7 +150,8 @@ export default function StudentHome() {
   const goWatch = (id: string) => navigate(PATHS.STUDENT_LECTURE, { state: { id } });
 
   /** 코스 카드 — 홈 '강의 둘러보기' 미리보기. 강의를 낱개로 다 펼치지 않고 코스 단위로 간결하게
-   *  보여준다(종전 조잡함 해소). 누르면 결제(수강신청)로 — 커리큘럼·가격은 그 화면에서 본다. */
+   *  보여준다(종전 조잡함 해소). 누르면 코스 상세(커리큘럼)로 — 소개·강의 목록·가격을 보고
+   *  거기서 수강신청→결제로 넘어간다(둘러보기→상세→결제). */
   const renderCourseCard = (g: HomeCourseGroup) => {
     const c = g.course;
     return (
@@ -119,7 +159,7 @@ export default function StudentHome() {
         key={c.id}
         type="button"
         className="sh2-ccard"
-        onClick={() => navigate(`${PATHS.STUDENT_CHECKOUT}?course=${c.id}`)}
+        onClick={() => navigate(`${PATHS.STUDENT_COURSE_DETAIL}?id=${c.id}`)}
       >
         <CourseCover
           seed={c.id}
@@ -135,7 +175,7 @@ export default function StudentHome() {
             {c.lecture_count || g.lectures.length}강
           </span>
           <span className="sh2-ccard-cta">
-            <i className="ph-bold ph-plus-circle" /> 수강신청
+            <i className="ph-bold ph-arrow-right" /> 자세히 보기
           </span>
         </span>
       </button>
@@ -243,6 +283,19 @@ export default function StudentHome() {
         </section>
       )}
 
+      {/* ===== 관심사 추천 — 온보딩에서 고른 관심사(코스 분류)에 맞는 미신청 코스를 먼저 보여준다.
+             관심사가 없거나(스킵) 맞는 코스가 없으면 섹션 자체를 숨긴다. ===== */}
+      {state === 'ready' && recommendedGroups.length > 0 && (
+        <section className="sh2-courses">
+          <div className="sh2-sec-head">
+            <h2 className="sh2-sec-title">
+              <i className="ph-fill ph-sparkle" /> 관심사 추천
+            </h2>
+          </div>
+          <div className="sh2-ccard-grid">{recommendedGroups.map((g) => renderCourseCard(g))}</div>
+        </section>
+      )}
+
       {/* ===== 강의 둘러보기 — 미신청 코스 미리보기 + 분야 칩 필터. '내 코스'는 상단 '내 학습 > 내 강의'로
              분리했고(2026-07-31 상단바 개편), 홈은 이어보기 + 새 강의 탐색 중심으로 둔다. ===== */}
       <section className="sh2-courses">
@@ -286,6 +339,11 @@ export default function StudentHome() {
           </>
         )}
       </section>
+
+      {/* 최초 로그인 관심사 온보딩 — interests가 null일 때만(서버 판정). 코스 로드 후 후보를 넘긴다. */}
+      {onboardNeeded && courses && (
+        <InterestOnboardModal categories={allCats} onDone={saveOnboard} />
+      )}
     </StudentLayout>
   );
 }
