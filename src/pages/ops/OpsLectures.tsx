@@ -1511,15 +1511,29 @@ export function PricingModal({
   const mRef = useModalA11y<HTMLDivElement>(onClose);
   const cur = course.pricing;
   const [price, setPrice] = useState(String(cur?.price ?? 0));
-  const [useSale, setUseSale] = useState(cur?.sale_price != null);
+  // 할인 방식 — off(없음) / amount(금액 원) / percent(퍼센트 %). 서버는 절대금액(sale_price)만
+  // 저장하므로 기존 코스는 amount로 연다. percent로 넣으면 저장 때 정상가 기준으로 원으로 환산해
+  // sale_price로 보낸다(백엔드 계약 불변).
+  const [saleMode, setSaleMode] = useState<'off' | 'amount' | 'percent'>(
+    cur?.sale_price != null ? 'amount' : 'off',
+  );
   const [salePrice, setSalePrice] = useState(String(cur?.sale_price ?? ''));
+  const [salePercent, setSalePercent] = useState('');
   // datetime-local 은 'YYYY-MM-DDTHH:mm' — 서버가 준 ISO에서 초 이하를 잘라 맞춘다.
   const [saleEnds, setSaleEnds] = useState((cur?.sale_ends_at ?? '').slice(0, 16));
   const [err, setErr] = useState('');
   const [saving, setSaving] = useState(false);
+  const useSale = saleMode !== 'off';
+  const isPercent = saleMode === 'percent';
 
   const priceNum = Number(price.replace(/[^\d]/g, '') || 0);
-  const saleNum = Number(salePrice.replace(/[^\d]/g, '') || 0);
+  const pctNum = Number(salePercent.replace(/[^\d]/g, '') || 0);
+  // 할인가(절대 원) — 퍼센트면 정상가 기준 환산(1~99%만 유효), 금액이면 입력값 그대로.
+  const saleNum = isPercent
+    ? pctNum > 0 && pctNum < 100
+      ? Math.round(priceNum * (1 - pctNum / 100))
+      : 0
+    : Number(salePrice.replace(/[^\d]/g, '') || 0);
   const effective = useSale && saleNum > 0 ? saleNum : priceNum;
   // 1~99원은 결제창까지 갔다가 PG가 거절해 수강신청이 막힌다(카드 최소 100원).
   // 0원은 무료 코스라 결제를 아예 거치지 않으므로 허용한다. 서버도 같은 규칙으로 막는다.
@@ -1532,6 +1546,8 @@ export function PricingModal({
     if (!Number.isFinite(priceNum) || priceNum < 0) return setErr('정상가를 올바르게 입력해 주세요.');
     if (priceTooLow) return setErr(TOO_LOW_MSG('정상가'));
     if (useSale) {
+      if (isPercent && (pctNum <= 0 || pctNum >= 100))
+        return setErr('할인율은 1~99% 사이로 입력해 주세요.');
       if (saleNum <= 0) return setErr('할인가를 입력하거나 할인 사용을 꺼 주세요.');
       if (saleTooLow) return setErr(TOO_LOW_MSG('할인가'));
       if (saleNum > priceNum) return setErr('할인가는 정상가보다 클 수 없어요.');
@@ -1583,7 +1599,7 @@ export function PricingModal({
             <i className="ph-fill ph-stack" /> {course.title}
           </p>
 
-          <div className="op-form-grid">
+          <div className="op-form-grid op-price-grid">
             <label className="ox-field">
               정상가 (원)
               <span className="lu-help">
@@ -1606,25 +1622,37 @@ export function PricingModal({
 
             <label className="ox-field">
               할인 적용
-              <span className="lu-help">기간 한정 할인가를 따로 둘 수 있어요</span>
-              <select value={useSale ? 'y' : 'n'} onChange={(e) => setUseSale(e.target.value === 'y')}>
-                <option value="n">사용 안 함</option>
-                <option value="y">사용</option>
+              <span className="lu-help">금액(원) 또는 퍼센트(%)로 기간 한정 할인가를 둘 수 있어요</span>
+              <select
+                value={saleMode}
+                onChange={(e) => setSaleMode(e.target.value as 'off' | 'amount' | 'percent')}
+              >
+                <option value="off">사용 안 함</option>
+                <option value="amount">금액(원)으로</option>
+                <option value="percent">퍼센트(%)로</option>
               </select>
             </label>
 
             {useSale && (
               <>
                 <label className="ox-field">
-                  할인가 (원)
-                  <span className="lu-help">학생이 실제로 결제하는 금액이라 같은 하한이 적용돼요</span>
+                  {isPercent ? '할인율 (%)' : '할인가 (원)'}
+                  <span className="lu-help">
+                    {isPercent
+                      ? '정상가에서 이 비율만큼 깎여요 (1~99%)'
+                      : '학생이 실제로 결제하는 금액이라 같은 하한이 적용돼요'}
+                  </span>
                   <input
                     inputMode="numeric"
                     className={saleTooLow ? 'op-price-bad' : undefined}
                     aria-invalid={saleTooLow || undefined}
-                    value={salePrice}
-                    onChange={(e) => setSalePrice(e.target.value.replace(/[^\d]/g, ''))}
-                    placeholder="예: 39000"
+                    value={isPercent ? salePercent : salePrice}
+                    onChange={(e) => {
+                      const v = e.target.value.replace(/[^\d]/g, '');
+                      if (isPercent) setSalePercent(v.slice(0, 2));
+                      else setSalePrice(v);
+                    }}
+                    placeholder={isPercent ? '예: 20' : '예: 39000'}
                   />
                   {saleTooLow && (
                     <span className="op-price-warn">
@@ -1650,6 +1678,9 @@ export function PricingModal({
             <strong>{effective === 0 ? '무료' : `${effective.toLocaleString('ko-KR')}원`}</strong>
             {useSale && saleNum > 0 && priceNum > saleNum && (
               <s>{priceNum.toLocaleString('ko-KR')}원</s>
+            )}
+            {isPercent && pctNum > 0 && pctNum < 100 && (
+              <span className="op-price-pct">{pctNum}% 할인</span>
             )}
           </div>
 

@@ -334,6 +334,20 @@
   font-weight: 500;
   color: var(--ink-3);
 }
+.op-price-pct {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--ok);
+  background: var(--ok-soft);
+  padding: 2px 9px;
+  border-radius: 999px;
+}
+/* 수강료 모달 — 좌우 두 칸의 입력칸을 같은 높이에 정렬한다. 도움말 줄 수가 달라도(정상가 2줄 vs
+   할인 적용 1줄) 셀을 같은 높이로 늘리고(stretch) 입력칸을 하단으로 밀어(margin-top:auto) 나란히
+   보이게 한다. .op-price-grid로 스코프해 다른 폼(op-form-grid)엔 영향 없게 한다. */
+.op-price-grid { align-items: stretch; }
+.op-price-grid .ox-field > input,
+.op-price-grid .ox-field > select { margin-top: auto; }
 /* PG 최소 결제금액(100원) 미만 입력 — 저장 전에 입력칸에서 바로 알려준다.
    0원은 무료 코스라 정상이므로 경고하지 않는다. */
 .op-lect-qform input.op-price-bad {

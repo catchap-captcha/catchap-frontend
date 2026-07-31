@@ -2,6 +2,8 @@ import { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import ProtectedRoute from './ProtectedRoute';
 import { PATHS } from './paths';
+import { ROLE_HOME } from './roleRoutes';
+import { useAuth } from '../hooks/useAuth';
 
 // 공개
 const MainPage = lazy(() => import('../pages/public/MainPage'));
@@ -78,12 +80,22 @@ const OpsAccountUnlock = lazy(() => import('../pages/ops/OpsAccountUnlock'));
 // 시스템
 const NotFoundPage = lazy(() => import('../pages/system/NotFoundPage'));
 
+/** "/" 게이트 — 로그인 상태면 랜딩(마케팅) 대신 역할별 홈으로 보낸다(랜딩은 로그아웃 전용).
+ *  로그아웃·미인증은 랜딩(MainPage)을 그대로 본다. auth 판별 중(loading)엔 아무것도 안 그려
+ *  로그인 사용자에게 랜딩이 잠깐 깜빡이는 것을 막는다(ProtectedRoute와 같은 규약). */
+function HomeRoute() {
+  const { me, loading } = useAuth();
+  if (loading) return null;
+  if (me) return <Navigate to={ROLE_HOME[me.role]} replace />;
+  return <MainPage />;
+}
+
 export default function AppRoutes() {
   return (
     <Suspense fallback={null}>
       <Routes>
-        {/* 공개 */}
-        <Route path={PATHS.HOME} element={<MainPage />} />
+        {/* 공개 — 랜딩은 로그아웃 전용(로그인 시 역할별 홈으로 보낸다) */}
+        <Route path={PATHS.HOME} element={<HomeRoute />} />
         <Route path={PATHS.CONTACT} element={<ContactPage />} />
         {/* 고객지원 페이지는 접었다(0730) — 문의 양식·FAQ가 문의하기로 합쳐졌다.
             404 대신 리다이렉트로 둔다: 마이페이지·이메일·외부에 /support 링크가 남아 있다. */}

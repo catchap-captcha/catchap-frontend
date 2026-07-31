@@ -338,8 +338,9 @@ function mapRecords(d: any, prev: RecordsData): Partial<RecordsData> {
 type RecTab = 'summary' | 'completion' | 'stats';
 const REC_TABS: { key: RecTab; label: string; icon: string }[] = [
   { key: 'summary', label: '요약', icon: 'ph-fill ph-gauge' },
-  { key: 'completion', label: '수료 현황', icon: 'ph-fill ph-seal-check' },
   { key: 'stats', label: '학습 통계', icon: 'ph-fill ph-chart-bar' },
+  // 수료 현황은 문제 풀이 통계(요약·학습 통계)와 성격이 달라 맨 오른쪽으로(사용자 요청)
+  { key: 'completion', label: '수료 현황', icon: 'ph-fill ph-seal-check' },
 ];
 
 export default function MyRecords() {
@@ -659,7 +660,10 @@ export default function MyRecords() {
       <section className="mr-section mr-row2">
         <div className="mr-card">
           <div className="mr-mhead">
-            <h3 className="mr-h3">과목별 실력</h3>
+            <div>
+              <h3 className="mr-h3">과목별 문제 정답률</h3>
+              <p className="mr-mcap">문제은행에서 푼 문제 기준</p>
+            </div>
             <span className="mr-goal">
               <span className="mr-goaltick" />
               목표 80%
@@ -830,8 +834,10 @@ export default function MyRecords() {
       <section className="mr-section mr-recent">
         <div className="mr-card">
           <div className="mr-rhead">
-            <h3 className="mr-h3">최근 학습 기록</h3>
-            {/* 배지 페이지 은퇴(0718) — 링크 제거 */}
+            <div>
+              <h3 className="mr-h3">최근 문제 풀이</h3>
+              <p className="mr-rcap">문제은행·오늘의 Q에서 푼 기록이에요 (강의 시청과 별개)</p>
+            </div>
           </div>
           <div className="mr-alist">
             {data.activities.map((a) => {
@@ -846,7 +852,7 @@ export default function MyRecords() {
                     <i className={a.icon} />
                   </span>
                   <div className="mr-actbody">
-                    <div className="mr-acttitle">{a.title}</div>
+                    <div className="mr-acttitle">{subj ? `${subj} 문제 풀이` : a.title}</div>
                     <div className="mr-actsub">{sub}</div>
                   </div>
                   <span className={`mr-actbadge ${a.grade === 'ok' ? 'mr-actok' : 'mr-actmid'}`}>{a.result}</span>

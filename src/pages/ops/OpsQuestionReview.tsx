@@ -178,6 +178,42 @@ export default function OpsQuestionReview() {
           </div>
         </div>
 
+        <div className="qr-lecbar">
+          <label className="qr-lecbar-label" htmlFor="qr-lecsel">
+            <i className="ph ph-video-camera" />검수할 강의
+          </label>
+          <div className="qr-lecsel-wrap">
+            <select
+              id="qr-lecsel"
+              className="qr-lecsel"
+              value={lectureId}
+              onChange={(e) => {
+                setLectureId(e.target.value);
+                setPage(1);
+              }}
+            >
+              <option value="">전체 강의 · 모든 문항</option>
+              {lectures.map((l) => (
+                <option key={l.id} value={l.id}>
+                  {l.title}
+                </option>
+              ))}
+            </select>
+            <i className="ph ph-caret-down qr-lecsel-caret" />
+          </div>
+          {lectureId && (
+            <button
+              className="qr-lecclear"
+              onClick={() => {
+                setLectureId('');
+                setPage(1);
+              }}
+            >
+              <i className="ph ph-x" />전체 보기
+            </button>
+          )}
+        </div>
+
         <div className="qr-filters">
           {(['pending', 'review', 'published'] as Tab[]).map((t) => (
             <button
@@ -189,10 +225,6 @@ export default function OpsQuestionReview() {
               {t !== 'published' && <span className="qr-tab-badge">{counts[t]}</span>}
             </button>
           ))}
-          <select className="qr-filsel" value={lectureId} onChange={(e) => { setLectureId(e.target.value); setPage(1); }}>
-            <option value="">전체 강의</option>
-            {lectures.map((l) => <option key={l.id} value={l.id}>{l.title}</option>)}
-          </select>
         </div>
 
         {state === 'loading' && <div className="orn-loading"><i className="ph-duotone ph-spinner-gap" />불러오는 중…</div>}

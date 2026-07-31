@@ -39,17 +39,86 @@
 }
 .qr-tab--on .qr-tab-badge { background: rgba(255, 255, 255, 0.25); color: #fff; }
 
-.qr-filsel {
-  margin-left: auto;
-  border: 1px solid var(--line-strong);
+/* 검수할 강의 선택 — 종전엔 탭 줄 끝에 밀린 작은 native select라 눈에 안 띄었다. 라벨 붙인
+   독립 바로 빼서 '어느 강의를 검수하는지'를 딱 보이게 한다(강의 선택창 UI 개편). */
+.qr-lecbar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
   background: var(--surface);
-  color: var(--ink-2);
+  border: 1px solid var(--line-strong);
+  border-radius: 14px;
+  padding: 14px 18px;
+  margin-bottom: 14px;
+}
+.qr-lecbar-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--ink);
+  flex-shrink: 0;
+}
+.qr-lecbar-label i {
+  font-size: 18px;
+  color: var(--brand);
+}
+.qr-lecsel-wrap {
+  position: relative;
+  flex: 1;
+  max-width: 460px;
+}
+.qr-lecsel {
+  width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+  border: 1.5px solid var(--line-strong);
+  background: var(--bg);
+  color: var(--ink);
   font-family: inherit;
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 15px;
+  padding: 11px 40px 11px 15px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: border-color 0.14s, box-shadow 0.14s;
+}
+.qr-lecsel:hover {
+  border-color: var(--brand);
+}
+.qr-lecsel:focus {
+  outline: none;
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px var(--brand-soft);
+}
+.qr-lecsel-caret {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  font-size: 16px;
+  color: var(--ink-3);
+}
+.qr-lecclear {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: none;
+  background: none;
+  color: var(--ink-3);
+  font-family: inherit;
+  font-weight: 700;
   font-size: 13px;
-  padding: 9px 13px;
+  padding: 6px 8px;
   border-radius: var(--r);
   cursor: pointer;
+  flex-shrink: 0;
+  transition: color 0.14s;
+}
+.qr-lecclear:hover {
+  color: var(--ink);
 }
 
 .qr-list {
@@ -135,5 +204,6 @@
 @media (max-width: 760px) {
   .qr-kpigrid { grid-template-columns: 1fr 1fr; }
   .qr-options { grid-template-columns: 1fr; }
-  .qr-filsel { margin-left: 0; }
+  .qr-lecbar { flex-wrap: wrap; gap: 10px; }
+  .qr-lecsel-wrap { max-width: none; flex-basis: 100%; }
 }

@@ -247,7 +247,7 @@ export default function OpsCourses() {
         <div className="orn-card crs-table">
           <div className="crs-thead">
             <span>코스</span><span>과목</span><span>강의</span><span>수강료</span><span>상태</span>
-            <span style={{ textAlign: 'right' }}>관리</span>
+            <span>관리</span>
           </div>
 
           {state === 'loading' && <div className="orn-loading"><i className="ph-duotone ph-spinner-gap" />불러오는 중…</div>}

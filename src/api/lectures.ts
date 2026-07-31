@@ -351,6 +351,25 @@ export interface InstructorAnalytics {
     checkpoint_pass_rate: number | null; // 확인문항 통과율(시도 0이면 null)
     checkpoint_learners: number;
   }[];
+  // optional — 백엔드가 프런트보다 늦게 배포되면(옛 응답엔 reviews 없음) undefined일 수 있어
+  // 화면에서 옵셔널 체이닝으로 방어한다.
+  reviews?: {
+    summary: { count: number; avg: number }; // 전체 평균 별점(소수 1자리)·개수(전량 기준)
+    by_course: {
+      course_id: string;
+      course_title: string;
+      count: number;
+      avg: number; // 코스당 평균 별점
+      items: {
+        id: string;
+        rating: number; // 1~5
+        text: string; // 빈 문자열 가능
+        author: string; // 마스킹된 가명
+        lecture_title: string;
+        created_at: string | null;
+      }[]; // 코스당 최근 20개
+    }[]; // 후기 많은 코스 우선
+  };
 }
 
 /** 코스 수료 시험 상태(학생) — 시험 카드가 읽는 단일 원천. */

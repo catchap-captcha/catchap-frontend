@@ -1,8 +1,82 @@
-/* 학생 콘솔 문의하기 — 전역 theme.css 토큰(학생 모노크롬) 위에 얹는다. 본문 폭은 다른 학생 화면과 동일. */
+/* 학생 콘솔 문의하기 — 전역 theme.css 토큰(학생 모노크롬) 위에 얹는다.
+   본문 폭을 다른 학생 화면과 동일한 min(2280px,94vw)로 맞춘다(종전 860px라 홈·내 강의보다 좁았다).
+   폼은 단일 컬럼이라 프레임을 통째로 채우면 과하게 넓어져, 폼(읽기 좋은 폭)+연락 패널의 좌측 정렬
+   2-컬럼으로 둔다 — 왼쪽 여백이 다른 페이지와 일치한다. */
 .si-wrap {
-  max-width: 860px;
+  max-width: min(2280px, 94vw);
   margin: 0 auto;
   padding: 26px 28px 48px;
+}
+.si-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 820px) 340px;
+  justify-content: start;
+  align-items: start;
+  gap: 24px;
+}
+.si-main {
+  min-width: 0;
+}
+.si-info-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 20px 22px;
+  box-shadow: var(--shadow-md);
+}
+.si-info-title {
+  font-weight: 800;
+  font-size: 14px;
+  color: var(--ink);
+  margin-bottom: 8px;
+}
+.si-info-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 0;
+  text-decoration: none;
+  border-top: 1px solid var(--line);
+}
+.si-info-row:first-of-type {
+  border-top: none;
+}
+.si-info-ic {
+  width: 38px;
+  height: 38px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 11px;
+  background: var(--bg);
+  color: var(--ink-2);
+  font-size: 18px;
+}
+.si-info-txt {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.si-info-lb {
+  font-size: 11.5px;
+  color: var(--ink-3);
+  font-weight: 600;
+}
+.si-info-val {
+  font-size: 14px;
+  color: var(--ink);
+  font-weight: 700;
+}
+a.si-info-row:hover .si-info-val {
+  text-decoration: underline;
+}
+
+@media (max-width: 980px) {
+  .si-grid {
+    grid-template-columns: 1fr;
+  }
 }
 .si-head {
   margin-bottom: 18px;

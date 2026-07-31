@@ -1028,7 +1028,7 @@ export default function LecturePlayer() {
                   <i className="ph-fill ph-seal-question" /> 확인 문제 {meta.question_count}개
                 </span>
                 <span className="lp-chip" style={{ color: theme.color, background: theme.soft }}>
-                  <i className="ph-fill ph-eye" /> 본 데까지 {formatDurationLabel(watchedMax)}
+                  <i className="ph-fill ph-eye" /> 시청 시간 {formatDurationLabel(watchedMax)}
                 </span>
                 {meta.progress?.status === 'done' && (
                   <span className="lp-chip lp-chip-done">

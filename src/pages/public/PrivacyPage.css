@@ -83,32 +83,33 @@
   text-decoration: none;
   color: inherit;
 }
-.pv-brand-logo {
-  width: 28px;
-  height: 28px;
-  border-radius: 7px;
+.pv-brand-wordmark {
+  height: 20px;
+  width: auto;
+  display: block;
 }
-.pv-brand-name {
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: 17px;
-  color: var(--ink);
-  letter-spacing: -0.02em;
+.pv-nav-spacer {
+  flex: 1;
 }
-.pv-nav-related {
-  margin-left: auto;
+.pv-login-link {
   text-decoration: none;
-  font-size: 13.5px;
-  font-weight: 600;
-  color: var(--ink-2);
-}
-.pv-nav-related:hover {
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
   color: var(--ink);
+  font-weight: 700;
+  font-size: 14px;
+  padding: 9px 18px;
+  border-radius: 9px;
+}
+.pv-login-link:hover {
+  border-color: var(--brand);
+  color: var(--brand-ink);
 }
 
 /* HEADER */
 .pv-header {
-  max-width: 800px;
+  /* 공개 페이지 공통 본문 폭 1200px(문의하기·메인과 동일) — 종전 800px라 더 좁았다. */
+  max-width: 1200px;
   margin: 0 auto;
   padding: 48px 28px 0;
 }
@@ -145,7 +146,7 @@
 
 /* CONTENT SHEET */
 .pv-sheet-wrap {
-  max-width: 800px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 32px 28px 72px;
 }

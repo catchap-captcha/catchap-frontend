@@ -355,6 +355,11 @@
 .op-top-nav--intro > :nth-child(2) { animation-delay: 0.11s; }
 .op-top-nav--intro > :nth-child(3) { animation-delay: 0.18s; }
 .op-top-nav--intro > :nth-child(4) { animation-delay: 0.25s; }
+/* 강사 콘솔은 탭이 5개(강사 홈·강의 관리·코스 관리·문항 검수·학습 분석)라 5번째까지 스태거를
+   이어 준다 — 종전엔 4까지만 있어 '학습 분석'이 delay 0으로 순서 밖에 튀어 안 들어온 듯 보였다.
+   (운영 nav는 자식 4개라 5·6은 매칭될 항목이 없어 영향 없음. 6은 탭 추가 대비 여유.) */
+.op-top-nav--intro > :nth-child(5) { animation-delay: 0.32s; }
+.op-top-nav--intro > :nth-child(6) { animation-delay: 0.39s; }
 
 /* ② 호버·활성 알약 — 배경을 ::before로 옮겨 뒤에서 살짝 커지며 떠오르게 한다.
    isolation으로 라벨을 알약(z-index:-1) 위에 유지한다. */

@@ -1,6 +1,7 @@
 /* 수료증 — 전역 theme.css 토큰(학생 모노크롬). 카드 룩은 '내 강의'와 통일. */
 .sc-wrap {
-  max-width: 900px;
+  /* 좌우 폭을 '내 강의'·'나의 기록'과 동일 규격으로 맞춘다(종전 900px라 상단바 이동 시 폭이 튀었다). */
+  max-width: min(2280px, 94vw);
   margin: 0 auto;
   padding: 26px 28px 44px;
 }

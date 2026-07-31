@@ -578,6 +578,31 @@
 .ll-cardwatch:hover { color: var(--brand-ink); text-decoration: underline; }
 .ll-cardwatch i { font-size: 13px; }
 
+/* 미신청 카드(강의 신청 페이지) — 재생이 아니라 수강신청 유도. 잠금 배지 + '수강신청' 필 버튼. */
+.ll-badge--locked {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.62);
+}
+.ll-badge--locked i { font-size: 12px; }
+.ll-cardstatus--locked {
+  color: var(--ink-3);
+  font-weight: 600;
+}
+.ll-cardenroll {
+  color: var(--on-brand);
+  background: var(--brand);
+  padding: 7px 13px;
+  border-radius: var(--r-pill, 999px);
+  flex-shrink: 0;
+}
+.ll-cardenroll:hover {
+  color: var(--on-brand);
+  text-decoration: none;
+  opacity: 0.92;
+}
+
 /* 미신청(잠금) 카드 — 홈 '이런 코스는 어때요'. 설명·시청 버튼 대신 잠금 안내만. 클릭 비활성. */
 .ll-card--locked { cursor: default; }
 .ll-card--locked:hover { transform: none; box-shadow: none; }

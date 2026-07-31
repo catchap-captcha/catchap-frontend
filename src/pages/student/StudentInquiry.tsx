@@ -72,6 +72,8 @@ export default function StudentInquiry() {
           <p className="si-sub">학습 중 막히거나 궁금한 점이 있으면 알려 주세요. 보통 1영업일 안에 답해 드려요.</p>
         </div>
 
+        <div className="si-grid">
+          <div className="si-main">
         {sent ? (
           <div className="si-card si-sent">
             <div className="si-sent-ic">
@@ -163,6 +165,35 @@ export default function StudentInquiry() {
             </div>
           </div>
         )}
+          </div>
+
+          <aside className="si-side">
+            <div className="si-info-card">
+              <div className="si-info-title">바로 연락하기</div>
+              <a className="si-info-row" href="mailto:help@catchap.io">
+                <span className="si-info-ic"><i className="ph-fill ph-envelope-simple" /></span>
+                <span className="si-info-txt">
+                  <span className="si-info-lb">이메일</span>
+                  <span className="si-info-val">help@catchap.io</span>
+                </span>
+              </a>
+              <div className="si-info-row">
+                <span className="si-info-ic"><i className="ph-fill ph-clock" /></span>
+                <span className="si-info-txt">
+                  <span className="si-info-lb">운영 시간</span>
+                  <span className="si-info-val">평일 09:00 – 18:00</span>
+                </span>
+              </div>
+              <div className="si-info-row">
+                <span className="si-info-ic"><i className="ph-fill ph-chat-circle-dots" /></span>
+                <span className="si-info-txt">
+                  <span className="si-info-lb">응답</span>
+                  <span className="si-info-val">보통 1영업일 이내</span>
+                </span>
+              </div>
+            </div>
+          </aside>
+        </div>
       </section>
     </StudentLayout>
   );

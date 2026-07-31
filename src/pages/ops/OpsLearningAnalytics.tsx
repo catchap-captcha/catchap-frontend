@@ -8,6 +8,11 @@ import './OpsLearningAnalytics.css';
 const pct = (r: number | null): string => (r == null ? '-' : `${Math.round(r * 100)}%`);
 const rateColor = (r: number): string =>
   r < 0.55 ? 'var(--brand)' : r < 0.7 ? 'var(--warn)' : 'var(--ok)';
+const fmtDate = (iso: string | null): string => {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
+};
 
 /**
  * 학습 분석 — CatChap '학습 분석' 리뉴얼 화면 그대로. 시청 완주·확인문항 통과·코스 수료
@@ -182,6 +187,74 @@ function Body({ data }: { data: InstructorAnalytics }) {
               </div>
             );
           })
+        )}
+      </section>
+
+      <section className="orn-card la-revsection">
+        <div className="la-rev-head">
+          <div className="la-lecsection-head la-rev-title">
+            <i className="ph ph-chat-circle-text" />
+            <h2>수강 후기</h2>
+          </div>
+          {(data.reviews?.summary.count ?? 0) > 0 && (
+            <div className="la-rev-summary">
+              <span className="la-rev-avg">
+                <i className="ph-fill ph-star" />
+                {(data.reviews?.summary.avg ?? 0).toFixed(1)}
+              </span>
+              <span className="la-rev-count">전체 후기 {data.reviews?.summary.count ?? 0}개</span>
+            </div>
+          )}
+        </div>
+        <p className="la-lecsection-sub">
+          코스별 별점·코멘트예요 — 표시 이름은 가명으로 나갑니다.
+        </p>
+        {(data.reviews?.by_course?.length ?? 0) === 0 ? (
+          <p style={{ fontSize: 13, color: 'var(--ink-3)', fontWeight: 600, margin: 0 }}>
+            아직 등록된 수강 후기가 없어요.
+          </p>
+        ) : (
+          <div className="la-revcourses">
+            {(data.reviews?.by_course ?? []).map((c) => (
+              <div key={c.course_id || 'none'} className="la-revcourse">
+                <div className="la-revcourse-head">
+                  <span className="la-revcourse-title">{c.course_title}</span>
+                  <span className="la-revcourse-stat">
+                    <i className="ph-fill ph-star" />
+                    {c.avg.toFixed(1)}
+                    <span className="la-revcourse-cnt">후기 {c.count}개</span>
+                  </span>
+                </div>
+                <div className="la-revlist">
+                  {c.items.map((rv) => (
+                    <div key={rv.id} className="la-revcard">
+                      <div className="la-revcard-top">
+                        <span className="la-revstars" aria-label={`${rv.rating}점`}>
+                          {[1, 2, 3, 4, 5].map((s) => (
+                            <i
+                              key={s}
+                              className={s <= rv.rating ? 'ph-fill ph-star' : 'ph ph-star'}
+                            />
+                          ))}
+                        </span>
+                        <span className="la-revlec">{rv.lecture_title}</span>
+                      </div>
+                      {rv.text && <p className="la-revtext">{rv.text}</p>}
+                      <div className="la-revmeta">
+                        <span className="la-revauthor">
+                          <i className="ph ph-user-circle" />
+                          {rv.author}
+                        </span>
+                        {rv.created_at && (
+                          <span className="la-revdate">{fmtDate(rv.created_at)}</span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
         )}
       </section>
     </>

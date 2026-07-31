@@ -146,6 +146,40 @@
   border: 1px solid var(--line-strong);
 }
 
+/* 수강 중 카드 액션 — 계속 학습(주) 아래 수강 취소(보조 텍스트). 실수 방지로 눈에 덜 띄게. */
+.mc-actions {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+}
+.mc-actions .mc-btn {
+  width: 100%;
+  justify-content: center;
+}
+.mc-cancel {
+  align-self: center;
+  border: none;
+  background: none;
+  color: var(--ink-3);
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+.mc-cancel:hover:not(:disabled) {
+  color: var(--danger);
+  text-decoration: underline;
+}
+.mc-cancel:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
 .mc-empty {
   text-align: center;
   color: var(--ink-3);
@@ -173,7 +207,8 @@
     flex-wrap: wrap;
   }
   .mc-btn,
-  .mc-btn-ghost {
+  .mc-btn-ghost,
+  .mc-actions {
     width: 100%;
     justify-content: center;
   }

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import StudentLayout from '../../layouts/StudentLayout';
 import { PATHS } from '../../routes/paths';
@@ -28,21 +28,49 @@ export default function MyCourses() {
   const [courses, setCourses] = useState<StudentCourse[] | null>(null);
   const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading');
   const [tab, setTab] = useState<'active' | 'done'>('active');
+  const [canceling, setCanceling] = useState<string | null>(null);
+
+  const load = useCallback(async (opts?: { silent?: boolean }) => {
+    if (!opts?.silent) setState('loading');
+    try {
+      const [ls, cs] = await Promise.all([lectureApi.list(), lectureApi.courses()]);
+      setLectures(Array.isArray(ls) ? ls : []);
+      setCourses(Array.isArray(cs) ? cs : []);
+      setState('ready');
+    } catch {
+      if (!opts?.silent) setState('error');
+    }
+  }, []);
 
   useEffect(() => {
-    let alive = true;
-    Promise.all([lectureApi.list(), lectureApi.courses()])
-      .then(([ls, cs]) => {
-        if (!alive) return;
-        setLectures(Array.isArray(ls) ? ls : []);
-        setCourses(Array.isArray(cs) ? cs : []);
-        setState('ready');
-      })
-      .catch(() => alive && setState('error'));
-    return () => {
-      alive = false;
-    };
-  }, []);
+    void load();
+  }, [load]);
+
+  /** 수강 취소 — 무료 코스는 서버가 바로 withdrawn 처리(진행 이력은 보존). 유료 코스는 서버가
+   *  409(paid_enrollment)로 막으므로 결제 내역·환불 화면으로 안내한다(환불 규정은 그쪽에서 적용). */
+  const cancelEnroll = async (courseId: string, title: string) => {
+    if (canceling) return;
+    if (!window.confirm(`'${title}' 수강을 취소할까요?\n진행 이력은 남아, 다시 신청하면 이어서 학습할 수 있어요.`))
+      return;
+    setCanceling(courseId);
+    try {
+      await lectureApi.unenrollCourse(courseId);
+      await load({ silent: true });
+    } catch (e) {
+      const err = e as {
+        response?: { status?: number; data?: { detail?: { reason?: string; message?: string } } };
+      };
+      const detail = err.response?.data?.detail;
+      if (err.response?.status === 409 && detail?.reason === 'paid_enrollment') {
+        window.alert(detail.message || '결제한 코스는 결제 취소 메뉴에서 환불해 주세요.');
+        navigate(PATHS.STUDENT_ORDERS);
+      } else {
+        window.alert('수강 취소에 실패했어요. 잠시 후 다시 시도해 주세요.');
+      }
+    } finally {
+      setCanceling(null);
+    }
+  };
 
   const rows: CourseRow[] = useMemo(() => {
     if (!courses || !lectures) return [];
@@ -157,13 +185,22 @@ export default function MyCourses() {
                         <i className="ph-fill ph-certificate" /> 수료 현황
                       </button>
                     ) : (
-                      <button
-                        className="mc-btn"
-                        onClick={() => r.continueLec && goWatch(r.continueLec.id)}
-                        disabled={!r.continueLec}
-                      >
-                        <i className="ph-fill ph-play" /> 계속 학습
-                      </button>
+                      <div className="mc-actions">
+                        <button
+                          className="mc-btn"
+                          onClick={() => r.continueLec && goWatch(r.continueLec.id)}
+                          disabled={!r.continueLec}
+                        >
+                          <i className="ph-fill ph-play" /> 계속 학습
+                        </button>
+                        <button
+                          className="mc-cancel"
+                          onClick={() => cancelEnroll(r.course.id, r.course.title)}
+                          disabled={canceling === r.course.id}
+                        >
+                          {canceling === r.course.id ? '취소 중…' : '수강 취소'}
+                        </button>
+                      </div>
                     )}
                   </div>
                 ))}

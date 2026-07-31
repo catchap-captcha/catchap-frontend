@@ -12,14 +12,6 @@ import './LectureList.css';
 /** 코스(그룹)별 기본 노출 개수 — 그 이상은 '더보기' 카드로 접는다(목업 동일) */
 const VISIBLE_PER_GROUP = 5;
 
-type WatchState = 'new' | 'watching' | 'done';
-
-function watchState(l: LectureItem): WatchState {
-  if (l.progress?.status === 'done') return 'done';
-  if ((l.progress?.watched_max_sec ?? 0) > 0) return 'watching';
-  return 'new';
-}
-
 /** 한 분류(category) 안의 강의를 강사별 코스로 묶는다(코스는 order_no순). course_id=null은 '기타' 그룹.
  *  rows는 서버가 (과목·order_no·created_at)로 정렬해 주므로 필터만 해도 코스 안 순서가 지켜진다. */
 interface CourseGroup {
@@ -89,7 +81,9 @@ export default function LectureList() {
   useEffect(load, []);
 
   // 이 페이지는 '강의 신청(구매)' 전용 — 아직 수강신청 안 한 코스와 그 강의만 다룬다.
-  const shopCourses = courses.filter((c) => !c.enrolled);
+  // 영상(강의) 0개인 코스는 제외한다 — 서버(GET /courses)도 빈 코스를 빼지만, 방어적으로 한 번 더
+  // 거른다(강의 없는 코스는 수강신청 화면에 아예 안 뜨게).
+  const shopCourses = courses.filter((c) => !c.enrolled && (c.lecture_count ?? 0) > 0);
   const shopCourseIds = new Set(shopCourses.map((c) => c.id));
   const shopRows = (rows ?? []).filter((l) => l.course_id && shopCourseIds.has(l.course_id));
   const shopCourseCount = shopCourses.length;
@@ -107,7 +101,8 @@ export default function LectureList() {
   );
   const visibleCategories = tab === '전체' ? presentCategories : [tab];
 
-  const goWatch = (id: string) => navigate(PATHS.STUDENT_LECTURE, { state: { id } });
+  // 미신청 코스라 재생이 아니라 수강신청(결제)로 보낸다 — 강의 카드도 그 코스의 결제 화면으로.
+  const goEnroll = (courseId: string) => navigate(`${PATHS.STUDENT_CHECKOUT}?course=${courseId}`);
 
   // 장바구니 — 구매(수강신청)할 코스를 여러 개 담는다. 코스 머리의 체크박스로 토글하고,
   // 하단 바의 '구매하기'가 선택 코스들을 결제(Checkout) 페이지로 넘긴다(?cart=id1,id2).
@@ -144,17 +139,18 @@ export default function LectureList() {
   // 강사 소개 모달 — 코스 머리의 '강사 소개' 버튼이 연다.
   const [bioFor, setBioFor] = useState<{ name: string; courseTitle: string | null } | null>(null);
 
-  /** 강의 카드 — 코스 그룹 안에서 반복 렌더한다(그룹 내 순번 i로 강 번호를 센다). */
+  /** 강의 카드 — 코스 그룹 안에서 반복 렌더한다(그룹 내 순번 i로 강 번호를 센다).
+   *  이 페이지는 '미신청' 코스만 다루므로 카드는 재생이 아니라 '수강신청'을 유도한다. 수강 취소로
+   *  진행 이력만 남은 코스가 '이어서 보기'처럼 보이던 혼란을 없앤다 — 신청 전엔 시청할 수 없다. */
   const renderCard = (l: LectureItem, i: number) => {
-    const st = watchState(l);
     // 코스 안 순서는 그룹 내 위치(1강·2강…)로 센다 — order_no는 과목 전역이라 코스로 묶으면
     // 2강·3강처럼 건너뛰어 보인다(정렬 순서는 이미 order_no로 맞춰져 있어 위치가 곧 강 순서).
     const num = i + 1;
-    const badgeText = st === 'done' ? '학습 완료' : st === 'watching' ? '학습중' : '새 강의';
+    const enroll = () => l.course_id && goEnroll(l.course_id);
     // 썸네일 인프라(Object Storage)가 없어 코스별 결정적 커버로 색을 준다 — 같은 코스 강의는
-    // 같은 색 계열(cohesive), 코스가 없으면 강의 id로. 재생 아이콘은 위에 얹는다.
+    // 같은 색 계열(cohesive), 코스가 없으면 강의 id로.
     return (
-      <div key={l.id} className="ll-card" onClick={() => goWatch(l.id)}>
+      <div key={l.id} className="ll-card" onClick={enroll}>
         <div className="ll-thumb">
           {/* 앱 전체와 일관된 CourseCover(모노그램 커버) — 복제본 랩 커버 룩 */}
           <CourseCover
@@ -164,7 +160,9 @@ export default function LectureList() {
             size="md"
             className="ll-thumb-cover"
           />
-          <span className="ll-badge">{badgeText}</span>
+          <span className="ll-badge ll-badge--locked">
+            <i className="ph-fill ph-lock-simple" /> 미신청
+          </span>
           <span className="ll-time">{formatClock(l.duration_sec)}</span>
         </div>
         <div className="ll-cardbody">
@@ -172,26 +170,17 @@ export default function LectureList() {
           <div className="ll-cardtitle">{l.title}</div>
           <p className="ll-carddesc">{l.description || '이 강의의 내용을 배워요.'}</p>
           <div className="ll-cardfoot">
-            <span className={`ll-cardstatus${st === 'done' ? ' ll-cardstatus--done' : ''}`}>
-              <i
-                className={
-                  st === 'done'
-                    ? 'ph-fill ph-check-circle'
-                    : st === 'watching'
-                      ? 'ph-fill ph-play-circle'
-                      : 'ph-fill ph-sparkle'
-                }
-              />
-              {st === 'done' ? '다시 보기' : st === 'watching' ? '이어서 보기' : '새 강의'}
+            <span className="ll-cardstatus ll-cardstatus--locked">
+              <i className="ph-fill ph-lock-simple" /> 수강신청하면 볼 수 있어요
             </span>
             <button
-              className="ll-cardwatch"
+              className="ll-cardwatch ll-cardenroll"
               onClick={(e) => {
                 e.stopPropagation();
-                goWatch(l.id);
+                enroll();
               }}
             >
-              인강 보기
+              수강신청
               <i className="ph-bold ph-arrow-right" />
             </button>
           </div>
