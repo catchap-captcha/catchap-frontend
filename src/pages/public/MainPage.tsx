@@ -24,6 +24,15 @@ const SUBJECTS = [
   { name: '생활', tag: '생활 · 안전', icon: 'ph-house-line', desc: '생활 속 안전과 지혜를 상황별 강의로 배웁니다.' },
 ];
 
+// 랜딩 쇼케이스 — 이 플랫폼을 실제로 움직이는 AI 능력(과목 섹션 안에서 자랑).
+// 문구는 실제 파이프라인 그대로: 음성→자막(STT) → LLM 문항 생성 → 2차 AI 봇저항 검증 → 추천.
+const AI_FEATURES = [
+  { icon: 'ph-magic-wand', title: 'AI 확인 문항 생성', desc: '대규모 언어모델(LLM)이 강의 내용을 읽고, 그 장면을 실제로 봐야만 풀 수 있는 확인 문항을 자동으로 만듭니다.' },
+  { icon: 'ph-waveform', title: '음성 → 자막 자동 변환', desc: '강의 음성을 인식(STT)해 자막으로 옮기고, 그 자막을 근거로 문항을 출제해 정확도를 높입니다.' },
+  { icon: 'ph-robot', title: '봇 저항 자기검증', desc: '2차 AI가 “안 보고도 상식으로 풀리는지”를 스스로 검증해, 강의를 봐야만 풀리는 진짜 검증 문항만 남깁니다.' },
+  { icon: 'ph-target', title: '관심사 맞춤 추천', desc: '관심사와 학습 기록을 바탕으로 다음에 볼 강의를 골라, 이어서 학습할 흐름을 추천합니다.' },
+];
+
 const AUDIENCE = [
   {
     icon: 'ph-student',
@@ -297,6 +306,29 @@ export default function MainPage() {
                 <p className="mn-game-desc">{s.desc}</p>
               </div>
             ))}
+          </div>
+
+          {/* AI 소개 — 이 플랫폼을 실제로 움직이는 AI 능력을 과목 섹션 안에서 자랑한다.
+              문구는 실제 파이프라인 그대로(STT 자막 → LLM 문항 생성 → 2차 AI 봇저항 검증 → 추천). */}
+          <div className="mn-ai cc-reveal">
+            <div className="mn-ai-head">
+              <span className="mn-ai-kicker"><i className="ph-fill ph-sparkle" /> AI POWERED</span>
+              <h2 className="mn-ai-title">강의를 ‘이해한’ AI가 확인 학습을 만듭니다</h2>
+              <p className="mn-ai-lead">
+                최신 대규모 언어모델(LLM)과 음성 인식(STT)이 강의 내용을 읽고, 그 대목을 실제로
+                봐야만 풀 수 있는 확인 문항을 자동으로 만듭니다. 사람이 일일이 출제하지 않아도 모든
+                강의에 시청 검증이 붙어요.
+              </p>
+            </div>
+            <div className="mn-ai-grid cc-reveal-group">
+              {AI_FEATURES.map((f) => (
+                <div key={f.title} className="mn-ai-card">
+                  <i className={`ph ${f.icon} mn-ai-icon`} />
+                  <div className="mn-ai-name">{f.title}</div>
+                  <p className="mn-ai-desc">{f.desc}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>

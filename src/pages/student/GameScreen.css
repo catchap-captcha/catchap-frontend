@@ -528,17 +528,20 @@
 .gs-wrong-item {
   display: flex;
   align-items: flex-start;
-  gap: 8px;
+  gap: 10px;
   padding: 9px 11px;
   border-radius: 10px;
   background: var(--surface-2);
 }
 .gs-wrong-no {
   flex-shrink: 0;
-  font-size: 10.5px;
+  /* '문제10'까지 같은 폭으로 고정 → 모든 행의 문장 시작 열을 정렬한다. */
+  min-width: 44px;
+  font-size: 11.5px;
   font-weight: 800;
+  /* 문장(첫 줄)과 같은 줄높이 — 라벨과 문장 상단을 맞춘다. */
+  line-height: 1.5;
   color: var(--danger);
-  padding-top: 1px;
 }
 .gs-wrong-text {
   font-size: 12.5px;

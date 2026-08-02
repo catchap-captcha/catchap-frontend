@@ -577,16 +577,30 @@
 .op-lect-textarea { border: 1.5px solid var(--line); border-radius: 10px; padding: 10px; font-family: inherit; font-weight: 600; font-size: 13.5px; resize: vertical; }
 .op-lect-qlist { display: flex; flex-direction: column; gap: 10px; }
 .op-lect-qrow {
+  /* 종전: 가로 3열([배지 세로 스택 68px] · 본문 · 액션)이라 배지 7개가 좁게 세로로
+     쌓여 조잡했다. 세로 흐름(배지 가로 스트립 → 본문 → 액션)으로 바꿔 한 문항이
+     한눈에 읽히게 한다. */
   display: flex;
-  gap: 12px;
-  align-items: flex-start;
+  flex-direction: column;
+  gap: 10px;
   border: 1.5px solid var(--line);
   border-radius: 14px;
-  padding: 12px 14px;
+  padding: 13px 15px;
   background: var(--surface);
 }
-.op-lect-qmeta { display: flex; flex-direction: column; gap: 6px; min-width: 68px; align-items: flex-start; }
-.op-lect-qbody { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; font-size: 13.5px; color: var(--ink); }
+.op-lect-qmeta {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+/* 배지 스트립 — 크기를 고르게 낮춰 시선 분산을 줄인다(색은 의미대로 유지). */
+.op-lect-qmeta > * { font-size: 11px; }
+.op-lect-qbody { min-width: 0; display: flex; flex-direction: column; gap: 6px; font-size: 13.5px; color: var(--ink); }
+/* 액션(공개·수정·삭제)은 행 맨 아래 오른쪽 정렬 + 옅은 구분선으로 본문과 분리. */
+.op-lect-qrow > .op-lect-actions { justify-content: flex-end; border-top: 1px solid var(--line); padding-top: 10px; }
 .op-lect-qopts { display: flex; flex-wrap: wrap; gap: 6px; }
 .op-lect-qopt { padding: 4px 10px; border-radius: 999px; background: var(--surface-2); color: var(--ink-2); font-weight: 700; font-size: 12px; }
 .op-lect-qopt-ans { background: var(--ok-soft); color: var(--ok); }

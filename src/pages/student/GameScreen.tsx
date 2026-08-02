@@ -926,7 +926,7 @@ export default function GameScreen() {
               <ul className="gs-wrong-list">
                 {wrongList.map((w) => (
                   <li key={`${w.no}-${w.prompt}`} className="gs-wrong-item">
-                    <span className="gs-wrong-no">{w.no}번째</span>
+                    <span className="gs-wrong-no">문제{w.no}</span>
                     <span className="gs-wrong-text">{w.prompt}</span>
                   </li>
                 ))}
