@@ -109,6 +109,22 @@ export default function StudentHome() {
   const discoverGroups = useMemo(() => groupsFor(false), [courses, lectures]);
   const enrolledCount = useMemo(() => (courses ?? []).filter((c) => c.enrolled).length, [courses]);
 
+  // 강의 둘러보기에 보여줄 전체 코스 — 미신청 + 수강 중을 모두 담는다(수강 중은 카드에서 배지로
+  // 구분). 미신청을 앞, 수강 중을 뒤로 정렬(새로 신청할 코스가 먼저 눈에 띄게). courses()가 빈
+  // 코스는 이미 제외하므로 여기 담기는 코스는 전부 강의가 있다.
+  const allGroups = useMemo(() => {
+    if (!courses || !lectures) return [];
+    return courses
+      .map((c) => ({
+        course: c,
+        lectures: lectures
+          .filter((l) => l.course_id === c.id)
+          .sort((a, b) => a.order_no - b.order_no),
+      }))
+      .filter((g) => g.lectures.length > 0)
+      .sort((a, b) => Number(!!a.course.enrolled) - Number(!!b.course.enrolled));
+  }, [courses, lectures]);
+
   // 관심사 추천 — 고른 관심사(코스 분류 category)에 맞는 미신청 코스를 홈 상단에 따로 노출한다.
   const recommendedGroups = useMemo(() => {
     if (!interests || interests.length === 0) return [];
@@ -129,14 +145,14 @@ export default function StudentHome() {
   const browseCats = useMemo(() => {
     // 브라우징 대분류(category) 기준 — 없으면 subject, 그것도 없으면 '기타'
     const cats = Array.from(
-      new Set(discoverGroups.map((g) => g.course.category || g.course.subject || '기타')),
+      new Set(allGroups.map((g) => g.course.category || g.course.subject || '기타')),
     );
     return ['전체', ...cats];
-  }, [discoverGroups]);
+  }, [allGroups]);
   const shownDiscover =
     browseCat === '전체'
-      ? discoverGroups
-      : discoverGroups.filter(
+      ? allGroups
+      : allGroups.filter(
           (g) => (g.course.category || g.course.subject || '기타') === browseCat,
         );
 
@@ -149,33 +165,49 @@ export default function StudentHome() {
 
   const goWatch = (id: string) => navigate(PATHS.STUDENT_LECTURE, { state: { id } });
 
-  /** 코스 카드 — 홈 '강의 둘러보기' 미리보기. 강의를 낱개로 다 펼치지 않고 코스 단위로 간결하게
-   *  보여준다(종전 조잡함 해소). 누르면 코스 상세(커리큘럼)로 — 소개·강의 목록·가격을 보고
-   *  거기서 수강신청→결제로 넘어간다(둘러보기→상세→결제). */
+  /** 코스 카드 — 홈 '강의 둘러보기' 미리보기. 미신청·수강 중 코스를 모두 보여주되 수강 중은 커버에
+   *  '수강 중' 배지 + CTA를 '학습하기'로 바꿔 확실히 구분한다. 누르면 코스 상세(커리큘럼)로 가고,
+   *  상세에서 미신청은 수강신청→결제, 수강 중은 학습하기로 이어진다. */
   const renderCourseCard = (g: HomeCourseGroup) => {
     const c = g.course;
+    const enrolled = !!c.enrolled;
     return (
       <button
         key={c.id}
         type="button"
-        className="sh2-ccard"
+        className={`sh2-ccard${enrolled ? ' sh2-ccard--enrolled' : ''}`}
         onClick={() => navigate(`${PATHS.STUDENT_COURSE_DETAIL}?id=${c.id}`)}
       >
-        <CourseCover
-          seed={c.id}
-          label={c.title || c.subject}
-          imageUrl={thumbnailSrc(c.thumbnail_url)}
-          size="md"
-          className="sh2-ccover"
-        />
+        <span className="sh2-ccover-wrap">
+          <CourseCover
+            seed={c.id}
+            label={c.title || c.subject}
+            imageUrl={thumbnailSrc(c.thumbnail_url)}
+            size="md"
+            className="sh2-ccover"
+          />
+          {enrolled && (
+            <span className="sh2-ccard-badge">
+              <i className="ph-fill ph-check-circle" /> 수강 중
+            </span>
+          )}
+        </span>
         <span className="sh2-ccard-body">
           <span className="sh2-ccard-title">{c.title}</span>
           <span className="sh2-ccard-meta">
             {c.instructor_name ? `${c.instructor_name} 강사 · ` : ''}
             {c.lecture_count || g.lectures.length}강
           </span>
-          <span className="sh2-ccard-cta">
-            <i className="ph-bold ph-arrow-right" /> 자세히 보기
+          <span className={`sh2-ccard-cta${enrolled ? ' sh2-ccard-cta--learn' : ''}`}>
+            {enrolled ? (
+              <>
+                <i className="ph-fill ph-play" /> 학습하기
+              </>
+            ) : (
+              <>
+                <i className="ph-bold ph-arrow-right" /> 자세히 보기
+              </>
+            )}
           </span>
         </span>
       </button>
@@ -312,11 +344,11 @@ export default function StudentHome() {
         {state === 'error' && (
           <div className="sh2-empty">강의를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.</div>
         )}
-        {state === 'ready' && discoverGroups.length === 0 && (
-          <div className="sh2-empty">지금은 둘러볼 새 강의가 없어요.</div>
+        {state === 'ready' && allGroups.length === 0 && (
+          <div className="sh2-empty">지금은 둘러볼 강의가 없어요.</div>
         )}
 
-        {state === 'ready' && discoverGroups.length > 0 && (
+        {state === 'ready' && allGroups.length > 0 && (
           <>
             {/* 분야 칩 — 코스 subject로 클라이언트 필터(홈 버전 태그). 상세 조건 필터는 '전체 보기' 카탈로그에서. */}
             {browseCats.length > 1 && (
