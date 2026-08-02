@@ -109,21 +109,14 @@ export default function StudentHome() {
   const discoverGroups = useMemo(() => groupsFor(false), [courses, lectures]);
   const enrolledCount = useMemo(() => (courses ?? []).filter((c) => c.enrolled).length, [courses]);
 
-  // 강의 둘러보기에 보여줄 전체 코스 — 미신청 + 수강 중을 모두 담는다(수강 중은 카드에서 배지로
-  // 구분). 미신청을 앞, 수강 중을 뒤로 정렬(새로 신청할 코스가 먼저 눈에 띄게). courses()가 빈
-  // 코스는 이미 제외하므로 여기 담기는 코스는 전부 강의가 있다.
-  const allGroups = useMemo(() => {
-    if (!courses || !lectures) return [];
-    return courses
-      .map((c) => ({
-        course: c,
-        lectures: lectures
-          .filter((l) => l.course_id === c.id)
-          .sort((a, b) => a.order_no - b.order_no),
-      }))
-      .filter((g) => g.lectures.length > 0)
-      .sort((a, b) => Number(!!a.course.enrolled) - Number(!!b.course.enrolled));
-  }, [courses, lectures]);
+  // 수강신청한 코스(수강 중) — '이어서 학습' 아래 전용 섹션으로 노출(#4).
+  const enrolledGroups = useMemo(() => groupsFor(true), [courses, lectures]);
+  // 강의 id→코스 조회(수강 여부·코스명·강사) — '강의 둘러보기' 카드·검색이 쓴다.
+  const courseById = useMemo(() => {
+    const m = new Map<string, StudentCourse>();
+    (courses ?? []).forEach((c) => m.set(c.id, c));
+    return m;
+  }, [courses]);
 
   // 관심사 추천 — 고른 관심사(코스 분류 category)에 맞는 미신청 코스를 홈 상단에 따로 노출한다.
   const recommendedGroups = useMemo(() => {
@@ -139,22 +132,47 @@ export default function StudentHome() {
     return [...set];
   }, [courses]);
 
-  // 강의 둘러보기 분야 칩 — 미신청 코스의 subject로 필터(홈 버전 태그 필터). 전체 조건 필터는
-  // '전체 보기'의 카탈로그(강의 신청)에서. 없는 분야를 만들지 않게 실제 코스 subject만 칩으로.
+  // 둘러보기 검색 — 코스명·강의명·강사·분류를 실시간 필터(코스 둘러보기 + 강의 둘러보기 공용).
+  const [search, setSearch] = useState('');
+  const q = search.trim().toLowerCase();
+  // 코스 둘러보기 분야 칩 — 미신청 코스의 분류(category, 없으면 subject) 기준.
   const [browseCat, setBrowseCat] = useState('전체');
   const browseCats = useMemo(() => {
-    // 브라우징 대분류(category) 기준 — 없으면 subject, 그것도 없으면 '기타'
     const cats = Array.from(
-      new Set(allGroups.map((g) => g.course.category || g.course.subject || '기타')),
+      new Set(discoverGroups.map((g) => g.course.category || g.course.subject || '기타')),
     );
     return ['전체', ...cats];
-  }, [allGroups]);
-  const shownDiscover =
-    browseCat === '전체'
-      ? allGroups
-      : allGroups.filter(
-          (g) => (g.course.category || g.course.subject || '기타') === browseCat,
+  }, [discoverGroups]);
+  // 코스 둘러보기 = 미신청 코스 + 분야 칩 + 검색.
+  const shownCourses = useMemo(() => {
+    let list = discoverGroups;
+    if (browseCat !== '전체')
+      list = list.filter((g) => (g.course.category || g.course.subject || '기타') === browseCat);
+    if (q)
+      list = list.filter((g) => {
+        const c = g.course;
+        return (
+          (c.title || '').toLowerCase().includes(q) ||
+          (c.instructor_name || '').toLowerCase().includes(q) ||
+          (c.category || c.subject || '').toLowerCase().includes(q)
         );
+      });
+    return list;
+  }, [discoverGroups, browseCat, q]);
+  // 강의 둘러보기 = 개별 강의(전체 활성 강의) + 검색(강의명·코스명·강사·분야).
+  const shownLectures = useMemo(() => {
+    const base = lectures ?? [];
+    if (!q) return base;
+    return base.filter((l) => {
+      const c = courseById.get(l.course_id ?? '');
+      return (
+        (l.title || '').toLowerCase().includes(q) ||
+        (l.subject || '').toLowerCase().includes(q) ||
+        (c?.title || '').toLowerCase().includes(q) ||
+        (c?.instructor_name || '').toLowerCase().includes(q)
+      );
+    });
+  }, [lectures, courseById, q]);
 
   // 이어서 학습 레일 — 시청 중(watching)인 강의(발견·재방문 유도). 히어로의 1건과 겹쳐도
   // 여러 개를 가로 스크롤로 노출하는 게 목적(넷플릭스·Coursera '이어보기' 레일 패턴).
@@ -202,6 +220,60 @@ export default function StudentHome() {
             {enrolled ? (
               <>
                 <i className="ph-fill ph-play" /> 학습하기
+              </>
+            ) : (
+              <>
+                <i className="ph-bold ph-arrow-right" /> 자세히 보기
+              </>
+            )}
+          </span>
+        </span>
+      </button>
+    );
+  };
+
+  /** 강의 카드 — 홈 '강의 둘러보기'(개별 강의). 코스 카드 룩을 재사용하되, 수강 중 코스의
+   *  강의는 바로 이어 보기, 미신청 코스의 강의는 코스 상세(수강신청)로 보낸다. */
+  const renderLectureCard = (l: LectureItem) => {
+    const c = courseById.get(l.course_id ?? '');
+    const enrolled = !!c?.enrolled;
+    const go = () =>
+      enrolled ? goWatch(l.id) : navigate(`${PATHS.STUDENT_COURSE_DETAIL}?id=${l.course_id}`);
+    return (
+      <button
+        key={l.id}
+        type="button"
+        className={`sh2-ccard${enrolled ? ' sh2-ccard--enrolled' : ''}`}
+        onClick={go}
+      >
+        <span className="sh2-ccover-wrap">
+          <CourseCover
+            seed={l.course_id || l.id}
+            label={l.title}
+            imageUrl={thumbnailSrc(l.thumbnail_url)}
+            size="md"
+            className="sh2-ccover"
+          />
+          {enrolled ? (
+            <span className="sh2-ccard-badge">
+              <i className="ph-fill ph-check-circle" /> 수강 중
+            </span>
+          ) : (
+            <span className="sh2-ccard-badge sh2-ccard-badge--lock">
+              <i className="ph-fill ph-lock-simple" /> 미신청
+            </span>
+          )}
+        </span>
+        <span className="sh2-ccard-body">
+          <span className="sh2-ccard-title">{l.title}</span>
+          <span className="sh2-ccard-meta">
+            {c?.title ? c.title : l.subject}
+            {c?.instructor_name ? ` · ${c.instructor_name} 강사` : ''}
+          </span>
+          <span className={`sh2-ccard-cta${enrolled ? ' sh2-ccard-cta--learn' : ''}`}>
+            {enrolled ? (
+              <>
+                <i className="ph-fill ph-play" /> 이어 보기
               </>
             ) : (
               <>
@@ -315,6 +387,22 @@ export default function StudentHome() {
         </section>
       )}
 
+      {/* ===== 수강 중인 코스 (#4) — '이어서 학습' 아래에 수강신청한 코스를 전용 섹션으로 보여준다.
+             (강의 단위 '이어서 학습' 레일과 달리, 여기선 코스 단위로 묶어 진행/학습 진입점을 준다) ===== */}
+      {state === 'ready' && enrolledGroups.length > 0 && (
+        <section className="sh2-courses">
+          <div className="sh2-sec-head">
+            <h2 className="sh2-sec-title">
+              <i className="ph-fill ph-books" /> 수강 중인 코스
+            </h2>
+            <button className="sh2-sec-more" onClick={() => navigate(PATHS.STUDENT_MY_COURSES)}>
+              전체 보기 <i className="ph-bold ph-arrow-right" />
+            </button>
+          </div>
+          <div className="sh2-ccard-grid">{enrolledGroups.map((g) => renderCourseCard(g))}</div>
+        </section>
+      )}
+
       {/* ===== 관심사 추천 — 온보딩에서 고른 관심사(코스 분류)에 맞는 미신청 코스를 먼저 보여준다.
              관심사가 없거나(스킵) 맞는 코스가 없으면 섹션 자체를 숨긴다. ===== */}
       {state === 'ready' && recommendedGroups.length > 0 && (
@@ -328,29 +416,47 @@ export default function StudentHome() {
         </section>
       )}
 
-      {/* ===== 강의 둘러보기 — 미신청 코스 미리보기 + 분야 칩 필터. '내 코스'는 상단 '내 학습 > 내 강의'로
-             분리했고(2026-07-31 상단바 개편), 홈은 이어보기 + 새 강의 탐색 중심으로 둔다. ===== */}
-      <section className="sh2-courses">
-        <div className="sh2-sec-head">
-          <h2 className="sh2-sec-title">
-            <i className="ph-fill ph-compass" /> 강의 둘러보기
-          </h2>
-          <button className="sh2-sec-more" onClick={() => navigate(PATHS.STUDENT_LECTURES)}>
-            전체 보기 <i className="ph-bold ph-arrow-right" />
-          </button>
+      {/* ===== 둘러보기 (#2/#3) — 상단 검색 + '코스 둘러보기'(미신청 코스) + '강의 둘러보기'(개별 강의).
+             검색은 코스·강의 공용 실시간 필터. 상세 조건 필터는 '전체 보기' 카탈로그에서. ===== */}
+      <section className="sh2-browse">
+        <div className="sh2-search">
+          <i className="ph-bold ph-magnifying-glass sh2-search-ic" />
+          <input
+            type="search"
+            className="sh2-search-input"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="코스·강의·강사 검색"
+            aria-label="코스·강의 검색"
+          />
+          {search && (
+            <button
+              type="button"
+              className="sh2-search-clear"
+              onClick={() => setSearch('')}
+              aria-label="검색 지우기"
+            >
+              <i className="ph-bold ph-x" />
+            </button>
+          )}
         </div>
 
         {state === 'loading' && <div className="sh2-empty">불러오는 중…</div>}
         {state === 'error' && (
           <div className="sh2-empty">강의를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.</div>
         )}
-        {state === 'ready' && allGroups.length === 0 && (
-          <div className="sh2-empty">지금은 둘러볼 강의가 없어요.</div>
-        )}
 
-        {state === 'ready' && allGroups.length > 0 && (
+        {state === 'ready' && (
           <>
-            {/* 분야 칩 — 코스 subject로 클라이언트 필터(홈 버전 태그). 상세 조건 필터는 '전체 보기' 카탈로그에서. */}
+            {/* 코스 둘러보기 — 아직 신청 안 한 코스(미리보기) */}
+            <div className="sh2-sec-head sh2-sec-head--sub">
+              <h2 className="sh2-sec-title">
+                <i className="ph-fill ph-compass" /> 코스 둘러보기
+              </h2>
+              <button className="sh2-sec-more" onClick={() => navigate(PATHS.STUDENT_LECTURES)}>
+                전체 보기 <i className="ph-bold ph-arrow-right" />
+              </button>
+            </div>
             {browseCats.length > 1 && (
               <div className="sh2-cats">
                 {browseCats.map((c) => (
@@ -365,9 +471,23 @@ export default function StudentHome() {
                 ))}
               </div>
             )}
-            <div className="sh2-ccard-grid">
-              {shownDiscover.map((g) => renderCourseCard(g))}
+            {shownCourses.length > 0 ? (
+              <div className="sh2-ccard-grid">{shownCourses.map((g) => renderCourseCard(g))}</div>
+            ) : (
+              <div className="sh2-empty">{q ? '검색 결과가 없어요.' : '지금은 둘러볼 코스가 없어요.'}</div>
+            )}
+
+            {/* 강의 둘러보기 — 개별 강의 카드 */}
+            <div className="sh2-sec-head sh2-sec-head--sub sh2-browse-lechead">
+              <h2 className="sh2-sec-title">
+                <i className="ph-fill ph-monitor-play" /> 강의 둘러보기
+              </h2>
             </div>
+            {shownLectures.length > 0 ? (
+              <div className="sh2-ccard-grid">{shownLectures.map((l) => renderLectureCard(l))}</div>
+            ) : (
+              <div className="sh2-empty">{q ? '검색 결과가 없어요.' : '지금은 둘러볼 강의가 없어요.'}</div>
+            )}
           </>
         )}
       </section>

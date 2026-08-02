@@ -3,10 +3,8 @@ import { useNavigate, useSearchParams, type NavigateFunction } from 'react-route
 import StudentLayout from '../../layouts/StudentLayout';
 import { useAuth } from '../../hooks/useAuth';
 import { studentApi } from '../../api/students';
-import { lectureApi, thumbnailSrc, type StudentCourse } from '../../api/lectures';
+import { lectureApi, thumbnailSrc, type StudentCourse, type LectureItem } from '../../api/lectures';
 import { PATHS } from '../../routes/paths';
-import ChapterAccuracyChart, { type SubjectStat } from '../../components/student/ChapterAccuracyChart';
-import HabitTrendLine, { type HabitDay } from '../../components/student/HabitTrendLine';
 import CourseCover from '../../components/course/CourseCover';
 import CertificateModal from '../../components/course/CertificateModal';
 import './MyRecords.css';
@@ -114,7 +112,6 @@ const FALLBACK: RecordsData = {
   accLabels: ['6회 전', '5회 전', '4회 전', '3회 전', '2회 전', '최근'],
 };
 
-const GRID_LINES = [50, 60, 70, 80, 90, 100];
 
 /** 수료일 표기 — 'YYYY-MM-DD…' ISO → 'M월 D일'(파싱 실패 시 빈 문자열) */
 function fmtPassedAt(iso: string | null | undefined): string {
@@ -353,9 +350,9 @@ export default function MyRecords() {
     setSearchParams(t === 'summary' ? {} : { tab: t }, { replace: false });
   const [data, setData] = useState<RecordsData>(FALLBACK);
   const [demo, setDemo] = useState(false); // 시도 기록이 없어 전부 데모값이면 true
-  const [subject, setSubject] = useState('전체');
-  const [chapStats, setChapStats] = useState<SubjectStat[]>([]);
-  const [habit, setHabit] = useState<{ days: HabitDay[]; streak: number } | null>(null);
+  // 강의 기반 학습 통계용(학습 통계 탭) — 전체 수강 코스 + 강의별 진행(시청/완주).
+  const [allCourses, setAllCourses] = useState<StudentCourse[] | null>(null);
+  const [lectures, setLectures] = useState<LectureItem[] | null>(null);
   // 수료 시험이 있는 코스 — null=조회 전. 수료 완료/진행 중/잠김으로 나눠 보여준다(재중심화 핵심).
   const [examCourses, setExamCourses] = useState<StudentCourse[] | null>(null);
   // 수료증 팝업 대상 코스 — null이면 닫힘. 수료한 카드의 '수료증' 버튼이 연다.
@@ -373,16 +370,19 @@ export default function MyRecords() {
       .catch(() => {
         // TODO(api): 백엔드 미구현/실패 시 FALLBACK 유지
       });
-    // 두 축 실집계 — 실패 시 빈 값(섹션 미노출, 가짜 진행 없음)
-    studentApi.chapterStats()
-      .then((d: any) => { if (mounted && Array.isArray(d?.subjects)) setChapStats(d.subjects); })
-      .catch(() => {});
-    studentApi.habitStats(4)
-      .then((d: any) => { if (mounted && Array.isArray(d?.days)) setHabit({ days: d.days, streak: d.streak ?? 0 }); })
-      .catch(() => {});
+    // 강의 기반 통계·수료 현황 — 코스(수료 요약)와 강의별 진행을 함께 로드. 실패 시 빈 값.
     lectureApi.courses()
-      .then((rows) => { if (mounted) setExamCourses(rows.filter((c) => c.exam?.has_exam)); })
-      .catch(() => { if (mounted) setExamCourses([]); });
+      .then((rows) => {
+        if (!mounted) return;
+        setExamCourses(rows.filter((c) => c.exam?.has_exam));
+        setAllCourses(rows);
+      })
+      .catch(() => {
+        if (mounted) { setExamCourses([]); setAllCourses([]); }
+      });
+    lectureApi.list()
+      .then((ls) => { if (mounted) setLectures(Array.isArray(ls) ? ls : []); })
+      .catch(() => { if (mounted) setLectures([]); });
     return () => {
       mounted = false;
     };
@@ -412,56 +412,44 @@ export default function MyRecords() {
   const learned = new Set(data.calendar.learned);
   const today = data.calendar.today;
 
-  /* === 정답률 흐름 라인 차트 — 원본 DCLogic 좌표 계산식 그대로 === */
-  const S = data.subjects.find((x) => x.key === subject) || data.subjects[0];
-  const ACC_LABELS = data.accLabels;
-  const acc = S.data;
-  const clr = S.color;
-  const CW = 520;
-  const CH = 220;
-  const padL = 40;
-  const padR = 18;
-  const padT = 22;
-  const padB = 30;
-  const yMin = 50;
-  const yMax = 100;
-  const plotW = CW - padL - padR;
-  const plotH = CH - padT - padB;
-  const X = (i: number) => padL + plotW * (i / (acc.length - 1));
-  // 값을 y축 범위로 클램프 — 범위 밖 값이 플롯 밖으로 그려지지 않게
-  const Y = (v: number) => padT + plotH * (1 - (Math.min(yMax, Math.max(yMin, v)) - yMin) / (yMax - yMin));
-  const baseY = Y(yMin);
-  const lastI = acc.length - 1;
-  const accAvg = Math.round(acc.reduce((a, b) => a + b, 0) / acc.length);
-  const accAvgY = Y(accAvg);
-  const accPoly = acc.map((v, i) => X(i) + ',' + Y(v)).join(' ');
-  let accArea = 'M ' + X(0) + ' ' + baseY;
-  acc.forEach((v, i) => {
-    accArea += ' L ' + X(i) + ' ' + Y(v);
-  });
-  accArea += ' L ' + X(lastI) + ' ' + baseY + ' Z';
-
-  const firstV = acc[0];
-  const lastV = acc[lastI];
-  const prevV = acc[lastI - 1];
-  const diffPrev = lastV - prevV;
-  const up = lastV >= firstV;
-  const accTrendWord = up ? '상승세' : '하락세';
-  const accChipIcon = up ? 'ph-fill ph-trend-up' : 'ph-fill ph-trend-down';
-  const accSubLabel = subject === '전체' ? '전체 과목 · 최근 6회 정답률' : subject + ' · 최근 6회 정답률';
-  const diffText = (diffPrev >= 0 ? '+' + diffPrev : String(diffPrev)) + '%p';
-  const accDesc =
-    (subject === '전체' ? '전체 과목' : subject) +
-    '의 최근 6회 평균 정답률은 ' +
-    accAvg +
-    '%예요. 이번 학습은 ' +
-    lastV +
-    '%로, 지난 회차보다 ' +
-    diffText +
-    ' ' +
-    (diffPrev >= 0 ? '올랐어요' : '내렸어요') +
-    '. ' +
-    (up ? '꾸준히 오르고 있어요! 🎉' : '조금씩 다시 올려볼까요? 💪');
+  // === 강의 기반 학습 통계(학습 통계 탭) — 수강 코스의 강의별 시청/완주로 집계 ===
+  const myCourses = (allCourses ?? []).filter((c) => c.enrolled);
+  const enrolledIds = new Set(myCourses.map((c) => c.id));
+  const myLectures = (lectures ?? []).filter(
+    (l) => l.course_id != null && enrolledIds.has(l.course_id),
+  );
+  const lecDone = myLectures.filter((l) => l.progress?.status === 'done').length;
+  const lecWatching = myLectures.filter((l) => l.progress?.status === 'watching').length;
+  const lecTotal = myLectures.length;
+  const lecNotStarted = Math.max(0, lecTotal - lecDone - lecWatching);
+  const lecCompletionPct = lecTotal > 0 ? Math.round((lecDone / lecTotal) * 100) : 0;
+  const lecReady = lecTotal > 0;
+  // 코스별 진도 — 완주 강의/전체 강의(진도율 내림차순)
+  const courseProgress = myCourses
+    .map((c) => {
+      const ls = myLectures.filter((l) => l.course_id === c.id);
+      const done = ls.filter((l) => l.progress?.status === 'done').length;
+      return {
+        course: c,
+        total: ls.length,
+        done,
+        pct: ls.length ? Math.round((done / ls.length) * 100) : 0,
+      };
+    })
+    .filter((cp) => cp.total > 0)
+    .sort((a, b) => b.pct - a.pct);
+  // 최근 시청 강의 — 시청 중 강의를 진행률 높은 순 최대 6개
+  const recentWatching = myLectures
+    .filter((l) => l.progress?.status === 'watching')
+    .map((l) => ({
+      l,
+      pct:
+        l.duration_sec > 0 && l.progress
+          ? Math.min(100, Math.max(0, Math.round((l.progress.watched_max_sec / l.duration_sec) * 100)))
+          : 0,
+    }))
+    .sort((a, b) => b.pct - a.pct)
+    .slice(0, 6);
 
   // 수료한 코스가 하나라도 있으면 '수료 현황'은 실데이터 — 데모(빈 상태)여도 탭을 살린다.
   const hasCompletion = passedCourses.length > 0;
@@ -653,180 +641,106 @@ export default function MyRecords() {
 
       )}
 
-      {/* ===== 학습 통계 탭 ===== */}
-      {recTab === 'stats' && !demo && (
-        <>
-      {/* CATEGORY MASTERY + ACCURACY */}
-      <section className="mr-section mr-row2">
-        <div className="mr-card">
-          <div className="mr-mhead">
-            <div>
-              <h3 className="mr-h3">과목별 문제 정답률</h3>
-              <p className="mr-mcap">문제은행에서 푼 문제 기준</p>
+      {/* ===== 학습 통계 탭 — 강의 시청 기반(완주·코스 진도·시청 현황) ===== */}
+      {recTab === 'stats' && (
+        !lecReady ? (
+          <section className="mr-section">
+            <div className="mr-card mr-lempty-card">
+              <i className="ph-fill ph-monitor-play" />
+              <p>아직 시청 기록이 없어요. 강의를 시청하면 완주·진도 통계가 여기 쌓여요.</p>
             </div>
-            <span className="mr-goal">
-              <span className="mr-goaltick" />
-              목표 80%
-            </span>
-          </div>
-          <div className="mr-mlist">
-            {data.mastery.map((m) => {
-              const correct = Math.round((m.pct / 100) * m.solved);
-              const mUp = m.delta >= 0;
-              return (
-                <div key={m.name}>
-                  <div className="mr-mrow">
-                    <span className="mr-micon" style={{ background: m.bg, color: m.color }}>
-                      <i className={m.icon} />
-                    </span>
-                    <span className="mr-mname">{m.name}</span>
-                    <span className={`mr-trend ${mUp ? 'mr-trend-up' : 'mr-trend-down'}`}>
-                      <i className={mUp ? 'ph-fill ph-trend-up' : 'ph-fill ph-trend-down'} />
-                      {Math.abs(m.delta)}%p
-                    </span>
-                    <span className="mr-mpct" style={{ color: m.color }}>
-                      {m.pct}%
-                    </span>
-                  </div>
-                  <div className="mr-mbar">
-                    <div className="mr-mfill" style={{ width: m.pct + '%', background: m.color }} />
-                    <div className="mr-mmark" />
-                  </div>
-                  <div className="mr-msolved">
-                    최근 {m.solved}문제 중 {correct}개 정답
-                  </div>
+          </section>
+        ) : (
+          <>
+            {/* 강의 스탯 타일 — 완주 강의·시청 중·수강 코스·완주율 */}
+            <section className="mr-section mr-stats">
+              <div className="mr-statgrid">
+                <div className="mr-stat">
+                  <span className="mr-staticon mr-staticon-seal"><i className="ph-fill ph-seal-check" /></span>
+                  <div className="mr-statval">{lecDone}<span className="mr-statunit">강</span></div>
+                  <div className="mr-statlabel">완주한 강의</div>
                 </div>
-              );
-            })}
-          </div>
-        </div>
-        <div className="mr-card mr-acccard">
-          <div className="mr-acchead">
-            <div>
-              <h3 className="mr-h3">정답률 흐름</h3>
-              <p className="mr-accsub">{accSubLabel}</p>
-            </div>
-            <span className={`mr-accchip ${up ? 'mr-accchip-up' : 'mr-accchip-down'}`}>
-              <i className={accChipIcon} />
-              평균 {accAvg}% · {accTrendWord}
-            </span>
-          </div>
-          <div className="mr-tabs">
-            {data.subjects.map((x) => {
-              const active = x.key === subject;
-              return (
-                <button
-                  key={x.key}
-                  onClick={() => setSubject(x.key)}
-                  className={active ? 'mr-tab mr-tab-on' : 'mr-tab'}
-                  style={active ? { background: x.color } : undefined}
-                >
-                  {x.key}
-                </button>
-              );
-            })}
-          </div>
-          <div className="mr-chartwrap">
-            <svg viewBox={`0 0 ${CW} ${CH}`} className="mr-accsvg">
-              <defs>
-                <linearGradient id="mrAccGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={clr} stopOpacity={0.22} />
-                  <stop offset="100%" stopColor={clr} stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              {GRID_LINES.map((g) => (
-                <g key={g}>
-                  <line x1={padL} y1={Y(g)} x2={CW - padR} y2={Y(g)} stroke="var(--line)" strokeWidth={1} />
-                  <text x={padL - 7} y={Y(g) + 3} textAnchor="end" fontSize={10} fontWeight={700} fill="var(--ink-3)">
-                    {g}
-                  </text>
-                </g>
-              ))}
-              <line
-                x1={padL}
-                y1={accAvgY}
-                x2={CW - padR}
-                y2={accAvgY}
-                stroke="var(--warn)"
-                strokeWidth={1.5}
-                strokeDasharray="5 4"
-              />
-              {/* 평균 수치는 상단 칩(평균 XX% · 추세)에 표시 — 차트 안 텍스트는 점 라벨과 겹쳐 제거 */}
-              <path d={accArea} fill="url(#mrAccGrad)" />
-              <polyline
-                points={accPoly}
-                fill="none"
-                stroke={clr}
-                strokeWidth={3}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              {acc.map((v, i) => {
-                const last = i === lastI;
-                return (
-                  <g key={i}>
-                    <text
-                      x={X(i)}
-                      y={Math.max(Y(v) - 11, 11)}
-                      textAnchor="middle"
-                      fontSize={11}
-                      fontWeight={800}
-                      fill={last ? 'var(--brand)' : clr}
-                    >
-                      {v}%
-                    </text>
-                    <circle cx={X(i)} cy={Y(v)} r={last ? 6 : 4.5} fill={last ? 'var(--brand)' : clr} stroke="var(--surface)" strokeWidth={2} />
-                    <text
-                      x={X(i)}
-                      y={CH - 8}
-                      textAnchor="middle"
-                      fontSize={10.5}
-                      fontWeight={700}
-                      fill={last ? 'var(--brand)' : 'var(--ink-3)'}
-                    >
-                      {ACC_LABELS[i]}
-                    </text>
-                  </g>
-                );
-              })}
-            </svg>
-          </div>
-          <div className="mr-sessions">
-            {acc.map((v, i) => (
-              <div key={i} className="mr-sess">
-                <div className="mr-sesslabel">{ACC_LABELS[i]}</div>
-                <div className="mr-sessval" style={{ color: i === lastI ? 'var(--brand)' : clr }}>
-                  {v}%
+                <div className="mr-stat">
+                  <span className="mr-staticon mr-staticon-fire"><i className="ph-fill ph-play-circle" /></span>
+                  <div className="mr-statval">{lecWatching}<span className="mr-statunit">강</span></div>
+                  <div className="mr-statlabel">시청 중</div>
+                </div>
+                <div className="mr-stat">
+                  <span className="mr-staticon mr-staticon-puzzle"><i className="ph-fill ph-books" /></span>
+                  <div className="mr-statval">{myCourses.length}<span className="mr-statunit">개</span></div>
+                  <div className="mr-statlabel">수강 코스</div>
+                </div>
+                <div className="mr-stat">
+                  <span className="mr-staticon mr-staticon-target"><i className="ph-fill ph-target" /></span>
+                  <div className="mr-statval">{lecCompletionPct}<span className="mr-statunit">%</span></div>
+                  <div className="mr-statlabel">강의 완주율</div>
                 </div>
               </div>
-            ))}
-          </div>
-          <div className="mr-accdesc">
-            <i className="ph-fill ph-chart-line-up mr-accdescicon" />
-            <p className="mr-accdesctext">{accDesc}</p>
-          </div>
-        </div>
-      </section>
+            </section>
 
-      {/* 두 축 — 습관 추세 + 숙련(챕터별 정답률) */}
-      {(habit?.days.some((d) => d.accuracy != null) ||
-        chapStats.some((s) => s.chapters?.some((c) => c.total > 0))) && (
-        <section className="mr-section mr-twoaxis">
-          {habit?.days.some((d) => d.accuracy != null) && (
-            <div className="mr-card">
-              <h3 className="mr-h3">오늘의 Q · 학습 추세</h3>
-              <HabitTrendLine days={habit.days} streak={habit.streak} />
-            </div>
-          )}
-          {chapStats.some((s) => s.chapters?.some((c) => c.total > 0)) && (
-            <div className="mr-card">
-              <h3 className="mr-h3">문제은행 · 챕터별 정답률</h3>
-              <ChapterAccuracyChart subjects={chapStats} />
-            </div>
-          )}
-        </section>
-      )}
-        </>
+            {/* 코스별 강의 진도 — 완주 강의/전체 강의 */}
+            {courseProgress.length > 0 && (
+              <section className="mr-section">
+                <div className="mr-card">
+                  <div className="mr-mhead">
+                    <div>
+                      <h3 className="mr-h3">코스별 강의 진도</h3>
+                      <p className="mr-mcap">완주한 강의 / 전체 강의</p>
+                    </div>
+                  </div>
+                  <div className="mr-mlist">
+                    {courseProgress.map((cp) => (
+                      <div key={cp.course.id}>
+                        <div className="mr-mrow">
+                          <span className="mr-mname">{cp.course.title}</span>
+                          <span className="mr-mpct" style={{ color: 'var(--brand)' }}>{cp.pct}%</span>
+                        </div>
+                        <div className="mr-mbar">
+                          <div className="mr-mfill" style={{ width: cp.pct + '%', background: 'var(--brand)' }} />
+                        </div>
+                        <div className="mr-msolved">전체 {cp.total}강 중 {cp.done}강 완주</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {/* 강의 시청 현황 + 최근 시청 강의 */}
+            <section className="mr-section mr-twoaxis">
+              <div className="mr-card">
+                <h3 className="mr-h3">강의 시청 현황</h3>
+                <div className="mr-lseg-bar">
+                  <div className="mr-lseg-done" style={{ width: (lecTotal ? (lecDone / lecTotal) * 100 : 0) + '%' }} />
+                  <div className="mr-lseg-watch" style={{ width: (lecTotal ? (lecWatching / lecTotal) * 100 : 0) + '%' }} />
+                </div>
+                <div className="mr-lseg-legend">
+                  <span className="mr-lseg-lg"><i className="ph-fill ph-circle mr-lseg-c-done" /> 완주 {lecDone}</span>
+                  <span className="mr-lseg-lg"><i className="ph-fill ph-circle mr-lseg-c-watch" /> 시청 중 {lecWatching}</span>
+                  <span className="mr-lseg-lg"><i className="ph-fill ph-circle mr-lseg-c-none" /> 미시작 {lecNotStarted}</span>
+                </div>
+              </div>
+              <div className="mr-card">
+                <h3 className="mr-h3">최근 시청 강의</h3>
+                {recentWatching.length > 0 ? (
+                  <ul className="mr-llist">
+                    {recentWatching.map(({ l, pct }) => (
+                      <li key={l.id} className="mr-lrow">
+                        <span className="mr-lrow-title">{l.title}</span>
+                        <div className="mr-mbar mr-lrow-bar">
+                          <div className="mr-mfill" style={{ width: pct + '%', background: 'var(--ok)' }} />
+                        </div>
+                        <span className="mr-lrow-pct">{pct}%</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="mr-lempty">시청 중인 강의가 없어요. 완주까지 이어서 학습해 보세요.</p>
+                )}
+              </div>
+            </section>
+          </>
+        )
       )}
 
       {/* ===== 요약 탭: 최근 학습 기록 ===== */}

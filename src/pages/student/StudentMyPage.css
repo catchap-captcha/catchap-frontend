@@ -487,3 +487,87 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ===== 계정 삭제(탈퇴) — 위험 영역 + 확인 모달 ===== */
+.mp-danger-card { border-color: var(--danger); }
+.mp-danger-desc { margin: 4px 4px 14px; font-size: 13.5px; color: var(--ink-2); line-height: 1.65; }
+.mp-danger-desc b { color: var(--danger); font-weight: 700; }
+.mp-danger-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 4px 4px;
+  padding: 11px 16px;
+  border-radius: 12px;
+  border: 1.5px solid var(--danger);
+  background: transparent;
+  color: var(--danger);
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.mp-danger-btn:hover { background: var(--danger); color: var(--on-brand); }
+
+.mp-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.5);
+}
+.mp-modal {
+  width: 100%;
+  max-width: 400px;
+  padding: 28px 26px;
+  text-align: center;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
+}
+.mp-modal-ic {
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--danger-soft);
+  color: var(--danger);
+  font-size: 26px;
+}
+.mp-modal-title { margin: 0 0 8px; font-size: 19px; font-weight: 800; color: var(--ink); }
+.mp-modal-desc { margin: 0 0 18px; font-size: 13.5px; color: var(--ink-2); line-height: 1.7; }
+.mp-modal-desc b { color: var(--danger); font-weight: 700; }
+.mp-modal-err {
+  margin: 0 0 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--danger);
+}
+.mp-modal-actions { display: flex; gap: 10px; }
+.mp-modal-cancel,
+.mp-modal-confirm {
+  flex: 1;
+  padding: 12px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: opacity 0.15s, background 0.15s;
+}
+.mp-modal-cancel { border: 1.5px solid var(--line); background: var(--surface); color: var(--ink); }
+.mp-modal-cancel:hover { background: var(--surface-2); }
+.mp-modal-confirm { border: none; background: var(--danger); color: var(--on-brand); }
+.mp-modal-confirm:hover:not(:disabled) { opacity: 0.9; }
+.mp-modal-cancel:disabled,
+.mp-modal-confirm:disabled { opacity: 0.55; cursor: default; }

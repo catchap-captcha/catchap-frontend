@@ -1022,3 +1022,43 @@
 }
 
 /* 리뉴얼(2026-07-27): 브랜드 재오버라이드 제거 — 전역 theme.css 모노크롬 토큰을 그대로 상속. */
+
+/* ===== 강의 기반 학습 통계 (학습 통계 탭) — 문제은행 통계 대체 ===== */
+.mr-lempty-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 48px 24px;
+  text-align: center;
+  color: var(--ink-2);
+}
+.mr-lempty-card i { font-size: 40px; color: var(--ink-3); }
+.mr-lempty-card p { margin: 0; font-size: 14px; font-weight: 600; }
+.mr-lempty { margin: 8px 0 0; font-size: 13px; color: var(--ink-3); font-weight: 600; }
+/* 시청 현황 세그먼트 바 — 완주(초록)·시청 중(브랜드)·미시작(트랙) */
+.mr-lseg-bar {
+  display: flex;
+  height: 14px;
+  margin: 6px 0 14px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--surface-2);
+}
+.mr-lseg-done { background: var(--ok); }
+.mr-lseg-watch { background: var(--brand); }
+.mr-lseg-legend { display: flex; flex-wrap: wrap; gap: 14px; }
+.mr-lseg-lg { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 700; color: var(--ink-2); }
+.mr-lseg-lg i { font-size: 10px; }
+.mr-lseg-c-done { color: var(--ok); }
+.mr-lseg-c-watch { color: var(--brand); }
+.mr-lseg-c-none { color: var(--ink-3); }
+/* 최근 시청 강의 리스트 */
+.mr-llist { list-style: none; margin: 6px 0 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.mr-lrow { display: grid; grid-template-columns: 1fr 120px 38px; align-items: center; gap: 12px; }
+.mr-lrow-title { font-size: 13px; font-weight: 700; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mr-lrow-bar { margin: 0; }
+.mr-lrow-pct { font-size: 12.5px; font-weight: 800; color: var(--ok); text-align: right; }
+@media (max-width: 520px) {
+  .mr-lrow { grid-template-columns: 1fr 80px 34px; gap: 8px; }
+}

@@ -15,15 +15,6 @@ const ABOUT_ITEMS = [
   { icon: 'ph-shield-check', title: '안전한 데이터 보호', desc: '가명·최소 수집으로 학습자 정보를 지킵니다.' },
 ];
 
-const SUBJECTS = [
-  { name: '국어', tag: '읽기 · 낱말', icon: 'ph-book-open', desc: '글과 낱말의 짜임을 강의로 익히고 확인 문제로 점검합니다.' },
-  { name: '영어', tag: '단어 · 문법', icon: 'ph-translate', desc: '핵심 단어와 문법을 강의 한 편으로 정리합니다.' },
-  { name: '수학', tag: '연산 · 도형', icon: 'ph-plus-minus', desc: '수와 셈, 도형의 원리를 단계별 강의로 배웁니다.' },
-  { name: '과학', tag: '관찰 · 탐구', icon: 'ph-flask', desc: '관찰과 탐구 과정을 영상으로 따라가며 이해합니다.' },
-  { name: '사회', tag: '이야기 · 지혜', icon: 'ph-scroll', desc: '사회 현상과 제도를 사례 중심 강의로 이해합니다.' },
-  { name: '생활', tag: '생활 · 안전', icon: 'ph-house-line', desc: '생활 속 안전과 지혜를 상황별 강의로 배웁니다.' },
-];
-
 // 랜딩 쇼케이스 — 이 플랫폼을 실제로 움직이는 AI 능력(과목 섹션 안에서 자랑).
 // 문구는 실제 파이프라인 그대로: 음성→자막(STT) → LLM 문항 생성 → 2차 AI 봇저항 검증 → 추천.
 const AI_FEATURES = [
@@ -133,10 +124,10 @@ export default function MainPage() {
               )}
               {menu === 'lectures' && (
                 <div className="mn-navpanel-grid mn-navpanel-grid--4">
-                  {SUBJECTS.map((s) => (
-                    <a key={s.name} href="#games" className="mn-navpanel-item mn-navpanel-item--center">
-                      <i className={`ph ${s.icon}`} />
-                      <span className="mn-navpanel-item-name">{s.name}</span>
+                  {AI_FEATURES.map((f) => (
+                    <a key={f.title} href="#games" className="mn-navpanel-item mn-navpanel-item--center">
+                      <i className={`ph ${f.icon}`} />
+                      <span className="mn-navpanel-item-name">{f.title}</span>
                     </a>
                   ))}
                 </div>
@@ -291,25 +282,10 @@ export default function MainPage() {
         </div>
       </section>
 
-      {/* SUBJECTS (강의 과목) */}
+      {/* AI — 플랫폼을 움직이는 AI 능력 쇼케이스(파이프라인 다이어그램 + 능력 카드).
+          종전의 '6과목 강의' 하드코딩 그리드는 제거(코스가 declare한 자유 분류를 쓰는 제품). */}
       <section id="games" className="mn-games">
         <div className="mn-games-inner">
-          <div className="mn-games-head cc-reveal">
-            <h2 className="mn-games-title">6과목 강의</h2>
-          </div>
-          <div className="mn-games-grid cc-reveal-group">
-            {SUBJECTS.map((s) => (
-              <div key={s.name} className="mn-game-card">
-                <i className={`ph ${s.icon} mn-game-icon`} />
-                <div className="mn-game-name">{s.name}</div>
-                <div className="mn-game-tag">{s.tag}</div>
-                <p className="mn-game-desc">{s.desc}</p>
-              </div>
-            ))}
-          </div>
-
-          {/* AI 소개 — 이 플랫폼을 실제로 움직이는 AI 능력을 과목 섹션 안에서 자랑한다.
-              문구는 실제 파이프라인 그대로(STT 자막 → LLM 문항 생성 → 2차 AI 봇저항 검증 → 추천). */}
           <div className="mn-ai cc-reveal">
             <div className="mn-ai-head">
               <span className="mn-ai-kicker"><i className="ph-fill ph-sparkle" /> AI POWERED</span>
@@ -320,6 +296,43 @@ export default function MainPage() {
                 강의에 시청 검증이 붙어요.
               </p>
             </div>
+
+            {/* 파이프라인 다이어그램 — 강의 영상에서 시청 검증까지의 실제 AI 흐름(테마 대응 SVG) */}
+            <div className="mn-ai-pipe cc-reveal">
+              <div className="mn-ai-pipe-scroll">
+                <svg
+                  viewBox="0 0 1040 132"
+                  className="mn-ai-pipe-svg"
+                  role="img"
+                  aria-label="AI 확인 학습 파이프라인 — 강의 영상에서 음성 인식(STT)으로 자막을 만들고, LLM이 그 대목 기반 확인 문항을 생성하며, 2차 AI가 봇 저항을 검증해 시청 검증에 씁니다."
+                >
+                  <defs>
+                    <marker id="mnAiArrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                      <path d="M0,0 L10,5 L0,10 z" className="mn-ai-pipe-ah" />
+                    </marker>
+                  </defs>
+                  <rect className="mn-ai-pipe-rect" x="20" y="20" width="200" height="76" rx="14" />
+                  <rect className="mn-ai-pipe-rect" x="300" y="20" width="200" height="76" rx="14" />
+                  <rect className="mn-ai-pipe-rect" x="580" y="20" width="200" height="76" rx="14" />
+                  <rect className="mn-ai-pipe-rect mn-ai-pipe-rect--out" x="860" y="20" width="200" height="76" rx="14" />
+                  <line className="mn-ai-pipe-line" x1="222" y1="58" x2="298" y2="58" markerEnd="url(#mnAiArrow)" />
+                  <line className="mn-ai-pipe-line" x1="502" y1="58" x2="578" y2="58" markerEnd="url(#mnAiArrow)" />
+                  <line className="mn-ai-pipe-line" x1="782" y1="58" x2="858" y2="58" markerEnd="url(#mnAiArrow)" />
+                  <text className="mn-ai-pipe-cap" x="260" y="48">STT</text>
+                  <text className="mn-ai-pipe-cap" x="540" y="48">LLM</text>
+                  <text className="mn-ai-pipe-cap" x="820" y="48">2차 AI</text>
+                  <text className="mn-ai-pipe-t" x="120" y="56">강의 영상</text>
+                  <text className="mn-ai-pipe-s" x="120" y="76">음성 · 화면</text>
+                  <text className="mn-ai-pipe-t" x="400" y="56">자막</text>
+                  <text className="mn-ai-pipe-s" x="400" y="76">음성 인식 추출</text>
+                  <text className="mn-ai-pipe-t" x="680" y="56">확인 문항</text>
+                  <text className="mn-ai-pipe-s" x="680" y="76">그 대목 기반 생성</text>
+                  <text className="mn-ai-pipe-t" x="960" y="56">시청 검증</text>
+                  <text className="mn-ai-pipe-s" x="960" y="76">봐야 통과</text>
+                </svg>
+              </div>
+            </div>
+
             <div className="mn-ai-grid cc-reveal-group">
               {AI_FEATURES.map((f) => (
                 <div key={f.title} className="mn-ai-card">

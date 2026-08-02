@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
 import { useAuth } from '../../hooks/useAuth';
 import { studentApi } from '../../api/students';
+import { settingsApi } from '../../api/settings';
 import { lectureApi, thumbnailSrc, type StudentCourse } from '../../api/lectures';
 import { StudentNav } from '../../layouts/StudentLayout';
 import { profileColor } from '../../utils/profileColor';
@@ -109,6 +110,23 @@ export default function StudentMyPage() {
       .catch(() => setCourses([]));
   }, []);
   const courseCount = courses?.length ?? null;
+
+  // 계정 삭제(탈퇴) — 서버는 소프트 삭제(status=disabled)+토큰 폐기. 확인 모달을 거친다.
+  const [delOpen, setDelOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [delErr, setDelErr] = useState('');
+  const doDeleteAccount = async () => {
+    setDeleting(true);
+    setDelErr('');
+    try {
+      await settingsApi.deleteAccount();
+      logout(); // 로컬 토큰·세션 정리 후 로그인으로(계정은 서버에서 이미 비활성화됨)
+      navigate(PATHS.LOGIN, { replace: true });
+    } catch {
+      setDeleting(false);
+      setDelErr('탈퇴 처리 중 문제가 생겼어요. 잠시 후 다시 시도해 주세요.');
+    }
+  };
 
   const persist = (next: { toggles: Record<ToggleKey, boolean>; font: number }) => update(next);
   const tog = (key: ToggleKey) => {
@@ -373,6 +391,7 @@ export default function StudentMyPage() {
 
           {/* 계정·개인정보 */}
           {tab === 'account' && (
+            <>
             <section className="mp-card">
               <h2 className="mp-card-title mp-card-title--pad">계정 · 개인정보</h2>
               {LINK_ROWS.map((row) => (
@@ -391,6 +410,21 @@ export default function StudentMyPage() {
                 </Link>
               ))}
             </section>
+            <section className="mp-card mp-danger-card">
+              <h2 className="mp-card-title mp-card-title--pad">계정 삭제</h2>
+              <p className="mp-danger-desc">
+                탈퇴하면 계정이 <b>비활성화</b>되고 즉시 로그아웃돼요. 수강 중인 코스와 학습
+                기록에 다시 접근할 수 없어요.
+              </p>
+              <button
+                type="button"
+                className="mp-danger-btn"
+                onClick={() => { setDelErr(''); setDelOpen(true); }}
+              >
+                <i className="ph-bold ph-trash" /> 계정 삭제(탈퇴)
+              </button>
+            </section>
+            </>
           )}
 
           {/* 알림 */}
@@ -439,6 +473,37 @@ export default function StudentMyPage() {
           )}
         </div>
       </div>
+
+      {/* 탈퇴 확인 모달 — "정말 탈퇴?" 되묻고, 확인 시에만 계정 삭제 API 호출 */}
+      {delOpen && (
+        <div className="mp-modal-overlay" onClick={() => !deleting && setDelOpen(false)}>
+          <div
+            className="mp-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="mp-del-title"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mp-modal-ic"><i className="ph-fill ph-warning" /></div>
+            <h3 id="mp-del-title" className="mp-modal-title">정말 탈퇴하시겠어요?</h3>
+            <p className="mp-modal-desc">
+              탈퇴하면 계정이 <b>비활성화</b>되고 즉시 로그아웃돼요. 수강 중인 코스와 학습 기록에
+              다시 접근할 수 없어요. 이 작업은 되돌리기 어렵습니다.
+            </p>
+            {delErr && (
+              <p className="mp-modal-err"><i className="ph-fill ph-warning-circle" /> {delErr}</p>
+            )}
+            <div className="mp-modal-actions">
+              <button type="button" className="mp-modal-cancel" disabled={deleting} onClick={() => setDelOpen(false)}>
+                취소
+              </button>
+              <button type="button" className="mp-modal-confirm" disabled={deleting} onClick={doDeleteAccount}>
+                {deleting ? '처리 중…' : '탈퇴할게요'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -250,7 +250,47 @@
   .sh2-kpis { grid-template-columns: repeat(3, 1fr); gap: 10px; }
   .sh2-kpi { padding: 14px 16px; }
   .sh2-kpi-num { font-size: 24px; }
-  .sh2-top, .sh2-courses, .sh2-rail { padding-left: 18px; padding-right: 18px; }
+  .sh2-top, .sh2-courses, .sh2-rail, .sh2-browse { padding-left: 18px; padding-right: 18px; }
   .sh2-course-grid { grid-template-columns: 1fr; }
   .sh2-continue { padding: 20px; }
 }
+
+/* ===== 둘러보기 (#2/#3) — 검색 + 코스/강의 둘러보기 ===== */
+.sh2-browse { max-width: min(2280px, 94vw); margin: 0 auto; padding: 0 28px 60px; }
+.sh2-search { position: relative; display: flex; align-items: center; max-width: 520px; margin-bottom: 24px; }
+.sh2-search-ic { position: absolute; left: 14px; color: var(--ink-3); font-size: 16px; pointer-events: none; }
+.sh2-search-input {
+  width: 100%;
+  padding: 12px 40px;
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 500;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.sh2-search-input:focus { border-color: var(--brand); }
+.sh2-search-input::placeholder { color: var(--ink-3); }
+.sh2-search-input::-webkit-search-cancel-button { display: none; }
+.sh2-search-clear {
+  position: absolute;
+  right: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--ink-2);
+  cursor: pointer;
+}
+.sh2-search-clear:hover { background: var(--line); }
+.sh2-sec-head--sub { margin-bottom: 14px; }
+.sh2-browse-lechead { margin-top: 36px; }
+/* 미신청 강의 배지 — '수강 중'(초록)과 구분되는 중립 회색 */
+.sh2-ccard-badge--lock { background: var(--ink-3); }
