@@ -301,7 +301,7 @@ export default function MainPage() {
             <div className="mn-ai-pipe cc-reveal">
               <div className="mn-ai-pipe-scroll">
                 <svg
-                  viewBox="0 0 1040 132"
+                  viewBox="0 0 1080 132"
                   className="mn-ai-pipe-svg"
                   role="img"
                   aria-label="AI 확인 학습 파이프라인 — 강의 영상에서 음성 인식(STT)으로 자막을 만들고, LLM이 그 대목 기반 확인 문항을 생성하며, 2차 AI가 봇 저항을 검증해 시청 검증에 씁니다."
