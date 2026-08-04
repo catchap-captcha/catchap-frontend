@@ -46,7 +46,7 @@ function humanSize(bytes: number): string {
 }
 
 type Modal =
-  | { mode: 'create' }
+  | { mode: 'create'; courseId?: string }
   | { mode: 'edit'; lec: OpsLecture }
   | { mode: 'questions'; lec: OpsLecture }
   | { mode: 'materials'; lec: OpsLecture }
@@ -64,12 +64,14 @@ interface LectureGroup {
 }
 
 /** rows(백엔드 목차순: 과목·order_no·created_at)를 과목별로 코스 그룹 + 미분류 그룹으로 나눈다.
- *  courses는 (과목·order_no)순이라 그 순서대로 코스 섹션이 놓인다. 강의 0개 코스는 목록에선
- *  숨긴다(코스 관리에서 보임) — 여기선 순서를 바꿀 게 없다. */
+ *  courses는 (과목·order_no)순이라 그 순서대로 코스 섹션이 놓인다. 강의 0개 코스는 기본으론
+ *  숨기지만(순서 바꿀 게 없음), includeEmpty면 빈 그룹으로 넣어 '강의 없음 → 업로드' 안내를
+ *  목록에 노출한다(검색·필터 중이 아닐 때만 — 필터 중엔 노이즈라 숨긴다). */
 function buildLectureGroups(
   rows: OpsLecture[],
   courses: OpsCourse[],
   subjects: string[],
+  includeEmpty = false,
 ): LectureGroup[] {
   const groups: LectureGroup[] = [];
   // 서버 과목(subjects) 순서를 따르되, 데이터에만 있는 과목도 빠뜨리지 않는다(과목 재편 지연 대비).
@@ -81,7 +83,9 @@ function buildLectureGroups(
   for (const subj of subjectsInUse) {
     for (const c of courses.filter((c) => c.subject === subj)) {
       const lects = rows.filter((l) => l.course_id === c.id);
-      if (lects.length) groups.push({ key: `c-${c.id}`, subject: subj, courseId: c.id, title: c.title, lectures: lects });
+      // 강의가 있으면 그대로. 없어도 includeEmpty면 빈 그룹으로 넣는다(삭제된 코스는 제외).
+      if (lects.length || (includeEmpty && c.status !== 'deleted'))
+        groups.push({ key: `c-${c.id}`, subject: subj, courseId: c.id, title: c.title, lectures: lects });
     }
     const uncoursed = rows.filter((l) => l.subject === subj && !l.course_id);
     if (uncoursed.length)
@@ -242,7 +246,8 @@ export default function OpsLectures() {
   );
   const isFiltering = q !== '' || subjFilter !== '' || courseFilter !== '';
 
-  const groups = state === 'ready' ? buildLectureGroups(filteredRows, courses, liveSubjects) : [];
+  const groups =
+    state === 'ready' ? buildLectureGroups(filteredRows, courses, liveSubjects, !isFiltering) : [];
   // 검색·필터 중엔 결과가 안 숨겨지게 강제 펼침. 그 외엔 collapsed 집합을 따른다.
   const isCollapsed = (key: string) => !isFiltering && collapsed.has(key);
   const toggleCollapse = (key: string) =>
@@ -494,7 +499,7 @@ export default function OpsLectures() {
               </button>
             </div>
           )}
-          {state === 'ready' && rows.length === 0 && (
+          {state === 'ready' && rows.length === 0 && groups.length === 0 && (
             <div className="op-logrow">등록된 강의가 없어요. 우측 상단에서 영상을 업로드해 보세요.</div>
           )}
           {state === 'ready' && rows.length > 0 && isFiltering && groups.length === 0 && (
@@ -530,6 +535,23 @@ export default function OpsLectures() {
                     </span>
                   )}
                 </div>
+                {/* 강의 0개 코스 — 목록에도 노출하고 바로 업로드하도록 안내(그 코스 미리 선택). */}
+                {!isCollapsed(g.key) && g.lectures.length === 0 && (
+                  <div className="op-lect-emptycourse">
+                    <span className="op-lect-emptycourse-msg">
+                      <i className="ph ph-video-camera-slash" /> 이 코스에 강의가 없어요.
+                    </span>
+                    {!isOps && (
+                      <button
+                        type="button"
+                        className="op-btn op-btn--approve op-lect-emptycourse-btn"
+                        onClick={() => setModal({ mode: 'create', courseId: g.courseId ?? undefined })}
+                      >
+                        <i className="ph-bold ph-upload-simple" /> 강의 업로드
+                      </button>
+                    )}
+                  </div>
+                )}
                 {!isCollapsed(g.key) &&
                   g.lectures.map((lec, idx) => (
                   <div
@@ -786,7 +808,7 @@ function LectureFormModal({
   onSaved,
   onCoursesChanged,
 }: {
-  modal: { mode: 'create' } | { mode: 'edit'; lec: OpsLecture };
+  modal: { mode: 'create'; courseId?: string } | { mode: 'edit'; lec: OpsLecture };
   courses: OpsCourse[];
   subjects: string[];
   onClose: () => void;
@@ -794,6 +816,12 @@ function LectureFormModal({
   onCoursesChanged: () => void;
 }) {
   const editing = modal.mode === 'edit' ? modal.lec : null;
+  // 빈 코스 안내의 '강의 업로드'로 들어오면 그 코스를 미리 선택하고 과목도 코스에 맞춘다
+  // (서버는 코스 과목 ≠ 강의 과목이면 막으므로).
+  const preCourse =
+    modal.mode === 'create' && modal.courseId
+      ? courses.find((c) => c.id === modal.courseId)
+      : null;
   const [form, setForm] = useState<LectureForm>(
     editing
       ? {
@@ -805,7 +833,9 @@ function LectureFormModal({
           status: editing.status,
           course_id: editing.course_id ?? '',
         }
-      : EMPTY_FORM,
+      : preCourse
+        ? { ...EMPTY_FORM, course_id: preCourse.id, subject: preCourse.subject }
+        : EMPTY_FORM,
   );
   const [file, setFile] = useState<File | null>(null);
   // 영상 썸네일(선택) — 새로 고른 파일 + 미리보기(신규는 blob:, 없으면 기존 강의 썸네일).

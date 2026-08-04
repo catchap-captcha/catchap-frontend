@@ -244,6 +244,28 @@
   padding: 2px 9px;
   border-radius: 999px;
 }
+/* 강의 0개 코스 안내 — 목록에 노출해 바로 업로드하도록 유도(점선 상자) */
+.op-lect-emptycourse {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 2px 0;
+  padding: 13px 16px;
+  border: 1px dashed var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+}
+.op-lect-emptycourse-msg {
+  margin-right: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+.op-lect-emptycourse-msg i { font-size: 17px; opacity: 0.75; }
+.op-lect-emptycourse-btn { flex-shrink: 0; }
 .op-lect-grouphint {
   display: inline-flex;
   align-items: center;
