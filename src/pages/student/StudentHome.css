@@ -301,6 +301,10 @@
 }
 /* 강의 둘러보기 전용 검색(코스 검색과 별도) — 섹션 헤더 바로 아래 */
 .sh2-search--lec { margin-top: 4px; }
+/* 검색 중 결과 영역 최소 높이 예약 — 결과가 줄어도 페이지가 짧아지지 않아
+   스크롤이 위로 끌려 올라가는(clamp) 튐을 막는다(목업 실측: 90vh에서 튐 0px).
+   검색 아닐 땐 자연 높이. */
+.sh2-lecresults--search { min-height: 90vh; }
 
 @media (max-width: 900px) {
   .sh2-course-grid { grid-template-columns: repeat(2, 1fr); }

@@ -563,6 +563,9 @@ export default function StudentHome() {
                 </button>
               )}
             </div>
+            {/* 검색 중에는 결과 영역에 최소 높이를 예약해, 결과 수가 오르내려도 페이지가
+                짧아져 스크롤이 위로 끌려 올라가는(clamp) 현상을 막는다. */}
+            <div className={`sh2-lecresults${lecQ ? ' sh2-lecresults--search' : ''}`}>
             {lecQ ? (
               /* 검색 중 — 매칭 강의를 평면 그리드로 보여준다. (그룹 드롭다운을 매 타자마다
                  열고/닫고/필터링하면 페이지 높이가 크게 요동쳐 스크롤이 튄다 → 평면으로 안정화) */
@@ -619,6 +622,7 @@ export default function StudentHome() {
             ) : (
               <div className="sh2-empty">지금은 둘러볼 강의가 없어요.</div>
             )}
+            </div>
           </>
         )}
       </section>
