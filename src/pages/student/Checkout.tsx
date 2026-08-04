@@ -288,7 +288,7 @@ export default function Checkout() {
       <StudentNav />
       <div className="co-container">
         <button className="co-back" onClick={() => navigate(PATHS.STUDENT_LECTURES)}>
-          <i className="ph-bold ph-arrow-left" /> 강의 신청으로
+          <i className="ph-bold ph-arrow-left" /> 코스 둘러보기로
         </button>
 
         {phase === 'done' ? (
@@ -306,7 +306,7 @@ export default function Checkout() {
             <i className="ph-fill ph-warning-circle" />
             <p>{errMsg}</p>
             <button className="co-btn co-btn--ghost" onClick={() => navigate(PATHS.STUDENT_LECTURES)}>
-              강의 신청으로 돌아가기
+              코스 둘러보기로
             </button>
           </div>
         ) : phase === 'loading' ? (

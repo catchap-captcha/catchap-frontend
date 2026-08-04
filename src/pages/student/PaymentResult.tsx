@@ -158,7 +158,7 @@ export default function PaymentResult({ kind }: { kind: 'success' | 'fail' | 'ca
                     className="co-btn co-btn--ghost"
                     onClick={() => navigate(PATHS.STUDENT_LECTURES)}
                   >
-                    강의 신청으로 돌아가기
+                    코스 둘러보기로
                   </button>
                 </>
               )}

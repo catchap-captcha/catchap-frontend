@@ -29,7 +29,6 @@ const StudentCertificates = lazy(() => import('../pages/student/StudentCertifica
 const GameScreen = lazy(() => import('../pages/student/GameScreen'));
 const GameResult = lazy(() => import('../pages/student/GameResult'));
 // 오늘의퀴즈 페이지는 Q 통합(0719 결정)으로 은퇴 — 옛 경로는 문제은행으로 보낸다(아래 라우트)
-const LectureList = lazy(() => import('../pages/student/LectureList'));
 const CourseDetail = lazy(() => import('../pages/student/CourseDetail'));
 const Checkout = lazy(() => import('../pages/student/Checkout'));
 const PaymentResult = lazy(() => import('../pages/student/PaymentResult'));
@@ -124,7 +123,13 @@ export default function AppRoutes() {
             path={PATHS.STUDENT_DAILY_QUIZ}
             element={<Navigate to={PATHS.STUDENT_ALL_LEARNING} replace />}
           />
-          <Route path={PATHS.STUDENT_LECTURES} element={<LectureList />} />
+          {/* '강의 신청' 페이지 은퇴 — 홈 '코스 둘러보기'로 통합(2026-08-04). 옛 링크·북마크·
+              여러 화면의 '강의 둘러보기/목록으로'는 전부 홈으로 착지한다(신청·결제는 홈·코스상세가
+              ?course= 로 직행하므로 무관). */}
+          <Route
+            path={PATHS.STUDENT_LECTURES}
+            element={<Navigate to={PATHS.STUDENT_HOME} replace />}
+          />
           <Route path={PATHS.STUDENT_COURSE_DETAIL} element={<CourseDetail />} />
           <Route path={PATHS.STUDENT_CHECKOUT} element={<Checkout />} />
           {/* 카카오페이 QR 승인/취소/실패 후 백엔드가 리다이렉트해 오는 착지 페이지 */}

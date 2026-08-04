@@ -379,7 +379,12 @@ export default function StudentHome() {
                   <h2 className="sh2-continue-title">수강 중인 강의가 없어요</h2>
                   <span className="sh2-continue-meta">강의 목록에서 학습을 시작해 보세요.</span>
                 </div>
-                <button className="sh2-continue-btn" onClick={() => navigate(PATHS.STUDENT_LECTURES)}>
+                <button
+                  className="sh2-continue-btn"
+                  onClick={() =>
+                    document.getElementById('sh2-browse')?.scrollIntoView({ behavior: 'smooth' })
+                  }
+                >
                   강의 둘러보기
                 </button>
               </div>
@@ -475,7 +480,7 @@ export default function StudentHome() {
 
       {/* ===== 둘러보기 (#2/#3) — 상단 검색 + '코스 둘러보기'(미신청 코스) + '강의 둘러보기'(개별 강의).
              검색은 코스·강의 공용 실시간 필터. 상세 조건 필터는 '전체 보기' 카탈로그에서. ===== */}
-      <section className="sh2-browse">
+      <section className="sh2-browse" id="sh2-browse">
         <div className="sh2-search">
           <i className="ph-bold ph-magnifying-glass sh2-search-ic" />
           <input
@@ -510,9 +515,6 @@ export default function StudentHome() {
               <h2 className="sh2-sec-title">
                 <i className="ph-fill ph-compass" /> 코스 둘러보기
               </h2>
-              <button className="sh2-sec-more" onClick={() => navigate(PATHS.STUDENT_LECTURES)}>
-                전체 보기 <i className="ph-bold ph-arrow-right" />
-              </button>
             </div>
             {browseCats.length > 1 && (
               <div className="sh2-cats">
