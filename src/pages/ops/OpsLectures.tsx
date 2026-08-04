@@ -2877,6 +2877,13 @@ export function QuestionsModal({
   };
 
   const approve = async (q: OpsLectureQuestion) => {
+    // 은행행 confirm과 대칭 — '어디에 쓰이는지'(확인 문항으로 강의 그 지점에 출제)를 알린다.
+    if (
+      !window.confirm(
+        `이 문항을 공개할까요? (확인 문항으로 강의 ${fmtMMSS(q.position_sec)} 지점에 출제돼요 — 학생이 강의를 봐야 풀 수 있어요)`,
+      )
+    )
+      return;
     try {
       await lectureApi.opsQuestionUpdate(lec.id, q.id, { status: 'active' });
       changedRef.current = true;
