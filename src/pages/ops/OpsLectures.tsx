@@ -3779,18 +3779,22 @@ export function QuestionsModal({
                     <i className="ph-bold ph-check-circle" /> 공개하기
                   </button>
                 )}
-                {/* 은행 배치 — 자기검증 '은행 적합'(상식) 문항의 재활용 경로. 이미 배치되면
-                    배지로 대체(중복 방지는 서버 409가 최종 방어) */}
+                {/* 은행 배치 — 검수 대기(draft)면 AI 판정(captcha/bank/discard)과 무관하게 항상
+                    보낼 수 있다. 예전엔 자기검증 '은행 적합'만 허용했는데, 상단 안내 배너가 '두
+                    목적지'를 제시하는데도 강의 특화(captcha) 문항엔 버튼이 없어 모순이었다 —
+                    강사가 직접 고르게 연다. 백엔드 to-bank는 suggested_placement를 안 따지고
+                    다답형·이미지·중복만 거른다. 캡차 부적합 문항이 일반 은행에 들어가면 학생
+                    전체학습에서 강의 맥락 없이 나오므로, toBank confirm이 그 점을 경고한다.
+                    이미 배치되면 배지로 대체(중복 방지는 서버 409가 최종 방어). */}
                 {q.bank_placed ? (
                   <span className="op-sys-status op-sys-status--neutral" title={`전체학습 은행에 배치됨 (${q.bank_placed.bank_id})`}>
                     <i className="ph-bold ph-bank" /> 은행 배치됨
                   </span>
                 ) : (
-                  q.status === 'draft' &&
-                  q.suggested_placement === 'bank' && (
+                  q.status === 'draft' && (
                     <button
                       className="op-btn op-btn--soft"
-                      title="이 문항을 전체학습 문제 은행으로 보냅니다(확인 문항에는 부적합 — 상식으로 풀림). 형식은 서버가 변환해요."
+                      title="이 문항을 전체학습 문제 은행으로 보냅니다(확인 문항 대신 일반 학습 문제로 보관). 형식은 서버가 변환해요."
                       onClick={() => toBank(q)}
                     >
                       <i className="ph-bold ph-brain" /> 문제 은행으로
