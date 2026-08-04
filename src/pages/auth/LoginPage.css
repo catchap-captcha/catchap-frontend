@@ -1864,12 +1864,13 @@
 }
 
 /* ===== SIGNUP SUCCESS POPUP ===== */
+/* 가입 완료 모달 — 마스코트·색종이·표시폰트 없이 다른 확인 모달처럼 깔끔한 모노톤 */
 .lg-done-overlay {
   position: fixed;
   inset: 0;
   z-index: 90;
-  background: rgba(58, 51, 64, 0.5);
-  backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(3px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1878,129 +1879,46 @@
 
 .lg-done {
   width: 100%;
-  max-width: 360px;
-  position: relative;
-  animation: lgIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.lg-done-mascot-wrap {
-  display: flex;
-  justify-content: center;
-  margin-bottom: -34px;
-  position: relative;
-  z-index: 3;
-}
-
-.lg-done-mascot-pop {
-  animation: lgPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.lg-done-mascot {
-  position: relative;
-}
-
-.lg-done-mascot img {
-  width: 88px;
-  height: 88px;
-  border-radius: 50%;
-  box-shadow: 0 16px 30px -12px rgba(26, 26, 26, 0.6);
-  border: 5px solid var(--surface);
-}
-
-.lg-done-check {
-  position: absolute;
-  -webkit-text-stroke: 0;
-  bottom: -4px;
-  right: -6px;
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  background: var(--ok);
-  border: 3px solid var(--surface);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 6px 12px -4px rgba(23, 176, 140, 0.6);
-}
-
-.lg-done-check i {
-  font-size: 17px;
-  color: var(--on-brand);
+  max-width: 380px;
+  animation: lgIn 0.25s ease;
 }
 
 .lg-done-card {
   background: var(--surface);
-  border: 3px solid var(--line);
-  border-radius: 28px;
-  padding: 44px 26px 26px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 32px 28px 28px;
   text-align: center;
-  box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.4);
-  position: relative;
-  overflow: hidden;
+  box-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.3);
 }
 
-.lg-conf1 {
-  position: absolute;
-  top: 22px;
-  left: 26px;
-  width: 9px;
-  height: 9px;
-  border-radius: 2px;
-  background: var(--warn-soft);
-  transform: rotate(20deg);
-}
-
-.lg-conf2 {
-  position: absolute;
-  top: 40px;
-  right: 30px;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--brand-soft);
-}
-
-.lg-conf3 {
-  position: absolute;
-  top: 70px;
-  left: 40px;
-  width: 7px;
-  height: 7px;
+.lg-done-icon {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border-radius: 50%;
   background: var(--ok-soft);
+  color: var(--ok);
 }
 
-.lg-conf4 {
-  position: absolute;
-  top: 60px;
-  right: 52px;
-  width: 6px;
-  height: 6px;
-  border-radius: 2px;
-  background: var(--info-soft);
-  transform: rotate(35deg);
-}
+.lg-done-icon i { font-size: 30px; }
 
-.lg-done-card h3 {
-  font-family: var(--font-display); font-weight: 800;
-  font-size: 23px;
+.lg-done-title {
+  margin: 0 0 10px;
+  font-size: 20px;
+  font-weight: 800;
   color: var(--ink);
-  margin: 0 0 8px;
-}
-
-.lg-done-name {
-  margin: 0 0 6px;
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--brand);
 }
 
 .lg-done-msg {
-  margin: 0 0 22px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--ink-3);
-  line-height: 1.6;
+  margin: 0 0 24px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink-2);
+  line-height: 1.65;
 }
 
 .lg-done-btn {
@@ -2009,24 +1927,21 @@
   cursor: pointer;
   background: var(--brand);
   color: var(--on-brand);
-  font-family: var(--font-display); font-weight: 800;
-  font-size: 16px;
-  padding: 14px;
-  border-radius: 15px;
-  box-shadow: 0 12px 24px -8px rgba(26, 26, 26, 0.6);
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 15px;
+  padding: 13px;
+  border-radius: 12px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 7px;
+  transition: background 0.15s;
 }
 
-.lg-done-btn i {
-  font-size: 18px;
-}
+.lg-done-btn i { font-size: 17px; }
 
-.lg-done-btn:hover {
-  background: var(--brand-strong);
-}
+.lg-done-btn:hover { background: var(--brand-strong); }
 
 
 /* ===== 409 후보 기관 원클릭 선택 (아이디+비밀번호 중복 시에만 노출) ===== */

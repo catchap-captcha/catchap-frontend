@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { authApi } from '../../api/auth';
-import mascot from '../../assets/characters/catchap-logo.png';
 import wordmarkWhite from '../../assets/brand/catchap-wordmark-white.png';
 import ForestCaptcha from '../../components/captcha/ForestCaptcha';
 import { useAuth } from '../../hooks/useAuth';
@@ -896,33 +895,18 @@ export default function LoginPage() {
         </div>
       )}
 
-      {/* SIGNUP SUCCESS POPUP (student / parent / teacher) */}
+      {/* SIGNUP SUCCESS POPUP (student / parent / teacher) — 깔끔한 확인 모달(마스코트·색종이 없음) */}
       {signupDone && (
         <div className="lg-done-overlay">
           <div className="lg-done">
-            <div className="lg-done-mascot-wrap">
-              <div className="lg-done-mascot-pop">
-                <div className="lg-done-mascot">
-                  <img src={mascot} alt="냥냥이" />
-                  <span className="lg-done-check">
-                    <i className="ph-bold ph-check" />
-                  </span>
-                </div>
-              </div>
-            </div>
-
             <div className="lg-done-card">
-              <span className="lg-conf1" />
-              <span className="lg-conf2" />
-              <span className="lg-conf3" />
-              <span className="lg-conf4" />
-
-              <h3>가입이 완료됐어요! 🎉</h3>
-              <p className="lg-done-name">반가워요, 새 친구!</p>
+              <div className="lg-done-icon">
+                <i className="ph-bold ph-check" />
+              </div>
+              <h3 className="lg-done-title">가입이 완료됐어요</h3>
               <p className="lg-done-msg">
-                회원가입이 완료됐어요. 이제 로그인해서 냥이와 함께 학습을 시작해요!
+                회원가입이 완료됐어요. 이제 로그인하고 학습을 시작하세요.
               </p>
-
               <button
                 type="button"
                 onClick={() => {
