@@ -103,14 +103,19 @@
   transform: scale(1);
 }
 
-/* stagger — 메뉴 항목이 순서대로 나타난다 */
-.sl-menu > .sl-navlink:nth-child(1) { animation-delay: 0.04s; }
-.sl-menu > .sl-navlink:nth-child(2) { animation-delay: 0.11s; }
-.sl-menu > .sl-navlink:nth-child(3) { animation-delay: 0.18s; }
-.sl-menu > .sl-navlink:nth-child(4) { animation-delay: 0.25s; }
+/* stagger — 메뉴 항목이 왼쪽부터 하나씩 순서대로 나타난다(쭈루룩) */
+.sl-menu > .sl-navlink:nth-child(1) { animation-delay: 0.05s; }
+.sl-menu > .sl-navlink:nth-child(2) { animation-delay: 0.13s; }
+.sl-menu > .sl-navlink:nth-child(3) { animation-delay: 0.21s; }
+.sl-menu > .sl-navlink:nth-child(4) { animation-delay: 0.29s; }
+/* 드롭다운 그룹(수료)은 .sl-navgroup이라 위 .sl-navlink:nth-child 스태거에 안 걸린다 —
+   그룹 위치(5·6번째)로 안쪽 버튼(.sl-navlink)에 delay를 줘 순서에 합류시킨다.
+   (안 하면 수료 버튼이 delay 0으로 먼저 튀어나와 순서가 깨진다) */
+.sl-menu > .sl-navgroup:nth-child(5) > .sl-navlink { animation-delay: 0.37s; }
+.sl-menu > .sl-navgroup:nth-child(6) > .sl-navlink { animation-delay: 0.45s; }
 
 @keyframes sl-navlink-in {
-  from { opacity: 0; transform: translateY(-7px); }
+  from { opacity: 0; transform: translateY(-10px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
