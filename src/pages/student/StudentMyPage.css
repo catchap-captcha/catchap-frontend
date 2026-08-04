@@ -571,3 +571,28 @@
 .mp-modal-confirm:hover:not(:disabled) { opacity: 0.9; }
 .mp-modal-cancel:disabled,
 .mp-modal-confirm:disabled { opacity: 0.55; cursor: default; }
+/* 탈퇴 재확인 — 본인 비밀번호 입력 */
+.mp-modal-pwlabel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0 0 16px;
+  text-align: left;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--ink-2);
+}
+.mp-modal-pw {
+  width: 100%;
+  padding: 11px 12px;
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.mp-modal-pw:focus { border-color: var(--danger); }
+.mp-modal-pw::placeholder { color: var(--ink-3); }

@@ -111,20 +111,31 @@ export default function StudentMyPage() {
   }, []);
   const courseCount = courses?.length ?? null;
 
-  // 계정 삭제(탈퇴) — 서버는 소프트 삭제(status=disabled)+토큰 폐기. 확인 모달을 거친다.
+  // 계정 삭제(탈퇴) — 서버는 소프트 삭제(status=disabled)+토큰 폐기. 확인 모달에서 본인
+  // 비밀번호를 다시 입력받아 서버가 검증한 뒤에만 진행한다(파괴적 작업 재인증).
   const [delOpen, setDelOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [delErr, setDelErr] = useState('');
+  const [delPw, setDelPw] = useState('');
   const doDeleteAccount = async () => {
+    if (!delPw.trim()) {
+      setDelErr('비밀번호를 입력해 주세요.');
+      return;
+    }
     setDeleting(true);
     setDelErr('');
     try {
-      await settingsApi.deleteAccount();
+      await settingsApi.deleteAccount(delPw);
       logout(); // 로컬 토큰·세션 정리 후 로그인으로(계정은 서버에서 이미 비활성화됨)
       navigate(PATHS.LOGIN, { replace: true });
-    } catch {
+    } catch (e) {
       setDeleting(false);
-      setDelErr('탈퇴 처리 중 문제가 생겼어요. 잠시 후 다시 시도해 주세요.');
+      const status = (e as { response?: { status?: number } })?.response?.status;
+      setDelErr(
+        status === 400
+          ? '비밀번호가 일치하지 않아요. 다시 확인해 주세요.'
+          : '탈퇴 처리 중 문제가 생겼어요. 잠시 후 다시 시도해 주세요.',
+      );
     }
   };
 
@@ -419,7 +430,7 @@ export default function StudentMyPage() {
               <button
                 type="button"
                 className="mp-danger-btn"
-                onClick={() => { setDelErr(''); setDelOpen(true); }}
+                onClick={() => { setDelErr(''); setDelPw(''); setDelOpen(true); }}
               >
                 <i className="ph-bold ph-trash" /> 계정 삭제(탈퇴)
               </button>
@@ -476,7 +487,7 @@ export default function StudentMyPage() {
 
       {/* 탈퇴 확인 모달 — "정말 탈퇴?" 되묻고, 확인 시에만 계정 삭제 API 호출 */}
       {delOpen && (
-        <div className="mp-modal-overlay" onClick={() => !deleting && setDelOpen(false)}>
+        <div className="mp-modal-overlay" onClick={() => { if (!deleting) { setDelOpen(false); setDelPw(''); } }}>
           <div
             className="mp-modal"
             role="dialog"
@@ -490,14 +501,39 @@ export default function StudentMyPage() {
               탈퇴하면 계정이 <b>비활성화</b>되고 즉시 로그아웃돼요. 수강 중인 코스와 학습 기록에
               다시 접근할 수 없어요. 이 작업은 되돌리기 어렵습니다.
             </p>
+            <label className="mp-modal-pwlabel">
+              비밀번호 확인
+              <input
+                type="password"
+                className="mp-modal-pw"
+                value={delPw}
+                onChange={(e) => setDelPw(e.target.value)}
+                placeholder="비밀번호를 입력하세요"
+                autoComplete="current-password"
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && delPw.trim() && !deleting) doDeleteAccount();
+                }}
+              />
+            </label>
             {delErr && (
               <p className="mp-modal-err"><i className="ph-fill ph-warning-circle" /> {delErr}</p>
             )}
             <div className="mp-modal-actions">
-              <button type="button" className="mp-modal-cancel" disabled={deleting} onClick={() => setDelOpen(false)}>
+              <button
+                type="button"
+                className="mp-modal-cancel"
+                disabled={deleting}
+                onClick={() => { setDelOpen(false); setDelPw(''); }}
+              >
                 취소
               </button>
-              <button type="button" className="mp-modal-confirm" disabled={deleting} onClick={doDeleteAccount}>
+              <button
+                type="button"
+                className="mp-modal-confirm"
+                disabled={deleting || !delPw.trim()}
+                onClick={doDeleteAccount}
+              >
                 {deleting ? '처리 중…' : '탈퇴할게요'}
               </button>
             </div>

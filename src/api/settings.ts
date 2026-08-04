@@ -24,5 +24,7 @@ export const settingsApi = {
 
   exportData: () => client.get<any>('/settings/me/export').then((r) => r.data),
 
-  deleteAccount: () => client.delete('/settings/me/account').then((r) => r.data),
+  /** 계정 탈퇴 — 본인 비밀번호로 재확인(서버가 검증 후 비활성화). DELETE 요청 body로 전달. */
+  deleteAccount: (password: string) =>
+    client.delete('/settings/me/account', { data: { password } }).then((r) => r.data),
 };
