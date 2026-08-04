@@ -3671,8 +3671,9 @@ export function QuestionsModal({
                     <i className="ph-bold ph-rewind" /> {fmtMMSS(q.content_start_sec)}부터 다시
                   </span>
                 )}
-                {/* 상태 배지 — 문제 은행으로 보낸 문항은 '검수 대기'가 아니라 '문제 은행'으로 표시한다
-                    (은행으로 처리 완료된 것을 계속 '검수 대기'로 보여줘 혼란을 준다는 제보 반영). */}
+                {/* 상태 배지 — 문제 은행으로 보낸 문항은 '문제 은행'으로 표시(은행 처리 완료된 걸
+                    계속 '검수 대기'로 보여줘 혼란을 준다는 제보 반영). '공개 중'은 하단 액션 영역
+                    배지로 옮겨 상단에선 뺐다(중복 제거) — active는 상단 배지를 안 달고, 검수 대기만 표시. */}
                 {q.bank_placed ? (
                   <span
                     className="op-sys-status op-sys-status--neutral"
@@ -3680,14 +3681,14 @@ export function QuestionsModal({
                   >
                     문제 은행
                   </span>
-                ) : (
+                ) : q.status !== 'active' ? (
                   <span
-                    className={`op-sys-status op-sys-status--${q.status === 'active' ? 'ok' : 'warn'}`}
-                    title={q.status === 'active' ? '학생 강의에 출제되는 중이에요' : '아직 학생에게 안 떠요 — 공개해야 출제돼요'}
+                    className="op-sys-status op-sys-status--warn"
+                    title="아직 학생에게 안 떠요 — 공개해야 출제돼요"
                   >
-                    {q.status === 'active' ? '공개 중' : '검수 대기'}
+                    검수 대기
                   </span>
-                )}
+                ) : null}
                 <span className="op-sys-status op-sys-status--neutral">{q.source === 'llm' ? 'AI 생성' : '직접 작성'}</span>
                 {/* 자기검증(2번째 LLM) 배지 — 봇 저항성 판정으로 배치를 돕는다(3분류).
                     판정 근거는 suggested_placement. 왜 3분류인지는 배지 title에 요약. */}
