@@ -138,6 +138,16 @@ export default function StudentHome() {
   // 강의 둘러보기 검색 — 강의명·코스명·강사 실시간 필터(코스 검색과 별도).
   const [lecSearch, setLecSearch] = useState('');
   const lecQ = lecSearch.trim().toLowerCase();
+  // 강의 둘러보기 코스 그룹 펼침(드롭다운) — 기본 접힘, 헤더 클릭으로 토글. 검색 중이면
+  // 결과가 바로 보이도록 전부 펼친 것으로 취급한다.
+  const [openGroups, setOpenGroups] = useState<Set<string>>(new Set());
+  const toggleGroup = (id: string) =>
+    setOpenGroups((s) => {
+      const n = new Set(s);
+      if (n.has(id)) n.delete(id);
+      else n.add(id);
+      return n;
+    });
   // 코스 둘러보기 분야 칩 — 미신청 코스의 분류(category, 없으면 subject) 기준.
   const [browseCat, setBrowseCat] = useState('전체');
   const browseCats = useMemo(() => {
@@ -530,9 +540,15 @@ export default function StudentHome() {
                 {lectureGroups.map((g) => {
                   const c = g.course;
                   const enrolled = !!c.enrolled;
+                  const open = !!lecQ || openGroups.has(c.id);
                   return (
                     <div key={c.id} className="sh2-lecgroup">
-                      <div className="sh2-lecgroup-head">
+                      <button
+                        type="button"
+                        className="sh2-lecgroup-head"
+                        onClick={() => toggleGroup(c.id)}
+                        aria-expanded={open}
+                      >
                         <CourseCover
                           seed={c.id}
                           label={c.title || c.subject}
@@ -540,26 +556,24 @@ export default function StudentHome() {
                           size="sm"
                           className="sh2-lecgroup-cover"
                         />
-                        <div className="sh2-lecgroup-meta">
-                          <h3 className="sh2-lecgroup-title">
+                        <span className="sh2-lecgroup-meta">
+                          <span className="sh2-lecgroup-title">
                             {c.title}
                             {enrolled && <span className="sh2-lecgroup-badge">수강 중</span>}
-                          </h3>
+                          </span>
                           <span className="sh2-lecgroup-sub">
                             {c.instructor_name ? `${c.instructor_name} 강사 · ` : ''}강의 {g.lectures.length}개
                           </span>
+                        </span>
+                        <i
+                          className={`ph-bold ph-caret-down sh2-lecgroup-caret${open ? ' sh2-lecgroup-caret--open' : ''}`}
+                        />
+                      </button>
+                      {open && (
+                        <div className="sh2-ccard-grid sh2-lecgroup-grid">
+                          {g.lectures.map((l) => renderLectureCard(l))}
                         </div>
-                        <button
-                          type="button"
-                          className="sh2-lecgroup-cta"
-                          onClick={() => navigate(`${PATHS.STUDENT_COURSE_DETAIL}?id=${c.id}`)}
-                        >
-                          코스 보기 <i className="ph-bold ph-arrow-right" />
-                        </button>
-                      </div>
-                      <div className="sh2-ccard-grid">
-                        {g.lectures.map((l) => renderLectureCard(l))}
-                      </div>
+                      )}
                     </div>
                   );
                 })}
