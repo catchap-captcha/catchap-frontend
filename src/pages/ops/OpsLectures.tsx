@@ -3733,7 +3733,7 @@ export function QuestionsModal({
                       key={i}
                       className={`op-lect-qopt${(q.answer_indexes ?? [q.answer_index]).includes(i) ? ' op-lect-qopt-ans' : ''}`}
                     >
-                      {i}.{' '}
+                      {i + 1}.{' '}
                       {q.option_image_urls?.[i] && (
                         <img
                           className="lu-optchip-img"
