@@ -132,9 +132,12 @@ export default function StudentHome() {
     return [...set];
   }, [courses]);
 
-  // 둘러보기 검색 — 코스명·강의명·강사·분류를 실시간 필터(코스 둘러보기 + 강의 둘러보기 공용).
+  // 코스 둘러보기 검색 — 코스명·강사·분류 실시간 필터.
   const [search, setSearch] = useState('');
   const q = search.trim().toLowerCase();
+  // 강의 둘러보기 검색 — 강의명·코스명·강사 실시간 필터(코스 검색과 별도).
+  const [lecSearch, setLecSearch] = useState('');
+  const lecQ = lecSearch.trim().toLowerCase();
   // 코스 둘러보기 분야 칩 — 미신청 코스의 분류(category, 없으면 subject) 기준.
   const [browseCat, setBrowseCat] = useState('전체');
   const browseCats = useMemo(() => {
@@ -159,20 +162,41 @@ export default function StudentHome() {
       });
     return list;
   }, [discoverGroups, browseCat, q]);
-  // 강의 둘러보기 = 개별 강의(전체 활성 강의) + 검색(강의명·코스명·강사·분야).
+  // 강의 둘러보기 = 개별 강의(전체 활성 강의) + 강의 검색.
   const shownLectures = useMemo(() => {
     const base = lectures ?? [];
-    if (!q) return base;
+    if (!lecQ) return base;
     return base.filter((l) => {
       const c = courseById.get(l.course_id ?? '');
       return (
-        (l.title || '').toLowerCase().includes(q) ||
-        (l.subject || '').toLowerCase().includes(q) ||
-        (c?.title || '').toLowerCase().includes(q) ||
-        (c?.instructor_name || '').toLowerCase().includes(q)
+        (l.title || '').toLowerCase().includes(lecQ) ||
+        (l.subject || '').toLowerCase().includes(lecQ) ||
+        (c?.title || '').toLowerCase().includes(lecQ) ||
+        (c?.instructor_name || '').toLowerCase().includes(lecQ)
       );
     });
-  }, [lectures, courseById, q]);
+  }, [lectures, courseById, lecQ]);
+  // 강의 둘러보기를 코스별로 묶는다 — 코스 헤더로 어떤 코스인지 한눈에. 수강 중 코스를 앞으로,
+  // 그다음 코스명순. 코스가 조회 안 되는 강의는 건너뛴다.
+  const lectureGroups = useMemo(() => {
+    const byId = new Map<string, LectureItem[]>();
+    for (const l of shownLectures) {
+      const cid = l.course_id ?? '';
+      if (!byId.has(cid)) byId.set(cid, []);
+      byId.get(cid)!.push(l);
+    }
+    const groups: { course: StudentCourse; lectures: LectureItem[] }[] = [];
+    byId.forEach((ls, cid) => {
+      const course = courseById.get(cid);
+      if (!course) return;
+      groups.push({ course, lectures: ls.sort((a, b) => a.order_no - b.order_no) });
+    });
+    return groups.sort(
+      (a, b) =>
+        Number(!!b.course.enrolled) - Number(!!a.course.enrolled) ||
+        (a.course.title || '').localeCompare(b.course.title || ''),
+    );
+  }, [shownLectures, courseById]);
 
   // 이어서 학습 레일 — 시청 중(watching)인 강의(발견·재방문 유도). 히어로의 1건과 겹쳐도
   // 여러 개를 가로 스크롤로 노출하는 게 목적(넷플릭스·Coursera '이어보기' 레일 패턴).
@@ -266,10 +290,7 @@ export default function StudentHome() {
         </span>
         <span className="sh2-ccard-body">
           <span className="sh2-ccard-title">{l.title}</span>
-          <span className="sh2-ccard-meta">
-            {c?.title ? c.title : l.subject}
-            {c?.instructor_name ? ` · ${c.instructor_name} 강사` : ''}
-          </span>
+          <span className="sh2-ccard-meta">{l.subject || '강의'}</span>
           <span className={`sh2-ccard-cta${enrolled ? ' sh2-ccard-cta--learn' : ''}`}>
             {enrolled ? (
               <>
@@ -426,8 +447,8 @@ export default function StudentHome() {
             className="sh2-search-input"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="코스·강의·강사 검색"
-            aria-label="코스·강의 검색"
+            placeholder="코스·강사 검색"
+            aria-label="코스 검색"
           />
           {search && (
             <button
@@ -477,16 +498,74 @@ export default function StudentHome() {
               <div className="sh2-empty">{q ? '검색 결과가 없어요.' : '지금은 둘러볼 코스가 없어요.'}</div>
             )}
 
-            {/* 강의 둘러보기 — 개별 강의 카드 */}
+            {/* 강의 둘러보기 — 개별 강의를 코스별로 묶어(코스 헤더로 어떤 코스인지 한눈에) + 강의 검색 */}
             <div className="sh2-sec-head sh2-sec-head--sub sh2-browse-lechead">
               <h2 className="sh2-sec-title">
                 <i className="ph-fill ph-monitor-play" /> 강의 둘러보기
               </h2>
             </div>
-            {shownLectures.length > 0 ? (
-              <div className="sh2-ccard-grid">{shownLectures.map((l) => renderLectureCard(l))}</div>
+            <div className="sh2-search sh2-search--lec">
+              <i className="ph-bold ph-magnifying-glass sh2-search-ic" />
+              <input
+                type="search"
+                className="sh2-search-input"
+                value={lecSearch}
+                onChange={(e) => setLecSearch(e.target.value)}
+                placeholder="강의·강사 검색"
+                aria-label="강의 검색"
+              />
+              {lecSearch && (
+                <button
+                  type="button"
+                  className="sh2-search-clear"
+                  onClick={() => setLecSearch('')}
+                  aria-label="검색 지우기"
+                >
+                  <i className="ph-bold ph-x" />
+                </button>
+              )}
+            </div>
+            {lectureGroups.length > 0 ? (
+              <div className="sh2-lecgroups">
+                {lectureGroups.map((g) => {
+                  const c = g.course;
+                  const enrolled = !!c.enrolled;
+                  return (
+                    <div key={c.id} className="sh2-lecgroup">
+                      <div className="sh2-lecgroup-head">
+                        <CourseCover
+                          seed={c.id}
+                          label={c.title || c.subject}
+                          imageUrl={thumbnailSrc(c.thumbnail_url)}
+                          size="sm"
+                          className="sh2-lecgroup-cover"
+                        />
+                        <div className="sh2-lecgroup-meta">
+                          <h3 className="sh2-lecgroup-title">
+                            {c.title}
+                            {enrolled && <span className="sh2-lecgroup-badge">수강 중</span>}
+                          </h3>
+                          <span className="sh2-lecgroup-sub">
+                            {c.instructor_name ? `${c.instructor_name} 강사 · ` : ''}강의 {g.lectures.length}개
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          className="sh2-lecgroup-cta"
+                          onClick={() => navigate(`${PATHS.STUDENT_COURSE_DETAIL}?id=${c.id}`)}
+                        >
+                          코스 보기 <i className="ph-bold ph-arrow-right" />
+                        </button>
+                      </div>
+                      <div className="sh2-ccard-grid">
+                        {g.lectures.map((l) => renderLectureCard(l))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             ) : (
-              <div className="sh2-empty">{q ? '검색 결과가 없어요.' : '지금은 둘러볼 강의가 없어요.'}</div>
+              <div className="sh2-empty">{lecQ ? '검색 결과가 없어요.' : '지금은 둘러볼 강의가 없어요.'}</div>
             )}
           </>
         )}

@@ -241,6 +241,20 @@
 }
 .sh2-lecgroup-cta:hover { background: var(--brand); color: #fff; transform: translateY(-1px); }
 .sh2-lecgroup-cta i { font-size: 15px; }
+/* 코스별 그룹 헤더의 '수강 중' 배지(제목 옆 인라인 pill) */
+.sh2-lecgroup-badge {
+  margin-left: 8px;
+  vertical-align: 2px;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--on-brand);
+  background: var(--ok);
+  padding: 2px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+/* 강의 둘러보기 전용 검색(코스 검색과 별도) — 섹션 헤더 바로 아래 */
+.sh2-search--lec { margin-top: 4px; }
 
 @media (max-width: 900px) {
   .sh2-course-grid { grid-template-columns: repeat(2, 1fr); }
