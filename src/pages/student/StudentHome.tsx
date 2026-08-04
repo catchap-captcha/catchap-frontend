@@ -8,6 +8,7 @@ import { studentApi } from '../../api/students';
 import CourseCover from '../../components/course/CourseCover';
 import CountUp from '../../components/motion/CountUp';
 import InterestOnboardModal from '../../components/student/InterestOnboardModal';
+import { interestsToSubjects } from '../../components/student/interestTaxonomy';
 import './StudentHome.css';
 
 /** 코스별 강의 묶음 — 홈의 '강의 둘러보기'가 코스 카드로 쓴다. */
@@ -133,19 +134,16 @@ export default function StudentHome() {
       .sort((a, b) => Number(!!a.course.enrolled) - Number(!!b.course.enrolled));
   }, [courses, lectures]);
 
-  // 관심사 추천 — 고른 관심사(코스 분류 category)에 맞는 미신청 코스를 홈 상단에 따로 노출한다.
+  // 관심사 추천 — 고른 관심 분야(데모 태그)를 실제 코스 분류(subject)로 매핑해, 맞는 미신청
+  // 코스만 홈 상단에 노출한다. 아직 코스가 없는 데모 분야(IT·디자인 등)는 매핑이 비어 안 뜬다.
   const recommendedGroups = useMemo(() => {
     if (!interests || interests.length === 0) return [];
+    const wanted = interestsToSubjects(interests);
+    if (wanted.size === 0) return [];
     return discoverGroups.filter((g) =>
-      interests.includes(g.course.category || g.course.subject || '기타'),
+      wanted.has(g.course.category || g.course.subject || '기타'),
     );
   }, [discoverGroups, interests]);
-  // 관심사 선택 모달 후보 — 전체 코스의 분류(처음엔 아무 코스도 안 들었으므로 신청 여부 무관).
-  const allCats = useMemo(() => {
-    const set = new Set<string>();
-    (courses ?? []).forEach((c) => set.add(c.category || c.subject || '기타'));
-    return [...set];
-  }, [courses]);
 
   // 코스 둘러보기 검색 — 코스명·강사·분류 실시간 필터.
   const [search, setSearch] = useState('');
@@ -627,10 +625,9 @@ export default function StudentHome() {
         )}
       </section>
 
-      {/* 최초 로그인 관심사 온보딩 — interests가 null일 때만(서버 판정). 코스 로드 후 후보를 넘긴다. */}
-      {onboardNeeded && courses && (
-        <InterestOnboardModal categories={allCats} onDone={saveOnboard} />
-      )}
+      {/* 최초 로그인 관심사 온보딩 — interests가 null일 때만(서버 판정). 데모 분야 택소노미는
+          모달이 직접 들고 있어 코스 로드를 기다릴 필요 없다. */}
+      {onboardNeeded && <InterestOnboardModal onDone={saveOnboard} />}
     </StudentLayout>
   );
 }

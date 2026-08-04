@@ -1,4 +1,5 @@
-/* 관심사 선택 온보딩 모달 — 학생 모노크롬. 최초 로그인 1회 노출. */
+/* 관심사 선택 온보딩 모달 — 학생 모노크롬. 최초 로그인 1회 노출.
+   그룹 섹션이 많아 헤더/푸터는 고정, 가운데 본문만 스크롤한다(flex column + min-height:0). */
 .iom-overlay {
   position: fixed;
   inset: 0;
@@ -20,11 +21,14 @@
 }
 .iom-modal {
   width: 100%;
-  max-width: 480px;
+  max-width: 520px;
+  max-height: 86vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* 둥근 모서리로 스크롤 본문을 클립 */
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 22px;
-  padding: 28px 28px 22px;
   box-shadow: var(--shadow-lg, 0 20px 60px rgba(0, 0, 0, 0.25));
   animation: iom-pop 0.2s cubic-bezier(0.2, 0.9, 0.3, 1.1);
 }
@@ -38,8 +42,11 @@
     transform: none;
   }
 }
+
+/* 헤더(고정) */
 .iom-head {
-  margin-bottom: 18px;
+  flex: none;
+  padding: 26px 28px 14px;
 }
 .iom-badge {
   display: inline-flex;
@@ -69,13 +76,44 @@
   margin: 0;
   line-height: 1.6;
 }
+
+/* 본문(스크롤) */
+.iom-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 6px 28px 10px;
+}
+.iom-group {
+  margin-bottom: 18px;
+}
+.iom-group:last-child {
+  margin-bottom: 4px;
+}
+.iom-group-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--ink);
+  margin: 0 0 10px;
+  letter-spacing: -0.01em;
+}
+.iom-group-label i {
+  color: var(--ink-3);
+  font-size: 15px;
+}
+.iom-opt {
+  font-weight: 600;
+  font-size: 11.5px;
+  color: var(--ink-3);
+  margin-left: 2px;
+}
 .iom-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 9px;
-  margin-bottom: 22px;
-  max-height: 260px;
-  overflow-y: auto;
+  gap: 8px;
 }
 .iom-chip {
   display: inline-flex;
@@ -86,13 +124,13 @@
   color: var(--ink-2);
   font-family: inherit;
   font-weight: 700;
-  font-size: 14px;
-  padding: 9px 15px;
+  font-size: 13.5px;
+  padding: 8px 14px;
   border-radius: 999px;
   cursor: pointer;
   transition: border-color 0.14s, background 0.14s, color 0.14s;
 }
-.iom-chip:hover {
+.iom-chip:hover:not(:disabled) {
   border-color: var(--brand);
 }
 .iom-chip--on {
@@ -100,17 +138,49 @@
   color: var(--on-brand);
   border-color: var(--brand);
 }
-.iom-empty {
-  font-size: 14px;
-  color: var(--ink-3);
-  font-weight: 500;
-  margin: 8px 0 22px;
+.iom-chip:disabled {
+  opacity: 0.4;
+  cursor: default;
 }
+
+/* 선택 한도 안내 */
+.iom-cap {
+  flex: none;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink-3);
+  margin: 0;
+  padding: 8px 28px 0;
+}
+
+/* 푸터(고정) */
 .iom-actions {
+  flex: none;
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
   gap: 10px;
+  padding: 14px 22px 16px;
+  border-top: 1px solid var(--line);
+}
+.iom-actions-r {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.iom-reset {
+  border: none;
+  background: none;
+  color: var(--ink-3);
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 13.5px;
+  padding: 10px 8px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+.iom-reset:hover:not(:disabled) {
+  color: var(--ink);
 }
 .iom-skip {
   border: none;
@@ -142,7 +212,26 @@
   opacity: 0.92;
 }
 .iom-done:disabled,
-.iom-skip:disabled {
+.iom-skip:disabled,
+.iom-reset:disabled {
   opacity: 0.5;
   cursor: default;
+}
+
+@media (max-width: 520px) {
+  .iom-modal {
+    max-height: 90vh;
+  }
+  .iom-head {
+    padding: 22px 20px 12px;
+  }
+  .iom-body {
+    padding: 6px 20px 10px;
+  }
+  .iom-title {
+    font-size: 20px;
+  }
+  .iom-actions {
+    padding: 12px 16px 14px;
+  }
 }
