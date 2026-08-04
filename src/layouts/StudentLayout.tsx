@@ -55,21 +55,15 @@ export function StudentNav({
   const path = location.pathname;
   const onRecords = path === PATHS.STUDENT_RECORDS;
   const homeOn = active === 'home' || (active === undefined && path === PATHS.STUDENT_HOME);
-  const learnOn =
-    path === PATHS.STUDENT_MY_COURSES || path === PATHS.STUDENT_ALL_LEARNING || onRecords;
 
-  // 상단바 그룹 — 운영 콘솔식 드롭다운. 비슷한 화면을 '내 학습'·'수료'로 묶는다.
+  // 상단바 — '내 학습' 드롭다운을 없애고 그 항목들을 상단에 그대로 펼친다(홈·내 강의·나의
+  // 기록·문제은행). '수료'만 드롭다운으로 유지(수료시험·수료증).
+  const FLAT = [
+    { to: PATHS.STUDENT_MY_COURSES, label: '내 강의', on: path === PATHS.STUDENT_MY_COURSES },
+    { to: PATHS.STUDENT_RECORDS, label: '나의 기록', on: onRecords },
+    { to: PATHS.STUDENT_ALL_LEARNING, label: '문제은행', on: path === PATHS.STUDENT_ALL_LEARNING },
+  ];
   const GROUPS = [
-    {
-      key: 'learn',
-      label: '내 학습',
-      on: learnOn,
-      items: [
-        { to: PATHS.STUDENT_MY_COURSES, label: '내 강의', icon: 'ph-books', desc: '수강 중·진도·이어보기', on: path === PATHS.STUDENT_MY_COURSES },
-        { to: PATHS.STUDENT_RECORDS, label: '나의 기록', icon: 'ph-chart-bar', desc: '통계·수료 현황·달력', on: onRecords },
-        { to: PATHS.STUDENT_ALL_LEARNING, label: '문제은행', icon: 'ph-cards-three', desc: '확인 문제 풀기', on: path === PATHS.STUDENT_ALL_LEARNING },
-      ],
-    },
     {
       key: 'cert',
       label: '수료',
@@ -110,6 +104,16 @@ export function StudentNav({
               홈
             </Link>
           )}
+          {FLAT.map((it) => (
+            <Link
+              key={it.to}
+              to={it.to}
+              className={`sl-navlink${it.on ? ' sl-active' : ''}`}
+              onClick={closeMenu}
+            >
+              {it.label}
+            </Link>
+          ))}
           {GROUPS.map((g) => (
             <div
               key={g.key}

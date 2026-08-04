@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState, type CSSProperties } from 're
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
 import { studentApi } from '../../api/students';
+import { lectureApi } from '../../api/lectures';
+import { categoryTheme } from './lectureSubjects';
 import { getFreshAccessToken } from '../../api/client';
 import { playSfx } from '../../utils/feedback';
 import { attachPointerTrace, type PointerTraceRecorder } from '../../utils/pointerTrace';
@@ -39,57 +41,21 @@ interface SubjectPreset {
   streak: number;
 }
 
-// TODO(api): studentApi.gameState() 실패 시 원본 SUBJECTS 프리셋 그대로 유지
-const FALLBACK: SubjectPreset[] = [
-  {
-    key: '국어', solid: '#ea5443', soft: '#FFE0DB', slotBg: 'linear-gradient(160deg,#FFFBF6,#FFF1EE)', dash: '#FFD6C4',
-    mascotGrad: 'linear-gradient(160deg,#FFE6BE,#FFCFC9)', progGrad: 'linear-gradient(90deg,#FF8A5B,#ea5443)',
-    gameTitle: '한글 낱말 찾기', gameSub: '그림 보고 낱말 고르기', gameIcon: 'ph-fill ph-text-aa',
-    catLabel: '낱말·한글', catIcon: 'ph-fill ph-text-aa',
-    cheer: '천천히, 잘 하고 있어요! 🐾',
-    current: 3, total: 5, score: 210, correct: 2, wrong: 0, streak: 2,
-  },
-  {
-    key: '영어', solid: '#FF922E', soft: '#FFEDD6', slotBg: 'linear-gradient(160deg,#FFFBF4,#FFF3E6)', dash: '#FFDDB8',
-    mascotGrad: 'linear-gradient(160deg,#FFE6BE,#FFD8A6)', progGrad: 'linear-gradient(90deg,#FFB43C,#FF922E)',
-    gameTitle: 'Word Match', gameSub: '그림 보고 영어 단어 고르기', gameIcon: 'ph-fill ph-translate',
-    catLabel: 'Word·English', catIcon: 'ph-fill ph-translate',
-    cheer: '한 문제씩 차근차근 가볼까요? ✨',
-    current: 1, total: 5, score: 150, correct: 0, wrong: 0, streak: 0,
-  },
-  {
-    key: '수학', solid: '#17B08C', soft: '#DFF6EE', slotBg: 'linear-gradient(160deg,#F6FFFB,#EAF9F3)', dash: '#BFEAD9',
-    mascotGrad: 'linear-gradient(160deg,#C9F0E2,#B6E6D6)', progGrad: 'linear-gradient(90deg,#33C892,#17B0A0)',
-    gameTitle: '숫자 세기', gameSub: '그림 세고 숫자 고르기', gameIcon: 'ph-fill ph-plus-minus',
-    catLabel: '수·셈', catIcon: 'ph-fill ph-plus-minus',
-    cheer: '집중력이 대단해요! 👏',
-    current: 4, total: 5, score: 320, correct: 3, wrong: 0, streak: 3,
-  },
-  {
-    key: '과학', solid: '#2E7BFF', soft: '#E1EDFF', slotBg: 'linear-gradient(160deg,#F6FAFF,#EAF2FF)', dash: '#C4DBFF',
-    mascotGrad: 'linear-gradient(160deg,#CFE2FF,#BBD6FF)', progGrad: 'linear-gradient(90deg,#4AA6FF,#2E7BFF)',
-    gameTitle: '과학 관찰 퀴즈', gameSub: '잘 보고 알맞은 답 고르기', gameIcon: 'ph-fill ph-flask',
-    catLabel: '관찰·과학', catIcon: 'ph-fill ph-flask',
-    cheer: '궁금한 걸 잘 찾아내고 있어요! 🔍',
-    current: 1, total: 5, score: 40, correct: 0, wrong: 0, streak: 0,
-  },
-  {
-    key: '사회', solid: '#8B6BFF', soft: '#EAE2FF', slotBg: 'linear-gradient(160deg,#FAF8FF,#F1EBFF)', dash: '#D6C8FF',
-    mascotGrad: 'linear-gradient(160deg,#DCD0FF,#CBBAFF)', progGrad: 'linear-gradient(90deg,#A98CFF,#8B6BFF)',
-    gameTitle: '사회 이야기 퀴즈', gameSub: '이야기 읽고 답 고르기', gameIcon: 'ph-fill ph-scroll',
-    catLabel: '이야기·사회', catIcon: 'ph-fill ph-scroll',
-    cheer: '옛날 이야기, 참 잘 기억하네요! 📜',
-    current: 2, total: 5, score: 120, correct: 1, wrong: 0, streak: 1,
-  },
-  {
-    key: '생활', solid: '#FF6DA6', soft: '#FFE3EF', slotBg: 'linear-gradient(160deg,#FFFAFC,#FFF0F5)', dash: '#FFCDE0',
-    mascotGrad: 'linear-gradient(160deg,#FFD9E8,#FFC2D9)', progGrad: 'linear-gradient(90deg,#FF93BE,#FF6DA6)',
-    gameTitle: '생활 안전 퀴즈', gameSub: '상황 보고 바른 행동 고르기', gameIcon: 'ph-fill ph-house-line',
-    catLabel: '안전·생활', catIcon: 'ph-fill ph-house-line',
-    cheer: '안전을 잘 챙기고 있어요! 🚸',
-    current: 4, total: 5, score: 260, correct: 2, wrong: 1, streak: 1,
-  },
-];
+/** 과목명 → 게임 프리셋(동적). 하드코딩 6과목(국어/영어/…) 대신 실제 콘텐츠 과목을 이걸로
+ *  만든다 — 색·아이콘은 categoryTheme(임의 과목 고정 팔레트), 게임 문구는 제네릭, 통계는 0에서
+ *  시작해 studentApi.gameState()가 서버값으로 덮어쓴다. */
+function makePreset(subject: string): SubjectPreset {
+  const t = categoryTheme(subject);
+  return {
+    key: subject,
+    solid: t.color, soft: t.soft, slotBg: t.band, dash: t.soft,
+    mascotGrad: t.band, progGrad: t.grad,
+    gameTitle: `${subject} 문제 풀기`, gameSub: '문제은행에서 골라 풀어요', gameIcon: t.icon,
+    catLabel: subject, catIcon: t.icon,
+    cheer: '차근차근, 잘 하고 있어요! 🐾',
+    current: 0, total: 0, score: 0, correct: 0, wrong: 0, streak: 0,
+  };
+}
 
 const QUESTIONS: Record<string, { q: string; pre: string; hi: string; post: string }> = {
   '국어': { q: '이 그림은 무슨 낱말일까요? 📖', pre: '그림을 잘 보고, 알맞은 ', hi: '낱말 카드', post: '를 눌러요.' },
@@ -141,22 +107,25 @@ export default function GameScreen() {
   // 코스 Q(3단계-b) — bank와 함께 오면 그 코스 강의 유래 문항만(수료 시험 훈련장)
   const pCourse = navState?.course ?? (searchParams.get('course') || undefined);
 
-  /* 원본 componentDidMount: subject → 없으면 hash → 기본 국어 */
-  const [subjectIdx, setSubjectIdx] = useState(() => {
-    let name = pSubject || '국어';
+  /* 진입 과목 이름: state/query(pSubject) 우선, 없으면 hash, 그래도 없으면 '일반'.
+     동적 목록(코스)이 로드되기 전 부트스트랩용 — 진입 과목이 하드코딩 6과목에 없으면 국어로
+     폴백하던 버그를 없앤다. */
+  const initialSubjectName = (() => {
+    let name = pSubject || '';
     try {
       if (!pSubject && window.location.hash) {
         const h = decodeURIComponent(window.location.hash.slice(1));
         if (h) name = h;
       }
     } catch {
-      /* 원본과 동일: 파싱 실패 무시 */
+      /* 파싱 실패 무시 */
     }
-    const i = FALLBACK.findIndex((s) => s.key === name);
-    return i >= 0 ? i : 0;
-  });
+    return name || '일반';
+  })();
 
-  const [subjects, setSubjects] = useState<SubjectPreset[]>(FALLBACK);
+  const [subjectIdx, setSubjectIdx] = useState(0);
+  // 부트스트랩: 진입 과목 1개로 시작 → 아래 이펙트가 코스 기반 실제 과목 목록으로 교체한다.
+  const [subjects, setSubjects] = useState<SubjectPreset[]>(() => [makePreset(initialSubjectName)]);
   /* API reward: {have, goal} — 디게임화(0723)로 화면 표시는 제거됐고 상태 로드만 유지(값 미사용) */
   const [, setRewards] = useState<Record<string, { have: number; goal: number }>>(() =>
     Object.fromEntries(Object.entries(REWARDS).map(([k, v]) => [k, { have: v, goal: 5 }])),
@@ -493,6 +462,38 @@ export default function GameScreen() {
         setSaveError(true);
       });
   };
+
+  // 문제은행 과목 탭 — 하드코딩 6과목 대신 실제 콘텐츠(코스) 과목으로 동적 구성. 진입 과목이
+  // 목록에 없으면 앞에 넣어 항상 유효한 탭이 되게 하고, 이미 로드된 프리셋(gameState로 갱신된
+  // 통계·색)은 병합해 유지한다. 코스가 없거나 실패하면 부트스트랩(진입 과목 1개)을 유지.
+  useEffect(() => {
+    let alive = true;
+    lectureApi
+      .courses()
+      .then((cs: any[]) => {
+        if (!alive) return;
+        const names: string[] = [];
+        (cs ?? []).forEach((c) => {
+          const sub = c?.subject || c?.category;
+          if (sub && !names.includes(sub)) names.push(sub);
+        });
+        if (initialSubjectName && !names.includes(initialSubjectName)) names.unshift(initialSubjectName);
+        if (names.length === 0) return; // 코스 없음 → 부트스트랩 유지
+        setSubjects((prev) => {
+          const byKey = new Map(prev.map((p) => [p.key, p]));
+          return names.map((n) => byKey.get(n) ?? makePreset(n));
+        });
+        const idx = names.indexOf(initialSubjectName);
+        setSubjectIdx(idx >= 0 ? idx : 0);
+      })
+      .catch(() => {
+        /* 실패 시 부트스트랩(진입 과목 1개) 유지 */
+      });
+    return () => {
+      alive = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     let mounted = true;
