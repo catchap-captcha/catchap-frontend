@@ -118,6 +118,21 @@ export default function StudentHome() {
     return m;
   }, [courses]);
 
+  // 코스 둘러보기 — 수강 중 + 미신청 코스를 모두 담는다(카드에서 배지·버튼으로 구분). 미신청을
+  // 앞에 정렬(새로 신청할 코스가 먼저 눈에 띄게). 강의가 있는 코스만(빈 코스 제외).
+  const allCourseGroups = useMemo(() => {
+    if (!courses || !lectures) return [];
+    return courses
+      .map((c) => ({
+        course: c,
+        lectures: lectures
+          .filter((l) => l.course_id === c.id)
+          .sort((a, b) => a.order_no - b.order_no),
+      }))
+      .filter((g) => g.lectures.length > 0)
+      .sort((a, b) => Number(!!a.course.enrolled) - Number(!!b.course.enrolled));
+  }, [courses, lectures]);
+
   // 관심사 추천 — 고른 관심사(코스 분류 category)에 맞는 미신청 코스를 홈 상단에 따로 노출한다.
   const recommendedGroups = useMemo(() => {
     if (!interests || interests.length === 0) return [];
@@ -148,17 +163,17 @@ export default function StudentHome() {
       else n.add(id);
       return n;
     });
-  // 코스 둘러보기 분야 칩 — 미신청 코스의 분류(category, 없으면 subject) 기준.
+  // 코스 둘러보기 분야 칩 — 전체 코스(수강 중+미신청)의 분류(category, 없으면 subject) 기준.
   const [browseCat, setBrowseCat] = useState('전체');
   const browseCats = useMemo(() => {
     const cats = Array.from(
-      new Set(discoverGroups.map((g) => g.course.category || g.course.subject || '기타')),
+      new Set(allCourseGroups.map((g) => g.course.category || g.course.subject || '기타')),
     );
     return ['전체', ...cats];
-  }, [discoverGroups]);
-  // 코스 둘러보기 = 미신청 코스 + 분야 칩 + 검색.
+  }, [allCourseGroups]);
+  // 코스 둘러보기 = 전체 코스(수강 중+미신청) + 분야 칩 + 검색.
   const shownCourses = useMemo(() => {
-    let list = discoverGroups;
+    let list = allCourseGroups;
     if (browseCat !== '전체')
       list = list.filter((g) => (g.course.category || g.course.subject || '기타') === browseCat);
     if (q)
@@ -171,7 +186,7 @@ export default function StudentHome() {
         );
       });
     return list;
-  }, [discoverGroups, browseCat, q]);
+  }, [allCourseGroups, browseCat, q]);
   // 강의 둘러보기 = 개별 강의(전체 활성 강의) + 강의 검색.
   const shownLectures = useMemo(() => {
     const base = lectures ?? [];
@@ -217,20 +232,22 @@ export default function StudentHome() {
 
   const goWatch = (id: string) => navigate(PATHS.STUDENT_LECTURE, { state: { id } });
 
-  /** 코스 카드 — 홈 '강의 둘러보기' 미리보기. 미신청·수강 중 코스를 모두 보여주되 수강 중은 커버에
-   *  '수강 중' 배지 + CTA를 '학습하기'로 바꿔 확실히 구분한다. 누르면 코스 상세(커리큘럼)로 가고,
-   *  상세에서 미신청은 수강신청→결제, 수강 중은 학습하기로 이어진다. */
+  /** 코스 카드 — 코스 둘러보기·추천·수강 중 섹션 공용. 수강 중은 '수강 중' 배지 + [커리큘럼],
+   *  미신청은 '미신청' 배지 + [커리큘럼]·[수강신청] 버튼으로 확실히 구분한다. 커리큘럼은 코스
+   *  상세(커리큘럼)로, 수강신청은 결제로 바로 보낸다. */
   const renderCourseCard = (g: HomeCourseGroup) => {
     const c = g.course;
     const enrolled = !!c.enrolled;
+    const goCurriculum = () => navigate(`${PATHS.STUDENT_COURSE_DETAIL}?id=${c.id}`);
+    const goEnroll = () => navigate(`${PATHS.STUDENT_CHECKOUT}?course=${c.id}`);
     return (
-      <button
-        key={c.id}
-        type="button"
-        className={`sh2-ccard${enrolled ? ' sh2-ccard--enrolled' : ''}`}
-        onClick={() => navigate(`${PATHS.STUDENT_COURSE_DETAIL}?id=${c.id}`)}
-      >
-        <span className="sh2-ccover-wrap">
+      <div key={c.id} className={`sh2-ccard${enrolled ? ' sh2-ccard--enrolled' : ''}`}>
+        <button
+          type="button"
+          className="sh2-ccover-wrap"
+          onClick={goCurriculum}
+          aria-label={`${c.title} 커리큘럼 보기`}
+        >
           <CourseCover
             seed={c.id}
             label={c.title || c.subject}
@@ -238,31 +255,42 @@ export default function StudentHome() {
             size="md"
             className="sh2-ccover"
           />
-          {enrolled && (
+          {enrolled ? (
             <span className="sh2-ccard-badge">
               <i className="ph-fill ph-check-circle" /> 수강 중
             </span>
+          ) : (
+            <span className="sh2-ccard-badge sh2-ccard-badge--lock">
+              <i className="ph-fill ph-lock-simple" /> 미신청
+            </span>
           )}
-        </span>
-        <span className="sh2-ccard-body">
+        </button>
+        <div className="sh2-ccard-body">
           <span className="sh2-ccard-title">{c.title}</span>
           <span className="sh2-ccard-meta">
             {c.instructor_name ? `${c.instructor_name} 강사 · ` : ''}
             {c.lecture_count || g.lectures.length}강
           </span>
-          <span className={`sh2-ccard-cta${enrolled ? ' sh2-ccard-cta--learn' : ''}`}>
-            {enrolled ? (
-              <>
-                <i className="ph-fill ph-play" /> 학습하기
-              </>
-            ) : (
-              <>
-                <i className="ph-bold ph-arrow-right" /> 자세히 보기
-              </>
+          <div className="sh2-ccard-actions">
+            <button
+              type="button"
+              className="sh2-ccard-btn sh2-ccard-btn--ghost"
+              onClick={goCurriculum}
+            >
+              <i className="ph-bold ph-list-bullets" /> 커리큘럼
+            </button>
+            {!enrolled && (
+              <button
+                type="button"
+                className="sh2-ccard-btn sh2-ccard-btn--primary"
+                onClick={goEnroll}
+              >
+                <i className="ph-bold ph-shopping-cart-simple" /> 수강신청
+              </button>
             )}
-          </span>
-        </span>
-      </button>
+          </div>
+        </div>
+      </div>
     );
   };
 
