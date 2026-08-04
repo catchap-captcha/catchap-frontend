@@ -268,7 +268,7 @@ export default function StudentHome() {
 
   /** 강의 카드 — 홈 '강의 둘러보기'(개별 강의). 코스 카드 룩을 재사용하되, 수강 중 코스의
    *  강의는 바로 이어 보기, 미신청 코스의 강의는 코스 상세(수강신청)로 보낸다. */
-  const renderLectureCard = (l: LectureItem) => {
+  const renderLectureCard = (l: LectureItem, showCourse = false) => {
     const c = courseById.get(l.course_id ?? '');
     const enrolled = !!c?.enrolled;
     const go = () =>
@@ -300,7 +300,7 @@ export default function StudentHome() {
         </span>
         <span className="sh2-ccard-body">
           <span className="sh2-ccard-title">{l.title}</span>
-          <span className="sh2-ccard-meta">{l.subject || '강의'}</span>
+          <span className="sh2-ccard-meta">{showCourse && c?.title ? c.title : l.subject || '강의'}</span>
           <span className={`sh2-ccard-cta${enrolled ? ' sh2-ccard-cta--learn' : ''}`}>
             {enrolled ? (
               <>
@@ -535,12 +535,22 @@ export default function StudentHome() {
                 </button>
               )}
             </div>
-            {lectureGroups.length > 0 ? (
+            {lecQ ? (
+              /* 검색 중 — 매칭 강의를 평면 그리드로 보여준다. (그룹 드롭다운을 매 타자마다
+                 열고/닫고/필터링하면 페이지 높이가 크게 요동쳐 스크롤이 튄다 → 평면으로 안정화) */
+              shownLectures.length > 0 ? (
+                <div className="sh2-ccard-grid">
+                  {shownLectures.map((l) => renderLectureCard(l, true))}
+                </div>
+              ) : (
+                <div className="sh2-empty">검색 결과가 없어요.</div>
+              )
+            ) : lectureGroups.length > 0 ? (
               <div className="sh2-lecgroups">
                 {lectureGroups.map((g) => {
                   const c = g.course;
                   const enrolled = !!c.enrolled;
-                  const open = !!lecQ || openGroups.has(c.id);
+                  const open = openGroups.has(c.id);
                   return (
                     <div key={c.id} className="sh2-lecgroup">
                       <button
@@ -579,7 +589,7 @@ export default function StudentHome() {
                 })}
               </div>
             ) : (
-              <div className="sh2-empty">{lecQ ? '검색 결과가 없어요.' : '지금은 둘러볼 강의가 없어요.'}</div>
+              <div className="sh2-empty">지금은 둘러볼 강의가 없어요.</div>
             )}
           </>
         )}
