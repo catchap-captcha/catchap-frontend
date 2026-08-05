@@ -7,7 +7,9 @@
    재현). --surface는 라이트에서 #ffffff라 기존 화면은 그대로다. */
 .mn-page {
   --font-display: 'Pretendard', -apple-system, system-ui, sans-serif;
-  background: var(--surface);
+  /* 랜딩 섹션 배경 통일 — AI 섹션(.mn-games=var(--bg))에 맞춰 래퍼도 var(--bg)로.
+     투명 섹션(mn-preview·about·roles·final)이 이 색을 그대로 물려받아 전부 같은 색이 된다. */
+  background: var(--bg);
   font-family: 'Pretendard', -apple-system, system-ui, sans-serif;
   color: var(--ink);
 }
@@ -562,7 +564,7 @@ html:has(.mn-page) { scroll-behavior: smooth; }
 .mn-final-cta-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
 
 /* ===== FOOTER ===== */
-.mn-footer { border-top: 1px solid var(--line); background: var(--surface); }
+.mn-footer { border-top: 1px solid var(--line); background: var(--bg); }
 .mn-footer-inner {
   max-width: 1200px;
   margin: 0 auto;
