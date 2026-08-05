@@ -101,6 +101,24 @@ for (const g of INTEREST_GROUPS) {
   if (g.subject) for (const t of g.tags) TAG_SUBJECT[t] = g.subject;
 }
 
+// 데모 태그 → 그룹 key(field). 관심사 추천에서 그 분야의 데모 코스를 고를 때 쓴다.
+const TAG_FIELD: Record<string, string> = {};
+for (const g of INTEREST_GROUPS) {
+  for (const t of g.tags) TAG_FIELD[t] = g.key;
+}
+
+/** 저장된 관심사(태그) → 매칭할 데모 코스의 field(그룹 key) 집합. 관심사 추천에서 고른 분야의
+ *  데모 코스를 뽑을 때 쓴다(연령대 접두사는 무시). */
+export function interestsToFieldKeys(interests: string[] | null | undefined): Set<string> {
+  const out = new Set<string>();
+  for (const raw of interests ?? []) {
+    if (!raw || raw.startsWith(AGE_PREFIX)) continue;
+    const f = TAG_FIELD[raw];
+    if (f) out.add(f);
+  }
+  return out;
+}
+
 /**
  * 저장된 관심사(태그 배열) → 추천에서 매칭할 실제 코스 분류(subject) 집합.
  * 데모 태그는 매핑된 subject로 치환하고, 그 밖의 문자열(직접 분류명 등 하위호환)은 그대로 포함한다.

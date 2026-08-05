@@ -8,7 +8,8 @@ import { studentApi } from '../../api/students';
 import CourseCover from '../../components/course/CourseCover';
 import CountUp from '../../components/motion/CountUp';
 import InterestOnboardModal from '../../components/student/InterestOnboardModal';
-import { interestsToSubjects } from '../../components/student/interestTaxonomy';
+import { interestsToSubjects, interestsToFieldKeys } from '../../components/student/interestTaxonomy';
+import { DEMO_COURSES, DEMO_LECTURES, isDemoId, demoField } from './demoCourses';
 import './StudentHome.css';
 
 /** 코스별 강의 묶음 — 홈의 '강의 둘러보기'가 코스 카드로 쓴다. */
@@ -116,6 +117,7 @@ export default function StudentHome() {
   const courseById = useMemo(() => {
     const m = new Map<string, StudentCourse>();
     (courses ?? []).forEach((c) => m.set(c.id, c));
+    DEMO_COURSES.forEach((c) => m.set(c.id, c)); // 데모 강의가 코스별 그룹에 묶이도록
     return m;
   }, [courses]);
 
@@ -134,16 +136,32 @@ export default function StudentHome() {
       .sort((a, b) => Number(!!a.course.enrolled) - Number(!!b.course.enrolled));
   }, [courses, lectures]);
 
-  // 관심사 추천 — 고른 관심 분야(데모 태그)를 실제 코스 분류(subject)로 매핑해, 맞는 미신청
-  // 코스만 홈 상단에 노출한다. 아직 코스가 없는 데모 분야(IT·디자인 등)는 매핑이 비어 안 뜬다.
+  // 데모 코스/강의 그룹 — 최종 발표용으로 둘러보기·추천을 풍성하게 채운다. 실제 코스가 항상 앞,
+  // 데모는 뒤에 붙는다. 데모 카드는 클릭해도 페이지 이동 안 함(renderCourseCard가 isDemoId로 판정).
+  const demoGroups = useMemo<HomeCourseGroup[]>(
+    () =>
+      DEMO_COURSES.map((c) => ({
+        course: c,
+        lectures: DEMO_LECTURES.filter((l) => l.course_id === c.id).sort(
+          (a, b) => a.order_no - b.order_no,
+        ),
+      })),
+    [],
+  );
+
+  // 관심사 추천 — 고른 관심사에 맞는 코스를 홈 상단에 노출. 실제 코스(분류=subject 매칭)를 앞에,
+  // 그 뒤에 같은 분야(field) 데모 코스를 붙여 '쫙' 채운다(진짜 강의 있는 코스가 먼저 = 발표 때
+  // 선택 편함). 데모 카드는 클릭해도 이동 안 한다.
   const recommendedGroups = useMemo(() => {
     if (!interests || interests.length === 0) return [];
-    const wanted = interestsToSubjects(interests);
-    if (wanted.size === 0) return [];
-    return discoverGroups.filter((g) =>
-      wanted.has(g.course.category || g.course.subject || '기타'),
+    const wantedSubjects = interestsToSubjects(interests);
+    const realMatch = discoverGroups.filter((g) =>
+      wantedSubjects.has(g.course.category || g.course.subject || '기타'),
     );
-  }, [discoverGroups, interests]);
+    const wantedFields = interestsToFieldKeys(interests);
+    const demoMatch = demoGroups.filter((g) => wantedFields.has(demoField(g.course.id)));
+    return [...realMatch, ...demoMatch];
+  }, [discoverGroups, interests, demoGroups]);
 
   // 코스 둘러보기 검색 — 코스명·강사·분류 실시간 필터.
   const [search, setSearch] = useState('');
@@ -163,15 +181,20 @@ export default function StudentHome() {
     });
   // 코스 둘러보기 분야 칩 — 전체 코스(수강 중+미신청)의 분류(category, 없으면 subject) 기준.
   const [browseCat, setBrowseCat] = useState('전체');
+  // 코스 둘러보기 대상 — 실제 코스(앞) + 데모 코스(뒤). 발표용으로 분야가 쫙 보이게 채운다.
+  const browseGroups = useMemo(
+    () => [...allCourseGroups, ...demoGroups],
+    [allCourseGroups, demoGroups],
+  );
   const browseCats = useMemo(() => {
     const cats = Array.from(
-      new Set(allCourseGroups.map((g) => g.course.category || g.course.subject || '기타')),
+      new Set(browseGroups.map((g) => g.course.category || g.course.subject || '기타')),
     );
     return ['전체', ...cats];
-  }, [allCourseGroups]);
-  // 코스 둘러보기 = 전체 코스(수강 중+미신청) + 분야 칩 + 검색.
+  }, [browseGroups]);
+  // 코스 둘러보기 = 실제+데모 코스 + 분야 칩 + 검색.
   const shownCourses = useMemo(() => {
-    let list = allCourseGroups;
+    let list = browseGroups;
     if (browseCat !== '전체')
       list = list.filter((g) => (g.course.category || g.course.subject || '기타') === browseCat);
     if (q)
@@ -184,10 +207,10 @@ export default function StudentHome() {
         );
       });
     return list;
-  }, [allCourseGroups, browseCat, q]);
-  // 강의 둘러보기 = 개별 강의(전체 활성 강의) + 강의 검색.
+  }, [browseGroups, browseCat, q]);
+  // 강의 둘러보기 = 개별 강의(실제 활성 강의 + 데모 강의) + 강의 검색. 데모 강의는 클릭해도 이동 안 함.
   const shownLectures = useMemo(() => {
-    const base = lectures ?? [];
+    const base = [...(lectures ?? []), ...DEMO_LECTURES];
     if (!lecQ) return base;
     return base.filter((l) => {
       const c = courseById.get(l.course_id ?? '');
@@ -236,8 +259,13 @@ export default function StudentHome() {
   const renderCourseCard = (g: HomeCourseGroup) => {
     const c = g.course;
     const enrolled = !!c.enrolled;
-    const goCurriculum = () => navigate(`${PATHS.STUDENT_COURSE_DETAIL}?id=${c.id}`);
-    const goEnroll = () => navigate(`${PATHS.STUDENT_CHECKOUT}?course=${c.id}`);
+    const demo = isDemoId(c.id); // 데모 코스는 클릭해도 페이지 이동 안 함(발표용 채우기)
+    const goCurriculum = () => {
+      if (!demo) navigate(`${PATHS.STUDENT_COURSE_DETAIL}?id=${c.id}`);
+    };
+    const goEnroll = () => {
+      if (!demo) navigate(`${PATHS.STUDENT_CHECKOUT}?course=${c.id}`);
+    };
     return (
       <div key={c.id} className={`sh2-ccard${enrolled ? ' sh2-ccard--enrolled' : ''}`}>
         <button
@@ -297,8 +325,12 @@ export default function StudentHome() {
   const renderLectureCard = (l: LectureItem, showCourse = false) => {
     const c = courseById.get(l.course_id ?? '');
     const enrolled = !!c?.enrolled;
-    const go = () =>
-      enrolled ? goWatch(l.id) : navigate(`${PATHS.STUDENT_COURSE_DETAIL}?id=${l.course_id}`);
+    const demo = isDemoId(l.id) || isDemoId(l.course_id); // 데모 강의는 클릭해도 이동 안 함
+    const go = () => {
+      if (demo) return;
+      if (enrolled) goWatch(l.id);
+      else navigate(`${PATHS.STUDENT_COURSE_DETAIL}?id=${l.course_id}`);
+    };
     return (
       <button
         key={l.id}
