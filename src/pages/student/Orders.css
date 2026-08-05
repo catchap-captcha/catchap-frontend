@@ -322,6 +322,31 @@
   color: var(--brand);
   font-weight: 700;
 }
+/* 환불 비율 3구간 하위 목록 — 상위 항목 안에서 한 단 들여 표시 */
+.od-policy-sub {
+  list-style: none;
+  margin: 7px 0 3px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.od-policy-sub li {
+  position: relative;
+  padding-left: 14px;
+  font-size: 12px;
+}
+.od-policy-sub li::before {
+  content: '–';
+  position: absolute;
+  left: 2px;
+  top: 0;
+  width: auto;
+  height: auto;
+  border-radius: 0;
+  background: none;
+  color: var(--ink-3);
+}
 
 /* ===== 환불 확인 ===== */
 .od-overlay {
@@ -368,6 +393,31 @@
   font-weight: 800;
   color: var(--ink);
   white-space: nowrap;
+}
+/* 진행률 기반 환불 금액 — '돌려받는 것'이라 긍정 톤(--ok) */
+.od-modal-refund {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 10px;
+  padding: 12px 15px;
+  border-radius: 12px;
+  background: var(--ok-soft);
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+.od-modal-refund strong {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--ok-ink, var(--ink));
+  white-space: nowrap;
+}
+.od-modal-ratio {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-3);
 }
 .od-modal-lose {
   list-style: none;

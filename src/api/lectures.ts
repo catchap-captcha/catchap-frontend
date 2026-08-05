@@ -799,6 +799,15 @@ export const lectureApi = {
       )
       .then((r) => r.data),
 
+  /** to-exam: 코스 문제은행에서 최대 10문항을 무작위로 뽑아 시험 문항(origin=bank, draft) 생성.
+   *  객관식(single/multi)만 가져오고 형식 불량은 건너뛴다(skipped). */
+  opsExamImportFromBank: (courseId: string) =>
+    client
+      .post<{ imported: number; skipped: number }>(
+        `/ops/courses/${courseId}/exam-questions/import-from-bank`,
+      )
+      .then((r) => r.data),
+
   /** LLM 코스 시험 문항 자동 생성(origin=llm, draft) — 운영자가 고른 생성 슬롯 모델 사용.
    *  used_transcripts = 자막을 근거로 쓴 강의 수(0이면 제목·설명만으로 생성). */
   opsExamGenerate: (courseId: string, n: number) =>

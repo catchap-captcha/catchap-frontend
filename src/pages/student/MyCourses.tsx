@@ -46,15 +46,24 @@ export default function MyCourses() {
     void load();
   }, [load]);
 
-  /** 수강 취소 — 무료 코스는 서버가 바로 withdrawn 처리(진행 이력은 보존). 유료 코스는 서버가
-   *  409(paid_enrollment)로 막으므로 결제 내역·환불 화면으로 안내한다(환불 규정은 그쪽에서 적용). */
-  const cancelEnroll = async (courseId: string, title: string) => {
-    if (canceling) return;
-    if (!window.confirm(`'${title}' 수강을 취소할까요?\n진행 이력은 남아, 다시 신청하면 이어서 학습할 수 있어요.`))
-      return;
+  // 수강 취소 확인 팝업 — 무료 코스 취소는 학습 이력·풀이 데이터가 삭제되므로(2026-08-05 정책),
+  // 안내를 체크(동의)한 뒤에만 확정한다. 유료 코스는 서버가 409(paid_enrollment)로 막아 환불 화면으로 안내.
+  const [cancelTarget, setCancelTarget] = useState<{ id: string; title: string } | null>(null);
+  const [cancelAck, setCancelAck] = useState(false);
+
+  const openCancel = (id: string, title: string) => {
+    setCancelTarget({ id, title });
+    setCancelAck(false);
+  };
+
+  const runCancel = async () => {
+    if (!cancelTarget || canceling) return;
+    const courseId = cancelTarget.id;
     setCanceling(courseId);
     try {
       await lectureApi.unenrollCourse(courseId);
+      setCancelTarget(null);
+      setCancelAck(false);
       await load({ silent: true });
     } catch (e) {
       const err = e as {
@@ -63,6 +72,7 @@ export default function MyCourses() {
       const detail = err.response?.data?.detail;
       if (err.response?.status === 409 && detail?.reason === 'paid_enrollment') {
         window.alert(detail.message || '결제한 코스는 결제 취소 메뉴에서 환불해 주세요.');
+        setCancelTarget(null);
         navigate(PATHS.STUDENT_ORDERS);
       } else {
         window.alert('수강 취소에 실패했어요. 잠시 후 다시 시도해 주세요.');
@@ -195,7 +205,7 @@ export default function MyCourses() {
                         </button>
                         <button
                           className="mc-cancel"
-                          onClick={() => cancelEnroll(r.course.id, r.course.title)}
+                          onClick={() => openCancel(r.course.id, r.course.title)}
                           disabled={canceling === r.course.id}
                         >
                           {canceling === r.course.id ? '취소 중…' : '수강 취소'}
@@ -209,6 +219,56 @@ export default function MyCourses() {
           </>
         )}
       </section>
+
+      {cancelTarget && (
+        <div className="mc-overlay" onClick={() => !canceling && setCancelTarget(null)}>
+          <div
+            className="mc-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-label="수강 취소 확인"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="mc-modal-title">수강을 취소할까요?</h2>
+            <p className="mc-modal-course">{cancelTarget.title}</p>
+            <ul className="mc-modal-warn">
+              <li>
+                <i className="ph-fill ph-warning" /> 이 코스의 <strong>시청 기록·문제 풀이 기록·
+                수료시험 기록</strong>이 모두 삭제돼요.
+              </li>
+              <li>
+                <i className="ph-fill ph-warning" /> 삭제된 학습 이력은 되돌릴 수 없어요. 다시
+                신청해도 처음부터 시작해요.
+              </li>
+            </ul>
+            <label className="mc-modal-ack">
+              <input
+                type="checkbox"
+                checked={cancelAck}
+                onChange={(e) => setCancelAck(e.target.checked)}
+                disabled={!!canceling}
+              />
+              <span>위 내용을 확인했고, 학습 이력이 삭제되는 데 동의해요.</span>
+            </label>
+            <div className="mc-modal-actions">
+              <button
+                className="mc-btn mc-btn-ghost"
+                onClick={() => setCancelTarget(null)}
+                disabled={!!canceling}
+              >
+                그대로 둘게요
+              </button>
+              <button
+                className="mc-modal-danger"
+                onClick={runCancel}
+                disabled={!cancelAck || !!canceling}
+              >
+                {canceling ? '취소 중…' : '수강 취소'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </StudentLayout>
   );
 }

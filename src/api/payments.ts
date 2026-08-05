@@ -87,9 +87,13 @@ export interface MyOrder extends OrderStatus {
   /** 서버 환불 정책의 결과. 프런트가 상태·날짜를 보고 따로 추론하지 않는다. */
   refundable: boolean;
   /** 불가 사유 — 문구는 화면이 고른다 */
-  refund_blocked: 'not_paid' | 'window_over' | 'already_watched' | null;
+  refund_blocked: 'not_paid' | 'window_over' | 'completed' | 'progress_over' | null;
   /** 환불 기한(ISO). 남은 기간 안내용 */
   refund_deadline: string | null;
+  /** 진행률 기반 비율 환불 안내(서버 계산) — 누르기 전에 얼마 돌려받는지 보여준다. */
+  refund_amount: number; // 환불 예정 금액(원). 부분 환불이면 결제액보다 작다
+  refund_ratio: number; // 환불 비율(0~1)
+  refund_progress: number; // 수강 진행률(%)
   /** 환불하면 잃는 것 — 누르기 전에 보여준다 */
   enrolled: boolean;
   completed: boolean;

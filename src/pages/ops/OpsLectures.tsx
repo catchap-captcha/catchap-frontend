@@ -1907,7 +1907,7 @@ export function ExamQuestionsModal({
   };
 
   // 2단계 문항 채우기 가속 — 가져온/생성한 문항은 모두 draft라 강사 검수 후 공개한다.
-  const [bulkBusy, setBulkBusy] = useState<'import' | 'gen' | null>(null);
+  const [bulkBusy, setBulkBusy] = useState<'import' | 'bank' | 'gen' | null>(null);
 
   const importFromLectures = async () => {
     setBulkBusy('import');
@@ -1921,6 +1921,23 @@ export function ExamQuestionsModal({
       load();
     } catch (e) {
       say(errorDetail(e, '강의 문항 가져오기에 실패했어요.'));
+    } finally {
+      setBulkBusy(null);
+    }
+  };
+
+  const importFromBank = async () => {
+    setBulkBusy('bank');
+    try {
+      const r = await lectureApi.opsExamImportFromBank(course.id);
+      say(
+        r.imported > 0
+          ? `문제은행에서 ${r.imported}문항을 수료 시험 문항 초안으로 가져왔어요${r.skipped ? ` (${r.skipped}개 건너뜀)` : ''}. 검수 후 공개하세요.`
+          : `가져올 문제은행 문항이 없어요${r.skipped ? ` (${r.skipped}개는 형식 미지원)` : ''}. 이 코스 강의의 확인 문항을 먼저 문제은행으로 보내 주세요.`,
+      );
+      load();
+    } catch (e) {
+      say(errorDetail(e, '문제은행 문항 가져오기에 실패했어요.'));
     } finally {
       setBulkBusy(null);
     }
@@ -1985,6 +2002,15 @@ export function ExamQuestionsModal({
               >
                 <i className="ph-bold ph-download-simple" />{' '}
                 {bulkBusy === 'import' ? '가져오는 중…' : '강의 문항 가져오기'}
+              </button>
+              <button
+                className="op-btn op-btn--soft"
+                onClick={importFromBank}
+                disabled={bulkBusy !== null}
+                title="이 코스 문제은행에서 10문항을 무작위로 뽑아 수료 시험 문항 초안으로 가져와요(객관식만, 검수 후 공개)"
+              >
+                <i className="ph-bold ph-tray-arrow-down" />{' '}
+                {bulkBusy === 'bank' ? '가져오는 중…' : '문제은행에서 추출'}
               </button>
               <button
                 className="op-btn op-btn--soft"
@@ -3149,16 +3175,27 @@ export function QuestionsModal({
               <div className="op-lect-gen">
                 <label className="op-lect-gen-lb">
                   문항
-                  <input
-                    type="number"
-                    min={1}
-                    max={20}
-                    value={genN}
-                    onChange={(e) => setGenN(e.target.value)}
-                    className="op-lect-gen-n"
-                    aria-label="AI로 만들 문항 개수 (1~20)"
-                  />
-                  개
+                  {generating ? (
+                    // 생성 중엔 편집용 기본값(3)을 감추고, 지금 만들고 있는 문항 수(요청 개수)를 보여준다.
+                    <b
+                      className="op-lect-gen-n"
+                      aria-live="polite"
+                      style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+                    >
+                      {genN}
+                    </b>
+                  ) : (
+                    <input
+                      type="number"
+                      min={1}
+                      max={20}
+                      value={genN}
+                      onChange={(e) => setGenN(e.target.value)}
+                      className="op-lect-gen-n"
+                      aria-label="AI로 만들 문항 개수 (1~20)"
+                    />
+                  )}
+                  개{generating ? ' 생성 중…' : ''}
                 </label>
                 <button
                   className="op-btn op-btn--approve"

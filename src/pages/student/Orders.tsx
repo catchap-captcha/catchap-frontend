@@ -43,8 +43,14 @@ export default function Orders() {
     setBusy(true);
     setErr('');
     try {
+      const amt = confirming.refund_amount;
+      const partial = confirming.refund_ratio < 1;
       await paymentApi.cancelOrder(confirming.order_uid, reason.trim() || '학습자 요청');
-      setDone(`'${confirming.course_title}' 결제를 취소했어요. 환불은 결제수단에 따라 며칠 걸릴 수 있어요.`);
+      setDone(
+        partial
+          ? `'${confirming.course_title}' 결제를 부분 환불했어요. 수강 진행률에 따라 ${fmtWon(amt)} 환불돼요(결제수단에 따라 며칠 걸릴 수 있어요).`
+          : `'${confirming.course_title}' 결제를 환불했어요. ${fmtWon(amt)} 환불돼요(결제수단에 따라 며칠 걸릴 수 있어요).`,
+      );
       setConfirming(null);
       setReason('');
       load(); // 서버 상태로만 갱신
@@ -56,16 +62,30 @@ export default function Orders() {
   };
 
   const statusLabel = (o: MyOrder) =>
-    o.status === 'paid' ? '결제 완료' : o.status === 'refunded' ? '환불됨' : '취소됨';
+    o.status === 'paid'
+      ? '결제 완료'
+      : o.status === 'refunded'
+        ? '환불됨'
+        : o.status === 'partially_refunded'
+          ? '부분 환불됨'
+          : '취소됨';
 
   /** 환불이 안 되는 이유 — 사유 코드는 서버가 주고 문구는 화면이 고른다. */
   const blockedText = (o: MyOrder) => {
-    if (o.refund_blocked === 'already_watched')
-      return '수강을 시작해서 환불할 수 없어요. 문의가 필요하면 고객 지원을 이용해 주세요.';
+    if (o.refund_blocked === 'completed')
+      return '수료증이 발급된 코스는 환불되지 않아요.';
+    if (o.refund_blocked === 'progress_over')
+      return `수강 진행률이 ${o.refund_progress}%로 절반을 넘어 환불되지 않아요.`;
     if (o.refund_blocked === 'window_over')
       return '환불 가능 기간(결제 후 7일)이 지났어요. 문의가 필요하면 고객 지원을 이용해 주세요.';
     return null;
   };
+
+  /** 지금 환불하면 얼마 돌려받는지 — 진행률 기반 비율 환불 안내(서버 계산값). */
+  const refundNote = (o: MyOrder) =>
+    o.refund_ratio >= 1
+      ? `지금 환불하면 전액 ${fmtWon(o.refund_amount)} 돌려받아요.`
+      : `수강 진행률 ${o.refund_progress}% — 지금 환불하면 ${Math.round(o.refund_ratio * 100)}%(${fmtWon(o.refund_amount)}) 돌려받아요.`;
 
   /** 환불 마감까지 남은 일수 — 아직 가능한 건에만 붙인다. */
   const daysLeft = (iso: string | null) => {
@@ -144,11 +164,13 @@ export default function Orders() {
                       {blockedText(o)}
                     </p>
                   )}
-                  {o.status === 'paid' && o.refundable && daysLeft(o.refund_deadline) && (
+                  {o.status === 'paid' && o.refundable && (
                     <p className="od-note od-note--ok">
-                      <i className="ph-fill ph-clock-countdown" />
-                      환불 가능 기간이 {daysLeft(o.refund_deadline)}일 남았어요. 강의를 재생하면
-                      그 시점부터 환불되지 않아요.
+                      <i className="ph-fill ph-info" />
+                      {refundNote(o)}
+                      {daysLeft(o.refund_deadline)
+                        ? ` 환불 가능 기간은 ${daysLeft(o.refund_deadline)}일 남았어요.`
+                        : ''}
                     </p>
                   )}
                 </div>
@@ -174,15 +196,35 @@ export default function Orders() {
           <ul className="od-policy-list">
             <li>
               <strong>결제 후 7일 이내</strong>이고 <strong>아직 강의를 재생하지 않았다면</strong>{' '}
-              전액 환불돼요.
+              전액 환불돼요. (1분 미만 재생은 시청으로 보지 않아요.)
             </li>
             <li>
-              강의를 한 번이라도 재생하면 그때부터 환불되지 않아요. 1분 미만 재생은 시청으로
-              보지 않아요.
+              강의를 시청한 뒤에는 <strong>수강 진행률에 따라 비율 환불</strong>돼요:
+              <ul className="od-policy-sub">
+                <li>
+                  진행률 <strong>1/3 미만</strong> → 결제액의 <strong>2/3</strong> 환불
+                </li>
+                <li>
+                  진행률 <strong>1/3 이상 ~ 1/2 미만</strong> → 결제액의 <strong>1/2</strong> 환불
+                </li>
+                <li>
+                  진행률 <strong>1/2 이상</strong> → 환불 불가
+                </li>
+              </ul>
+              진행률은 완료한 강의 수 ÷ 전체 강의 수예요.
+            </li>
+            <li>
+              <strong>수료증이 발급된 코스</strong>는 진행률과 관계없이 환불되지 않아요.
+            </li>
+            <li>
+              <strong>결제 후 7일이 지나면</strong> 환불되지 않아요.
+            </li>
+            <li>
+              환불하면 이 코스의 <strong>시청·문제 풀이 기록과 수료 정보가 삭제</strong>돼요.
             </li>
             <li>환불은 결제하신 수단으로 돌려드려요. 카드는 3~5영업일이 걸릴 수 있어요.</li>
             <li>
-              위 조건에 해당하지 않아도 사정이 있다면 <Link to={PATHS.CONTACT}>문의하기</Link>으로
+              위 조건에 해당하지 않아도 사정이 있다면 <Link to={PATHS.CONTACT}>문의하기</Link>로
               문의해 주세요.
             </li>
           </ul>
@@ -203,10 +245,26 @@ export default function Orders() {
               <span>{confirming.course_title}</span>
               <strong>{fmtWon(confirming.amount)}</strong>
             </div>
+            {/* 진행률 기반 환불 금액 — 얼마 돌려받는지 누르기 전에 명시 */}
+            <div className="od-modal-refund">
+              <span>돌려받는 금액</span>
+              <strong>
+                {fmtWon(confirming.refund_amount)}
+                {confirming.refund_ratio < 1 && (
+                  <span className="od-modal-ratio">
+                    {' '}
+                    · {Math.round(confirming.refund_ratio * 100)}% (진행률 {confirming.refund_progress}%)
+                  </span>
+                )}
+              </strong>
+            </div>
             {/* 되돌릴 수 없는 동작이라, 무엇을 잃는지 누르기 전에 적는다 */}
             <ul className="od-modal-lose">
               <li>
                 <i className="ph-bold ph-x" /> 이 코스의 강의를 더 이상 볼 수 없어요
+              </li>
+              <li>
+                <i className="ph-bold ph-x" /> 시청·문제 풀이 기록과 수료 정보가 삭제돼요
               </li>
               <li>
                 <i className="ph-bold ph-x" /> 다시 들으려면 새로 결제해야 해요
