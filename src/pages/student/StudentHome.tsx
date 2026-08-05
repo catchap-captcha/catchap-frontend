@@ -181,6 +181,16 @@ export default function StudentHome() {
     });
   // 코스 둘러보기 분야 칩 — 전체 코스(수강 중+미신청)의 분류(category, 없으면 subject) 기준.
   const [browseCat, setBrowseCat] = useState('전체');
+  // 둘러보기 기본은 앞부분만 노출(전체 덤프 방지) — 분야칩·검색으로 좁히거나 '더 보기'로 펼친다.
+  // 기본이 전부 다 뜨면 검색이 의미 없다는 피드백 반영. 분야·검색이 바뀌면 다시 접어 담백하게 유지.
+  const [coursesExpanded, setCoursesExpanded] = useState(false);
+  const [lecExpanded, setLecExpanded] = useState(false);
+  useEffect(() => {
+    setCoursesExpanded(false);
+  }, [browseCat, q]);
+  useEffect(() => {
+    setLecExpanded(false);
+  }, [lecQ]);
   // 코스 둘러보기 대상 — 실제 코스(앞) + 데모 코스(뒤). 발표용으로 분야가 쫙 보이게 채운다.
   const browseGroups = useMemo(
     () => [...allCourseGroups, ...demoGroups],
@@ -243,6 +253,17 @@ export default function StudentHome() {
         (a.course.title || '').localeCompare(b.course.title || ''),
     );
   }, [shownLectures, courseById]);
+
+  // 둘러보기 기본 노출 개수 — 담백하게. 분야칩/검색으로 좁히면 전체를 보여주고(자연히 몇 개 안 됨),
+  // 아무 조건 없는 '전체' 기본에서만 앞부분을 잘라 '더 보기'로 나머지를 펼친다.
+  const COURSE_LIMIT = 8;
+  const coursesCapped = browseCat === '전체' && !q && !coursesExpanded;
+  const visibleCourses = coursesCapped ? shownCourses.slice(0, COURSE_LIMIT) : shownCourses;
+  const hiddenCourseCount = shownCourses.length - visibleCourses.length;
+  // 강의 둘러보기(비검색)는 코스별 그룹이 많아 기본 6개 코스만 접어 보여주고 나머지는 '더 보기'.
+  const LEC_GROUP_LIMIT = 6;
+  const visibleLecGroups = lecExpanded ? lectureGroups : lectureGroups.slice(0, LEC_GROUP_LIMIT);
+  const hiddenLecGroupCount = lectureGroups.length - visibleLecGroups.length;
 
   // 이어서 학습 레일 — 시청 중(watching)인 강의(발견·재방문 유도). 히어로의 1건과 겹쳐도
   // 여러 개를 가로 스크롤로 노출하는 게 목적(넷플릭스·Coursera '이어보기' 레일 패턴).
@@ -563,7 +584,20 @@ export default function StudentHome() {
               </div>
             )}
             {shownCourses.length > 0 ? (
-              <div className="sh2-ccard-grid">{shownCourses.map((g) => renderCourseCard(g))}</div>
+              <>
+                <div className="sh2-ccard-grid">
+                  {visibleCourses.map((g) => renderCourseCard(g))}
+                </div>
+                {hiddenCourseCount > 0 && (
+                  <button
+                    type="button"
+                    className="sh2-more"
+                    onClick={() => setCoursesExpanded(true)}
+                  >
+                    <i className="ph-bold ph-plus-circle" /> 코스 더 보기 ({hiddenCourseCount}개)
+                  </button>
+                )}
+              </>
             ) : (
               <div className="sh2-empty">{q ? '검색 결과가 없어요.' : '지금은 둘러볼 코스가 없어요.'}</div>
             )}
@@ -609,8 +643,9 @@ export default function StudentHome() {
                 <div className="sh2-empty">검색 결과가 없어요.</div>
               )
             ) : lectureGroups.length > 0 ? (
+              <>
               <div className="sh2-lecgroups">
-                {lectureGroups.map((g) => {
+                {visibleLecGroups.map((g) => {
                   const c = g.course;
                   const enrolled = !!c.enrolled;
                   const open = openGroups.has(c.id);
@@ -651,6 +686,16 @@ export default function StudentHome() {
                   );
                 })}
               </div>
+              {hiddenLecGroupCount > 0 && (
+                <button
+                  type="button"
+                  className="sh2-more"
+                  onClick={() => setLecExpanded(true)}
+                >
+                  <i className="ph-bold ph-plus-circle" /> 강의 더 보기 ({hiddenLecGroupCount}개 코스)
+                </button>
+              )}
+              </>
             ) : (
               <div className="sh2-empty">지금은 둘러볼 강의가 없어요.</div>
             )}
