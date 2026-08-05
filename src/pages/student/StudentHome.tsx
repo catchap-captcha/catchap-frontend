@@ -159,9 +159,15 @@ export default function StudentHome() {
   const recommendedGroups = useMemo(() => {
     if (!interests || interests.length === 0) return [];
     const wantedSubjects = interestsToSubjects(interests);
-    const realMatch = discoverGroups.filter((g) =>
-      wantedSubjects.has(g.course.category || g.course.subject || '기타'),
-    );
+    // 실제 코스는 '분류(category)'로만 매칭한다(관심사=코스 분류 선택이므로). category가 없으면
+    // 레거시 subject를 쓰되 기본값 '일반'(미분류)은 제외한다 — 안 그러면 분류 안 된 코스
+    // (예: 카카오 클라우드·AWS는 subject가 기본값 '일반')가 '교양(일반)' 관심사에 잘못 뜬다.
+    const realMatch = discoverGroups.filter((g) => {
+      const key =
+        g.course.category ||
+        (g.course.subject && g.course.subject !== '일반' ? g.course.subject : null);
+      return key != null && wantedSubjects.has(key);
+    });
     // 데모는 고른 관심사 분야(최대 MAX_INTEREST_FIELDS개)만, 분야별로 골고루(라운드로빈) 뽑아
     // 실제 매칭과 합쳐 목표 개수까지만 보여준다 — 4개를 고르면 분야당 3개×4=12개가 쏟아져
     // '너무 많다'는 피드백 반영. 실제 강의 코스를 앞에 두고(발표 때 선택 편하게) 데모로 담백하게 채운다.

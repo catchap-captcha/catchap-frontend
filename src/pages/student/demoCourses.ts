@@ -105,7 +105,7 @@ SPEC.forEach((s) => {
       category: s.category,
       description: c.desc,
       order_no: ci,
-      instructor_name: `${s.instructor} 강사`,
+      instructor_name: s.instructor, // 카드가 '… 강사'를 붙이므로 여기선 이름만(중복 '강사 강사' 방지)
       lecture_count: c.lectures.length,
       thumbnail_url: null,
       enrolled: false,
