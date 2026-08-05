@@ -371,3 +371,80 @@
 .sh2-browse-lechead { margin-top: 36px; }
 /* 미신청 강의 배지 — '수강 중'(초록)과 구분되는 중립 회색 */
 .sh2-ccard-badge--lock { background: var(--ink-3); }
+
+/* ============================================================================
+   재디자인(2026-08-05) — 이어서 학습 히어로 + 학습 요약 스트립 + 관심사 추천 레일 +
+   통합 코스 둘러보기. 색은 모노크롬 토큰(--ink/--brand/--ok…) 그대로. 폭은 1120px 담백 컬럼.
+   ============================================================================ */
+.sh3-hero { max-width: min(1120px, 92vw); margin: 0 auto; padding: 36px 24px 0; display: flex; flex-direction: column; gap: 16px; }
+.sh3-greet { font-size: 20px; font-weight: 600; color: var(--ink-2); margin: 0; letter-spacing: -0.02em; }
+.sh3-greet b { color: var(--ink); font-weight: 800; }
+
+/* 이어서 학습 히어로 카드 */
+.sh3-continue {
+  display: grid; grid-template-columns: 300px 1fr;
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--r);
+  overflow: hidden; box-shadow: var(--shadow-md);
+}
+.sh3-continue--empty { grid-template-columns: 1fr; }
+.sh3-continue-coverwrap { position: relative; min-height: 190px; }
+.sh3-continue-cover.cover { width: 100%; height: 100%; aspect-ratio: auto; border-radius: 0; }
+.sh3-vchip {
+  position: absolute; top: 12px; left: 12px; z-index: 4;
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(0, 0, 0, 0.55); color: #fff; font-size: 11.5px; font-weight: 600;
+  padding: 5px 10px; border-radius: 999px; backdrop-filter: blur(4px);
+}
+.sh3-vdot { width: 6px; height: 6px; border-radius: 50%; background: var(--ok); }
+.sh3-continue-play {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 4;
+  width: 54px; height: 54px; border-radius: 50%; border: none; cursor: pointer;
+  background: rgba(255, 255, 255, 0.92); color: #111; display: grid; place-items: center;
+  font-size: 22px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35); transition: transform 0.15s;
+}
+.sh3-continue-play:hover { transform: translate(-50%, -50%) scale(1.06); }
+.sh3-continue-body { padding: 22px 24px; display: flex; flex-direction: column; gap: 5px; justify-content: center; }
+.sh3-continue-kicker { font-size: 12px; font-weight: 700; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.06em; }
+.sh3-continue-course { font-size: 13px; color: var(--ink-2); font-weight: 600; }
+.sh3-continue-lec { font-size: 21px; font-weight: 800; letter-spacing: -0.02em; color: var(--ink); text-wrap: balance; margin: 1px 0 3px; }
+.sh3-bar { height: 7px; border-radius: 99px; background: var(--surface-2); border: 1px solid var(--line); overflow: hidden; margin-top: 6px; }
+.sh3-bar > i { display: block; height: 100%; background: var(--ok); border-radius: 99px; }
+.sh3-continue-meta { font-size: 12.5px; color: var(--ink-3); font-weight: 500; margin-top: 8px; }
+.sh3-continue-actions { margin-top: 16px; display: flex; gap: 10px; flex-wrap: wrap; }
+.sh3-btn { border: none; font-family: inherit; font-weight: 700; font-size: 14px; padding: 11px 18px; border-radius: 11px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; transition: filter 0.15s, background 0.15s; }
+.sh3-btn i { font-size: 16px; }
+.sh3-btn-primary { background: var(--brand); color: var(--on-brand); }
+.sh3-btn-primary:hover { filter: brightness(0.93); }
+.sh3-btn-ghost { background: var(--surface); color: var(--ink); border: 1px solid var(--line-strong); }
+.sh3-btn-ghost:hover { background: var(--surface-2); }
+
+/* 학습 요약 스트립 */
+.sh3-stats { display: flex; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-sm, 12px); box-shadow: var(--shadow-sm); overflow: hidden; }
+.sh3-stat { flex: 1; padding: 14px 18px; display: flex; flex-direction: column; gap: 2px; }
+.sh3-stat + .sh3-stat { border-left: 1px solid var(--line); }
+.sh3-stat-n { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; color: var(--ink); font-variant-numeric: tabular-nums; }
+.sh3-stat-l { font-size: 12.5px; color: var(--ink-3); font-weight: 600; }
+
+/* 섹션(추천 / 둘러보기) */
+.sh3-sec { max-width: min(1120px, 92vw); margin: 40px auto 0; padding: 0 24px; }
+.sh3-sec-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 15px; }
+.sh3-sec-title { font-size: 19px; font-weight: 800; letter-spacing: -0.02em; color: var(--ink); margin: 0; display: flex; align-items: center; gap: 8px; }
+.sh3-sec-title i { font-size: 18px; color: var(--ink); }
+.sh3-sec-sub { font-size: 13px; color: var(--ink-3); font-weight: 500; }
+.sh3-search { margin-bottom: 16px; }
+
+/* 관심사 추천 레일 — 가로 스크롤(카드는 sh2-ccard 재사용) */
+.sh3-rail { display: grid; grid-auto-flow: column; grid-auto-columns: 232px; gap: 16px; overflow-x: auto; padding-bottom: 8px; scroll-snap-type: x mandatory; }
+.sh3-rail > .sh2-ccard { scroll-snap-align: start; }
+
+/* '이어 학습' 버튼(수강 중 카드) — 학습 초록 톤 */
+.sh2-ccard-btn--learn { border: 1px solid transparent; background: var(--ok-soft); color: var(--ok-ink); }
+.sh2-ccard-btn--learn:hover { background: var(--ok); color: var(--on-brand); }
+
+@media (max-width: 720px) {
+  .sh3-continue { grid-template-columns: 1fr; }
+  .sh3-continue-coverwrap { min-height: 150px; }
+  .sh3-stats { flex-wrap: wrap; }
+  .sh3-stat { min-width: 45%; }
+  .sh3-stat:nth-child(3) { border-left: none; }
+}
