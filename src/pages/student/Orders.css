@@ -175,6 +175,7 @@
 }
 .od-badge--paid { background: var(--ok-soft); color: var(--ok-ink); }
 .od-badge--refunded { background: var(--line); color: var(--ink-2); }
+.od-badge--partially_refunded { background: var(--ok-soft); color: var(--ok-ink); }
 .od-badge--cancelled { background: var(--line); color: var(--ink-2); }
 
 .od-meta {
