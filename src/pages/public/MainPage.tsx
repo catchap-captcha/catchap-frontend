@@ -400,7 +400,8 @@ export default function MainPage() {
       <footer className="mn-footer">
         <div className="mn-footer-inner">
           <div className="mn-footer-brand">
-            <img src={wordmarkDark} alt="CatChap" className="mn-footer-logo" />
+            <img src={wordmarkDark} alt="CatChap" className="mn-footer-logo mn-footer-logo--dark" />
+            <img src={wordmarkWhite} alt="CatChap" className="mn-footer-logo mn-footer-logo--white" />
             <span className="mn-footer-tagline">영상 시청을 검증하는 강의 플랫폼</span>
           </div>
           <div className="mn-footer-links">

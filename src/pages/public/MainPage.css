@@ -577,6 +577,10 @@ html:has(.mn-page) { scroll-behavior: smooth; }
 }
 .mn-footer-brand { display: flex; align-items: center; gap: 10px; }
 .mn-footer-logo { height: 18px; width: auto; display: block; }
+/* 푸터 로고 — 라이트: 어두운 워드마크 / 다크: 흰 워드마크(어두운 배경에서 보이게). data-theme로 토글. */
+.mn-footer-logo--white { display: none; }
+:root[data-theme='dark'] .mn-footer-logo--dark { display: none; }
+:root[data-theme='dark'] .mn-footer-logo--white { display: block; }
 .mn-footer-tagline { font-size: 14px; color: var(--ink-3); font-weight: 400; margin-left: 6px; }
 .mn-footer-links { display: flex; gap: 24px; }
 .mn-footer-link { text-decoration: none; color: var(--ink-2); font-weight: 500; font-size: 14px; }
