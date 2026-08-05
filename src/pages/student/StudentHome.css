@@ -376,7 +376,7 @@
    재디자인(2026-08-05) — 이어서 학습 히어로 + 학습 요약 스트립 + 관심사 추천 레일 +
    통합 코스 둘러보기. 색은 모노크롬 토큰(--ink/--brand/--ok…) 그대로. 폭은 1120px 담백 컬럼.
    ============================================================================ */
-.sh3-hero { max-width: min(1120px, 92vw); margin: 0 auto; padding: 36px 24px 0; display: flex; flex-direction: column; gap: 16px; }
+.sh3-hero { max-width: min(2280px, 94vw); margin: 0 auto; padding: 36px 28px 0; display: flex; flex-direction: column; gap: 16px; }
 .sh3-greet { font-size: 20px; font-weight: 600; color: var(--ink-2); margin: 0; letter-spacing: -0.02em; }
 .sh3-greet b { color: var(--ink); font-weight: 800; }
 
@@ -426,7 +426,7 @@
 .sh3-stat-l { font-size: 12.5px; color: var(--ink-3); font-weight: 600; }
 
 /* 섹션(추천 / 둘러보기) */
-.sh3-sec { max-width: min(1120px, 92vw); margin: 40px auto 0; padding: 0 24px; }
+.sh3-sec { max-width: min(2280px, 94vw); margin: 40px auto 0; padding: 0 28px; }
 .sh3-sec-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 15px; }
 .sh3-sec-title { font-size: 19px; font-weight: 800; letter-spacing: -0.02em; color: var(--ink); margin: 0; display: flex; align-items: center; gap: 8px; }
 .sh3-sec-title i { font-size: 18px; color: var(--ink); }
