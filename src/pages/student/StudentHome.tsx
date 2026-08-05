@@ -162,11 +162,20 @@ export default function StudentHome() {
     const realMatch = discoverGroups.filter((g) =>
       wantedSubjects.has(g.course.category || g.course.subject || '기타'),
     );
-    // 데모는 고른 관심사 분야만, 그리고 최대 MAX_INTEREST_FIELDS개 분야까지만 반영한다 —
-    // 관심사를 많이 고르면 추천이 너무 복잡하게 쏟아지므로(저장값이 옛날에 많이 담겼어도 안전하게 자름).
+    // 데모는 고른 관심사 분야(최대 MAX_INTEREST_FIELDS개)만, 분야별로 골고루(라운드로빈) 뽑아
+    // 실제 매칭과 합쳐 목표 개수까지만 보여준다 — 4개를 고르면 분야당 3개×4=12개가 쏟아져
+    // '너무 많다'는 피드백 반영. 실제 강의 코스를 앞에 두고(발표 때 선택 편하게) 데모로 담백하게 채운다.
     const wantedFields = [...interestsToFieldKeys(interests)].slice(0, MAX_INTEREST_FIELDS);
-    const demoMatch = demoGroups.filter((g) => wantedFields.includes(demoField(g.course.id)));
-    return [...realMatch, ...demoMatch];
+    const demoByField = wantedFields.map((f) =>
+      demoGroups.filter((g) => demoField(g.course.id) === f),
+    );
+    const maxLen = Math.max(0, ...demoByField.map((l) => l.length));
+    const demoRoundRobin: HomeCourseGroup[] = [];
+    for (let i = 0; i < maxLen; i++) {
+      for (const list of demoByField) if (i < list.length) demoRoundRobin.push(list[i]);
+    }
+    const RECO_TARGET = 6; // 관심사 추천 전체 최대 개수(실제 매칭 우선 + 데모로 채움)
+    return [...realMatch, ...demoRoundRobin].slice(0, RECO_TARGET);
   }, [discoverGroups, interests, demoGroups]);
 
   // 코스 둘러보기 검색 — 코스명·강사·분류 실시간 필터.
