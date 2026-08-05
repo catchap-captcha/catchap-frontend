@@ -8,7 +8,11 @@ import { studentApi } from '../../api/students';
 import CourseCover from '../../components/course/CourseCover';
 import CountUp from '../../components/motion/CountUp';
 import InterestOnboardModal from '../../components/student/InterestOnboardModal';
-import { interestsToSubjects, interestsToFieldKeys } from '../../components/student/interestTaxonomy';
+import {
+  interestsToSubjects,
+  interestsToFieldKeys,
+  MAX_INTEREST_FIELDS,
+} from '../../components/student/interestTaxonomy';
 import { DEMO_COURSES, DEMO_LECTURES, isDemoId, demoField } from './demoCourses';
 import './StudentHome.css';
 
@@ -158,8 +162,10 @@ export default function StudentHome() {
     const realMatch = discoverGroups.filter((g) =>
       wantedSubjects.has(g.course.category || g.course.subject || '기타'),
     );
-    const wantedFields = interestsToFieldKeys(interests);
-    const demoMatch = demoGroups.filter((g) => wantedFields.has(demoField(g.course.id)));
+    // 데모는 고른 관심사 분야만, 그리고 최대 MAX_INTEREST_FIELDS개 분야까지만 반영한다 —
+    // 관심사를 많이 고르면 추천이 너무 복잡하게 쏟아지므로(저장값이 옛날에 많이 담겼어도 안전하게 자름).
+    const wantedFields = [...interestsToFieldKeys(interests)].slice(0, MAX_INTEREST_FIELDS);
+    const demoMatch = demoGroups.filter((g) => wantedFields.includes(demoField(g.course.id)));
     return [...realMatch, ...demoMatch];
   }, [discoverGroups, interests, demoGroups]);
 
@@ -257,12 +263,16 @@ export default function StudentHome() {
   // 둘러보기 기본 노출 개수 — 담백하게. 분야칩/검색으로 좁히면 전체를 보여주고(자연히 몇 개 안 됨),
   // 아무 조건 없는 '전체' 기본에서만 앞부분을 잘라 '더 보기'로 나머지를 펼친다.
   const COURSE_LIMIT = 8;
-  const coursesCapped = browseCat === '전체' && !q && !coursesExpanded;
+  // '전체' 기본에서만 접기/펼치기가 의미 있다(분야칩·검색은 이미 좁혀져 결과를 전부 보여준다).
+  const coursesCollapsible = browseCat === '전체' && !q && shownCourses.length > COURSE_LIMIT;
+  const coursesCapped = coursesCollapsible && !coursesExpanded;
   const visibleCourses = coursesCapped ? shownCourses.slice(0, COURSE_LIMIT) : shownCourses;
   const hiddenCourseCount = shownCourses.length - visibleCourses.length;
-  // 강의 둘러보기(비검색)는 코스별 그룹이 많아 기본 6개 코스만 접어 보여주고 나머지는 '더 보기'.
+  // 강의 둘러보기(비검색)는 코스별 그룹이 많아 기본 6개 코스만 접어 보여주고 나머지는 '더 보기'로 펼친다.
   const LEC_GROUP_LIMIT = 6;
-  const visibleLecGroups = lecExpanded ? lectureGroups : lectureGroups.slice(0, LEC_GROUP_LIMIT);
+  const lecCollapsible = lectureGroups.length > LEC_GROUP_LIMIT;
+  const visibleLecGroups =
+    lecExpanded || !lecCollapsible ? lectureGroups : lectureGroups.slice(0, LEC_GROUP_LIMIT);
   const hiddenLecGroupCount = lectureGroups.length - visibleLecGroups.length;
 
   // 이어서 학습 레일 — 시청 중(watching)인 강의(발견·재방문 유도). 히어로의 1건과 겹쳐도
@@ -588,13 +598,21 @@ export default function StudentHome() {
                 <div className="sh2-ccard-grid">
                   {visibleCourses.map((g) => renderCourseCard(g))}
                 </div>
-                {hiddenCourseCount > 0 && (
+                {coursesCollapsible && (
                   <button
                     type="button"
                     className="sh2-more"
-                    onClick={() => setCoursesExpanded(true)}
+                    onClick={() => setCoursesExpanded((v) => !v)}
                   >
-                    <i className="ph-bold ph-plus-circle" /> 코스 더 보기 ({hiddenCourseCount}개)
+                    {coursesExpanded ? (
+                      <>
+                        <i className="ph-bold ph-minus-circle" /> 접기
+                      </>
+                    ) : (
+                      <>
+                        <i className="ph-bold ph-plus-circle" /> 코스 더 보기 ({hiddenCourseCount}개)
+                      </>
+                    )}
                   </button>
                 )}
               </>
@@ -686,13 +704,21 @@ export default function StudentHome() {
                   );
                 })}
               </div>
-              {hiddenLecGroupCount > 0 && (
+              {lecCollapsible && (
                 <button
                   type="button"
                   className="sh2-more"
-                  onClick={() => setLecExpanded(true)}
+                  onClick={() => setLecExpanded((v) => !v)}
                 >
-                  <i className="ph-bold ph-plus-circle" /> 강의 더 보기 ({hiddenLecGroupCount}개 코스)
+                  {lecExpanded ? (
+                    <>
+                      <i className="ph-bold ph-minus-circle" /> 접기
+                    </>
+                  ) : (
+                    <>
+                      <i className="ph-bold ph-plus-circle" /> 강의 더 보기 ({hiddenLecGroupCount}개 코스)
+                    </>
+                  )}
                 </button>
               )}
               </>

@@ -92,8 +92,9 @@ export const AGE_BANDS = ['10대', '20대', '30대', '40대', '50대 이상'];
 /** 연령대는 interests 배열에 이 접두사로 1칸 저장한다 — 추천 매칭에서 걸러진다. */
 export const AGE_PREFIX = '연령대:';
 
-/** 관심사에서 한 번에 고를 수 있는 분야 최대 개수(백엔드 20개 한도 + 연령대 1칸 여유). */
-export const MAX_INTEREST_FIELDS = 15;
+/** 관심사에서 한 번에 고를 수 있는 태그 최대 개수. 너무 많이 고르면 홈 '관심사 추천'이
+ *  복잡하게 쏟아져서 4개로 제한한다(연령대는 별도 1칸이라 이 상한에 포함되지 않는다). */
+export const MAX_INTEREST_FIELDS = 4;
 
 // 데모 태그 → 실제 코스 분류(subject). anchored 그룹만 매핑에 넣는다.
 const TAG_SUBJECT: Record<string, string> = {};

@@ -52,7 +52,7 @@ export default function InterestOnboardModal({
           </span>
           <h2 className="iom-title">어떤 분야에 관심 있어요?</h2>
           <p className="iom-sub">
-            고른 분야에 맞는 코스를 홈에서 먼저 보여드릴게요. 여러 개 골라도 좋아요.
+            고른 분야에 맞는 코스를 홈에서 먼저 보여드릴게요. 최대 {MAX_INTEREST_FIELDS}개까지 골라주세요.
           </p>
         </div>
 
