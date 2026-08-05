@@ -85,6 +85,10 @@ html:has(.mn-page) { scroll-behavior: smooth; }
   top: 0;
   left: 0;
 }
+/* 다크모드 네비 로고 — 스크롤 solid 상태에서도 흰 워드마크 유지(어두운 워드마크는 다크 네비에서
+   안 보임). 인라인 opacity 토글을 !important로 덮어 흰 로고만 표시. 라이트모드는 기존 토글 유지. */
+:root[data-theme='dark'] .mn-brand-logo { opacity: 1 !important; }
+:root[data-theme='dark'] .mn-brand-logo.mn-brand-logo--abs { opacity: 0 !important; }
 .mn-nav-menu {
   position: absolute;
   left: 50%;
