@@ -594,12 +594,12 @@ export const opsSettingsApi = {
   /** 문항 생성 '출제 규칙'(프롬프트) 조회 — 현재 규칙 + 기본값 */
   getAiPrompt: () =>
     client
-      .get<{ rules: string; default_rules: string; is_custom: boolean }>('/ops/settings/ai/prompt')
+      .get<{ rules: string; default_rules: string; previous_rules: string; is_custom: boolean }>('/ops/settings/ai/prompt')
       .then((r) => r.data),
   /** 출제 규칙 저장(빈 값=기본값 복원). 다음 문항 생성부터 즉시 반영 */
   putAiPrompt: (rules: string) =>
     client
-      .put<{ rules: string; default_rules: string; is_custom: boolean }>(
+      .put<{ rules: string; default_rules: string; previous_rules: string; is_custom: boolean }>(
         '/ops/settings/ai/prompt',
         { rules },
       )
@@ -607,14 +607,14 @@ export const opsSettingsApi = {
   /** 자기검증 '판정 지침'(2번째 LLM 프롬프트) 조회 — 현재 규칙 + 기본값 */
   getAiVerifyPrompt: () =>
     client
-      .get<{ rules: string; default_rules: string; is_custom: boolean }>(
+      .get<{ rules: string; default_rules: string; previous_rules: string; is_custom: boolean }>(
         '/ops/settings/ai/verify-prompt',
       )
       .then((r) => r.data),
   /** 판정 지침 저장(빈 값=기본값 복원). 다음 문항 생성의 자기검증부터 즉시 반영 */
   putAiVerifyPrompt: (rules: string) =>
     client
-      .put<{ rules: string; default_rules: string; is_custom: boolean }>(
+      .put<{ rules: string; default_rules: string; previous_rules: string; is_custom: boolean }>(
         '/ops/settings/ai/verify-prompt',
         { rules },
       )

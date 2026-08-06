@@ -131,7 +131,12 @@ export function KeyCard({
   );
 }
 
-type PromptData = { rules: string; default_rules: string; is_custom: boolean };
+type PromptData = {
+  rules: string;
+  default_rules: string;
+  previous_rules: string;
+  is_custom: boolean;
+};
 
 /** 프롬프트 규칙 편집기 — 생성('출제 규칙')과 검증('판정 지침')이 공용으로 쓴다.
  *  구조부(JSON 형식·근거 소스 등)는 서버가 고정하고 여기선 '규칙'만 바꾼다(파서·판정 보호).
@@ -153,6 +158,9 @@ export function PromptEditor({
 }) {
   const [rules, setRules] = useState('');
   const [defaultRules, setDefaultRules] = useState('');
+  // 직전 저장값 — 잘못 저장했을 때 기본값(튜닝 이전)까지 후퇴하지 않고 되돌리기 위한 것.
+  // 서버가 감사기록에서 꺼내 준다. 이 기능 배포 전 저장분은 이력이 없어 빈 문자열.
+  const [previousRules, setPreviousRules] = useState('');
   const [isCustom, setIsCustom] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -163,6 +171,7 @@ export function PromptEditor({
       .then((d) => {
         setRules(d.rules);
         setDefaultRules(d.default_rules);
+        setPreviousRules(d.previous_rules ?? '');
         setIsCustom(d.is_custom);
       })
       .catch(() => setMsg({ ok: false, text: '프롬프트를 불러오지 못했어요.' }))
@@ -177,6 +186,7 @@ export function PromptEditor({
     try {
       const d = await save(value);
       setRules(d.rules);
+      setPreviousRules(d.previous_rules ?? '');
       setIsCustom(d.is_custom);
       setMsg({ ok: true, text: d.is_custom ? savedText : '기본값으로 되돌렸어요.' });
     } catch (e) {
@@ -224,6 +234,21 @@ export function PromptEditor({
           title="서버 기본값으로 되돌려요"
         >
           기본값으로 복원
+        </button>
+        <button
+          className="op-btn op-btn--soft"
+          disabled={saving || !previousRules}
+          onClick={() => {
+            setRules(previousRules);
+            void doSave(previousRules);
+          }}
+          title={
+            previousRules
+              ? '직전에 저장했던 값으로 되돌려요'
+              : '되돌릴 이전 값이 아직 없어요 — 다음 저장부터 쌓여요'
+          }
+        >
+          이전 값으로 복원
         </button>
       </div>
     </section>
