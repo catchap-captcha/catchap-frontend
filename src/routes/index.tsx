@@ -60,6 +60,7 @@ const OpsBehavior = lazy(() => import('../pages/ops/OpsBehavior'));
 const OpsBehaviorExport = lazy(() => import('../pages/ops/OpsBehaviorExport'));
 const OpsAuditLog = lazy(() => import('../pages/ops/OpsAuditLog'));
 const OpsMonitoring = lazy(() => import('../pages/ops/OpsMonitoring'));
+const OpsAlerts = lazy(() => import('../pages/ops/OpsAlerts'));
 const OpsQuestionMetrics = lazy(() => import('../pages/ops/OpsQuestionMetrics'));
 const OpsLlmModels = lazy(() => import('../pages/ops/OpsLlmModels'));
 const OpsLlmKeys = lazy(() => import('../pages/ops/OpsLlmKeys'));
@@ -180,6 +181,7 @@ export default function AppRoutes() {
           <Route path={PATHS.OPS_BEHAVIOR_EXPORT} element={<OpsBehaviorExport />} />
           <Route path={PATHS.OPS_LOGS} element={<OpsAuditLog />} />
           <Route path={PATHS.OPS_MONITORING} element={<OpsMonitoring />} />
+          <Route path={PATHS.OPS_ALERTS} element={<OpsAlerts />} />
           {/* 모델 카탈로그 삭제(2026-07-23·레거시 표시용) — 북마크 보호용 리다이렉트 */}
           <Route path={PATHS.OPS_AI_MODELS} element={<Navigate to={PATHS.OPS_APPROVAL} replace />} />
           <Route path={PATHS.OPS_LLM_MODELS} element={<OpsLlmModels />} />

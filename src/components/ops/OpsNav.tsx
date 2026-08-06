@@ -53,7 +53,11 @@ const GROUPS: NavGroup[] = [
       // 'AI 모델'/'설정' 라벨은 실 기능 페이지(LLM 모델/키)로 연결(레거시 카탈로그 미부활).
       { to: PATHS.OPS_LLM_MODELS, icon: 'ph-cpu', label: 'AI 모델', match: [PATHS.OPS_LLM_PROMPTS] },
       { to: PATHS.OPS_MONITORING, icon: 'ph-gauge', label: '모니터링' },
+      // '시스템 상태'는 ★지금 살아 있나(DB 왕복시간·SMTP·디스크 실측),
+      // '시스템 경보'는 ★그동안 무슨 일이 있었나(감시 장치가 보낸 경보 이력·수신 설정).
+      // 보는 시점이 달라 둘 다 둔다 — 상태는 현재, 경보는 지나간 일.
       { to: PATHS.OPS_SYSTEM_STATUS, icon: 'ph-heartbeat', label: '시스템 상태' },
+      { to: PATHS.OPS_ALERTS, icon: 'ph-bell-ringing', label: '시스템 경보' },
       { to: PATHS.OPS_LLM_KEYS, icon: 'ph-gear-six', label: '설정' },
     ],
   },
