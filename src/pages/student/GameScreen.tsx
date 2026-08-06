@@ -8,6 +8,8 @@ import { getFreshAccessToken } from '../../api/client';
 import { playSfx } from '../../utils/feedback';
 import { attachPointerTrace, type PointerTraceRecorder } from '../../utils/pointerTrace';
 import CatchapWidget from '../../components/captcha/CatchapWidget';
+import CollectCaptcha from '../../components/captcha/CollectCaptcha';
+import { useCollectParticipant } from '../../hooks/useCollectParticipant';
 import { useTheme } from '../../hooks/useTheme';
 import './GameScreen.css';
 
@@ -106,6 +108,9 @@ export default function GameScreen() {
   const pBank = navState?.bank ?? (searchParams.get('bank') === '1');
   // 코스 Q(3단계-b) — bank와 함께 오면 그 코스 강의 유래 문항만(수료 시험 훈련장)
   const pCourse = navState?.course ?? (searchParams.get('course') || undefined);
+  /* 행동데이터 수집 참여자(`?collect=`) — 아래 주소창 정리가 쿼리를 지우기 전에 렌더 시점에
+     낚아채야 해서 훅 안에서 처리한다. 값이 없으면 위젯이 아예 안 붙는다. */
+  const collectParticipant = useCollectParticipant();
 
   /* 진입 과목 이름: state/query(pSubject) 우선, 없으면 hash, 그래도 없으면 '일반'.
      동적 목록(코스)이 로드되기 전 부트스트랩용 — 진입 과목이 하드코딩 6과목에 없으면 국어로
@@ -869,6 +874,10 @@ export default function GameScreen() {
             )}
           </div>
           {/* ▲▲▲ CAPTCHA API MOUNT SLOT ▲▲▲ */}
+
+          {/* 행동데이터 수집(외부 CatChap Guard) — `?collect=` 를 단 참여자에게만 추가로 붙는다.
+              위의 학습 위젯과는 별개 서비스라 나란히 뜬다(수집 참여자만 보므로 허용). */}
+          <CollectCaptcha participant={collectParticipant} />
         </div>
 
         {/* SIDE PANEL */}

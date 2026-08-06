@@ -14,6 +14,8 @@ import {
 } from '../../api/lectures';
 import { getFreshAccessToken } from '../../api/client';
 import CatchapWidget from '../../components/captcha/CatchapWidget';
+import CollectCaptcha from '../../components/captcha/CollectCaptcha';
+import { useCollectParticipant } from '../../hooks/useCollectParticipant';
 import { useTheme } from '../../hooks/useTheme';
 import wordmark from '../../assets/brand/catchap-wordmark.png';
 import wordmarkWhite from '../../assets/brand/catchap-wordmark-white.png';
@@ -57,6 +59,9 @@ export default function LecturePlayer() {
   /* 파라미터 관용구: navigate state 우선, 쿼리(?id=) 딥링크는 최초 1회 주소창 정리 */
   const navState = (location.state ?? null) as { id?: string } | null;
   const lectureId = navState?.id ?? searchParams.get('id') ?? '';
+  /* 행동데이터 수집 참여자(`?collect=`) — 바로 아래 이펙트가 주소창의 쿼리를 통째로 지우므로
+     렌더 시점에 낚아채야 한다(훅이 처리). 값이 없으면 수집 위젯이 아예 안 붙는다. */
+  const collectParticipant = useCollectParticipant();
   useEffect(() => {
     if (searchParams.get('id')) {
       navigate(location.pathname, { replace: true, state: { id: lectureId } });
@@ -981,6 +986,17 @@ export default function LecturePlayer() {
               </div>
             )}
           </div>
+
+          {/* ===== 행동데이터 수집(외부 CatChap Guard) =====
+              `?collect=` 를 단 참여자에게만 붙는다. 위 캡차 게이트(확인 문제)는 우리 학습
+              위젯이고 이건 별개 서비스의 수집 전용 위젯이다 — 게이트 안에 넣지 않는 이유는
+              (1) 판정/수집을 섞지 않기 위해서, (2) 게이트는 체크포인트에서만 잠깐 뜨는데
+              수집은 시청 내내 이어져야 데이터가 쌓이기 때문이다. */}
+          <CollectCaptcha
+            participant={collectParticipant}
+            lectureId={lectureId}
+            note="이 캡차는 영상 재생을 막지 않습니다. 위의 '확인 문제'와는 별개이고, 푸는 동안의 조작 데이터만 수집합니다."
+          />
 
           {/* ===== 탭 ===== */}
           <div className="lp-tabs">
