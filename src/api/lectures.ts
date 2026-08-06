@@ -13,10 +13,11 @@ import { client } from './client';
 export const API_ORIGIN =
   (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? 'http://localhost:8000';
 
-/** 썸네일 등 백엔드가 주는 상대경로(`/api/v1/...`)를 <img src>용 절대 URL로. 이미 http면 그대로,
- *  없으면 undefined(호출부에서 폴백 커버 유지). thumbnail_url이 origin-상대라 API_ORIGIN만 붙인다. */
+/** 썸네일 URL 정규화 — 백엔드 상대경로(`/api/v1/...`)에만 API_ORIGIN을 붙여 절대화한다.
+ *  그 외(http 절대 URL, 번들된 프론트 에셋 `/assets/...`, data: 등)는 그대로 통과시킨다
+ *  — 데모 코스 커버가 프론트 에셋 URL이라 API_ORIGIN이 붙으면 안 되기 때문. 없으면 undefined. */
 export const thumbnailSrc = (url?: string | null): string | undefined =>
-  url ? (url.startsWith('http') ? url : API_ORIGIN + url) : undefined;
+  url ? (url.startsWith('/api/') ? API_ORIGIN + url : url) : undefined;
 
 export interface LectureProgress {
   watched_max_sec: number;

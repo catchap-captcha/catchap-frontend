@@ -93,6 +93,21 @@ const SPEC: FieldSpec[] = [
   },
 ];
 
+// 데모 커버 이미지(번들 에셋) — src/pages/student/assets/demo-covers/demo-{field}-{ci}.jpg.
+// Vite가 빌드 시 해시 URL(/assets/…)로 바꾸고, thumbnailSrc가 /api/ 아닌 URL은 그대로
+// 통과시키므로 카드가 이 이미지를 그대로 쓴다(백엔드 없이 프론트에서 서빙).
+const COVERS = import.meta.glob('./assets/demo-covers/*.jpg', {
+  eager: true,
+  import: 'default',
+}) as Record<string, string>;
+function coverFor(field: string, ci: number): string | null {
+  const suffix = `/demo-${field}-${ci}.jpg`;
+  for (const [path, url] of Object.entries(COVERS)) {
+    if (path.endsWith(suffix)) return url;
+  }
+  return null;
+}
+
 const _courses: DemoCourse[] = [];
 const _lectures: LectureItem[] = [];
 SPEC.forEach((s) => {
@@ -107,7 +122,7 @@ SPEC.forEach((s) => {
       order_no: ci,
       instructor_name: s.instructor, // 카드가 '… 강사'를 붙이므로 여기선 이름만(중복 '강사 강사' 방지)
       lecture_count: c.lectures.length,
-      thumbnail_url: null,
+      thumbnail_url: coverFor(s.field, ci),
       enrolled: false,
       field: s.field,
     });
