@@ -63,6 +63,7 @@ const GROUPS: NavGroup[] = [
       { to: PATHS.OPS_LOGS, icon: 'ph-scroll', label: '감사 로그' },
       { to: PATHS.OPS_API_KEYS, icon: 'ph-key', label: 'API 발급' },
       { to: PATHS.OPS_MONITORING, icon: 'ph-gauge', label: '모니터링' },
+      { to: PATHS.OPS_ALERTS, icon: 'ph-bell-ringing', label: '시스템 경보' },
     ],
   },
 ];
