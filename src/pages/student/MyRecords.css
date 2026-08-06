@@ -79,6 +79,25 @@
   font-size: 16px;
 }
 
+/* 안내 카드 — 어떤 활동이 어떤 기록으로 쌓이는지(요약/학습 통계/수료 현황 출처) */
+.mr-guide {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  box-shadow: var(--shadow-md);
+  padding: 16px 18px;
+}
+.mr-guide-ic { flex: none; margin-top: 1px; font-size: 18px; color: var(--ink-3); }
+.mr-guide-body { min-width: 0; }
+.mr-guide-title { display: block; font-size: 14px; font-weight: 800; color: var(--ink); margin-bottom: 8px; letter-spacing: -0.01em; }
+.mr-guide-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.mr-guide-list li { font-size: 13px; font-weight: 500; line-height: 1.6; color: var(--ink-2); padding-left: 14px; position: relative; }
+.mr-guide-list li::before { content: '·'; position: absolute; left: 3px; top: 0; color: var(--ink-3); font-weight: 800; }
+.mr-guide-list b { color: var(--ink); font-weight: 700; }
+
 /* STAT ROW */
 .mr-statgrid {
   display: grid;

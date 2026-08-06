@@ -163,7 +163,7 @@ function CompCard({
         <span className="mr-compbody">
           <span className="mr-comptitle">{c.title}</span>
           <span className="mr-compmeta">
-            {c.subject} · 수료까지 {Math.max(0, ex.question_count - ex.mastered_count)}문항 ({ex.mastered_count}/{ex.question_count} 정복)
+            {c.subject} · 수료까지 {Math.max(0, Math.ceil(ex.question_count * 0.8) - ex.mastered_count)}문항 ({ex.mastered_count}/{ex.question_count} 정답)
           </span>
         </span>
         <span className="mr-compbadge mr-compbadge--progress">응시 가능</span>
@@ -484,6 +484,27 @@ export default function MyRecords() {
             <i className="ph-fill ph-download-simple" />
             리포트 저장
           </button>
+        </div>
+      </section>
+
+      {/* 안내 — 어떤 활동이 어떤 기록으로 쌓이는지(사용자 요청). 탭별 데이터 출처를 한 줄씩 명시. */}
+      <section className="mr-section">
+        <div className="mr-guide">
+          <i className="ph-fill ph-info mr-guide-ic" />
+          <div className="mr-guide-body">
+            <b className="mr-guide-title">어떤 걸 하면 어떤 기록이 쌓이나요?</b>
+            <ul className="mr-guide-list">
+              <li>
+                <b>요약</b> — 문제은행·오늘의 Q에서 <b>문제를 풀면</b> 푼 문제 수·정답률이 쌓여요.
+              </li>
+              <li>
+                <b>학습 통계</b> — <b>강의를 시청하면</b> 완주 강의·코스 진도가 쌓여요.
+              </li>
+              <li>
+                <b>수료 현황</b> — <b>수료 시험을 통과하면</b> 수료·수료증이 떠요(강의 완주 후 응시).
+              </li>
+            </ul>
+          </div>
         </div>
       </section>
 

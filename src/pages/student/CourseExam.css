@@ -19,9 +19,9 @@
 }
 
 .ce-wrap {
-  max-width: 860px;
+  max-width: min(2280px, 94vw);
   margin: 26px auto 0;
-  padding: 0 20px;
+  padding: 0 28px;
 }
 
 .ce-back {
@@ -277,6 +277,19 @@
   white-space: nowrap;
   box-shadow: var(--shadow-md);
 }
+/* 응시 상태 묶음(제한시간 + 선택 수) */
+.ce-take-status { display: flex; align-items: center; gap: 8px; flex-shrink: 0; flex-wrap: wrap; }
+.ce-timer {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: var(--surface); border: 1px solid var(--line-strong);
+  color: var(--ink); font-weight: 800; font-size: 14px;
+  padding: 7px 13px; border-radius: 999px; white-space: nowrap;
+  font-variant-numeric: tabular-nums; box-shadow: var(--shadow-md);
+}
+.ce-timer i { font-size: 15px; color: var(--ink-2); }
+/* 30초 이하 — 시간 임박 강조 */
+.ce-timer--low { border-color: var(--danger); color: var(--danger); }
+.ce-timer--low i { color: var(--danger); }
 
 .ce-qlist {
   display: flex;

@@ -25,6 +25,11 @@ import './CourseExam.css';
  */
 type Phase = 'intro' | 'taking' | 'result' | 'cooldown';
 
+// 회차 제한시간 — 문항당 이 초(사용자 결정 2026-08-05: '제한시간 적게'). 10문항이면 5분.
+// 0이 되면 자동 제출(무응답=오답). 백엔드 수료 기준 EXAM_PASS_RATIO(80%=10문항 중 8개)와 짝.
+const EXAM_SEC_PER_Q = 30;
+const PASS_RATIO = 0.8;
+
 export default function CourseExam() {
   const [params] = useSearchParams();
   const courseId = params.get('course') ?? '';
@@ -49,6 +54,8 @@ export default function CourseExam() {
   // 대신 언제 열리는지 알려주고 초 단위로 줄여 준다.
   const [cooldownLeft, setCooldownLeft] = useState(0);
   const [cooldownMin, setCooldownMin] = useState(0);
+  // 응시 제한시간(초) — 회차 시작 시 문항수×EXAM_SEC_PER_Q로 세팅, 0이면 자동 제출.
+  const [timeLeft, setTimeLeft] = useState(0);
 
   const loadState = useCallback(() => {
     if (!courseId) return;
@@ -81,6 +88,7 @@ export default function CourseExam() {
       setSession(s);
       setPicks({});
       setStartedAt(Date.now());
+      setTimeLeft((s.questions?.length ?? 0) * EXAM_SEC_PER_Q);
       setPhase('taking');
     } catch (e: any) {
       const d = e?.response?.data?.detail;
@@ -145,6 +153,18 @@ export default function CourseExam() {
     const t = setInterval(() => setCooldownLeft((n) => Math.max(0, n - 1)), 1000);
     return () => clearInterval(t);
   }, [phase, cooldownLeft]);
+
+  // 응시 제한시간 — 1초씩 줄이고, 0이 되면 자동 제출(무응답=오답). 결과·인트로로 나가면 멈춘다.
+  useEffect(() => {
+    if (phase !== 'taking' || timeLeft <= 0) return;
+    const t = setInterval(() => setTimeLeft((n) => Math.max(0, n - 1)), 1000);
+    return () => clearInterval(t);
+  }, [phase, timeLeft]);
+  useEffect(() => {
+    // 시간 종료 → 한 번만 자동 제출(제출 중이 아니고 회차가 살아 있으면).
+    if (phase === 'taking' && timeLeft === 0 && !submitting && session?.sitting_id) submit();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, timeLeft]);
 
   const answeredCount = useMemo(
     () => (session?.questions ?? []).filter((q) => (picks[q.question_id] ?? []).length > 0).length,
@@ -236,15 +256,26 @@ export default function CourseExam() {
                     <>전 문항 {session.questions.length}개를 <b>한 번에 모두 맞히면 완벽 통과</b>! 한 문제라도 틀리면 다시 도전할 수 있어요.</>
                   ) : (
                     <>
-                      이번 회차 {session.questions.length}문항 · 다 맞히지 못한 문항은 다음 회차에 다시 나와요.
+                      이번 회차 {session.questions.length}문항 · 제한시간 안에 풀어요(못 맞힌 문항은 다음 회차에 다시 나와요).
                       {session.progress && (
-                        <> 지금까지 <b>{session.progress.mastered}/{session.progress.total}</b> 정복.</>
+                        <> 지금까지 <b>{session.progress.mastered}/{session.progress.total}</b> 맞힘.</>
                       )}
                     </>
                   )}
                 </p>
               </div>
-              <span className="ce-answered">{answeredCount}/{session.questions.length} 선택</span>
+              <div className="ce-take-status">
+                <span
+                  className={`ce-timer${timeLeft <= 30 ? ' ce-timer--low' : ''}`}
+                  role="timer"
+                  aria-live="off"
+                >
+                  <i className="ph-fill ph-timer" />
+                  {String(Math.floor(timeLeft / 60)).padStart(2, '0')}:
+                  {String(timeLeft % 60).padStart(2, '0')}
+                </span>
+                <span className="ce-answered">{answeredCount}/{session.questions.length} 선택</span>
+              </div>
             </header>
 
             <div className="ce-qlist">
@@ -297,9 +328,6 @@ export default function CourseExam() {
                 <i className="ph-fill ph-check-circle" /> {submitting ? '채점 중…' : '제출하고 채점'}
               </button>
             </div>
-            <p className="ce-hint">
-              선택하지 않은 문항은 오답으로 처리돼요(찍기 강요 없음 — 모르면 다음 회차에 다시 도전).
-            </p>
           </section>
         )}
 
@@ -430,7 +458,7 @@ function IntroCard({
           <p className="ce-sub">
             {state.perfect
               ? '전 문항을 한 번에 다 맞혀 완벽하게 수료했어요. 대단해요! 🏆'
-              : '이 코스의 모든 시험 문항을 정복했어요. 수료를 축하해요! 🎉'}
+              : '수료 기준을 넘겨 이 코스를 수료했어요. 축하해요! 🎉'}
           </p>
           {state.can_perfect_challenge && (
             // 재도전 경로 — 수료했지만 완벽 통과 전이면 전 문항 한 판으로 승급 도전
@@ -455,12 +483,12 @@ function IntroCard({
       ) : state.available ? (
         <>
           <p className="ce-sub">
-            문항 <b>{state.question_count}</b>개를 모두 맞히면 수료해요. 틀린 문항은 다음 회차에 다시
-            나오니 부담 없이 도전하세요.
+            문항 <b>{state.question_count}</b>개 중 <b>{Math.ceil(state.question_count * PASS_RATIO)}개 이상</b>{' '}
+            맞히면 수료해요. 회차마다 제한시간이 있어요(못 맞힌 문항은 다음 회차에 다시 나와요).
           </p>
           <div className="ce-progress">
             <div className="ce-progresshead">
-              <span>정복 진행</span>
+              <span>맞힌 문항</span>
               <span>{state.mastered_count}/{state.question_count}</span>
             </div>
             <div className="ce-progressbar"><div className="ce-progressfill" style={{ width: `${pct}%` }} /></div>
@@ -508,7 +536,7 @@ function ResultHero({
         <p className="ce-sub">
           {result.perfect
             ? '전 문항을 한 번에 다 맞혔어요. 정말 대단해요!'
-            : '이 코스의 모든 시험 문항을 정복했어요. 완벽 통과에도 도전해 보세요!'}
+            : '수료 기준을 넘겨 통과했어요. 완벽 통과(전 문항)에도 도전해 보세요!'}
         </p>
       </div>
     );
@@ -518,12 +546,12 @@ function ResultHero({
       <h1 className="ce-title">이번 회차 결과</h1>
       <p className="ce-sub">
         {result.total}문항 중 <b>{result.correct}</b>개 정답 · 지금까지{' '}
-        <b>{result.progress.mastered}/{result.progress.total}</b> 정복했어요.
+        <b>{result.progress.mastered}/{result.progress.total}</b> 맞혔어요.
         {result.stale > 0 && (
           <><br />일부 문항({result.stale}개)이 바뀌어 다음 회차에서 새로 나와요.</>
         )}
       </p>
-      <p className="ce-encourage">틀린 문항은 다음 회차에 다시 나와요. 한 문항씩 정복해 수료까지 가봐요! 🌱</p>
+      <p className="ce-encourage">틀린 문항은 다음 회차에 다시 나와요. 조금만 더 맞히면 수료예요! 🌱</p>
     </div>
   );
 }

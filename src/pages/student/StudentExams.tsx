@@ -118,7 +118,7 @@ export default function StudentExams() {
                         : status === 'new'
                           ? `문항 ${ex.question_count}개 · 아직 응시하지 않았어요`
                           : status === 'progress'
-                            ? `${ex.mastered_count}/${ex.question_count} 정복 · 아직 통과 전이에요`
+                            ? `${ex.mastered_count}/${ex.question_count} 정답 · 아직 통과 전이에요`
                             : `강의 ${ex.lectures_done}/${ex.lectures_total} 완주 시 열려요`}
                     </div>
                   </div>
