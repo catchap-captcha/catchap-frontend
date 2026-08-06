@@ -17,6 +17,9 @@ export const PATHS = {
   LOGIN: '/login',
   FIND_ID: '/find-id', // 아이디 찾기 — 가입 이메일 본인확인 후 로그인 아이디 안내
   PASSWORD_RESET: '/password-reset',
+  // 소셜 로그인(카카오·네이버·구글) 착지 — provider가 code·state를 달고 돌아오는 곳.
+  // ★백엔드 SOCIAL_REDIRECT_URIS(허용목록)에 등록된 주소와 경로가 같아야 한다.
+  SOCIAL_CALLBACK: '/auth/social/callback',
   CAPTCHA: '/captcha',
   INVITE: '/invite', // 교사 초대링크 (?token=) → 검증 후 프리필된 가입화면으로
 
