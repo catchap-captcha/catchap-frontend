@@ -146,6 +146,68 @@
   border: 1px solid var(--line-strong);
 }
 
+/* 완료 코스 — '수료 현황' 버튼 자리의 진행 단계 상태 블록(클릭 시 수료 현황으로 이동) */
+.mc-status {
+  flex: none;
+  width: 194px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  text-align: left;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  padding: 9px 13px;
+  font-family: inherit;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
+}
+.mc-status:hover {
+  border-color: var(--line-strong);
+  background: var(--bg);
+}
+.mc-status-head {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13.5px;
+  font-weight: 800;
+  color: var(--ink);
+}
+.mc-status-head i {
+  font-size: 16px;
+}
+.mc-status-sub {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-3);
+}
+.mc-status-more {
+  margin-top: 3px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--ink-2);
+}
+/* 단계별 아이콘 색 */
+.mc-status--ok .mc-status-head i {
+  color: var(--ok);
+}
+.mc-status--warn .mc-status-head i {
+  color: var(--danger);
+}
+.mc-status--progress .mc-status-head i {
+  color: var(--brand);
+}
+.mc-status--muted .mc-status-head i {
+  color: var(--ink-3);
+}
+
 /* 수강 중 카드 액션 — 계속 학습(주) 아래 수강 취소(보조 텍스트). 실수 방지로 눈에 덜 띄게. */
 .mc-actions {
   flex: none;
@@ -208,7 +270,8 @@
   }
   .mc-btn,
   .mc-btn-ghost,
-  .mc-actions {
+  .mc-actions,
+  .mc-status {
     width: 100%;
     justify-content: center;
   }

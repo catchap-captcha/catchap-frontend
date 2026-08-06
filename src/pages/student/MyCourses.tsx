@@ -22,6 +22,40 @@ interface CourseRow {
   completed: boolean;
 }
 
+/** 완료 탭 카드의 수료 진행 단계 — '수료 현황' 버튼 자리에 어디까지 왔는지(완주/시험 전/시험
+ *  진행 중/수료)를 글로 보여준다. exam 요약(available/passed/mastered) 하나로 판정. */
+type Stage = { label: string; detail: string; cls: 'ok' | 'warn' | 'progress' | 'muted'; icon: string };
+function completionStage(r: CourseRow): Stage {
+  const ex = r.course.exam;
+  if (ex?.passed) {
+    return {
+      label: ex.perfect ? '수료 완료 · 만점' : '수료 완료',
+      detail: `${r.total}강 완주 · 수료 시험 통과`,
+      cls: 'ok',
+      icon: 'ph-seal-check',
+    };
+  }
+  // available = 전 강의 완주 + 시험 문항 있음(아직 미통과)
+  if (ex?.available) {
+    if ((ex.mastered_count ?? 0) === 0) {
+      return {
+        label: '수료 시험 응시 전',
+        detail: `${r.total}강 완주 · 시험만 남았어요`,
+        cls: 'warn',
+        icon: 'ph-exam',
+      };
+    }
+    return {
+      label: '수료 시험 진행 중',
+      detail: `${ex.mastered_count}/${ex.question_count}문항 정복`,
+      cls: 'progress',
+      icon: 'ph-exam',
+    };
+  }
+  // 시험이 없는 코스를 완주한 경우
+  return { label: '전 강의 완주', detail: `${r.total}강 완주`, cls: 'muted', icon: 'ph-check-circle' };
+}
+
 export default function MyCourses() {
   const navigate = useNavigate();
   const [lectures, setLectures] = useState<LectureItem[] | null>(null);
@@ -155,7 +189,9 @@ export default function MyCourses() {
               </div>
             ) : (
               <div className="mc-list">
-                {shown.map((r) => (
+                {shown.map((r) => {
+                  const st = r.completed ? completionStage(r) : null;
+                  return (
                   <div key={r.course.id} className="mc-card">
                     <CourseCover
                       seed={r.course.id}
@@ -175,7 +211,7 @@ export default function MyCourses() {
                       </div>
                       <div className="mc-meta">
                         {r.completed
-                          ? `${r.total}강 완주${r.course.exam?.passed ? ' · 수료 시험 통과' : ''}`
+                          ? `${r.total}강 완주`
                           : r.continueLec
                             ? `마지막 학습 · ${r.continueLec.title}`
                             : `${r.total}강`}
@@ -184,15 +220,25 @@ export default function MyCourses() {
                         <div className="mc-bar">
                           <div className="mc-fill" style={{ width: `${r.pct}%` }} />
                         </div>
-                        <span className="mc-pct">{r.pct}%</span>
+                        <span className="mc-pct">
+                          {r.done}/{r.total}강 · {r.pct}%
+                        </span>
                       </div>
                     </div>
-                    {r.completed ? (
+                    {r.completed && st ? (
                       <button
-                        className="mc-btn mc-btn-ghost"
+                        className={`mc-status mc-status--${st.cls}`}
                         onClick={() => navigate(`${PATHS.STUDENT_RECORDS}?tab=completion`)}
+                        title="수료 현황 자세히 보기"
                       >
-                        <i className="ph-fill ph-certificate" /> 수료 현황
+                        <span className="mc-status-head">
+                          <i className={`ph-fill ${st.icon}`} />
+                          {st.label}
+                        </span>
+                        <span className="mc-status-sub">{st.detail}</span>
+                        <span className="mc-status-more">
+                          수료 현황 <i className="ph-bold ph-arrow-right" />
+                        </span>
                       </button>
                     ) : (
                       <div className="mc-actions">
@@ -213,7 +259,8 @@ export default function MyCourses() {
                       </div>
                     )}
                   </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </>
