@@ -891,14 +891,10 @@ function LectureFormModal({
      판독 실패 시 입력란은 그대로 열어둬 수동 입력으로 진행할 수 있게 한다
      (ffprobe 등 서버 의존성 없이 처리 — 서버는 양수 검증만). */
   const pickFile = (f: File | null) => {
-    // 서버로 보내기 전에 여기서 먼저 거른다 — 5GB 초과·영상 아님을 즉시 명확히 알려,
-    // 업로드 도중 413/400으로 애매하게 실패하는 걸 막는다(백엔드 MAX_UPLOAD_BYTES=5GB와 맞춤).
+    // 서버로 보내기 전에 형식만 거른다 — 영상이 아닌 파일을 즉시 명확히 알려 준다.
+    // 용량 상한은 두지 않는다(2026-08-06 해제). 최종 판정은 서버 MAX_UPLOAD_BYTES가 하고,
+    // 실질 상한은 백엔드 VM 디스크 여유다.
     if (f) {
-      const MAX_UPLOAD_BYTES = 5 * 1024 * 1024 * 1024; // 백엔드 한도와 동일(5GB)
-      if (f.size > MAX_UPLOAD_BYTES) {
-        setErr(`영상이 너무 커요(${humanSize(f.size)}) — 최대 5GB까지 올릴 수 있어요. 더 짧게 자르거나 화질(해상도·비트레이트)을 낮춰 다시 올려주세요.`);
-        return;
-      }
       const okExt = /\.(mp4|webm)$/i.test(f.name);
       const okType = !f.type || f.type.startsWith('video/') || f.type === 'application/octet-stream';
       if (!okExt || !okType) {
@@ -1009,7 +1005,7 @@ function LectureFormModal({
         // 응답 없이 끊김 — 업로드 중이었다면 대개 용량 초과나 네트워크 문제
         msg =
           progress != null
-            ? '업로드가 중간에 끊겼어요 — 영상이 너무 크거나(최대 5GB) 네트워크가 불안정할 수 있어요. 파일 크기와 연결을 확인하고 다시 시도하세요.'
+            ? '업로드가 중간에 끊겼어요 — 파일이 매우 크거나 네트워크가 불안정할 수 있어요. 연결을 확인하고 다시 시도하세요.'
             : '서버에 연결하지 못했어요 — 네트워크를 확인하고 다시 시도하세요.';
       } else if (err?.code === 'ECONNABORTED') {
         msg = '업로드 시간이 초과됐어요 — 파일이 크면 오래 걸릴 수 있어요. 연결이 빠른 곳에서 다시 시도하세요.';
@@ -1076,7 +1072,7 @@ function LectureFormModal({
                   <>
                     <i className="ph-fill ph-upload-simple lu-drop-ico" />
                     <b>영상을 여기로 끌어다 놓거나 클릭해서 선택하세요</b>
-                    <span className="lu-drop-sub">MP4 · WebM · 최대 5GB</span>
+                    <span className="lu-drop-sub">MP4 · WebM</span>
                   </>
                 ) : (
                   <>
@@ -3379,7 +3375,7 @@ function QuestionsModal({
                     <span>
                       {imgBusy === 'prompt'
                         ? `올리는 중… ${imgProgress ?? 0}%`
-                        : '이미지를 끌어다 놓거나 클릭해서 첨부 — PNG·JPG·GIF·WebP, 최대 5MB'}
+                        : '이미지를 끌어다 놓거나 클릭해서 첨부 — PNG·JPG·GIF·WebP'}
                     </span>
                   </div>
                 )}
@@ -3956,7 +3952,7 @@ function FrameCaptureModal({
     sy = Math.min(Math.max(sy, 0), v.videoHeight - 1);
     sw = Math.min(Math.max(sw, 1), v.videoWidth - sx);
     sh = Math.min(Math.max(sh, 1), v.videoHeight - sy);
-    // 첨부 API 5MB 상한 대비 — 긴 변 1280px로 제한(문항 이미지 용도로 충분)
+    // 긴 변 1280px로 축소 — 문항 이미지 용도로 충분하고 전송/저장이 가볍다(용량 상한은 없음)
     const outScale = Math.min(1, 1280 / Math.max(sw, sh));
     const dw = Math.max(1, Math.round(sw * outScale));
     const dh = Math.max(1, Math.round(sh * outScale));
@@ -3981,10 +3977,6 @@ function FrameCaptureModal({
     }
     if (!blob) {
       setCapErr('화면을 이미지로 변환하지 못했어요 — 다시 시도해 주세요.');
-      return;
-    }
-    if (blob.size > 5 * 1024 * 1024) {
-      setCapErr('따온 이미지가 5MB를 넘어요 — 더 작은 영역을 지정해 주세요.');
       return;
     }
     const file = new File([blob], `lecture-frame-${Math.floor(v.currentTime)}s.png`, {
@@ -4265,7 +4257,7 @@ function MaterialsModal({ lec, onClose }: { lec: OpsLecture; onClose: () => void
               </label>
             ) : (
               <label className="ox-field op-form-span2">
-                파일 (pdf/zip/이미지/문서, 최대 50MB)
+                파일 (pdf/zip/이미지/문서)
                 <input type="file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
               </label>
             )}
