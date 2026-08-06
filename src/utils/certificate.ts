@@ -1,6 +1,7 @@
 /** 상장 PNG 생성 — 학년 랭킹·개근상. 어린이 친화 디자인, 다운로드용. */
 
 import logoCUrl from '../assets/certificate/logo-c.png';
+import wordmarkUrl from '../assets/brand/catchap-wordmark.png';
 
 export interface CertificateData {
   kind: 'rank' | 'attendance';
@@ -168,6 +169,14 @@ function esc(s: string): string {
   );
 }
 
+/** 한글 이름을 수료증 표기(이름 성 순)로 바꾼다 — '하지영' → '지영 하'. 성은 첫 글자(1자 성
+ *  기준으로 대부분 커버). 이미 공백이 있거나(영문 등) 한글이 아니면 원본 그대로 둔다. */
+function westernName(name: string): string {
+  const t = (name || '').trim();
+  if (!t || t.includes(' ') || !/^[가-힣]{2,}$/.test(t)) return t;
+  return `${t.slice(1)} ${t.slice(0, 1)}`;
+}
+
 /** 참조 HTML 그대로 — 학생 이름·과목(코스명)·날짜만 치환, 나머지는 고정 디자인값. */
 export function certHtml(d: CourseCertificateData): string {
   const iso = (d.passedAt || '').slice(0, 10);
@@ -175,7 +184,7 @@ export function certHtml(d: CourseCertificateData): string {
   const koDate = y ? `${y}년 ${m}월 ${day}일` : '';
   const enDate = y ? `${String(day).padStart(2, '0')} ${MONTHS_EN[m - 1]} ${y}` : '';
   const year = y || new Date().getFullYear();
-  const name = esc(d.studentName || '');
+  const name = esc(westernName(d.studentName || ''));
   const course = esc(d.courseTitle || '');
   return `<section style="width:1056px;height:816px;font-family:'EB Garamond','Noto Serif KR',serif;color:#232019;background:#fdfcfa;padding:26px;box-sizing:border-box">
   <div style="height:100%;box-sizing:border-box;border:1px solid #c2ae7c;padding:6px">
@@ -186,9 +195,9 @@ export function certHtml(d: CourseCertificateData): string {
       <div style="position:absolute;bottom:10px;right:10px;width:22px;height:22px;border-bottom:2px solid #c2ae7c;border-right:2px solid #c2ae7c;z-index:2"></div>
       <img src="${logoCUrl}" alt="" crossorigin="anonymous" style="position:absolute;top:9%;left:50%;transform:translateX(-50%);width:74%;opacity:0.05;filter:grayscale(1);pointer-events:none;user-select:none" />
       <div style="position:relative;display:flex;flex-direction:column;padding:34px 40px 24px 56px;box-sizing:border-box">
-        <div style="display:flex;align-items:flex-end;gap:8px;font-family:'Space Grotesk',sans-serif">
-          <span style="font-size:50px;font-weight:700;letter-spacing:-0.035em;line-height:0.9;color:#232019">catchap</span>
-          <span style="width:11px;height:11px;border-radius:50%;background:#b39b5b;margin-bottom:7px"></span>
+        <div style="display:flex;align-items:flex-end;gap:9px">
+          <img src="${wordmarkUrl}" alt="CATCHAP" crossorigin="anonymous" style="height:40px;width:auto;display:block" />
+          <span style="width:11px;height:11px;border-radius:50%;background:#b39b5b;margin-bottom:5px"></span>
         </div>
         <div style="font-family:'Space Grotesk',sans-serif;font-size:10px;letter-spacing:0.42em;text-transform:uppercase;color:#8b857a;margin-top:13px">Learning &amp; Certification</div>
         <div style="margin-top:auto;padding-top:20px">
@@ -209,7 +218,7 @@ export function certHtml(d: CourseCertificateData): string {
             <div style="border-top:1px solid rgba(160,138,86,0.6);margin-top:10px;padding-top:9px;font-size:12.5px;color:#565049;line-height:1.55">
               <div style="font-weight:600;letter-spacing:0.01em">Amanda Brophy</div>
               <div style="color:#8b857a">Global Director, Catchap Career Certificates</div>
-              <div style="font-family:'Noto Serif KR',serif;color:#a09a8c;margin-top:2px">주식회사 캐챕 · Catchap Inc.</div>
+              <div style="font-family:'Noto Serif KR',serif;color:#a09a8c;margin-top:2px">주식회사 캣챱 · Catchap Inc.</div>
             </div>
           </div>
           <div style="text-align:right;font-size:11.5px;color:#8b857a;line-height:1.7">
