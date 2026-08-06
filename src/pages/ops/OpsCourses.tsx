@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
-import { lectureApi, type OpsCourse } from '../../api/lectures';
+import { lectureApi, thumbnailSrc, type OpsCourse } from '../../api/lectures';
 import OpsNav from '../../components/ops/OpsNav';
 import { ExamQuestionsModal, PricingModal } from './OpsLectures';
 import './OpsApproval.css';
@@ -113,6 +113,8 @@ export default function OpsCourses() {
   const [examCourse, setExamCourse] = useState<OpsCourse | null>(null);
   // 수강료 설정 — 같은 이유로 PricingModal 도 그대로 공유한다(두 화면의 동작이 갈리지 않게).
   const [priceCourse, setPriceCourse] = useState<OpsCourse | null>(null);
+  // 코스 커버(대표 이미지) — 강의 없이도 코스 자체에 붙인다(코스 썸네일 기능).
+  const [coverCourse, setCoverCourse] = useState<OpsCourse | null>(null);
 
   const toggleStatus = async (c: OpsCourse) => {
     const next = c.status === 'active' ? 'hidden' : 'active';
@@ -306,6 +308,16 @@ export default function OpsCourses() {
                     </button>
                   )}
                   {!isOps && (
+                    <button
+                      className="crs-abtn crs-abtn--edit"
+                      disabled={busyId === c.id}
+                      onClick={() => setCoverCourse(c)}
+                      title="이 코스의 대표 커버 이미지를 올려요(강의 없어도 가능)"
+                    >
+                      <i className="ph ph-image" />커버
+                    </button>
+                  )}
+                  {!isOps && (
                     <button className="crs-abtn crs-abtn--edit" disabled={busyId === c.id} onClick={() => openEdit(c)}>
                       <i className="ph ph-pencil-simple" />수정
                     </button>
@@ -350,6 +362,170 @@ export default function OpsCourses() {
           say={say}
         />
       )}
+
+      {coverCourse && (
+        <CourseCoverModal
+          course={coverCourse}
+          onClose={() => setCoverCourse(null)}
+          onSaved={load}
+          say={say}
+        />
+      )}
+    </div>
+  );
+}
+
+/** 코스 커버(대표 이미지) 업로드·제거 모달 — 강의 없이도 코스 자체에 붙는다(코스 썸네일 기능).
+ *  코스당 1장, 16:9 권장. 저장 시 목록 재조회로 새 thumbnail_url 반영. */
+function CourseCoverModal({
+  course,
+  onClose,
+  onSaved,
+  say,
+}: {
+  course: OpsCourse;
+  onClose: () => void;
+  onSaved: () => void;
+  say: (m: string) => void;
+}) {
+  const [file, setFile] = useState<File | null>(null);
+  const [busy, setBusy] = useState(false);
+  const cur = course.thumbnail_url ? thumbnailSrc(course.thumbnail_url) ?? null : null;
+  const objUrl = useMemo(() => (file ? URL.createObjectURL(file) : null), [file]);
+  useEffect(
+    () => () => {
+      if (objUrl) URL.revokeObjectURL(objUrl);
+    },
+    [objUrl],
+  );
+  const preview = objUrl ?? cur;
+
+  const pick = (f: File | null) => {
+    if (f && !/\.(jpe?g|png|webp)$/i.test(f.name))
+      return say('jpg/png/webp 이미지만 올릴 수 있어요.');
+    if (f && f.size > 5 * 1024 * 1024) return say('이미지는 5MB 이하만 올릴 수 있어요.');
+    setFile(f);
+  };
+  const upload = async () => {
+    if (!file) return;
+    setBusy(true);
+    try {
+      await lectureApi.opsUploadCourseThumbnail(course.id, file);
+      say('코스 커버를 저장했어요.');
+      onSaved();
+      onClose();
+    } catch (e) {
+      const err = e as { response?: { data?: { detail?: string } } };
+      say(err.response?.data?.detail ?? '업로드에 실패했어요.');
+      setBusy(false);
+    }
+  };
+  const remove = async () => {
+    setBusy(true);
+    try {
+      await lectureApi.opsDeleteCourseThumbnail(course.id);
+      say('코스 커버를 제거했어요.');
+      onSaved();
+      onClose();
+    } catch (e) {
+      const err = e as { response?: { data?: { detail?: string } } };
+      say(err.response?.data?.detail ?? '제거에 실패했어요.');
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        background: 'rgba(0,0,0,.5)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 1000,
+        padding: 20,
+      }}
+    >
+      <div
+        className="orn-card"
+        onClick={(e) => e.stopPropagation()}
+        style={{ width: 'min(520px, 94vw)', padding: 22 }}
+      >
+        <div className="crs-formcard-head">
+          <i className="ph ph-image" />
+          <h2>코스 커버 이미지</h2>
+        </div>
+        <p style={{ color: 'var(--ink-2)', fontSize: 13, margin: '8px 0 14px', lineHeight: 1.5 }}>
+          학생 코스 카드에 보이는 대표 이미지예요. 강의가 없어도 붙일 수 있어요. 권장 16:9 ·
+          jpg/png/webp · 5MB 이하.
+        </p>
+        <div
+          style={{
+            aspectRatio: '16 / 9',
+            borderRadius: 12,
+            overflow: 'hidden',
+            background: 'var(--bg)',
+            border: '1px solid var(--line)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: 14,
+          }}
+        >
+          {preview ? (
+            <img
+              src={preview}
+              alt="코스 커버 미리보기"
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            />
+          ) : (
+            <span
+              style={{
+                color: 'var(--ink-3)',
+                fontSize: 13,
+                display: 'flex',
+                gap: 6,
+                alignItems: 'center',
+              }}
+            >
+              <i className="ph ph-image" />커버 없음 (자동 커버 사용)
+            </span>
+          )}
+        </div>
+        <label
+          className="orn-btn orn-btn--secondary"
+          style={{
+            cursor: 'pointer',
+            display: 'inline-flex',
+            gap: 6,
+            alignItems: 'center',
+            marginBottom: 14,
+          }}
+        >
+          <i className="ph ph-upload-simple" /> 이미지 선택
+          <input
+            type="file"
+            accept="image/png,image/jpeg,image/webp"
+            style={{ display: 'none' }}
+            onChange={(e) => pick(e.target.files?.[0] ?? null)}
+          />
+        </label>
+        <div className="crs-form-actions">
+          {cur && !file && (
+            <button className="orn-btn orn-btn--secondary" disabled={busy} onClick={remove}>
+              <i className="ph ph-trash" /> 커버 제거
+            </button>
+          )}
+          <button className="orn-btn orn-btn--secondary" disabled={busy} onClick={onClose}>
+            취소
+          </button>
+          <button className="orn-btn orn-btn--primary" disabled={!file || busy} onClick={upload}>
+            <i className="ph ph-check" /> {busy ? '저장 중…' : '저장'}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

@@ -648,6 +648,19 @@ export const lectureApi = {
   opsDeleteThumbnail: (lectureId: string) =>
     client.delete<OpsLecture>(`/ops/lectures/${lectureId}/thumbnail`).then((r) => r.data),
 
+  /** 코스 대표 썸네일 업로드(multipart, field 'file') — 강의 없이도 코스 자체에 커버를 단다.
+   *  갱신된 코스 행(thumbnail_url 포함) 반환. 코스 커버는 코스 자체 썸네일이 우선, 없으면
+   *  소속 강의 썸네일에서 유도된다(백엔드). */
+  opsUploadCourseThumbnail: (courseId: string, file: File) => {
+    const fd = new FormData();
+    fd.append('file', file);
+    return client.post<OpsCourse>(`/ops/courses/${courseId}/thumbnail`, fd).then((r) => r.data);
+  },
+
+  /** 코스 커버 제거 — 코스는 유지하고 대표 이미지만 없앤다(강의 유래 유도/자동 커버로 복귀). */
+  opsDeleteCourseThumbnail: (courseId: string) =>
+    client.delete<OpsCourse>(`/ops/courses/${courseId}/thumbnail`).then((r) => r.data),
+
   /** 강의 삭제 = 휴지통으로 이동(복구 가능). 파일·문항·전사 모두 보존되고 30일 뒤 자동 완전삭제. */
   opsDelete: (lectureId: string) =>
     client.delete<{ ok: boolean }>(`/ops/lectures/${lectureId}`).then((r) => r.data),
