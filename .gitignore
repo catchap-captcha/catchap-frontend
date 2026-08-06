@@ -33,3 +33,9 @@ dist-ssr
 
 # Claude Code working dir (launch.json 등 로컬 전용) — backend/.gitignore와 동일 규칙
 .claude/
+
+# ★.env.production 은 예외로 올립니다 (2026-08-06).
+#   VITE_* 는 브라우저 JS 에 평문으로 박히므로 ★애초에 비밀이 아닙니다.
+#   git 에 없으면 누가 빌드하느냐에 따라 결과가 달라지고, 값이 빠지면
+#   교육 위젯이 조용히 사라집니다 — 실제로 그 일이 있었습니다.
+!.env.production
