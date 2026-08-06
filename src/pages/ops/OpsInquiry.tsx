@@ -225,8 +225,10 @@ export default function OpsInquiry() {
                 <div className="oq-side-title">먼저 확인해 보세요</div>
                 <ul className="oq-tips">
                   <li>
-                    영상 업로드는 <strong>최대 5GB</strong>까지예요. 용량이 크면 시간이 오래
-                    걸릴 수 있어요.
+                    {/* 2026-08-06 상한 해제 — 남아 있던 '최대 5GB' 안내를 고침.
+                        실질 한도는 백엔드 디스크 여유이고 최종 판정은 서버가 한다. */}
+                    영상 업로드는 <strong>용량 제한이 없어요</strong>. 다만 파일이 크면 올리는
+                    데 시간이 오래 걸릴 수 있어요.
                   </li>
                   <li>
                     AI 문항 생성은 강의 음성을 전사한 뒤 진행돼서, 강의 길이에 따라 몇 분 걸려요.
