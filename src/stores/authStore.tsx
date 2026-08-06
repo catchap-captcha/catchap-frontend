@@ -53,6 +53,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener('catchap:logout', onLogout);
   }, [reloadMe]);
 
+  // 브라우저 탭 제목 — 역할별로 바꾼다. 로그아웃·수강생은 '캣챱스터디', 강사/운영자는 포털 표기.
+  useEffect(() => {
+    const base = '캣챱스터디';
+    document.title =
+      me?.role === 'instructor'
+        ? `${base} - 강사포털`
+        : me?.role === 'ops'
+          ? `${base} - 운영포털`
+          : base;
+  }, [me]);
+
   const login = useCallback(
     async (req: LoginRequest) => {
       const res = await client.post<TokenPair>('/auth/login', req);
