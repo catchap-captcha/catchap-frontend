@@ -4,14 +4,22 @@
  * 흐름은 백엔드 docs/social-login-design.md 와 1:1이다:
  *   authorize → (provider 동의 화면) → callback → logged_in | signup_required → signup
  *
- * redirect_uri는 **보내지 않는다.** 서버가 허용목록(SOCIAL_REDIRECT_URIS)의 기본값을 쓰고
- * state 안에 박아 콜백에서 대조한다 — 프론트가 임의 주소를 보내면 목록 밖이라 400이 되고,
- * 보낼 이유도 없다(콜백 경로는 하나다).
+ * redirect_uri는 **지금 떠 있는 오리진 기준으로 보낸다**(window.location.origin + 콜백 경로).
+ * 서버는 허용목록(SOCIAL_REDIRECT_URIS)과 대조해 목록 밖이면 400으로 막고, 통과한 값을
+ * state 안에 박아 콜백에서 다시 대조한다. 보내지 않으면 서버가 목록의 '첫 번째' 값을 쓰는데,
+ * 로컬과 운영 주소가 한 목록에 있을 때 순서에 따라 엉뚱한 도메인으로 튕긴다 —
+ * 자기 오리진을 명시하면 같은 목록을 모든 환경이 공유해도 항상 자기 자신으로 돌아온다.
  */
 import { client } from './client';
 import type { TokenPair } from '../types/auth';
 
 export type SocialProvider = 'kakao' | 'naver' | 'google';
+
+/** provider가 돌아올 주소 — 서버 허용목록(SOCIAL_REDIRECT_URIS)에 이 값이 있어야 한다.
+ *  경로는 routes/paths.ts 의 SOCIAL_CALLBACK 과 같아야 한다(하드코딩 대신 여기 한 곳). */
+export function callbackUrl(): string {
+  return `${window.location.origin}/auth/social/callback`;
+}
 
 export interface SocialProviderInfo {
   provider: SocialProvider;
@@ -69,7 +77,9 @@ export const socialApi = {
 
   authorize: (provider: SocialProvider) =>
     client
-      .get<SocialAuthorizeResponse>(`/auth/social/${provider}/authorize`)
+      .get<SocialAuthorizeResponse>(`/auth/social/${provider}/authorize`, {
+        params: { redirect_uri: callbackUrl() },
+      })
       .then((r) => r.data),
 
   callback: (provider: SocialProvider, code: string, state: string) =>
