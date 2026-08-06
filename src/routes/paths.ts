@@ -70,6 +70,7 @@ export const PATHS = {
   OPS_LOGS: '/ops/logs',
   OPS_OPERATORS: '/ops/operators', // 운영자 계정 관리
   OPS_MONITORING: '/ops/monitoring', // 서버 자원 모니터링 (CPU/메모리/디스크/GPU + LLM 사용량)
+  OPS_DEPLOYMENTS: '/ops/deployments', // 배포 현황 — 지금 무엇이 떠 있나 (읽기 전용)
   OPS_ALERTS: '/ops/alerts', // 시스템 경보 — 감시 장치가 보낸 경보 목록 + 메일 수신 켜고 끄기
   OPS_AI_MODELS: '/ops/ai-models', // 모델 레지스트리 관리(기관 콘솔 노출 콘텐츠 — 실 LLM 호출과 무관)
   // LLM 설정 — 종전 '설정' 한 페이지에 뭉쳐 있던 것을 전용 메뉴 3개로 분리(찾기 쉽게).
