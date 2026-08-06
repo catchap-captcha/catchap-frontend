@@ -43,7 +43,8 @@
   color: var(--ink-3);
 }
 
-/* 스테이지가 620px 미만으로 찌그러졌을 때 — 수집 데이터의 표면이 달라지므로 눈에 띄어야 한다.
+/* 컨테이너가 560px(= iframe 안 캡차 카드 고정폭) 미만으로 찌그러졌을 때 — 수집 데이터의
+   표면이 달라지므로 눈에 띄어야 한다. 기준값은 CollectCaptcha.tsx 의 FULL_STAGE_PX 가 정본.
    막지는 않는다(판정이 아니라 수집이라 계속 풀 수는 있어야 한다). */
 .cc-warn {
   display: flex;
@@ -64,7 +65,8 @@
   font-size: 15px;
 }
 
-/* 로더가 iframe 을 max-width:620px 로 고정하고 margin:0 auto 로 가운데 둔다.
+/* 로더가 iframe 을 max-width:620px 로 고정하고 margin:0 auto 로 가운데 둔다. 다만 그 안의
+   캡차 카드는 560px 고정이라 620 을 다 줘도 남는 60px 은 여백이다(경고 기준이 560인 이유).
    여기서는 폭만 내주고 높이는 위젯(760px)에 맡긴다. */
 .cc-host {
   width: 100%;

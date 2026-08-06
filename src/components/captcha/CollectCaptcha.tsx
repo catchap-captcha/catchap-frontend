@@ -31,8 +31,17 @@ import './CollectCaptcha.css';
 const COLLECT_ORIGIN =
   (import.meta.env.VITE_COLLECT_CAPTCHA_ORIGIN as string | undefined) ?? 'https://captcha.catchap5.com';
 
-/** 위젯 iframe 의 인라인 max-width. 컨테이너가 이보다 좁으면 스테이지가 같이 줄어든다. */
-const FULL_STAGE_PX = 620;
+/** 스테이지가 온전히 나오는 최소 컨테이너 폭.
+ *
+ *  iframe 인라인 스타일의 max-width 는 620px 이지만, 그 안의 캡차 카드가
+ *  `.cc-card { width: 560px }` 고정이라 620px 을 다 줘도 카드는 560px 이고 나머지는 여백이다.
+ *  즉 컨테이너가 560 이상이면 스테이지 크기가 늘 같고(캡차팀 DB 기준 500px), 560 아래로
+ *  내려갈 때만 줄어든다.
+ *
+ *  처음에 620 으로 잡았다가 캡차팀 실측 분포로 정정했다(2026-08-06). 그쪽 DB 에서 스테이지
+ *  폭이 500px 591건으로 천장을 치고 그 위가 없다 — 620 기준으로 두면 컨테이너 560~619 구간이
+ *  멀쩡한데도 경고가 뜬다. */
+const FULL_STAGE_PX = 560;
 
 let seq = 0;
 
@@ -86,10 +95,11 @@ export default function CollectCaptcha({ participant, lectureId, note, className
   }, [participant, lectureId]);
 
   /* 스테이지 폭 감시 — 수집 품질 방어선.
-     위젯 iframe 은 width:100%; max-width:620px 라 컨테이너가 좁으면 스테이지가 같이 줄어든다.
-     같은 사람이 화면(또는 창 크기)에 따라 다른 크기로 풀면 그게 그대로 표면 차이가 되고,
-     7월에 옛 수집 화면 오탐 0.11%가 메인에서 33.3%로 튄 원인이 정확히 이것이었다.
-     조용히 어긋나는 게 제일 나쁘므로, 620px 미만이면 푸는 사람에게 바로 보여준다. */
+     컨테이너가 FULL_STAGE_PX 아래로 내려가면 캡차 카드가 같이 찌그러진다. 같은 사람이
+     화면(또는 창 크기)에 따라 다른 크기로 풀면 그게 그대로 표면 차이가 되고, 7월에 옛 수집
+     화면 오탐 0.11%가 메인에서 33.3%로 튄 원인이 정확히 이것이었다. 현재 모델 특징 55개 중
+     16개가 픽셀 기반이라 섞이면 영향을 받는다.
+     조용히 어긋나는 게 제일 나쁘므로, 줄어들면 푸는 사람에게 바로 보여준다. */
   useEffect(() => {
     const host = hostRef.current;
     if (!host || !participant) return;
@@ -120,8 +130,8 @@ export default function CollectCaptcha({ participant, lectureId, note, className
       {narrowPx != null && (
         <p className="cc-warn" role="status">
           <i className="ph-fill ph-arrows-out-line-horizontal" />
-          창이 좁아 문제 영역이 <b>{narrowPx}px</b>로 줄었습니다(정상 {FULL_STAGE_PX}px). 이대로 풀면
-          다른 화면에서 모은 데이터와 크기가 어긋납니다 — 창을 넓혀 주세요.
+          창이 좁아 문제 영역이 <b>{narrowPx}px</b>로 줄었습니다(정상 {FULL_STAGE_PX}px 이상). 이대로
+          풀면 다른 화면에서 모은 데이터와 크기가 어긋납니다 — 창을 넓혀 주세요.
         </p>
       )}
       <div ref={hostRef} className="cc-host" />
