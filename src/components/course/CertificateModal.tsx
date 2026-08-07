@@ -39,7 +39,7 @@ export default function CertificateModal({
   const [ready, setReady] = useState(false);
   const [saving, setSaving] = useState<'' | 'pdf' | 'png'>('');
   const [scale, setScale] = useState(0.5);
-  const frameRef = useRef<HTMLDivElement>(null);
+  const bodyRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let alive = true;
@@ -68,11 +68,17 @@ export default function CertificateModal({
     };
   }, [courseId]);
 
-  // 미리보기 스케일 — 고정 크기(1056×816) 카드를 프레임 폭에 맞춰 축소한다.
+  // 미리보기 스케일 — 고정 크기(1056×816) 카드를 본문 영역의 가로·세로 **둘 다**에 맞춰
+  // 축소한다(min). 종전엔 가로만 맞춰 세로로 넘쳐 잘렸다.
   useEffect(() => {
-    const el = frameRef.current;
+    const el = bodyRef.current;
     if (!el || !ready) return;
-    const update = () => setScale(el.clientWidth / 1056);
+    const update = () => {
+      const cs = getComputedStyle(el);
+      const w = el.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+      const h = el.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+      if (w > 0 && h > 0) setScale(Math.min(w / 1056, h / 816));
+    };
     update();
     const ro = new ResizeObserver(update);
     ro.observe(el);
@@ -138,7 +144,7 @@ export default function CertificateModal({
           </button>
         </div>
 
-        <div className="cm-body">
+        <div className="cm-body" ref={bodyRef}>
           {err && (
             <div className="cm-err">
               <i className="ph-fill ph-warning-circle" /> {err}
@@ -147,9 +153,8 @@ export default function CertificateModal({
           {!err && !ready && <div className="cm-loading">수료증을 만드는 중이에요…</div>}
           {!err && ready && cert && (
             <div
-              ref={frameRef}
               className="cm-certframe"
-              style={{ aspectRatio: '1056 / 816' }}
+              style={{ width: `${1056 * scale}px`, height: `${816 * scale}px` }}
               aria-label={`${cert.courseTitle} 수료증`}
             >
               <div

@@ -4,9 +4,9 @@ import { PATHS } from '../../routes/paths';
 import {
   API_ORIGIN,
   lectureApi,
-  type ExamResultItem,
   type ExamSession,
   type ExamState,
+  type ExamSubmitResult,
 } from '../../api/lectures';
 import { StudentNav } from '../../layouts/StudentLayout';
 import CertificateModal from '../../components/course/CertificateModal';
@@ -30,6 +30,10 @@ type Phase = 'intro' | 'taking' | 'result' | 'cooldown';
 const EXAM_SEC_PER_Q = 30;
 const PASS_RATIO = 0.8;
 
+/** 초 → MM:SS. 재응시 게이트 카운트다운 표시용. */
+const fmtMMSS = (s: number) =>
+  `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+
 export default function CourseExam() {
   const [params] = useSearchParams();
   const courseId = params.get('course') ?? '';
@@ -42,20 +46,21 @@ export default function CourseExam() {
   // 문항별 선택(표시 순서 기준 인덱스 집합). question_id → Set<displayIdx>
   const [picks, setPicks] = useState<Record<string, number[]>>({});
   const [submitting, setSubmitting] = useState(false);
-  const [result, setResult] = useState<{
-    total: number; correct: number; results: ExamResultItem[];
-    progress: { mastered: number; total: number }; passed: boolean; perfect: boolean; stale: number;
-  } | null>(null);
+  const [result, setResult] = useState<ExamSubmitResult | null>(null);
   const [startedAt, setStartedAt] = useState(0);
   // 수료증 팝업 — 합격 직후 자동으로 열고(아래 submit), 인트로·결과지 버튼으로도 다시 연다.
   // 발급 자체(서버 수료 검증 → 캔버스 렌더 → 저장)는 CertificateModal이 맡는다.
   const [certOpen, setCertOpen] = useState(false);
+  // 제출 직후 결과 팝업(점수·통과 여부) — 통과면 여기서 '수료증 보기'로 수료증을 연다.
+  const [resultPop, setResultPop] = useState(false);
   // 오답 쿨다운 남은 시간(초). 방금 틀린 문항은 잠시 뒤에 다시 나온다 — 빈 시험을 보여주는
   // 대신 언제 열리는지 알려주고 초 단위로 줄여 준다.
   const [cooldownLeft, setCooldownLeft] = useState(0);
   const [cooldownMin, setCooldownMin] = useState(0);
   // 응시 제한시간(초) — 회차 시작 시 문항수×EXAM_SEC_PER_Q로 세팅, 0이면 자동 제출.
   const [timeLeft, setTimeLeft] = useState(0);
+  // 미통과 결과 팝업의 재응시 게이트 남은 초 — 제출 응답 retry_after_sec에서 시작해 1초씩 준다.
+  const [retryLeft, setRetryLeft] = useState(0);
 
   const loadState = useCallback(() => {
     if (!courseId) return;
@@ -120,10 +125,12 @@ export default function CourseExam() {
         })),
         solve_time_ms: Math.max(0, Date.now() - startedAt),
       });
-      setResult(res as any);
+      setResult(res);
       setPhase('result');
-      // 합격 처리 직후 수료증을 바로 보여준다(사용자 요청). 닫아도 인트로·나의 기록에서 다시 열 수 있다.
-      if ((res as any)?.passed) setCertOpen(true);
+      // 제출 직후 결과 팝업(점수·통과 여부)을 먼저 띄운다. 통과면 그 팝업의 '수료증 보기'로 수료증을 연다.
+      setResultPop(true);
+      // 미통과면 10분 재응시 게이트 시작 — 팝업 카운트다운의 시작값(초).
+      setRetryLeft(res.retry_after_sec ?? 0);
     } catch (e: any) {
       const detail = e?.response?.data?.detail;
       // detail 은 문자열일 수도, {message, ...} 객체일 수도 있다. 객체를 그대로 렌더하면
@@ -153,6 +160,13 @@ export default function CourseExam() {
     const t = setInterval(() => setCooldownLeft((n) => Math.max(0, n - 1)), 1000);
     return () => clearInterval(t);
   }, [phase, cooldownLeft]);
+
+  // 결과 팝업 재응시 게이트 카운트다운 — 팝업이 떠 있는 동안 1초씩 줄인다(0이면 재응시 열림).
+  useEffect(() => {
+    if (!resultPop || retryLeft <= 0) return;
+    const t = setInterval(() => setRetryLeft((n) => Math.max(0, n - 1)), 1000);
+    return () => clearInterval(t);
+  }, [resultPop, retryLeft]);
 
   // 응시 제한시간 — 1초씩 줄이고, 0이 되면 자동 제출(무응답=오답). 결과·인트로로 나가면 멈춘다.
   useEffect(() => {
@@ -207,9 +221,12 @@ export default function CourseExam() {
         {phase === 'cooldown' && (
           <section className="ce-cooldown">
             <i className="ph-fill ph-hourglass-medium" />
-            <h1 className="ce-cd-title">잠시 뒤에 다시 풀 수 있어요</h1>
+            <h1 className="ce-cd-title">
+              {cooldownLeft > 0 ? '조금 뒤에 다시 도전할 수 있어요' : '이제 다시 도전할 수 있어요'}
+            </h1>
             <p className="ce-cd-sub">
-              방금 틀린 문항은 해설을 충분히 읽도록 {cooldownMin}분 뒤에 다시 나와요.
+              미통과하면 {cooldownMin}분 간격으로 재응시할 수 있어요. 다음 회차엔 <b>틀린 문제를
+              포함한 새 문항</b>이 나와요.
               <br />
               바로 다시 찍는 것보다, 결과지에서 해설을 보고 오면 훨씬 잘 풀려요.
             </p>
@@ -227,7 +244,7 @@ export default function CourseExam() {
                 disabled={cooldownLeft > 0}
               >
                 <i className="ph-fill ph-play-circle" />
-                {cooldownLeft > 0 ? '기다리는 중…' : '이어서 풀기'}
+                {cooldownLeft > 0 ? '기다리는 중…' : '재응시'}
               </button>
               <button
                 className="ce-btn ce-btn--ghost"
@@ -256,10 +273,9 @@ export default function CourseExam() {
                     <>전 문항 {session.questions.length}개를 <b>한 번에 모두 맞히면 완벽 통과</b>! 한 문제라도 틀리면 다시 도전할 수 있어요.</>
                   ) : (
                     <>
-                      이번 회차 {session.questions.length}문항 · 제한시간 안에 풀어요(못 맞힌 문항은 다음 회차에 다시 나와요).
-                      {session.progress && (
-                        <> 지금까지 <b>{session.progress.mastered}/{session.progress.total}</b> 맞힘.</>
-                      )}
+                      이번 회차 {session.questions.length}문항 ·{' '}
+                      <b>{session.pass_need ?? Math.ceil(session.questions.length * PASS_RATIO)}개 이상</b>{' '}
+                      맞히면 수료해요(제한시간 안에). 미통과해도 10분 뒤 새 문항으로 다시 도전할 수 있어요.
                     </>
                   )}
                 </p>
@@ -394,7 +410,7 @@ export default function CourseExam() {
               )}
               {!result.passed && (
                 <button className="ce-btn ce-btn--primary" onClick={() => { setResult(null); start(); }}>
-                  <i className="ph-fill ph-arrow-right" /> 다음 회차 풀기
+                  <i className="ph-fill ph-arrow-clockwise" /> 다시 도전
                 </button>
               )}
               {result.passed && !result.perfect && (
@@ -413,7 +429,90 @@ export default function CourseExam() {
         )}
       </div>
 
-      {/* 수료증 팝업 — 합격 직후 자동 노출 + 버튼으로 다시 열기 */}
+      {/* 제출 직후 결과 팝업 — 점수·통과 여부. 통과면 '수료증 보기'로 수료증을 연다. */}
+      {resultPop && result && (
+        <div className="ce-rp-back" onClick={() => setResultPop(false)} role="presentation">
+          <div
+            className="ce-rp"
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-label="시험 결과"
+          >
+            <div
+              className={`ce-rp-badge ce-rp-badge--${result.passed ? (result.perfect ? 'perfect' : 'pass') : 'fail'}`}
+            >
+              <i
+                className={
+                  result.passed
+                    ? result.perfect
+                      ? 'ph-fill ph-crown'
+                      : 'ph-fill ph-seal-check'
+                    : 'ph-fill ph-arrow-counter-clockwise'
+                }
+              />
+              {result.passed ? (result.perfect ? '완벽 통과!' : '수료 완료!') : '아쉽게 미통과'}
+            </div>
+            <div className="ce-rp-score">
+              {result.total}문항 중 <b>{result.correct}</b>개 정답
+              {!result.passed && <> · 수료엔 <b>{result.need}개</b> 필요</>}
+            </div>
+            {result.passed ? (
+              <div className="ce-rp-prog">
+                {result.perfect ? '전 문항을 한 번에 다 맞혔어요! 🏆' : '수료 기준을 넘겨 통과했어요. 🎉'}
+              </div>
+            ) : (
+              <div className="ce-rp-gate">
+                <div className="ce-rp-gate-h">
+                  <i className="ph-fill ph-timer" />{' '}
+                  {retryLeft > 0 ? `${fmtMMSS(retryLeft)} 뒤 재응시` : '지금 재응시할 수 있어요'}
+                </div>
+                <p className="ce-rp-gate-s">
+                  <b>틀린 문제를 포함한 새 {result.total}문항</b>으로 다시 도전해요
+                </p>
+              </div>
+            )}
+            <div className="ce-rp-actions">
+              {result.passed ? (
+                <>
+                  <button className="ce-rp-btn ce-rp-btn--ghost" onClick={() => setResultPop(false)}>
+                    결과 보기
+                  </button>
+                  <button
+                    className="ce-rp-btn ce-rp-btn--primary"
+                    onClick={() => {
+                      setResultPop(false);
+                      setCertOpen(true);
+                    }}
+                  >
+                    <i className="ph-fill ph-certificate" /> 수료증 보기
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button className="ce-rp-btn ce-rp-btn--ghost" onClick={() => setResultPop(false)}>
+                    결과 · 해설 보기
+                  </button>
+                  <button
+                    className="ce-rp-btn ce-rp-btn--primary"
+                    disabled={retryLeft > 0}
+                    onClick={() => {
+                      setResultPop(false);
+                      setResult(null);
+                      start();
+                    }}
+                  >
+                    <i className="ph-fill ph-arrow-clockwise" />{' '}
+                    {retryLeft > 0 ? `재응시 ${fmtMMSS(retryLeft)}` : '재응시'}
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 수료증 팝업 — 결과 팝업의 '수료증 보기' 또는 인트로·나의 기록 버튼으로 연다 */}
       {certOpen && (
         <CertificateModal
           courseId={courseId}
@@ -441,7 +540,7 @@ function IntroCard({
       </div>
     );
   }
-  const pct = state.question_count ? Math.round((state.mastered_count / state.question_count) * 100) : 0;
+  const pct = state.exam_size ? Math.round((state.best_correct / state.exam_size) * 100) : 0;
   return (
     <div className="ce-introcard">
       <div className="ce-introicon">
@@ -483,19 +582,28 @@ function IntroCard({
       ) : state.available ? (
         <>
           <p className="ce-sub">
-            문항 <b>{state.question_count}</b>개 중 <b>{Math.ceil(state.question_count * PASS_RATIO)}개 이상</b>{' '}
-            맞히면 수료해요. 회차마다 제한시간이 있어요(못 맞힌 문항은 다음 회차에 다시 나와요).
+            매 회차 <b>{state.exam_size}문항</b> 중 <b>{state.pass_need}개 이상</b> 맞히면 수료해요.
+            미통과하면 <b>{state.cooldown_minutes}분 뒤</b>, 틀린 문제를 포함한 새 {state.exam_size}문항으로
+            다시 도전할 수 있어요.
           </p>
-          <div className="ce-progress">
-            <div className="ce-progresshead">
-              <span>맞힌 문항</span>
-              <span>{state.mastered_count}/{state.question_count}</span>
+          {state.attempts > 0 && (
+            <div className="ce-progress">
+              <div className="ce-progresshead">
+                <span>최근 최고 점수</span>
+                <span>{state.best_correct}/{state.exam_size}</span>
+              </div>
+              <div className="ce-progressbar"><div className="ce-progressfill" style={{ width: `${pct}%` }} /></div>
             </div>
-            <div className="ce-progressbar"><div className="ce-progressfill" style={{ width: `${pct}%` }} /></div>
-          </div>
-          <button className="ce-btn ce-btn--primary ce-btn--lg" onClick={() => onStart(false)}>
-            <i className="ph-fill ph-play" /> {state.mastered_count > 0 ? '이어서 풀기' : '시험 시작'}
-          </button>
+          )}
+          {state.retry_after_sec > 0 ? (
+            <button className="ce-btn ce-btn--primary ce-btn--lg" disabled>
+              <i className="ph-fill ph-hourglass-medium" /> 약 {Math.ceil(state.retry_after_sec / 60)}분 뒤 재응시
+            </button>
+          ) : (
+            <button className="ce-btn ce-btn--primary ce-btn--lg" onClick={() => onStart(false)}>
+              <i className="ph-fill ph-play" /> {state.attempts > 0 ? '다시 도전' : '시험 시작'}
+            </button>
+          )}
         </>
       ) : (
         <>
@@ -520,8 +628,7 @@ function IntroCard({
 function ResultHero({
   result, title,
 }: {
-  result: { total: number; correct: number; progress: { mastered: number; total: number };
-    passed: boolean; perfect: boolean; stale: number };
+  result: ExamSubmitResult;
   title: string;
 }) {
   if (result.passed) {
@@ -545,13 +652,12 @@ function ResultHero({
     <div className="ce-hero">
       <h1 className="ce-title">이번 회차 결과</h1>
       <p className="ce-sub">
-        {result.total}문항 중 <b>{result.correct}</b>개 정답 · 지금까지{' '}
-        <b>{result.progress.mastered}/{result.progress.total}</b> 맞혔어요.
+        {result.total}문항 중 <b>{result.correct}</b>개 정답 · 수료 기준은 <b>{result.need}개</b>예요.
         {result.stale > 0 && (
           <><br />일부 문항({result.stale}개)이 바뀌어 다음 회차에서 새로 나와요.</>
         )}
       </p>
-      <p className="ce-encourage">틀린 문항은 다음 회차에 다시 나와요. 조금만 더 맞히면 수료예요! 🌱</p>
+      <p className="ce-encourage">10분 뒤, 틀린 문제를 포함한 새 문항으로 다시 도전할 수 있어요. 조금만 더! 🌱</p>
     </div>
   );
 }

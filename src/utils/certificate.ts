@@ -169,14 +169,6 @@ function esc(s: string): string {
   );
 }
 
-/** 한글 이름을 수료증 표기(이름 성 순)로 바꾼다 — '하지영' → '지영 하'. 성은 첫 글자(1자 성
- *  기준으로 대부분 커버). 이미 공백이 있거나(영문 등) 한글이 아니면 원본 그대로 둔다. */
-function westernName(name: string): string {
-  const t = (name || '').trim();
-  if (!t || t.includes(' ') || !/^[가-힣]{2,}$/.test(t)) return t;
-  return `${t.slice(1)} ${t.slice(0, 1)}`;
-}
-
 /** 참조 HTML 그대로 — 학생 이름·과목(코스명)·날짜만 치환, 나머지는 고정 디자인값. */
 export function certHtml(d: CourseCertificateData): string {
   const iso = (d.passedAt || '').slice(0, 10);
@@ -184,7 +176,7 @@ export function certHtml(d: CourseCertificateData): string {
   const koDate = y ? `${y}년 ${m}월 ${day}일` : '';
   const enDate = y ? `${String(day).padStart(2, '0')} ${MONTHS_EN[m - 1]} ${y}` : '';
   const year = y || new Date().getFullYear();
-  const name = esc(westernName(d.studentName || ''));
+  const name = esc(d.studentName || '');
   const course = esc(d.courseTitle || '');
   return `<section style="width:1056px;height:816px;font-family:'EB Garamond','Noto Serif KR',serif;color:#232019;background:#fdfcfa;padding:26px;box-sizing:border-box">
   <div style="height:100%;box-sizing:border-box;border:1px solid #c2ae7c;padding:6px">
@@ -232,10 +224,10 @@ export function certHtml(d: CourseCertificateData): string {
         </div>
       </div>
       <div style="position:relative;display:flex;flex-direction:column;align-items:center;background:linear-gradient(155deg,#fdfbf6 0%,#f6f1e6 46%,#efe7d7 100%);clip-path:polygon(0 0,100% 0,100% 82%,50% 100%,0 82%);overflow:hidden;box-shadow:inset 1px 0 0 rgba(160,138,86,0.35)">
-        <div style="position:absolute;inset:0;opacity:0.9;background:repeating-linear-gradient(45deg,rgba(160,138,86,0.05) 0 0.5px,transparent 0.5px 7px),repeating-linear-gradient(-45deg,rgba(160,138,86,0.04) 0 0.5px,transparent 0.5px 7px),repeating-radial-gradient(circle at 50% 33%,rgba(160,138,86,0.07) 0 0.5px,transparent 0.5px 13px)"></div>
+        <div style="position:absolute;inset:0;opacity:0.4;background:repeating-linear-gradient(45deg,rgba(160,138,86,0.05) 0 0.5px,transparent 0.5px 9px),repeating-linear-gradient(-45deg,rgba(160,138,86,0.04) 0 0.5px,transparent 0.5px 9px)"></div>
         <div style="position:absolute;top:9px;left:9px;right:9px;bottom:9px;border:1px solid rgba(160,138,86,0.28);clip-path:polygon(0 0,100% 0,100% 80%,50% 99%,0 80%);pointer-events:none"></div>
         <div style="position:relative;width:100%;background:#131c26;border-bottom:1px solid rgba(160,138,86,0.4);padding:12px 0;text-align:center">
-          <div style="font-family:'Space Grotesk',sans-serif;font-size:8.5px;letter-spacing:0.46em;text-transform:uppercase;color:#d8c391">Catchap Academy</div>
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:8.5px;letter-spacing:0.46em;text-transform:uppercase;color:#d8c391">Catchap Study</div>
         </div>
         <div style="position:relative;display:flex;flex-direction:column;align-items:center;padding:22px 26px 0;width:100%;box-sizing:border-box">
           <div style="font-family:'Space Grotesk',sans-serif;font-size:17px;font-weight:400;letter-spacing:0.34em;text-transform:uppercase;text-align:center;line-height:1.8;color:#2a251c">Course<br />Certificate</div>
@@ -244,10 +236,10 @@ export function certHtml(d: CourseCertificateData): string {
             <div style="width:5px;height:5px;background:#a08a56;transform:rotate(45deg)"></div>
             <div style="width:40px;height:1px;background:rgba(160,138,86,0.6)"></div>
           </div>
-          <div style="margin-top:18px;width:172px;height:172px;border-radius:50%;border:1px dashed rgba(160,138,86,0.5);display:flex;align-items:center;justify-content:center;background:radial-gradient(circle,#fffdf9 60%,rgba(255,255,255,0.35) 100%)">
+          <div style="margin-top:18px;width:172px;height:172px;border-radius:50%;border:1px solid rgba(160,138,86,0.32);display:flex;align-items:center;justify-content:center;background:radial-gradient(circle,#fffdf9 60%,rgba(255,255,255,0.35) 100%)">
             <div style="width:140px;height:140px;border-radius:50%;border:3px double #a08a56;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px">
               <div style="font-family:'Space Grotesk',sans-serif;font-size:6.5px;letter-spacing:0.14em;text-transform:uppercase;color:#8c7a45;max-width:112px;text-align:center">Education for everyone</div>
-              <div style="font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;letter-spacing:-0.02em;color:#2b2a26">catchap</div>
+              <img src="${wordmarkUrl}" alt="CATCHAP" crossorigin="anonymous" style="height:16px;width:auto;display:block;margin:1px 0" />
               <div style="width:26px;height:1px;background:rgba(160,138,86,0.7)"></div>
               <div style="font-family:'Space Grotesk',sans-serif;font-size:6.5px;letter-spacing:0.14em;text-transform:uppercase;color:#8c7a45;max-width:112px;text-align:center">Verified ${year}</div>
             </div>
