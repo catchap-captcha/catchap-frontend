@@ -178,6 +178,24 @@ export function certHtml(d: CourseCertificateData): string {
   const year = y || new Date().getFullYear();
   const name = esc(d.studentName || '');
   const course = esc(d.courseTitle || '');
+  // 오른쪽 인증 배너 배경 — V리본 노치 + 세로 베이지 그라데이션 + 은은한 원형 기요셰 잔무늬 +
+  // 안쪽 테두리 + 코너 브래킷을 SVG 한 장으로. ★html2canvas는 clip-path·repeating-gradient·
+  // 패턴을 제대로 못 그려 다운로드가 어긋났다 — SVG를 background-image로 두면 브라우저·html2canvas
+  // 모두 '이미지'로 똑같이 그려 팝업=다운로드가 된다(vector-effect로 스트레치에도 선 두께 고정).
+  let panelRings = '';
+  for (let rr = 22; rr <= 300; rr += 12) panelRings += `<circle cx='150' cy='300' r='${rr}'/>`;
+  const panelSvg = encodeURIComponent(
+    "<svg xmlns='http://www.w3.org/2000/svg' width='300' height='760' viewBox='0 0 300 760' preserveAspectRatio='none'>" +
+      "<defs><linearGradient id='pg' x1='0' y1='0' x2='0.3' y2='1'>" +
+      "<stop offset='0' stop-color='#faf6ee'/><stop offset='0.5' stop-color='#f3ecdd'/><stop offset='1' stop-color='#ebe1ce'/>" +
+      "</linearGradient></defs>" +
+      "<polygon points='0,0 300,0 300,632 150,760 0,632' fill='url(#pg)'/>" +
+      "<g stroke='#9c7f3f' stroke-opacity='0.06' fill='none' stroke-width='0.7'>" + panelRings + "</g>" +
+      "<polygon points='11,11 289,11 289,626 150,748 11,626' fill='none' stroke='#a08a56' stroke-opacity='0.3' stroke-width='1' vector-effect='non-scaling-stroke'/>" +
+      "<path d='M271,52 L289,52 L289,70' fill='none' stroke='#a08a56' stroke-opacity='0.55' stroke-width='1.3' vector-effect='non-scaling-stroke'/>" +
+      "<path d='M150,744 L150,726' fill='none' stroke='#a08a56' stroke-opacity='0.5' stroke-width='1.3' vector-effect='non-scaling-stroke'/>" +
+      "</svg>",
+  );
   return `<section style="width:1056px;height:816px;font-family:'EB Garamond','Noto Serif KR',serif;color:#232019;background:#fdfcfa;padding:26px;box-sizing:border-box">
   <div style="height:100%;box-sizing:border-box;border:1px solid #c2ae7c;padding:6px">
     <div style="position:relative;height:100%;box-sizing:border-box;border:1px solid rgba(194,174,124,0.45);display:grid;grid-template-columns:1fr 300px;overflow:hidden">
@@ -207,10 +225,8 @@ export function certHtml(d: CourseCertificateData): string {
         <div style="margin-top:auto;padding-top:26px;display:flex;align-items:flex-end;justify-content:space-between;gap:36px">
           <div style="min-width:280px">
             <div style="font-family:'Mrs Saint Delafield',cursive;font-size:58px;line-height:0.9;color:#1d2a35;padding-left:8px;transform:rotate(-4deg);transform-origin:left bottom;letter-spacing:0.01em">Catchap</div>
-            <div style="border-top:1px solid rgba(160,138,86,0.6);margin-top:10px;padding-top:9px;font-size:12.5px;color:#565049;line-height:1.55">
-              <div style="font-weight:600;letter-spacing:0.01em">Amanda Brophy</div>
-              <div style="color:#8b857a">Global Director, Catchap Career Certificates</div>
-              <div style="font-family:'Noto Serif KR',serif;color:#a09a8c;margin-top:2px">주식회사 캣챱 · Catchap Inc.</div>
+            <div style="border-top:1px solid rgba(160,138,86,0.6);margin-top:10px;padding-top:24px;font-size:12.5px;color:#565049;line-height:1.55">
+              <div style="font-family:'Noto Serif KR',serif;color:#a09a8c">주식회사 캣챱 · Catchap Inc.</div>
             </div>
           </div>
           <div style="text-align:right;font-size:11.5px;color:#8b857a;line-height:1.7">
@@ -223,34 +239,33 @@ export function certHtml(d: CourseCertificateData): string {
           이 인증서는 학습자가 Catchap을 통해 제공된 온라인 강좌/프로젝트를 완료했음을 증명합니다. 이 인증서는 대학이나 기관에 정식으로 등록한 것으로 간주되지 않으며, 그 자체로 학점, 성적 또는 학위를 부여하지 않습니다.
         </div>
       </div>
-      <div style="position:relative;display:flex;flex-direction:column;align-items:center;background:linear-gradient(155deg,#fdfbf6 0%,#f6f1e6 46%,#efe7d7 100%);clip-path:polygon(0 0,100% 0,100% 82%,50% 100%,0 82%);overflow:hidden;box-shadow:inset 1px 0 0 rgba(160,138,86,0.35)">
-        <div style="position:absolute;inset:0;opacity:0.4;background:repeating-linear-gradient(45deg,rgba(160,138,86,0.05) 0 0.5px,transparent 0.5px 9px),repeating-linear-gradient(-45deg,rgba(160,138,86,0.04) 0 0.5px,transparent 0.5px 9px)"></div>
-        <div style="position:absolute;top:9px;left:9px;right:9px;bottom:9px;border:1px solid rgba(160,138,86,0.28);clip-path:polygon(0 0,100% 0,100% 80%,50% 99%,0 80%);pointer-events:none"></div>
-        <div style="position:relative;width:100%;background:#131c26;border-bottom:1px solid rgba(160,138,86,0.4);padding:12px 0;text-align:center">
-          <div style="font-family:'Space Grotesk',sans-serif;font-size:8.5px;letter-spacing:0.46em;text-transform:uppercase;color:#d8c391">Catchap Study</div>
+      <div style="position:relative;display:flex;flex-direction:column;align-items:center;overflow:hidden">
+        <img src="data:image/svg+xml,${panelSvg}" alt="" style="position:absolute;top:0;left:0;width:100%;height:100%;display:block;z-index:0" />
+        <div style="position:relative;z-index:1;width:100%;background:#131c26;border-bottom:1px solid rgba(176,148,86,0.55);padding:13px 0;text-align:center">
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:9px;font-weight:500;letter-spacing:0.42em;text-transform:uppercase;color:#cdb079">Catchap Study</div>
         </div>
-        <div style="position:relative;display:flex;flex-direction:column;align-items:center;padding:22px 26px 0;width:100%;box-sizing:border-box">
-          <div style="font-family:'Space Grotesk',sans-serif;font-size:17px;font-weight:400;letter-spacing:0.34em;text-transform:uppercase;text-align:center;line-height:1.8;color:#2a251c">Course<br />Certificate</div>
-          <div style="display:flex;align-items:center;gap:8px;margin-top:14px">
-            <div style="width:40px;height:1px;background:rgba(160,138,86,0.6)"></div>
+        <div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;padding:0 26px;width:100%;box-sizing:border-box">
+          <div style="margin-top:34px;font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:400;letter-spacing:0.4em;text-transform:uppercase;text-align:center;line-height:1.95;color:#2a251c">Course<br />Certificate</div>
+          <div style="display:flex;align-items:center;gap:9px;margin-top:20px">
+            <div style="width:44px;height:1px;background:rgba(160,138,86,0.55)"></div>
             <div style="width:5px;height:5px;background:#a08a56;transform:rotate(45deg)"></div>
-            <div style="width:40px;height:1px;background:rgba(160,138,86,0.6)"></div>
+            <div style="width:44px;height:1px;background:rgba(160,138,86,0.55)"></div>
           </div>
-          <div style="margin-top:18px;width:172px;height:172px;border-radius:50%;border:1px solid rgba(160,138,86,0.32);display:flex;align-items:center;justify-content:center;background:radial-gradient(circle,#fffdf9 60%,rgba(255,255,255,0.35) 100%)">
-            <div style="width:140px;height:140px;border-radius:50%;border:3px double #a08a56;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px">
-              <div style="font-family:'Space Grotesk',sans-serif;font-size:6.5px;letter-spacing:0.14em;text-transform:uppercase;color:#8c7a45;max-width:112px;text-align:center">Education for everyone</div>
-              <img src="${wordmarkUrl}" alt="CATCHAP" crossorigin="anonymous" style="height:16px;width:auto;display:block;margin:1px 0" />
-              <div style="width:26px;height:1px;background:rgba(160,138,86,0.7)"></div>
-              <div style="font-family:'Space Grotesk',sans-serif;font-size:6.5px;letter-spacing:0.14em;text-transform:uppercase;color:#8c7a45;max-width:112px;text-align:center">Verified ${year}</div>
+          <div style="margin-top:30px;width:190px;height:190px;border-radius:50%;border:1px solid rgba(160,138,86,0.45);display:flex;align-items:center;justify-content:center;background:radial-gradient(circle,#fffef9 55%,rgba(255,255,255,0.25) 100%)">
+            <div style="width:158px;height:158px;border-radius:50%;border:2px solid #a99259;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px">
+              <div style="font-family:'Space Grotesk',sans-serif;font-size:7px;letter-spacing:0.16em;text-transform:uppercase;color:#8c7a45;max-width:120px;text-align:center">Education for everyone</div>
+              <img src="${wordmarkUrl}" alt="CATCHAP" crossorigin="anonymous" style="height:19px;width:auto;display:block;margin:2px 0" />
+              <div style="width:30px;height:1px;background:rgba(160,138,86,0.7)"></div>
+              <div style="font-family:'Space Grotesk',sans-serif;font-size:7px;letter-spacing:0.16em;text-transform:uppercase;color:#8c7a45;max-width:120px;text-align:center">Verified ${year}</div>
             </div>
           </div>
-          <div style="width:100%;margin-top:22px;display:grid;gap:9px;font-family:'Space Grotesk',sans-serif;font-size:9.5px">
-            <div style="display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid rgba(160,138,86,0.28);padding-bottom:6px"><span style="letter-spacing:0.16em;text-transform:uppercase;color:#948d7d">Credential ID</span><span style="font-weight:500;color:#2b2a26">1A7DM0R1VK34</span></div>
-            <div style="display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid rgba(160,138,86,0.28);padding-bottom:6px"><span style="letter-spacing:0.16em;text-transform:uppercase;color:#948d7d">Issued</span><span style="font-weight:500;color:#2b2a26">${enDate}</span></div>
-            <div style="display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid rgba(160,138,86,0.28);padding-bottom:6px"><span style="letter-spacing:0.16em;text-transform:uppercase;color:#948d7d">Level</span><span style="font-weight:500;color:#2b2a26">Professional</span></div>
-            <div style="display:flex;justify-content:space-between;align-items:baseline"><span style="letter-spacing:0.16em;text-transform:uppercase;color:#948d7d">Hours</span><span style="font-weight:500;color:#2b2a26">32</span></div>
+          <div style="width:100%;margin-top:34px;font-family:'Space Grotesk',sans-serif">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;padding:12px 2px;border-top:1px solid rgba(160,138,86,0.26)"><span style="font-size:9px;letter-spacing:0.17em;text-transform:uppercase;color:#9a917d">Credential ID</span><span style="font-size:10.5px;font-weight:500;letter-spacing:0.02em;color:#2b2a26">1A7DM0R1VK34</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:baseline;padding:12px 2px;border-top:1px solid rgba(160,138,86,0.26)"><span style="font-size:9px;letter-spacing:0.17em;text-transform:uppercase;color:#9a917d">Issued</span><span style="font-size:10.5px;font-weight:500;letter-spacing:0.02em;color:#2b2a26">${enDate}</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:baseline;padding:12px 2px;border-top:1px solid rgba(160,138,86,0.26)"><span style="font-size:9px;letter-spacing:0.17em;text-transform:uppercase;color:#9a917d">Level</span><span style="font-size:10.5px;font-weight:500;letter-spacing:0.02em;color:#2b2a26">Professional</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:baseline;padding:12px 2px;border-top:1px solid rgba(160,138,86,0.26);border-bottom:1px solid rgba(160,138,86,0.26)"><span style="font-size:9px;letter-spacing:0.17em;text-transform:uppercase;color:#9a917d">Hours</span><span style="font-size:10.5px;font-weight:500;letter-spacing:0.02em;color:#2b2a26">32</span></div>
           </div>
-          <div style="margin-top:16px;font-family:'Space Grotesk',sans-serif;font-size:5.5px;letter-spacing:0.18em;text-transform:uppercase;color:rgba(120,105,70,0.42);text-align:center;line-height:1.6;width:230px;white-space:nowrap;overflow:hidden">CATCHAP·AUTHENTIC·CATCHAP·AUTHENTIC·CATCHAP</div>
+          <div style="margin-top:16px;font-family:'Space Grotesk',sans-serif;font-size:5.5px;letter-spacing:0.2em;text-transform:uppercase;color:rgba(120,105,70,0.42);text-align:center;line-height:1.6;width:230px;white-space:nowrap;overflow:hidden">CATCHAP·AUTHENTIC·CATCHAP·AUTHENTIC·CATCHAP</div>
         </div>
       </div>
     </div>
@@ -261,6 +276,11 @@ export function certHtml(d: CourseCertificateData): string {
 /**
  * 코스 수료증 캔버스 — 참조 HTML을 오프스크린에 렌더한 뒤 html2canvas로 캡처한다.
  * 반환 타입(Promise<canvas>)은 종전과 같아 호출부(CertificateModal, pdf.ts)는 그대로 쓴다.
+ *
+ * ★html2canvas는 텍스트/폰트는 loaded font로 충실히 그리지만(fillText) CSS 효과 재현이
+ * 약하다 — repeating-gradient 텍스처를 떡지게 과렌더한다. 그래서 오른쪽 패널의 노치·그라데
+ * 이션은 html2canvas가 이미지로 그대로 그리는 SVG 배경(certHtml)으로 만들어 팝업과 맞춘다.
+ * (html-to-image=foreignObject는 크로스오리진 Google Fonts를 못 임베드해 폰트가 깨져 버렸다.)
  */
 export async function drawCourseCertificate(d: CourseCertificateData): Promise<HTMLCanvasElement> {
   await ensureCertFonts();
@@ -270,14 +290,17 @@ export async function drawCourseCertificate(d: CourseCertificateData): Promise<H
   host.innerHTML = certHtml(d);
   document.body.appendChild(host);
   try {
-    // 워터마크 로고가 다 실린 뒤 캡처(빈 이미지 방지)
-    const img = host.querySelector('img');
-    if (img && !img.complete) {
-      await new Promise<void>((res) => {
-        img.addEventListener('load', () => res(), { once: true });
-        img.addEventListener('error', () => res(), { once: true });
-      });
-    }
+    // 모든 이미지(워터마크·상단 워드마크·씰 로고)가 다 실린 뒤 캡처(빈 이미지 방지)
+    await Promise.all(
+      Array.from(host.querySelectorAll('img')).map((img) =>
+        img.complete
+          ? Promise.resolve()
+          : new Promise<void>((res) => {
+              img.addEventListener('load', () => res(), { once: true });
+              img.addEventListener('error', () => res(), { once: true });
+            }),
+      ),
+    );
     const html2canvas = (await import('html2canvas')).default;
     return await html2canvas(host.firstElementChild as HTMLElement, {
       scale: 2,

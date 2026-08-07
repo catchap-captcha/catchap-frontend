@@ -1,4 +1,5 @@
 import type { StudentCourse, LectureItem } from '../../api/lectures';
+import { demoCoverUrl } from './demoCover';
 
 /**
  * 데모 코스/강의 — 최종 발표용으로 코스 둘러보기·강의 둘러보기·관심사 추천을 풍성하게 채운다.
@@ -93,19 +94,15 @@ const SPEC: FieldSpec[] = [
   },
 ];
 
-// 데모 커버 이미지(번들 에셋) — src/pages/student/assets/demo-covers/demo-{field}-{ci}.jpg.
-// Vite가 빌드 시 해시 URL(/assets/…)로 바꾸고, thumbnailSrc가 /api/ 아닌 URL은 그대로
-// 통과시키므로 카드가 이 이미지를 그대로 쓴다(백엔드 없이 프론트에서 서빙).
-const COVERS = import.meta.glob('./assets/demo-covers/*.jpg', {
-  eager: true,
-  import: 'default',
-}) as Record<string, string>;
-function coverFor(field: string, ci: number): string | null {
-  const suffix = `/demo-${field}-${ci}.jpg`;
-  for (const [path, url] of Object.entries(COVERS)) {
-    if (path.endsWith(suffix)) return url;
-  }
-  return null;
+// 데모 커버는 demoCover.ts가 코스마다 다르게 코드로 생성한다(검정 배경·라인아트·Welcome to X+제목).
+// 결과가 data:image/svg+xml URL이라 thumbnailSrc가 /api/ 아닌 URL을 그대로 통과시켜 카드가 바로 쓴다.
+
+// 데모 카드가 전부 '3개 강의'로 뜨면 가짜 티가 나므로, 코스 id 해시로 3~10개 사이 값을 결정적
+// 으로 부여해 실제 코스처럼 규모가 제각각으로 보이게 한다(데모는 페이지 이동을 안 하므로 표시 전용).
+function demoCount(cid: string): number {
+  let h = 5381;
+  for (let i = 0; i < cid.length; i += 1) h = ((h << 5) + h + cid.charCodeAt(i)) >>> 0;
+  return 3 + (h % 8); // 3~10
 }
 
 const _courses: DemoCourse[] = [];
@@ -121,8 +118,8 @@ SPEC.forEach((s) => {
       description: c.desc,
       order_no: ci,
       instructor_name: s.instructor, // 카드가 '… 강사'를 붙이므로 여기선 이름만(중복 '강사 강사' 방지)
-      lecture_count: c.lectures.length,
-      thumbnail_url: coverFor(s.field, ci),
+      lecture_count: demoCount(cid),
+      thumbnail_url: demoCoverUrl(s.field, ci, c.title),
       enrolled: false,
       field: s.field,
     });

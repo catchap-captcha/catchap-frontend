@@ -6,6 +6,7 @@ import { lectureApi, thumbnailSrc, type LectureItem, type StudentCourse } from '
 import { fmtWon } from '../../api/payments';
 import { formatClock } from './lectureSubjects';
 import CourseCover from '../../components/course/CourseCover';
+import { courseCoverUrl } from './demoCover';
 import './CourseDetail.css';
 
 /**
@@ -93,7 +94,7 @@ export default function CourseDetail() {
               <CourseCover
                 seed={course.id}
                 label={course.title || course.subject}
-                imageUrl={thumbnailSrc(course.thumbnail_url)}
+                imageUrl={thumbnailSrc(course.thumbnail_url) ?? courseCoverUrl(course)}
                 size="md"
                 className="cd-cover"
               />

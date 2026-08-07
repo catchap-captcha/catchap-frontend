@@ -14,6 +14,7 @@ import {
   MAX_INTEREST_FIELDS,
 } from '../../components/student/interestTaxonomy';
 import { DEMO_COURSES, DEMO_LECTURES, isDemoId, demoField } from './demoCourses';
+import { courseCoverUrl } from './demoCover';
 import './StudentHome.css';
 
 /** 코스별 강의 묶음 — 추천·둘러보기 카드가 코스 단위로 쓴다. */
@@ -204,7 +205,7 @@ export default function StudentHome() {
       });
     return list;
   }, [browseGroups, browseCat, q]);
-  const COURSE_LIMIT = 8;
+  const COURSE_LIMIT = 10;
   const coursesCollapsible = browseCat === '전체' && !q && shownCourses.length > COURSE_LIMIT;
   const coursesCapped = coursesCollapsible && !coursesExpanded;
   const visibleCourses = coursesCapped ? shownCourses.slice(0, COURSE_LIMIT) : shownCourses;
@@ -252,7 +253,7 @@ export default function StudentHome() {
           <CourseCover
             seed={c.id}
             label={c.title || c.subject}
-            imageUrl={thumbnailSrc(c.thumbnail_url)}
+            imageUrl={thumbnailSrc(c.thumbnail_url) ?? (demo ? undefined : courseCoverUrl(c))}
             size="md"
             className="sh2-ccover"
           />
@@ -271,14 +272,14 @@ export default function StudentHome() {
               <i className="ph-fill ph-play" /> {lecCount}개 강의
             </span>
           ) : (
-            <span className="sh2-ccard-lec sh2-ccard-lec--empty">강의 준비 중</span>
+            <span className="sh2-ccard-lec sh2-ccard-lec--empty">0개 강의</span>
           )}
         </button>
         <div className="sh2-ccard-body">
           <span className="sh2-ccard-title">{c.title}</span>
           <span className="sh2-ccard-meta">
             {c.instructor_name ? `${c.instructor_name} 강사 · ` : ''}
-            {lecCount > 0 ? `${lecCount}강` : '강의 준비 중'}
+            {lecCount > 0 ? `${lecCount}강` : '0강'}
           </span>
           <div className="sh2-ccard-actions">
             {enrolled ? (
