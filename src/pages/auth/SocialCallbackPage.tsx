@@ -10,8 +10,8 @@
  *      받기 전에는 계정을 만들지 않는다.
  *   3) 실패(동의 거부·만료·이미 쓰는 이메일 등) → 사유를 보여 주고 로그인으로 되돌린다.
  *
- * 마이페이지에서 '연결하기'로 출발한 경우(intent=connect)는 로그인이 아니라 연결 API를 부르고
- * 마이페이지로 돌아간다.
+ * '연결하기'로 출발한 경우(intent=connect)는 로그인이 아니라 연결 API를 부르고 출발한 화면으로
+ * 돌아간다(학생 마이페이지 / 콘솔 프로필 — 경로는 출발할 때 sessionStorage에 남겨 둔다).
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
@@ -19,6 +19,7 @@ import { AxiosError } from 'axios';
 import {
   clearSocialIntent,
   readSocialIntent,
+  readSocialReturn,
   resolveCallbackProvider,
   socialApi,
   type SocialLoginResponse,
@@ -65,6 +66,9 @@ export default function SocialCallbackPage() {
   const [error, setError] = useState('');
   const [provider, setProvider] = useState<SocialProvider | null>(null);
   const [signup, setSignup] = useState<SocialLoginResponse | null>(null);
+  // 연결(connect) 왕복이 실패했을 때 되돌아갈 곳. 로그인 왕복이면 null이라 로그인 화면으로 간다.
+  // (콘솔 사용자를 학생 로그인으로 보내지 않기 위해 출발지를 기억한다)
+  const [returnTo, setReturnTo] = useState<string | null>(null);
 
   // 가입 폼
   const [nickname, setNickname] = useState('');
@@ -117,11 +121,14 @@ export default function SocialCallbackPage() {
 
     const intent = readSocialIntent();
     if (intent === 'connect') {
+      // 출발한 화면으로 되돌린다 — 학생 마이페이지와 콘솔 프로필이 이 화면을 공유한다.
+      const back = readSocialReturn() ?? `${PATHS.STUDENT_MYPAGE}?tab=account`;
+      setReturnTo(back);
       socialApi
         .connect(target, code, state)
         .then(() => {
           clearSocialIntent();
-          navigate(`${PATHS.STUDENT_MYPAGE}?tab=account&linked=${target}`, { replace: true });
+          navigate(`${back}${back.includes('?') ? '&' : '?'}linked=${target}`, { replace: true });
         })
         .catch((err) => {
           clearSocialIntent();
@@ -203,10 +210,13 @@ export default function SocialCallbackPage() {
             <span className="sc-badge sc-badge--bad">
               <i className="ph-fill ph-warning-circle" />
             </span>
-            <h1 className="sc-title">로그인을 마치지 못했어요</h1>
+            <h1 className="sc-title">
+              {returnTo ? '계정을 연결하지 못했어요' : '로그인을 마치지 못했어요'}
+            </h1>
             <p className="sc-sub">{error}</p>
-            <Link to={PATHS.LOGIN} className="sc-primary" replace>
-              <i className="ph-bold ph-arrow-left" /> 로그인으로 돌아가기
+            <Link to={returnTo ?? PATHS.LOGIN} className="sc-primary" replace>
+              <i className="ph-bold ph-arrow-left" />{' '}
+              {returnTo ? '돌아가기' : '로그인으로 돌아가기'}
             </Link>
           </div>
         )}

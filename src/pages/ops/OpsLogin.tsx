@@ -4,6 +4,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { PATHS } from '../../routes/paths';
 import wordmarkWhite from '../../assets/brand/catchap-wordmark-white.png';
 import PasswordInput from '../../components/common/PasswordInput';
+import SocialLoginButtons from '../../components/auth/SocialLoginButtons';
 import ForestCaptcha from '../../components/captcha/ForestCaptcha';
 // 학습자 로그인(/login)과 같은 화면 규격을 쓴다 — 문구만 다르고 레이아웃·색·간격은 동일(사용자 요청).
 // 그래서 전용 스타일시트(OpsLogin.css) 없이 LoginPage.css의 lg-* 를 그대로 재사용한다.
@@ -176,6 +177,10 @@ export default function OpsLogin() {
             <i className="ph-bold ph-sign-in" />
             {busy ? '확인 중…' : captchaNeeded ? '보안 확인 후 로그인' : '로그인'}
           </button>
+
+          {/* 간편 로그인 — 콘솔 계정은 프로필에서 직접 연결한 경우에만 통한다.
+              연결하지 않은 계정은 서버가 400과 함께 연결 방법을 알려 준다(자동 연결 없음). */}
+          <SocialLoginButtons withDivider />
 
           <div className="lg-divider">
             <div className="lg-divider-line" />

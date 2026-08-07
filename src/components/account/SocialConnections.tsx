@@ -1,12 +1,17 @@
 /**
- * 마이페이지 '계정·개인정보' — 간편 로그인 연결 관리.
+ * 간편 로그인 연결 관리 — 학생 마이페이지와 운영 콘솔 프로필이 함께 쓴다.
  *
  * 연결하기는 로그인과 같은 왕복(authorize → provider 동의 → /auth/social/callback)을 타되,
- * intent=connect로 표시해 콜백이 로그인 대신 연결 API를 부르고 여기로 돌아오게 한다.
+ * intent=connect로 표시해 콜백이 로그인 대신 연결 API를 부르고 여기로 돌아오게 한다
+ * (돌아올 주소는 returnTo로 넘긴다 — 콜백 화면은 두 화면이 공유하므로 하드코딩할 수 없다).
+ *
+ * ★콘솔 계정(운영자·강사)에는 이 화면이 유일한 소셜 로그인 통로다. 서버는 이메일이 같아도
+ * 콘솔 계정을 자동으로 연결해 주지 않는다 — 고권한 계정을 외부 IdP에 여는 결정이라
+ * '본인이 로그인한 상태에서 눌렀다'는 명시적 행위만 근거로 인정한다.
  *
  * 해제는 서버가 막는 경우가 있다: 비밀번호가 없고(소셜 전용 계정) 남은 연결이 하나뿐이면
  * 끊는 순간 계정에 못 들어오기 때문이다. 그 상태를 버튼에 미리 반영해(비활성 + 사유 안내)
- * 400을 눌러 보고 알게 되지 않도록 한다.
+ * 400을 눌러 보고 알게 되지 않도록 한다. 콘솔 계정은 항상 비밀번호가 있어 걸리지 않는다.
  */
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
@@ -31,7 +36,19 @@ function detailOf(err: unknown, fallback: string) {
   return typeof d === 'string' ? d : fallback;
 }
 
-export default function SocialConnections() {
+interface Props {
+  /** 카드 껍데기 클래스 — 마이페이지(mp-card)와 콘솔(ipf-card)의 카드 스타일이 다르다 */
+  cardClassName?: string;
+  titleClassName?: string;
+  /** 연결 왕복이 끝나고 돌아올 경로. 기본값은 학생 마이페이지 계정 탭. */
+  returnTo?: string;
+}
+
+export default function SocialConnections({
+  cardClassName = 'mp-card',
+  titleClassName = 'mp-card-title mp-card-title--pad',
+  returnTo,
+}: Props = {}) {
   const [params, setParams] = useSearchParams();
   const [data, setData] = useState<SocialConnectionsResponse | null>(null);
   const [busy, setBusy] = useState<SocialProvider | null>(null);
@@ -62,7 +79,7 @@ export default function SocialConnections() {
     setBusy(provider);
     try {
       const res = await socialApi.authorize(provider);
-      rememberSocialIntent(provider, 'connect');
+      rememberSocialIntent(provider, 'connect', returnTo);
       window.location.href = res.authorize_url;
     } catch (err) {
       setBusy(null);
@@ -90,8 +107,8 @@ export default function SocialConnections() {
   const onlyOneLeft = data.connections.length <= 1 && !data.has_password;
 
   return (
-    <section className="mp-card">
-      <h2 className="mp-card-title mp-card-title--pad">간편 로그인 연결</h2>
+    <section className={cardClassName}>
+      <h2 className={titleClassName}>간편 로그인 연결</h2>
       <p className="sx-desc">
         연결한 계정으로 비밀번호 없이 로그인할 수 있어요.
         {!data.has_password && (

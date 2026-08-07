@@ -142,3 +142,19 @@
   .ipf-biohead { flex-wrap: wrap; }
   .ipf-bioactions .op-btn { width: 100%; justify-content: center; }
 }
+
+/* 간편 로그인 연결 — 공용 SocialConnections를 콘솔 카드에 끼운다.
+   .ipf-card의 가로 flex를 세로로 되돌린다. 좌우 여백은 0으로 두는데, sx-* 행이 자기 여백
+   (18px)을 이미 갖고 있어 카드가 또 주면 제목만 덜 들어가 계단처럼 어긋난다
+   (마이페이지의 .mp-card도 같은 이유로 가로 패딩이 없다). */
+.ipf-social {
+  display: block;
+  padding: 18px 0 6px;
+}
+.ipf-sectitle {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--ink);
+  margin: 0 0 10px;
+  padding: 0 18px;
+}
