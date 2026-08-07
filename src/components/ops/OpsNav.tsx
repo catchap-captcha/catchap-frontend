@@ -50,8 +50,11 @@ const GROUPS: NavGroup[] = [
     label: '시스템',
     items: [
       { to: PATHS.OPS_API_KEYS, icon: 'ph-key', label: 'API 발급' },
-      // 'AI 모델'/'설정' 라벨은 실 기능 페이지(LLM 모델/키)로 연결(레거시 카탈로그 미부활).
-      { to: PATHS.OPS_LLM_MODELS, icon: 'ph-cpu', label: 'AI 모델', match: [PATHS.OPS_LLM_PROMPTS] },
+      // '설정' 우산을 걷고 그 안의 API 키·프롬프트를 시스템 드롭다운에 직접 노출한다(2026-08-08).
+      // 셋(AI 모델·API 키·프롬프트)은 LLM 운영 묶음이라 나란히 둔다.
+      { to: PATHS.OPS_LLM_MODELS, icon: 'ph-cpu', label: 'AI 모델' },
+      { to: PATHS.OPS_LLM_KEYS, icon: 'ph-key', label: 'API 키' },
+      { to: PATHS.OPS_LLM_PROMPTS, icon: 'ph-note-pencil', label: '프롬프트' },
       { to: PATHS.OPS_MONITORING, icon: 'ph-gauge', label: '모니터링' },
       // '시스템 상태'는 ★지금 살아 있나(DB 왕복시간·SMTP·디스크 실측),
       // '시스템 경보'는 ★그동안 무슨 일이 있었나(감시 장치가 보낸 경보 이력·수신 설정).
@@ -59,7 +62,6 @@ const GROUPS: NavGroup[] = [
       { to: PATHS.OPS_SYSTEM_STATUS, icon: 'ph-heartbeat', label: '시스템 상태' },
       { to: PATHS.OPS_DEPLOYMENTS, icon: 'ph-rocket-launch', label: '배포 현황' },
       { to: PATHS.OPS_ALERTS, icon: 'ph-bell-ringing', label: '시스템 경보' },
-      { to: PATHS.OPS_LLM_KEYS, icon: 'ph-gear-six', label: '설정' },
     ],
   },
 ];

@@ -44,6 +44,16 @@ function defs(a: string): string {
   );
 }
 
+// 코스별 배경 틴트 — 강조색에서 아주 어두운 색을 뽑아 코스마다 바탕 톤이 달라지게 한다
+// (기존엔 전부 #0a0a0b 검정이라 색감이 비슷했다). 검정에 accent를 살짝 섞어 어둡게 유지.
+function darkBg(hex: string): string {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  const mix = (c: number): string => Math.round(7 + c * 0.14).toString(16).padStart(2, '0');
+  return '#' + mix(r) + mix(g) + mix(b);
+}
+
 type Motif = (cx: number, cy: number, R: number, a: string, r: () => number) => string;
 
 const atom: Motif = (cx, cy, R, a) => {
@@ -356,7 +366,7 @@ function buildCover(seed: number, field: string, motifName: string, title: strin
   const svg =
     "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 " + W + ' ' + H + "' width='" + W + "' height='" + H + "'>" +
     defs(a) +
-    "<rect width='" + W + "' height='" + H + "' fill='#0a0a0b'/>" +
+    "<rect width='" + W + "' height='" + H + "' fill='" + darkBg(a) + "'/>" +
     "<ellipse cx='" + glowc[0] + "' cy='" + glowc[1] + "' rx='330' ry='300' fill='url(#rg)'/>" +
     artWrap +
     "<text x='" + tx + "' y='" + welcomeY + "' text-anchor='" + tAnchor + "' fill='#9a9ba1' font-size='19' letter-spacing='1.5' font-family=\"'Pretendard','Malgun Gothic',sans-serif\">Welcome to " + esc(eng) + '</text>' +

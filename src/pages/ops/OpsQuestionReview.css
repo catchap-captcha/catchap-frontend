@@ -127,7 +127,7 @@
   gap: 14px;
 }
 
-.qr-card { padding: 22px 24px; }
+.qr-card { padding: 22px 24px; border-left: 5px solid var(--line-strong); }
 
 .qr-card-top {
   display: flex;
@@ -200,6 +200,35 @@
   flex-wrap: wrap;
 }
 .qr-card-bottom-meta { font-size: 12px; color: var(--ink-3); font-weight: 500; flex: 1; }
+
+/* ── #3 적합 표시(확인 문항 적합 / 은행 적합 / 불량 의심) — 눈에 띄는 pill + 문항 칸 색 ── */
+.qr-fit {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12.5px;
+  font-weight: 800;
+  padding: 4px 12px;
+  border-radius: var(--r);
+}
+.qr-fit i { font-size: 15px; }
+.qr-fit--exam { color: var(--ok-ink); background: var(--ok-soft); }
+.qr-fit--bank { color: var(--warn-ink); background: var(--warn-soft); }
+.qr-fit--discard { color: var(--danger); background: var(--danger-soft); }
+.qr-fit--none { color: var(--ink-3); background: var(--surface-2); }
+
+/* 문항 칸(카드) 색 = 적합 표시 색: 왼쪽 색 띠 + 아주 옅은 배경 틴트(가독성 유지) */
+.qr-card--fit-exam { border-left-color: var(--ok); background: color-mix(in srgb, var(--ok-soft) 55%, var(--surface)); }
+.qr-card--fit-bank { border-left-color: var(--warn); background: color-mix(in srgb, var(--warn-soft) 55%, var(--surface)); }
+.qr-card--fit-discard { border-left-color: var(--danger); background: color-mix(in srgb, var(--danger-soft) 55%, var(--surface)); }
+
+/* ── #2 '문제 은행으로' 버튼 — 은행 적합(amber) 톤 ── */
+.orn-btn--bank {
+  border: 1px solid var(--warn);
+  background: var(--warn-soft);
+  color: var(--warn-ink);
+}
+.orn-btn--bank:hover:not(:disabled) { background: var(--warn); color: #fff; }
 
 @media (max-width: 760px) {
   .qr-kpigrid { grid-template-columns: 1fr 1fr; }
