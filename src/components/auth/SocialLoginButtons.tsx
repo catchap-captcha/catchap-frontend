@@ -7,8 +7,12 @@
  *
  * 클릭 → authorize URL을 받아 그 주소로 이동. 돌아오는 곳은 /auth/social/callback 이다.
  *
- * ⚠ 브랜드 마크는 근사 SVG다. 카카오·네이버는 로그인 버튼 디자인 가이드(색·비율·문구)를
- *   규정하므로, 실서비스 배포 전 각 사의 공식 버튼 리소스로 교체할 것.
+ * 브랜드 규정(각 사 로그인 버튼 디자인 가이드)을 따른다:
+ *   카카오 — 배경 #FEE500, 심볼·문구는 검정 85% 불투명도, 문구 "카카오 로그인"
+ *   네이버 — 배경 #03C75A, 흰색 N 심볼, 문구 "네이버 로그인"
+ *   구글  — 흰 배경 + 회색 테두리, 4색 G(단색 변형 금지), 문구 "Google로 로그인"
+ * ★문구를 임의로 바꾸지 말 것 — 네이버는 검수 항목이고, 카카오도 가이드 위반 시 제재 대상이다.
+ * (픽셀 단위까지 맞춰야 하면 각 사 개발자센터에서 공식 버튼 이미지를 내려받아 교체한다)
  */
 import { useEffect, useState, type ReactElement } from 'react';
 import {
@@ -22,10 +26,10 @@ import './SocialLoginButtons.css';
 
 function KakaoMark() {
   return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+    <svg viewBox="0 0 18 18" aria-hidden="true" focusable="false">
       <path
         fill="currentColor"
-        d="M12 3C6.5 3 2 6.5 2 10.9c0 2.8 1.8 5.2 4.6 6.6-.2.7-.7 2.7-.8 3.1-.1.5.2.5.4.4.2-.1 2.6-1.8 3.7-2.5.7.1 1.4.2 2.1.2 5.5 0 10-3.5 10-7.8S17.5 3 12 3z"
+        d="M9 .5C4.03.5 0 3.61 0 7.44c0 2.48 1.66 4.66 4.15 5.89-.18.65-.66 2.37-.75 2.74-.12.46.17.45.36.33.15-.1 2.36-1.6 3.32-2.25.62.09 1.26.14 1.92.14 4.97 0 9-3.11 9-6.94S13.97.5 9 .5z"
       />
     </svg>
   );
@@ -33,8 +37,8 @@ function KakaoMark() {
 
 function NaverMark() {
   return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-      <path fill="currentColor" d="M14.2 12.6 9.7 6H5.5v12h4.3v-6.6l4.5 6.6h4.2V6h-4.3v6.6z" />
+    <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false">
+      <path fill="currentColor" d="M13.56 10.69 6.24 0H0v20h6.44V9.3L13.76 20H20V0h-6.44z" />
     </svg>
   );
 }
@@ -69,8 +73,15 @@ const MARKS: Record<SocialProvider, () => ReactElement> = {
   google: GoogleMark,
 };
 
+/** 각 사 가이드가 규정하는 버튼 문구. 임의 변경 금지(네이버 검수 항목). */
+const BUTTON_LABELS: Record<SocialProvider, string> = {
+  kakao: '카카오 로그인',
+  naver: '네이버 로그인',
+  google: 'Google로 로그인',
+};
+
 interface Props {
-  /** login = "카카오로 로그인", signup = "카카오로 시작하기" */
+  /** 화면 맥락만 구분한다 — 버튼 문구는 브랜드 가이드 고정값이라 모드와 무관하다 */
   mode?: 'login' | 'signup';
   /** connect면 콜백이 '연결' 흐름으로 처리한다(마이페이지에서 사용) */
   intent?: SocialIntent;
@@ -139,18 +150,15 @@ export default function SocialLoginButtons({
               className={`sl-btn sl-btn--${p.provider}`}
               onClick={() => start(p.provider)}
               disabled={busy !== null}
-              aria-label={`${p.label} 계정으로 ${mode === 'signup' ? '시작하기' : '로그인'}`}
+              aria-label={
+                intent === 'connect' ? `${p.label} 계정 연결` : BUTTON_LABELS[p.provider]
+              }
             >
               <span className="sl-mark">
                 {busy === p.provider ? <i className="ph-bold ph-circle-notch sl-spin" /> : <Mark />}
               </span>
               <span className="sl-text">
-                {p.label}
-                {intent === 'connect'
-                  ? ' 계정 연결하기'
-                  : mode === 'signup'
-                    ? '로 시작하기'
-                    : '로 로그인'}
+                {intent === 'connect' ? `${p.label} 계정 연결하기` : BUTTON_LABELS[p.provider]}
               </span>
             </button>
           );
