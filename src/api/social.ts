@@ -116,12 +116,29 @@ export const socialApi = {
 // sessionStorage에 남기고, 탭이 바뀌어 사라진 경우엔 state(JWT) payload에서 복원한다.
 const INTENT_KEY = 'catchap_social_intent';
 const PROVIDER_KEY = 'catchap_social_provider';
+const RETURN_KEY = 'catchap_social_return';
 
 export type SocialIntent = 'login' | 'connect';
 
-export function rememberSocialIntent(provider: SocialProvider, intent: SocialIntent) {
+export function rememberSocialIntent(
+  provider: SocialProvider,
+  intent: SocialIntent,
+  /** connect 왕복이 끝나고 돌아갈 앱 내부 경로 — 출발한 화면이 지정한다.
+   *  학생 마이페이지와 콘솔 프로필이 같은 콜백 화면을 공유하기 때문에 필요하다. */
+  returnTo?: string,
+) {
   sessionStorage.setItem(PROVIDER_KEY, provider);
   sessionStorage.setItem(INTENT_KEY, intent);
+  if (returnTo) sessionStorage.setItem(RETURN_KEY, returnTo);
+  else sessionStorage.removeItem(RETURN_KEY);
+}
+
+/** 연결 후 돌아갈 경로. 없으면 null(호출부가 기본값을 정한다).
+ *  ★'/'로 시작하되 '//'·'/\'가 아닌 값만 통과시킨다 — sessionStorage는 확장프로그램이나
+ *  XSS로 오염될 수 있고, 그 값을 그대로 navigate하면 외부 주소로 튀는 오픈 리다이렉트가 된다. */
+export function readSocialReturn(): string | null {
+  const v = sessionStorage.getItem(RETURN_KEY);
+  return v && /^\/(?![/\\])/.test(v) ? v : null;
 }
 
 export function readSocialIntent(): SocialIntent {
@@ -131,6 +148,7 @@ export function readSocialIntent(): SocialIntent {
 export function clearSocialIntent() {
   sessionStorage.removeItem(PROVIDER_KEY);
   sessionStorage.removeItem(INTENT_KEY);
+  sessionStorage.removeItem(RETURN_KEY);
 }
 
 /** state(JWT)의 payload에서 provider를 읽는다 — 서명 검증은 서버 몫, 여기선 식별용. */

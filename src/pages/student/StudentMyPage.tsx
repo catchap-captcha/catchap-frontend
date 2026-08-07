@@ -1,7 +1,7 @@
 import { useEffect, useState, type CSSProperties } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
-import SocialConnections from '../../components/student/SocialConnections';
+import SocialConnections from '../../components/account/SocialConnections';
 import { useAuth } from '../../hooks/useAuth';
 import { studentApi } from '../../api/students';
 import { settingsApi } from '../../api/settings';
