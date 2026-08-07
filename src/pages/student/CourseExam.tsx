@@ -451,11 +451,11 @@ export default function CourseExam() {
                     : 'ph-fill ph-arrow-counter-clockwise'
                 }
               />
-              {result.passed ? (result.perfect ? '완벽 통과!' : '수료 완료!') : '아쉽게 미통과'}
+              {result.passed ? (result.perfect ? '완벽 통과!' : '수료 완료!') : '아쉽게 통과하지 못했어요'}
             </div>
             <div className="ce-rp-score">
               {result.total}문항 중 <b>{result.correct}</b>개 정답
-              {!result.passed && <> · 수료엔 <b>{result.need}개</b> 필요</>}
+              {!result.passed && <> · 수료하려면 <b>{result.need}개 이상</b> 맞춰야 해요</>}
             </div>
             {result.passed ? (
               <div className="ce-rp-prog">
