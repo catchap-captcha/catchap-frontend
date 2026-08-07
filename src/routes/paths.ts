@@ -17,6 +17,9 @@ export const PATHS = {
   LOGIN: '/login',
   FIND_ID: '/find-id', // 아이디 찾기 — 가입 이메일 본인확인 후 로그인 아이디 안내
   PASSWORD_RESET: '/password-reset',
+  // 소셜 로그인(카카오·네이버·구글) 착지 — provider가 code·state를 달고 돌아오는 곳.
+  // ★백엔드 SOCIAL_REDIRECT_URIS(허용목록)에 등록된 주소와 경로가 같아야 한다.
+  SOCIAL_CALLBACK: '/auth/social/callback',
   CAPTCHA: '/captcha',
   INVITE: '/invite', // 교사 초대링크 (?token=) → 검증 후 프리필된 가입화면으로
 
@@ -70,6 +73,7 @@ export const PATHS = {
   OPS_LOGS: '/ops/logs',
   OPS_OPERATORS: '/ops/operators', // 운영자 계정 관리
   OPS_MONITORING: '/ops/monitoring', // 서버 자원 모니터링 (CPU/메모리/디스크/GPU + LLM 사용량)
+  OPS_DEPLOYMENTS: '/ops/deployments', // 배포 현황 — 지금 무엇이 떠 있나 (읽기 전용)
   OPS_ALERTS: '/ops/alerts', // 시스템 경보 — 감시 장치가 보낸 경보 목록 + 메일 수신 켜고 끄기
   OPS_AI_MODELS: '/ops/ai-models', // 모델 레지스트리 관리(기관 콘솔 노출 콘텐츠 — 실 LLM 호출과 무관)
   // LLM 설정 — 종전 '설정' 한 페이지에 뭉쳐 있던 것을 전용 메뉴 3개로 분리(찾기 쉽게).

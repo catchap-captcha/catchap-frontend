@@ -15,6 +15,7 @@ const PrivacyPage = lazy(() => import('../pages/public/PrivacyPage'));
 const LoginPage = lazy(() => import('../pages/auth/LoginPage'));
 const FindIdPage = lazy(() => import('../pages/auth/FindIdPage'));
 const PasswordResetPage = lazy(() => import('../pages/auth/PasswordResetPage'));
+const SocialCallbackPage = lazy(() => import('../pages/auth/SocialCallbackPage'));
 const CaptchaPage = lazy(() => import('../pages/auth/CaptchaPage'));
 const ActivatePage = lazy(() => import('../pages/auth/ActivatePage'));
 const InvitePage = lazy(() => import('../pages/auth/InvitePage'));
@@ -61,6 +62,7 @@ const OpsBehaviorExport = lazy(() => import('../pages/ops/OpsBehaviorExport'));
 const OpsAuditLog = lazy(() => import('../pages/ops/OpsAuditLog'));
 const OpsMonitoring = lazy(() => import('../pages/ops/OpsMonitoring'));
 const OpsAlerts = lazy(() => import('../pages/ops/OpsAlerts'));
+const OpsDeployments = lazy(() => import('../pages/ops/OpsDeployments'));
 const OpsQuestionMetrics = lazy(() => import('../pages/ops/OpsQuestionMetrics'));
 const OpsLlmModels = lazy(() => import('../pages/ops/OpsLlmModels'));
 const OpsLlmKeys = lazy(() => import('../pages/ops/OpsLlmKeys'));
@@ -107,6 +109,7 @@ export default function AppRoutes() {
         <Route path={PATHS.INVITE} element={<InvitePage />} />
         <Route path={PATHS.FIND_ID} element={<FindIdPage />} />
         <Route path={PATHS.PASSWORD_RESET} element={<PasswordResetPage />} />
+        <Route path={PATHS.SOCIAL_CALLBACK} element={<SocialCallbackPage />} />
         <Route path={PATHS.CAPTCHA} element={<CaptchaPage />} />
         <Route path={PATHS.ACTIVATE} element={<ActivatePage />} />
 
@@ -182,6 +185,7 @@ export default function AppRoutes() {
           <Route path={PATHS.OPS_LOGS} element={<OpsAuditLog />} />
           <Route path={PATHS.OPS_MONITORING} element={<OpsMonitoring />} />
           <Route path={PATHS.OPS_ALERTS} element={<OpsAlerts />} />
+          <Route path={PATHS.OPS_DEPLOYMENTS} element={<OpsDeployments />} />
           {/* 모델 카탈로그 삭제(2026-07-23·레거시 표시용) — 북마크 보호용 리다이렉트 */}
           <Route path={PATHS.OPS_AI_MODELS} element={<Navigate to={PATHS.OPS_APPROVAL} replace />} />
           <Route path={PATHS.OPS_LLM_MODELS} element={<OpsLlmModels />} />
