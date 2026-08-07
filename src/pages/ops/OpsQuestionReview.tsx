@@ -10,6 +10,14 @@ type Tab = 'pending' | 'review' | 'published';
 const TAB_LABEL: Record<Tab, string> = { pending: '검수 대기', review: '검토 권장', published: '공개됨' };
 const PAGE_SIZE = 10;
 
+// AI 자기검증 적합도(suggested_placement) → 라벨·색 클래스·아이콘.
+// captcha=강의 확인문항 적합 / bank=문제 은행 적합 / discard=불량 의심. null=미판정.
+const FIT: Record<string, { label: string; cls: string; icon: string }> = {
+  captcha: { label: '확인 문항 적합', cls: 'exam', icon: 'ph-seal-check' },
+  bank: { label: '은행 적합', cls: 'bank', icon: 'ph-bank' },
+  discard: { label: '불량 의심', cls: 'discard', icon: 'ph-warning-diamond' },
+};
+
 function fmtTime(sec: number): string {
   const m = Math.floor(sec / 60);
   const s = sec % 60;
@@ -74,6 +82,22 @@ export default function OpsQuestionReview() {
     } catch (e) {
       const err = e as { response?: { data?: { detail?: string } } };
       say(err.response?.data?.detail ?? '공개에 실패했어요.');
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  // #2 문제 은행으로 — AI가 '은행 적합'으로 본 상식형 문항 등을 강의 확인문항 대신 전체학습
+  // 문제 은행에 넣는다. 형식 변환은 서버 담당. 다답형·이미지는 400, 중복·미적재는 409.
+  const toBank = async (q: ReviewQueueItem) => {
+    setBusyId(q.id);
+    try {
+      const r = await lectureApi.opsQuestionToBank(q.lecture_id, q.id);
+      say(r.runtime_visible ? '문제 은행에 넣었어요.' : '은행에 넣었지만 실시간 반영은 실패했어요.');
+      load();
+    } catch (e) {
+      const err = e as { response?: { data?: { detail?: string } } };
+      say(err.response?.data?.detail ?? '문제 은행 배치에 실패했어요.');
     } finally {
       setBusyId(null);
     }
@@ -246,17 +270,19 @@ export default function OpsQuestionReview() {
           <div className="qr-list">
             {items.map((q) => {
               const answers = q.answer_indexes ?? [q.answer_index];
+              const fit = q.suggested_placement ? FIT[q.suggested_placement] : null;
               return (
-                <div key={q.id} className="orn-card qr-card">
+                <div key={q.id} className={`orn-card qr-card${fit ? ` qr-card--fit-${fit.cls}` : ''}`}>
                   <div className="qr-card-top">
                     <span className={`qr-origin qr-origin--${q.source === 'llm' ? 'ai' : 'manual'}`}>
                       {q.source === 'llm' ? 'AI' : '자작'}
                     </span>
-                    {tab !== 'published' && <span className="qr-pill qr-pill--pending">검수 대기</span>}
-                    {tab === 'published' && <span className="qr-pill qr-pill--published"><i className="ph ph-check-circle" /> 공개됨</span>}
-                    {q.suggested_placement === 'discard' && (
-                      <span className="qr-pill qr-pill--review"><i className="ph ph-warning-diamond" /> 검토 권장</span>
+                    {fit ? (
+                      <span className={`qr-fit qr-fit--${fit.cls}`}><i className={`ph ${fit.icon}`} /> {fit.label}</span>
+                    ) : (
+                      <span className="qr-fit qr-fit--none"><i className="ph ph-minus-circle" /> 미판정</span>
                     )}
+                    {tab === 'published' && <span className="qr-pill qr-pill--published"><i className="ph ph-check-circle" /> 공개됨</span>}
                     <span className="qr-meta">
                       <i className="ph ph-video-camera" />{q.lecture_title} · {fmtTime(q.position_sec)}
                     </span>
@@ -295,6 +321,9 @@ export default function OpsQuestionReview() {
                       <>
                         <button className="orn-btn orn-btn--ghost" disabled={busyId === q.id} onClick={() => reject(q)}>
                           <i className="ph ph-trash" />삭제
+                        </button>
+                        <button className="orn-btn orn-btn--bank" disabled={busyId === q.id} onClick={() => toBank(q)}>
+                          <i className="ph ph-bank" />문제 은행으로
                         </button>
                         <button className="orn-btn orn-btn--ok" disabled={busyId === q.id} onClick={() => approve(q)}>
                           <i className="ph ph-check" />공개하기
