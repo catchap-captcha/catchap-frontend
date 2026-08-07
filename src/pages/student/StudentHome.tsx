@@ -228,6 +228,7 @@ export default function StudentHome() {
     const c = g.course;
     const enrolled = !!c.enrolled;
     const demo = isDemoId(c.id);
+    const lecCount = c.lecture_count || g.lectures.length;
     const goCurriculum = () => {
       if (!demo) navigate(`${PATHS.STUDENT_COURSE_DETAIL}?id=${c.id}`);
     };
@@ -264,12 +265,20 @@ export default function StudentHome() {
               <i className="ph-fill ph-lock-simple" /> 미신청
             </span>
           )}
+          {/* 우상단 — 강의 유무/개수(좌상단 수강 상태 배지의 반대 모서리라 안 겹친다) */}
+          {lecCount > 0 ? (
+            <span className="sh2-ccard-lec">
+              <i className="ph-fill ph-play" /> {lecCount}개 강의
+            </span>
+          ) : (
+            <span className="sh2-ccard-lec sh2-ccard-lec--empty">강의 준비 중</span>
+          )}
         </button>
         <div className="sh2-ccard-body">
           <span className="sh2-ccard-title">{c.title}</span>
           <span className="sh2-ccard-meta">
             {c.instructor_name ? `${c.instructor_name} 강사 · ` : ''}
-            {c.lecture_count || g.lectures.length}강
+            {lecCount > 0 ? `${lecCount}강` : '강의 준비 중'}
           </span>
           <div className="sh2-ccard-actions">
             {enrolled ? (

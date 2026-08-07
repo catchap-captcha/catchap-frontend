@@ -146,7 +146,7 @@
   border: 1px solid var(--line-strong);
 }
 
-/* 완료 코스 — '수료 현황' 버튼 자리의 진행 단계 상태 블록(클릭 시 수료 현황으로 이동) */
+/* 완료 코스 — 진행 단계 상태 블록(정적 표시: 어디까지 왔는지 글로만) */
 .mc-status {
   flex: none;
   width: 194px;
@@ -160,14 +160,6 @@
   background: var(--surface);
   padding: 9px 13px;
   font-family: inherit;
-  cursor: pointer;
-  transition:
-    border-color 0.15s,
-    background 0.15s;
-}
-.mc-status:hover {
-  border-color: var(--line-strong);
-  background: var(--bg);
 }
 .mc-status-head {
   display: inline-flex;
@@ -184,15 +176,6 @@
   font-size: 12px;
   font-weight: 600;
   color: var(--ink-3);
-}
-.mc-status-more {
-  margin-top: 3px;
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  font-size: 11.5px;
-  font-weight: 700;
-  color: var(--ink-2);
 }
 /* 단계별 아이콘 색 */
 .mc-status--ok .mc-status-head i {

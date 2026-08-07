@@ -226,20 +226,13 @@ export default function MyCourses() {
                       </div>
                     </div>
                     {r.completed && st ? (
-                      <button
-                        className={`mc-status mc-status--${st.cls}`}
-                        onClick={() => navigate(`${PATHS.STUDENT_RECORDS}?tab=completion`)}
-                        title="수료 현황 자세히 보기"
-                      >
+                      <div className={`mc-status mc-status--${st.cls}`}>
                         <span className="mc-status-head">
                           <i className={`ph-fill ${st.icon}`} />
                           {st.label}
                         </span>
                         <span className="mc-status-sub">{st.detail}</span>
-                        <span className="mc-status-more">
-                          수료 현황 <i className="ph-bold ph-arrow-right" />
-                        </span>
-                      </button>
+                      </div>
                     ) : (
                       <div className="mc-actions">
                         <button

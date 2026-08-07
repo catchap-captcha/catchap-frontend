@@ -378,8 +378,11 @@ export interface ExamState {
   course_id: string;
   title: string;
   has_exam: boolean; // 활성 문항 0개면 false(시험 없는 코스)
-  question_count: number;
-  mastered_count: number; // 정복(정답 이력) 문항 수
+  question_count: number; // 풀 전체 크기(참고)
+  exam_size: number; // 한 회차 문항 수 = min(풀, 10)
+  pass_need: number; // 통과 기준 = ceil(exam_size * 0.8)
+  best_correct: number; // 지금까지 한 회차 최고 정답 수
+  attempts: number; // 제출한 회차 수
   lectures_total: number;
   lectures_done: number;
   available: boolean; // 전 강의 완주 + 문항 있음
@@ -388,6 +391,9 @@ export interface ExamState {
   passed_at: string | null;
   /** 완벽 도전 가능 — 수료했지만 아직 완벽 통과 아님(전 문항 한 판으로 승급 도전) */
   can_perfect_challenge: boolean;
+  /** 재응시 게이트 — 미통과 후 남은 초(0=지금 가능) + 게이트 길이(분) */
+  retry_after_sec: number;
+  cooldown_minutes: number;
 }
 /** 발급된 회차 — 정답·해설 없음. 수료 후엔 questions 없이 passed=true. */
 export interface ExamSessionQuestion {
@@ -409,12 +415,15 @@ export interface ExamSession {
   questions?: ExamSessionQuestion[];
   /** 완벽 도전 회차(전 문항 한 판) 여부 — 화면 문구를 '완벽 도전'으로 바꾼다 */
   perfect_challenge?: boolean;
-  progress?: { mastered: number; total: number };
-  /** 남은 미정복이 전부 오답 쿨다운 중 — 낼 문항이 없어 회차를 발급하지 않았다.
-   *  빈 시험을 보여주는 대신 언제 다시 열리는지 안내한다(자동화 방어). */
+  /** 이번 회차 문항 수 + 통과 기준(회차 헤더 안내) */
+  sitting_size?: number;
+  pass_need?: number;
+  /** 재응시 게이트(미통과 후 10분) 중이라 회차를 발급하지 않았다 — 남은 시간을 안내한다. */
   cooldown?: boolean;
   retry_after_sec?: number;
   cooldown_minutes?: number;
+  /** cooldown 응답 시 참고용(최근 최고 / 회차 크기) */
+  progress?: { mastered: number; total: number };
 }
 export interface ExamSubmitInput {
   sitting_id: string;
@@ -437,12 +446,15 @@ export interface ExamResultItem {
 export interface ExamSubmitResult {
   total: number;
   correct: number;
+  need: number; // 이 회차 통과 기준(문항 수의 80%)
   results: ExamResultItem[];
   /** 발급 후 강사 편집으로 채점 못 한 문항 수 — >0이면 '다음 회차에 다시' 안내 */
   stale: number;
-  progress: { mastered: number; total: number };
   passed: boolean;
   perfect: boolean;
+  /** 미통과면 10분 재응시 게이트 남은 초 + 게이트 길이(분) */
+  retry_after_sec: number;
+  cooldown_minutes: number;
 }
 /** 수료증 데이터 — 실제 수료한 학생만 받는다(서버가 수료 검증 후 발급, 미수료 404). */
 export interface ExamCertificate {

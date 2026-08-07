@@ -683,3 +683,137 @@
   cursor: not-allowed;
   transform: none;
 }
+
+/* ===== 제출 직후 결과 팝업 — 점수·통과 여부(통과면 '수료증 보기'로 수료증) ===== */
+.ce-rp-back {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background: rgba(15, 15, 18, 0.5);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.ce-rp {
+  width: min(420px, 100%);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  box-shadow: var(--shadow-lg, 0 18px 48px rgba(0, 0, 0, 0.22));
+  padding: 28px 26px 22px;
+  text-align: center;
+}
+.ce-rp-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 21px;
+  letter-spacing: -0.01em;
+  padding: 8px 18px;
+  border-radius: 999px;
+}
+.ce-rp-badge i {
+  font-size: 21px;
+}
+.ce-rp-badge--pass {
+  background: var(--ok-soft);
+  color: var(--ok-ink);
+}
+.ce-rp-badge--perfect {
+  background: #fff3d6;
+  color: #a26b00;
+}
+.ce-rp-badge--fail {
+  background: var(--surface-2);
+  color: var(--ink-2);
+}
+.ce-rp-score {
+  margin-top: 16px;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.ce-rp-score b {
+  font-weight: 800;
+}
+.ce-rp-prog {
+  margin-top: 6px;
+  font-size: 13.5px;
+  color: var(--ink-3);
+}
+.ce-rp-prog b {
+  color: var(--ink-2);
+  font-weight: 700;
+}
+/* 미통과 팝업의 재응시 게이트 — 10분 카운트다운 + '틀린 문제 포함 새 N문항' 안내 */
+.ce-rp-gate {
+  margin-top: 16px;
+  background: var(--warn-soft);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 13px 14px;
+}
+.ce-rp-gate-h {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--warn-ink);
+  font-variant-numeric: tabular-nums;
+}
+.ce-rp-gate-h i {
+  font-size: 15px;
+}
+.ce-rp-gate-s {
+  margin: 6px 0 0;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--warn-ink);
+  line-height: 1.5;
+  opacity: 0.92;
+}
+.ce-rp-gate-s b {
+  font-weight: 800;
+}
+.ce-rp-actions {
+  margin-top: 22px;
+  display: flex;
+  gap: 9px;
+  justify-content: center;
+}
+.ce-rp-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid transparent;
+  border-radius: 11px;
+  padding: 11px 18px;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+}
+.ce-rp-btn i {
+  font-size: 16px;
+}
+.ce-rp-btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+.ce-rp-btn--primary:disabled {
+  background: var(--ink-3);
+}
+.ce-rp-btn--ghost {
+  border-color: var(--line-strong);
+  background: var(--surface);
+  color: var(--ink-2);
+}
+.ce-rp-btn--primary {
+  background: var(--brand);
+  color: var(--on-brand);
+}
