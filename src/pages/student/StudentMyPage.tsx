@@ -1,6 +1,7 @@
 import { useEffect, useState, type CSSProperties } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
+import SocialConnections from '../../components/student/SocialConnections';
 import { useAuth } from '../../hooks/useAuth';
 import { studentApi } from '../../api/students';
 import { settingsApi } from '../../api/settings';
@@ -421,6 +422,8 @@ export default function StudentMyPage() {
                 </Link>
               ))}
             </section>
+            {/* 간편 로그인(카카오·네이버·구글) 연결 — 서버에 provider 키가 없으면 통째로 숨김 */}
+            <SocialConnections />
             <section className="mp-card mp-danger-card">
               <h2 className="mp-card-title mp-card-title--pad">계정 삭제</h2>
               <p className="mp-danger-desc">

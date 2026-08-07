@@ -1,0 +1,120 @@
+/* 마이페이지 간편 로그인 연결 — 카드(.mp-card) 안에서 st-link 행과 같은 리듬으로 */
+
+.sx-desc {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--ink-2);
+  margin: -4px 18px 12px;
+}
+
+.sx-desc a {
+  color: var(--ink);
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.sx-msg {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0 18px 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.sx-msg--ok {
+  background: var(--ok-soft);
+  color: var(--ok-ink);
+}
+
+.sx-msg--bad {
+  background: var(--danger-soft);
+  color: var(--danger-ink);
+}
+
+.sx-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 18px;
+  border-top: 1px solid var(--line);
+}
+
+.sx-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  font-size: 18px;
+  flex: 0 0 34px;
+}
+
+/* 브랜드 색 — 각 사 규정값이라 테마 토큰을 쓰지 않는다 */
+.sx-icon--kakao {
+  background: #fee500;
+  color: #191600;
+}
+
+.sx-icon--naver {
+  background: #03c75a;
+  color: #ffffff;
+}
+
+.sx-icon--google {
+  background: var(--surface-3);
+  color: #4285f4;
+}
+
+.sx-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.sx-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.sx-sub {
+  font-size: 12.5px;
+  color: var(--ink-3);
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sx-date {
+  color: var(--ink-3);
+}
+
+.sx-btn {
+  flex: 0 0 auto;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.sx-btn:hover:not(:disabled) {
+  border-color: var(--brand);
+}
+
+.sx-btn--off {
+  color: var(--ink-2);
+}
+
+.sx-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

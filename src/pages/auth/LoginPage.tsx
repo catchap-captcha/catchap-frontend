@@ -8,6 +8,7 @@ import { PATHS } from '../../routes/paths';
 import { ROLE_HOME } from '../../routes/roleRoutes';
 import './LoginPage.css';
 import PasswordInput from '../../components/common/PasswordInput';
+import SocialLoginButtons from '../../components/auth/SocialLoginButtons';
 
 // 제품 전환: 기관/교사(0717)·학부모(0718) 로그인 탭·가입 흐름은 전부 제거됐다 —
 // 남은 것은 학생(학습자) 단일 흐름. 종전 코드는 git 이력 참고.
@@ -596,6 +597,10 @@ export default function LoginPage() {
               <span>또는</span>
               <div className="lg-divider-line" />
             </div>
+
+            {/* 간편 로그인 — 서버에 키가 설정된 provider만 그려진다(하나도 없으면 통째로 숨김) */}
+            <SocialLoginButtons mode="login" />
+
             <button type="button" onClick={goSignup} className="lg-secondary">
               <i className="ph ph-user-plus" />
               회원가입
@@ -618,6 +623,15 @@ export default function LoginPage() {
             </button>
             <h2 className="lg-h2 lg-h2--signup">{signupTitle}</h2>
             <p className="lg-signup-sub">{signupSubtitle}</p>
+
+            {/* 간편 가입 — provider가 이메일 인증을 대신해 준다. 만 14세 미만은 여기서
+                가입되지 않고(보호자 동의 절차가 소셜에 없다) 아래 이메일 가입으로 와야 한다. */}
+            <SocialLoginButtons mode="signup" />
+            <div className="lg-divider">
+              <div className="lg-divider-line" />
+              <span>이메일로 가입</span>
+              <div className="lg-divider-line" />
+            </div>
 
             {/* ============ 학습자 가입 (단일 흐름) ============ */}
             {(
