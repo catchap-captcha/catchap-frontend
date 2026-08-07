@@ -57,6 +57,7 @@ const GROUPS: NavGroup[] = [
       // '시스템 경보'는 ★그동안 무슨 일이 있었나(감시 장치가 보낸 경보 이력·수신 설정).
       // 보는 시점이 달라 둘 다 둔다 — 상태는 현재, 경보는 지나간 일.
       { to: PATHS.OPS_SYSTEM_STATUS, icon: 'ph-heartbeat', label: '시스템 상태' },
+      { to: PATHS.OPS_DEPLOYMENTS, icon: 'ph-rocket-launch', label: '배포 현황' },
       { to: PATHS.OPS_ALERTS, icon: 'ph-bell-ringing', label: '시스템 경보' },
       { to: PATHS.OPS_LLM_KEYS, icon: 'ph-gear-six', label: '설정' },
     ],
