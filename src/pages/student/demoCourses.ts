@@ -97,14 +97,6 @@ const SPEC: FieldSpec[] = [
 // 데모 커버는 demoCover.ts가 코스마다 다르게 코드로 생성한다(검정 배경·라인아트·Welcome to X+제목).
 // 결과가 data:image/svg+xml URL이라 thumbnailSrc가 /api/ 아닌 URL을 그대로 통과시켜 카드가 바로 쓴다.
 
-// 데모 카드가 전부 '3개 강의'로 뜨면 가짜 티가 나므로, 코스 id 해시로 3~10개 사이 값을 결정적
-// 으로 부여해 실제 코스처럼 규모가 제각각으로 보이게 한다(데모는 페이지 이동을 안 하므로 표시 전용).
-function demoCount(cid: string): number {
-  let h = 5381;
-  for (let i = 0; i < cid.length; i += 1) h = ((h << 5) + h + cid.charCodeAt(i)) >>> 0;
-  return 3 + (h % 8); // 3~10
-}
-
 const _courses: DemoCourse[] = [];
 const _lectures: LectureItem[] = [];
 SPEC.forEach((s) => {
@@ -118,7 +110,7 @@ SPEC.forEach((s) => {
       description: c.desc,
       order_no: ci,
       instructor_name: s.instructor, // 카드가 '… 강사'를 붙이므로 여기선 이름만(중복 '강사 강사' 방지)
-      lecture_count: demoCount(cid),
+      lecture_count: 0, // 데모 코스는 실제 강의 영상이 없으므로 0 → 카드에 '0개 강의'
       thumbnail_url: demoCoverUrl(s.field, ci, c.title),
       enrolled: false,
       field: s.field,

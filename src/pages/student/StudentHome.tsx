@@ -229,7 +229,7 @@ export default function StudentHome() {
     const c = g.course;
     const enrolled = !!c.enrolled;
     const demo = isDemoId(c.id);
-    const lecCount = c.lecture_count || g.lectures.length;
+    const lecCount = c.lecture_count ?? g.lectures.length; // 0이면 0 그대로(데모=영상 없음 → '0개 강의')
     const goCurriculum = () => {
       if (!demo) navigate(`${PATHS.STUDENT_COURSE_DETAIL}?id=${c.id}`);
     };
