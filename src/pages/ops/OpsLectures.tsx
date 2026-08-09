@@ -3148,7 +3148,7 @@ export function QuestionsModal({
       >
         <div className="op-bh-modal-h">
           <span id="qmodal-title">
-            <i className="ph-fill ph-seal-question" /> 확인 문항 — {lec.title}
+            <i className="ph-fill ph-seal-question" /> {lec.title} · 확인 문항 관리
           </span>
           <button className="op-bh-modal-x" onClick={close}>
             <i className="ph-bold ph-x" />

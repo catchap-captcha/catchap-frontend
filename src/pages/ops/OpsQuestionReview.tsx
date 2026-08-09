@@ -175,8 +175,9 @@ export default function OpsQuestionReview() {
         <div className="op-head">
           <div>
             <h1 className="op-title">문항 검수</h1>
-            <p className="op-sub" style={{ maxWidth: 640 }}>
-              AI가 만든 초안과 등록된 확인 문항을 검토해 공개합니다. 공개해야 학생 화면의 시청 검증에 사용됩니다.
+            <p className="op-sub" style={{ maxWidth: 680 }}>
+              여러 강의의 <b>검수 대기 문항을 한곳에서</b> 빠르게 분류하는 곳이에요 — 공개·문제 은행·삭제.
+              자세히 고칠 땐 <b>‘강의에서 편집’</b>으로 그 강의 문항 창을 여세요.
             </p>
           </div>
           <button className="op-btn op-btn--approve" disabled={generating} onClick={genAI}>
@@ -311,7 +312,7 @@ export default function OpsQuestionReview() {
                         else say('강의 정보를 아직 못 불러왔어요. 잠시 후 다시 시도해 주세요.');
                       }}
                     >
-                      <i className="ph ph-pencil-simple" />수정
+                      <i className="ph ph-pencil-simple" />강의에서 편집
                     </button>
                     {tab === 'published' ? (
                       <button className="orn-btn orn-btn--ghost" disabled={busyId === q.id} onClick={() => unpublish(q)}>
