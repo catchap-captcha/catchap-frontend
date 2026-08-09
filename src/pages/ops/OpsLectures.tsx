@@ -2654,6 +2654,13 @@ export function QuestionsModal({
     }
   }, [items, initialEditId]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // '수정'을 누르면 편집 폼(문항 리스트 위쪽)이 열리는데, 아래쪽 문항에서 누르면 폼이 화면 밖이라
+  // 아무 반응 없어 보였다 → 편집 대상(form.id)이 바뀔 때 그 폼으로 스크롤한다(내용 편집 중엔 안 튐).
+  const editFormRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (form?.id) editFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [form?.id]);
+
   const save = async () => {
     if (!form) return;
     const options = form.options.map((s) => s.trim());
@@ -3277,7 +3284,7 @@ export function QuestionsModal({
           </div>
         )}
         {form && (
-          <div className="op-lect-qform">
+          <div ref={editFormRef} className="op-lect-qform">
             <div className="op-form-grid">
               {/* 출제 시점 — 모든 문항이 이 시점 정각의 고정 핀. "방금 본 내용"을 그 대목
                   직후에 묻는다(오답 3회면 이 시점 기준으로 그 대목을 다시 보게 되감는다).
@@ -3665,7 +3672,7 @@ export function QuestionsModal({
             <div className="op-logrow">등록된 문항이 없어요.</div>
           )}
           {(items ?? []).map((q) => (
-            <div key={q.id} className="op-lect-qrow">
+            <div key={q.id} className={`op-lect-qrow${q.suggested_placement ? ` op-lect-qrow--fit-${q.suggested_placement}` : ''}`}>
               <div className="op-lect-qmeta">
                 {/* 은행 적합 문항 다중 선택 체크 — 체크한 것만 '선택 N개 은행으로'로 보낸다(선택=검토) */}
                 {q.suggested_placement === 'bank' && !q.bank_placed && q.status === 'draft' && (

@@ -610,6 +610,11 @@
   padding: 13px 15px;
   background: var(--surface);
 }
+/* 적합 판정(suggested_placement)으로 문항 칸 자체를 물들인다 — 왼쪽 색 띠 + 옅은 배경 틴트로
+   한눈에 분류: 확인 문항 적합=초록 / 은행 적합=앰버 / 불량 의심=빨강. 미판정은 기본색 유지. */
+.op-lect-qrow--fit-captcha { border-left: 5px solid var(--ok); background: color-mix(in srgb, var(--ok-soft) 50%, var(--surface)); }
+.op-lect-qrow--fit-bank { border-left: 5px solid var(--warn); background: color-mix(in srgb, var(--warn-soft) 50%, var(--surface)); }
+.op-lect-qrow--fit-discard { border-left: 5px solid var(--danger); background: color-mix(in srgb, var(--danger-soft) 50%, var(--surface)); }
 .op-lect-qmeta {
   display: flex;
   flex-direction: row;
