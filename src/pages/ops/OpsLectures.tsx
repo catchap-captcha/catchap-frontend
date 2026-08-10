@@ -2357,6 +2357,33 @@ const emptyQ = (): QForm => ({
   alignedUpTo: 0,
 });
 
+/* 출제 규칙(프롬프트) 정보 바 — 확인 문항 모달 안, 자막 바 위. 이 강의 생성에 쓰일 규칙의
+   출처(강사·과목 전용/전역/기본)와 마지막으로 저장한 시각을 알려 준다(운영 콘솔 프롬프트에서 저장). */
+function GenRulesInfoBar({ lectureId }: { lectureId: string }) {
+  const [info, setInfo] = useState<
+    { source: 'scoped' | 'global' | 'default'; updated_at: string | null } | null
+  >(null);
+  useEffect(() => {
+    lectureApi.opsGenRulesInfo(lectureId).then(setInfo).catch(() => setInfo(null));
+  }, [lectureId]);
+  if (!info) return null;
+  const label =
+    info.source === 'scoped' ? '강사·과목 전용' : info.source === 'global' ? '전역' : '서버 기본값';
+  return (
+    <div className="op-lect-rulesinfo" title="문항 생성에 쓰이는 출제 규칙이에요 — 운영 콘솔의 '프롬프트'에서 저장해요">
+      <i className="ph-bold ph-note-pencil" />
+      <span>
+        출제 규칙 <b>{label}</b>
+        {info.updated_at ? (
+          <> · 마지막 저장 {new Date(info.updated_at).toLocaleString('ko-KR')}</>
+        ) : (
+          <> · 아직 저장한 적 없어요(서버 기본값 사용)</>
+        )}
+      </span>
+    </div>
+  );
+}
+
 /* 강사 제공 자막(전사) 바 — 확인 문항 모달 안. 자막이 있으면 AI 생성이 자동 STT 대신
    이 자막을 쓴다(품질↑·비용↓·OpenAI 키·25MB 한계 우회). SRT/VTT 업로드 + 붙여넣기. */
 const _TR_SRC_LABEL: Record<string, string> = {
@@ -3370,6 +3397,8 @@ export function QuestionsModal({
                 알려드려요. (이 창을 다시 열면 진행 상태가 이어져요.)
               </p>
             )}
+            {/* 출제 규칙(프롬프트) 마지막 저장 시각 — 자막 바 위 */}
+            <GenRulesInfoBar lectureId={lec.id} />
             {/* 강사 제공 자막 — 있으면 위 'AI 문항 생성'이 자동 STT 대신 이 자막을 쓴다 */}
             <TranscriptBar lectureId={lec.id} note={(ok, msg) => { setBannerOk(ok); setBanner(msg); }} />
           </>

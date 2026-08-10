@@ -879,6 +879,15 @@ export const lectureApi = {
   opsQuestions: (lectureId: string) =>
     client.get<OpsLectureQuestion[]>(`/ops/lectures/${lectureId}/questions`).then((r) => r.data),
 
+  /** 이 강의 생성에 쓰일 '출제 규칙'의 출처·마지막 저장 시각 — 확인 문항 창 표시용.
+   *  source: scoped(강사·과목 전용) | global(전역) | default(서버 기본값) */
+  opsGenRulesInfo: (lectureId: string) =>
+    client
+      .get<{ source: 'scoped' | 'global' | 'default'; updated_at: string | null; is_custom: boolean }>(
+        `/ops/lectures/${lectureId}/gen-rules-info`,
+      )
+      .then((r) => r.data),
+
   opsQuestionCreate: (
     lectureId: string,
     body: {

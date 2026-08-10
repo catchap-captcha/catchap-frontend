@@ -558,6 +558,23 @@
   line-height: 1.5;
 }
 .op-lect-genwait i { flex-shrink: 0; animation: op-spin 1s linear infinite; }
+
+/* 출제 규칙(프롬프트) 마지막 저장 시각 바 — 자막 바 위. 정보성이라 톤을 낮춘다. */
+.op-lect-rulesinfo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 9px 13px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-2);
+  color: var(--ink-2);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+.op-lect-rulesinfo i { color: var(--ink-3); font-size: 15px; flex-shrink: 0; }
+.op-lect-rulesinfo b { color: var(--ink); }
 @keyframes op-spin { to { transform: rotate(360deg); } }
 .op-lect-banner { margin-bottom: 10px; }
 .op-lect-banner-ok {
