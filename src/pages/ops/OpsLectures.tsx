@@ -2956,20 +2956,50 @@ export function QuestionsModal({
   const bankCandidates = (items ?? []).filter(
     (q) => q.suggested_placement === 'bank' && !q.bank_placed && q.status === 'draft',
   );
-  const [bankSel, setBankSel] = useState<Set<string>>(new Set());
+  // 문항 다중 선택(통합) — 일괄 삭제 + '은행 적합' 일괄 이동에 함께 쓴다(모든 문항 행에 체크박스).
+  const [sel, setSel] = useState<Set<string>>(new Set());
   const [promoting, setPromoting] = useState(false);
-  const toggleBankSel = (id: string) =>
-    setBankSel((s) => {
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+  const toggleSel = (id: string) =>
+    setSel((s) => {
       const n = new Set(s);
       if (n.has(id)) n.delete(id);
       else n.add(id);
       return n;
     });
-  const selectedBankIds = bankCandidates.filter((q) => bankSel.has(q.id)).map((q) => q.id);
-  const allBankSelected =
-    bankCandidates.length > 0 && bankCandidates.every((q) => bankSel.has(q.id));
-  const toggleSelectAllBank = () =>
-    setBankSel(allBankSelected ? new Set() : new Set(bankCandidates.map((q) => q.id)));
+  const selectedIds = (items ?? []).filter((q) => sel.has(q.id)).map((q) => q.id);
+  const allSelected = (items ?? []).length > 0 && (items ?? []).every((q) => sel.has(q.id));
+  const toggleSelectAll = () =>
+    setSel(allSelected ? new Set() : new Set((items ?? []).map((q) => q.id)));
+  // '은행 적합'만 추린 선택분 — '선택 N개 은행으로'는 이 부분집합에만 적용된다(나머지는 무시).
+  const selectedBankIds = bankCandidates.filter((q) => sel.has(q.id)).map((q) => q.id);
+  const bulkDelete = async () => {
+    if (selectedIds.length === 0) return;
+    if (!window.confirm(`선택한 문항 ${selectedIds.length}개를 삭제할까요?\n되돌릴 수 없어요.`)) return;
+    setBulkDeleting(true);
+    const ids = [...selectedIds];
+    let ok = 0;
+    let fail = 0;
+    // 동시 8개씩 처리 — 많은 문항(최대 100)도 빠르게, 서버 부담은 제한한다.
+    await Promise.all(
+      Array.from({ length: 8 }, async () => {
+        for (let id = ids.pop(); id; id = ids.pop()) {
+          try {
+            await lectureApi.opsQuestionDelete(lec.id, id);
+            ok += 1;
+          } catch {
+            fail += 1;
+          }
+        }
+      }),
+    );
+    changedRef.current = true;
+    setSel(new Set());
+    setBannerOk(fail === 0);
+    setBanner(fail === 0 ? `${ok}개 문항을 삭제했어요.` : `${ok}개 삭제 · ${fail}개 실패했어요.`);
+    load();
+    setBulkDeleting(false);
+  };
   const promoteBank = async () => {
     if (selectedBankIds.length === 0) return;
     if (
@@ -2991,7 +3021,7 @@ export function QuestionsModal({
           (res.placed > 0 ? ' — 배치된 문항은 확인 문항 출제에서 빠집니다.' : '') +
           (res.placed > 0 && !res.runtime_visible ? ' 즉시 반영 실패(재기동 필요).' : ''),
       );
-      setBankSel(new Set());
+      setSel(new Set());
       load();
     } catch (e) {
       setBannerOk(false);
@@ -3274,23 +3304,38 @@ export function QuestionsModal({
                   </button>
                 )}
               </div>
-              {bankCandidates.length > 0 && (
+              {items && items.length > 0 && (
                 <div className="op-lect-bankbulk">
-                  <span className="op-lect-bankbulk-lb" title="봇이 상식으로 풀어 확인 문항엔 부적합 — 아래 체크로 골라 전체학습 은행으로 보내세요(선택=검토)">
-                    <i className="ph-bold ph-brain" /> 은행 적합 {bankCandidates.length}개
-                  </span>
-                  <button className="op-btn op-btn--soft" onClick={toggleSelectAllBank}>
-                    {allBankSelected ? '선택 해제' : '전체 선택'}
+                  <button className="op-btn op-btn--soft" onClick={toggleSelectAll}>
+                    {allSelected ? '선택 해제' : '전체 선택'}
                   </button>
-                  <button
-                    className="op-btn op-btn--soft"
-                    disabled={promoting || selectedBankIds.length === 0}
-                    onClick={promoteBank}
-                    title="체크한 '은행 적합' 문항을 전체학습 은행으로. 고른 문항만 옮겨요(선택이 곧 검토). 형식은 서버가 변환·미지원은 건너뜀."
-                  >
-                    <i className="ph-bold ph-tray-arrow-up" />
-                    {promoting ? '보내는 중…' : `선택 ${selectedBankIds.length}개 은행으로`}
-                  </button>
+                  {selectedIds.length > 0 && (
+                    <button
+                      className="op-btn op-btn--reject"
+                      disabled={bulkDeleting}
+                      onClick={bulkDelete}
+                      title="선택한 문항을 삭제해요 — 되돌릴 수 없어요"
+                    >
+                      <i className="ph-bold ph-trash" />
+                      {bulkDeleting ? '삭제 중…' : `선택 ${selectedIds.length}개 삭제`}
+                    </button>
+                  )}
+                  {bankCandidates.length > 0 && (
+                    <>
+                      <span className="op-lect-bankbulk-lb" title="봇이 상식으로 풀어 확인 문항엔 부적합 — 선택해 전체학습 은행으로 보내세요(선택=검토)">
+                        <i className="ph-bold ph-brain" /> 은행 적합 {bankCandidates.length}개
+                      </span>
+                      <button
+                        className="op-btn op-btn--soft"
+                        disabled={promoting || selectedBankIds.length === 0}
+                        onClick={promoteBank}
+                        title="선택한 '은행 적합' 문항을 전체학습 은행으로. 고른 문항만 옮겨요. 형식은 서버가 변환·미지원은 건너뜀."
+                      >
+                        <i className="ph-bold ph-tray-arrow-up" />
+                        {promoting ? '보내는 중…' : `선택 ${selectedBankIds.length}개 은행으로`}
+                      </button>
+                    </>
+                  )}
                 </div>
               )}
             </div>
@@ -3738,16 +3783,14 @@ export function QuestionsModal({
           {(items ?? []).map((q) => (
             <div key={q.id} className={`op-lect-qrow${q.suggested_placement ? ` op-lect-qrow--fit-${q.suggested_placement}` : ''}`}>
               <div className="op-lect-qmeta">
-                {/* 은행 적합 문항 다중 선택 체크 — 체크한 것만 '선택 N개 은행으로'로 보낸다(선택=검토) */}
-                {q.suggested_placement === 'bank' && !q.bank_placed && q.status === 'draft' && (
-                  <label className="op-lect-qcheck" title="은행으로 보낼 문항 선택">
-                    <input
-                      type="checkbox"
-                      checked={bankSel.has(q.id)}
-                      onChange={() => toggleBankSel(q.id)}
-                    />
-                  </label>
-                )}
+                {/* 문항 선택 — 일괄 삭제·은행 이동에 쓴다(모든 행에 표시). */}
+                <label className="op-lect-qcheck" title="선택 — 일괄 삭제·은행 이동에 사용">
+                  <input
+                    type="checkbox"
+                    checked={sel.has(q.id)}
+                    onChange={() => toggleSel(q.id)}
+                  />
+                </label>
                 {/* 고정 핀 = 그 시점 정각에 출제. draft 0초 = 시점 미배치 */}
                 {q.status === 'draft' && q.position_sec < 1 ? (
                   <span className="op-mono" title="아직 출제 시점이 없어요 — 수정에서 시점을 지정한 뒤 승인하세요">
