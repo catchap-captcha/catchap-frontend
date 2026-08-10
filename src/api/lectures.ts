@@ -1001,7 +1001,7 @@ export const lectureApi = {
     client
       .get<{
         job_id: string;
-        status: 'pending' | 'running' | 'done' | 'error';
+        status: 'pending' | 'running' | 'done' | 'error' | 'cancelled';
         phase: 'transcribing' | 'generating' | 'verifying' | null;
         n: number;
         created: number;
@@ -1015,6 +1015,15 @@ export const lectureApi = {
         error: string | null;
         finished_at: string | null;
       }>(`/ops/lectures/${lectureId}/questions/gen-jobs/${jobId}`)
+      .then((r) => r.data),
+
+  /** 진행 중인 생성 잡 '중지' 요청 — 러너가 다음 단계 경계에서 멈춘다(진행 중 STT/생성은 즉시
+   *  끊지 못함). 이미 끝난(done/error/cancelled) 잡엔 무해하게 현재 상태를 돌려준다. */
+  opsQuestionGenCancel: (lectureId: string, jobId: string) =>
+    client
+      .post<{ job_id: string; status: string }>(
+        `/ops/lectures/${lectureId}/questions/gen-jobs/${jobId}/cancel`,
+      )
       .then((r) => r.data),
 
   /* ---- 강사 제공 자막(전사) — 자동 STT 대체·캐시 ---- */

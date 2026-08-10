@@ -2558,6 +2558,10 @@ export function QuestionsModal({
   const [genN, setGenN] = useState('3');
   const [generating, setGenerating] = useState(false);
   const [genPhase, setGenPhase] = useState<string | null>(null); // 생성 중 세부 단계 라벨용
+  // 지금 생성 중인 잡의 요청 개수 — 재진입 시 편집용 기본값(3) 대신 실제 개수(job.n)를 보이게 한다(사용자 제보).
+  const [genActiveN, setGenActiveN] = useState<number | null>(null);
+  const [genJobId, setGenJobId] = useState<string | null>(null); // 진행 중 잡 id — '생성 중지'에 쓴다
+  const [cancelling, setCancelling] = useState(false); // 중지 요청 in-flight(버튼 중복 방지)
   // 고급 설정(되감기 지점) 펼침 여부 — 대개 자동이라 기본 접어 폼을 단순하게(초심자 부담↓).
   const [showAdvanced, setShowAdvanced] = useState(false);
   // '이 화면 사용법' 접힘 상태를 기억한다(localStorage) — 처음엔 펼쳐 안내하되, 익숙해진 강사가
@@ -3012,6 +3016,7 @@ export function QuestionsModal({
   // 진행 중인 생성 잡을 done/error까지 폴링(2초 간격·최대 5분). 시작·재진입 모두 이걸 쓴다.
   const pollGenJob = async (jobId: string) => {
     genPollRef.current = true;
+    setGenJobId(jobId);
     try {
       for (let i = 0; i < 150 && genPollRef.current; i++) {
         await new Promise((r) => setTimeout(r, 2000));
@@ -3026,6 +3031,19 @@ export function QuestionsModal({
           return;
         }
         setGenPhase(job.phase); // 세부 단계 표시(자막 변환/문항 생성/검증)
+        setGenActiveN(job.n); // 실제 요청 개수(권위) — '문항 N개 생성 중'을 정확히 표시
+        if (job.status === 'cancelled') {
+          // 사용자가 '생성 중지' — 러너가 단계 경계에서 멈춘 상태. 조용히 마감하고 목록 새로고침
+          // (중지 전에 이미 만들어진 초안이 있으면 목록에 남는다).
+          changedRef.current = true;
+          setBannerOk(true);
+          setBanner('문항 생성을 중지했어요. 중지 전에 만들어진 초안이 있으면 목록에 남아 있어요.');
+          clearGenJob();
+          setGenerating(false);
+          setGenJobId(null);
+          load();
+          return;
+        }
         if (job.status === 'done') {
           changedRef.current = true;
           setBannerOk(true);
@@ -3079,21 +3097,23 @@ export function QuestionsModal({
 
   const generate = async () => {
     const n = Number(genN);
-    if (!Number.isInteger(n) || n < 1 || n > 20) {
+    if (!Number.isInteger(n) || n < 1 || n > 100) {
       setBannerOk(false);
-      setBanner('생성 개수는 1~20 사이 정수예요.');
+      setBanner('생성 개수는 1~100 사이 정수예요.');
       return;
     }
     setGenerating(true);
     setGenPhase(null);
+    setGenActiveN(n); // 요청 개수를 즉시 표시(폴링 전에도 정확히)
     setBanner('');
     genStartRef.current = Date.now();
     setGenElapsed(0);
     try {
       // 비동기: 서버가 잡을 만들고 즉시 반환. 키 미설정이면 바로 503 throw(성공 위장 없음).
       const started = await lectureApi.opsQuestionGenerate(lec.id, n);
+      setGenJobId(started.job_id);
       try {
-        localStorage.setItem(GENJOB_KEY, JSON.stringify({ id: started.job_id, at: Date.now() }));
+        localStorage.setItem(GENJOB_KEY, JSON.stringify({ id: started.job_id, at: Date.now(), n }));
       } catch { /* 저장 실패해도 진행엔 지장 없음(재진입 이어보기만 안 됨) */ }
       await pollGenJob(started.job_id);
     } catch (e) {
@@ -3104,10 +3124,40 @@ export function QuestionsModal({
     }
   };
 
+  // '생성 중지' — 백엔드에 취소를 요청한다. 러너가 진행 중인 단계를 마치고 다음 경계에서 멈춘다
+  // (진행 중인 STT/생성 자체를 즉시 끊진 못한다). 취소 API가 아직 없는 배포거나 실패하면 폴링(감시)만
+  // 멈추고 '감시 중단'으로 정직하게 안내한다 — 어느 경우든 버튼이 먹통처럼 보이지 않게 한다.
+  const cancelGen = async () => {
+    if (cancelling) return;
+    if (!window.confirm('진행 중인 문항 생성을 중지할까요?\n\n현재 단계가 끝나는 대로 멈춰요. 중지 전에 만들어진 초안은 목록에 남을 수 있어요.')) return;
+    setCancelling(true);
+    try {
+      if (genJobId) {
+        await lectureApi.opsQuestionGenCancel(lec.id, genJobId);
+        setBannerOk(true);
+        setBanner('중지를 요청했어요 — 현재 단계가 끝나면 멈춰요.');
+        // 상태 전환(cancelled)은 폴링이 감지해 마감한다(목록 새로고침 포함).
+      } else {
+        clearGenJob();
+        setGenerating(false);
+      }
+    } catch {
+      // 취소 엔드포인트가 없는 배포거나 실패 — 폴링(감시)만 멈추고 정직하게 안내(잡은 계속될 수 있음).
+      genPollRef.current = false;
+      clearGenJob();
+      setGenerating(false);
+      setGenJobId(null);
+      setBannerOk(true);
+      setBanner('생성 감시를 멈췄어요 — 백그라운드 작업은 계속될 수 있어요(완료되면 목록에 초안이 떠요).');
+    } finally {
+      setCancelling(false);
+    }
+  };
+
   // 재진입 이어보기 — 모달을 다시 열었을 때 이 강의에 진행 중인 생성 잡이 남아 있으면
   // '생성 중'을 이어 보여주고 폴링을 재개한다(나갔다 와도 진행 상태가 보이게 — 사용자 제보).
   useEffect(() => {
-    let saved: { id: string; at: number } | null = null;
+    let saved: { id: string; at: number; n?: number } | null = null;
     try {
       const raw = localStorage.getItem(GENJOB_KEY);
       saved = raw ? JSON.parse(raw) : null;
@@ -3117,6 +3167,8 @@ export function QuestionsModal({
     if (saved?.id) {
       setGenerating(true);
       setGenPhase(null);
+      setGenJobId(saved.id);
+      if (typeof saved.n === 'number') setGenActiveN(saved.n); // 재진입 즉시 실제 개수 표시(폴링이 곧 확정)
       genStartRef.current = saved.at || Date.now();
       setBannerOk(true);
       setBanner('이 강의의 문항 생성이 진행 중이에요 — 완료되면 목록에 초안이 뜨고 알림이 와요.');
@@ -3180,22 +3232,23 @@ export function QuestionsModal({
                   문항
                   {generating ? (
                     // 생성 중엔 편집용 기본값(3)을 감추고, 지금 만들고 있는 문항 수(요청 개수)를 보여준다.
+                    // genActiveN은 서버 잡(job.n)에서 온 실제 개수 — 재진입 시에도 정확(기본값 3으로 안 돌아감).
                     <b
                       className="op-lect-gen-n"
                       aria-live="polite"
                       style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
                     >
-                      {genN}
+                      {genActiveN ?? genN}
                     </b>
                   ) : (
                     <input
                       type="number"
                       min={1}
-                      max={20}
+                      max={100}
                       value={genN}
                       onChange={(e) => setGenN(e.target.value)}
                       className="op-lect-gen-n"
-                      aria-label="AI로 만들 문항 개수 (1~20)"
+                      aria-label="AI로 만들 문항 개수 (1~100)"
                     />
                   )}
                   개{generating ? ' 생성 중…' : ''}
@@ -3209,6 +3262,17 @@ export function QuestionsModal({
                   <i className="ph-bold ph-sparkle" />
                   {generating ? '생성 중…' : 'AI 문항 생성'}
                 </button>
+                {generating && (
+                  <button
+                    className="op-btn op-btn--reject op-lect-genstop"
+                    disabled={cancelling}
+                    onClick={cancelGen}
+                    title="진행 중인 문항 생성을 중지해요 — 현재 단계가 끝나면 멈추고, 중지 전에 만들어진 초안은 목록에 남을 수 있어요"
+                  >
+                    <i className="ph-bold ph-stop-circle" />
+                    {cancelling ? '중지 중…' : '생성 중지'}
+                  </button>
+                )}
               </div>
               {bankCandidates.length > 0 && (
                 <div className="op-lect-bankbulk">
