@@ -120,3 +120,23 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* 콘솔 카드 껍데기 — 운영 콘솔의 어느 화면에서든 페이지 스타일시트를 import 하지 않고
+   쓸 수 있게 컴포넌트가 직접 갖는다(.op-root 토큰 상속).
+   ★가로 패딩이 0인 것이 중요하다 — 위 sx-* 행이 자기 여백(18px)을 이미 갖고 있어
+   카드가 또 주면 제목만 덜 들어가 계단처럼 어긋난다. */
+.sx-card {
+  background: var(--surface);
+  border: 1.5px solid var(--line);
+  border-radius: 18px;
+  box-shadow: var(--op-shadow);
+  margin-bottom: 16px;
+  padding: 18px 0 6px;
+}
+.sx-cardtitle {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--ink);
+  margin: 0 0 10px;
+  padding: 0 18px;
+}
