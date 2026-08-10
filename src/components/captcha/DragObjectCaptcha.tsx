@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
+import { createPortal } from 'react-dom';
 
 import { client } from '../../api/client';
 import { API_ORIGIN } from '../../api/lectures';
@@ -400,16 +401,24 @@ export default function DragObjectCaptcha({ onToken, onClose }: Props) {
               </div>
             </div>
 
-            {/* 드래그 중 포인터를 따라오는 고스트(원본과 동일한 크기·중심 정렬) */}
-            {dragging && dragPoint && (
-              <img
-                className="fc-ghost"
-                style={{ left: dragPoint.x, top: dragPoint.y }}
-                src={assetSrc(dragging.preview_url)}
-                alt=""
-                draggable={false}
-              />
-            )}
+            {/* 드래그 중 포인터를 따라오는 고스트(원본과 동일한 크기·중심 정렬).
+                ★반드시 body로 포탈한다 — .fc-ghost는 position:fixed(clientX/clientY=뷰포트 기준)인데,
+                이 위젯을 감싸는 조상(로그인 모달·게이트 셸)이 transform/will-change/애니메이션(예:
+                .cp-widget의 진입 cpIn)을 가지면 fixed의 기준이 뷰포트가 아니라 그 조상 박스로 바뀐다.
+                그러면 고스트가 커서에서 조상 offset(스케일이면 위치마다 다른 양)만큼 밀려 따라온다.
+                드롭 판정(endDrag)은 getBoundingClientRect라 정상이므로 '그림만 어긋나는' 증상이 된다.
+                body 직속으로 렌더하면 위 조상들의 영향을 받지 않아 항상 커서에 정확히 붙는다. */}
+            {dragging && dragPoint &&
+              createPortal(
+                <img
+                  className="fc-ghost"
+                  style={{ left: dragPoint.x, top: dragPoint.y }}
+                  src={assetSrc(dragging.preview_url)}
+                  alt=""
+                  draggable={false}
+                />,
+                document.body,
+              )}
 
             <div className="fc-foot">
               <span className="fc-count">
