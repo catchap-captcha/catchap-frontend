@@ -3809,7 +3809,7 @@ export function QuestionsModal({
           {items !== null && items.length === 0 && !loadErr && (
             <div className="op-logrow">등록된 문항이 없어요.</div>
           )}
-          {(items ?? []).map((q) => (
+          {(items ?? []).map((q, qi) => (
             <div key={q.id} className={`op-lect-qrow${q.suggested_placement ? ` op-lect-qrow--fit-${q.suggested_placement}` : ''}`}>
               <div className="op-lect-qmeta">
                 {/* 문항 선택 — 일괄 삭제·은행 이동에 쓴다(모든 행에 표시). */}
@@ -3820,6 +3820,8 @@ export function QuestionsModal({
                     onChange={() => toggleSel(q.id)}
                   />
                 </label>
+                {/* 문항 번호 — 목록 순서대로(1부터) 매긴 표시용 순번 */}
+                <span className="op-lect-qnum" title="문항 번호">{qi + 1}</span>
                 {/* 고정 핀 = 그 시점 정각에 출제. draft 0초 = 시점 미배치 */}
                 {q.status === 'draft' && q.position_sec < 1 ? (
                   <span className="op-mono" title="아직 출제 시점이 없어요 — 수정에서 시점을 지정한 뒤 승인하세요">

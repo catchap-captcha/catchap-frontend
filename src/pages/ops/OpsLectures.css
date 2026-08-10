@@ -1168,6 +1168,14 @@
 }
 .op-lect-qcheck { display: inline-flex; align-items: center; margin-right: 2px; }
 .op-lect-qcheck input { width: 16px; height: 16px; accent-color: var(--brand); cursor: pointer; }
+/* 문항 번호 배지 — 목록 순서 순번. ink/surface로 라이트·다크 모두 대비가 뒤집혀 또렷하다. */
+.op-lect-qnum {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 22px; height: 22px; padding: 0 6px;
+  border-radius: 999px;
+  background: var(--ink); color: var(--surface);
+  font-weight: 800; font-size: 12px; flex-shrink: 0;
+}
 
 /* AI 제안 시점 배지(가) — 강사가 확인·확정하도록 유도. 목록 배지 + 폼 인라인 */
 .lu-aisug { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
