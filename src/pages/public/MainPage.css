@@ -560,12 +560,62 @@ html:has(.mn-page) { scroll-behavior: smooth; }
 .mn-step-title { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; color: var(--ink); margin: 0 0 8px; }
 .mn-step-desc { margin: 0; font-size: 14px; color: var(--ink-2); font-weight: 400; line-height: 1.65; }
 
-/* ===== FINAL CTA ===== */
-.mn-final { border-top: 1px solid var(--line); }
-.mn-final-inner { max-width: 1200px; margin: 0 auto; padding: 110px 32px; text-align: center; }
-.mn-final-title { font-size: 48px; font-weight: 700; letter-spacing: -0.04em; color: var(--ink); margin: 0 0 20px; line-height: 1.1; }
-.mn-final-sub { margin: 0 0 36px; color: var(--ink-2); font-weight: 400; font-size: 20px; }
-.mn-final-cta-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+/* ===== FINAL CTA — 스크롤 위치에 연동해 스르륵 확대되는 풀스크린 연출 =====
+   useCtaAutoReveal 훅이 섹션에 --mn-p(0→1)를 써준다. transform/opacity만 바꿔 레이아웃을
+   전혀 건드리지 않는다(리플로우·점프·footer 밀림 없음). JS 미동작/reduced-motion이면 기본값 1 =
+   그냥 풀사이즈 CTA로 안전하게 보인다. */
+.mn-final {
+  border-top: 1px solid var(--line);
+  min-height: 100vh;
+  min-height: 100svh; /* 모바일 주소창 변화 대응(지원 시) */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.mn-final-inner {
+  --p: var(--mn-p, 1); /* 스크롤 진행도 0→1, 기본 1 */
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 72px 32px;
+  text-align: center;
+  transform: scale(calc(0.68 + 0.32 * var(--p)));
+  transform-origin: center center;
+  opacity: calc(0.2 + 0.8 * var(--p));
+  will-change: transform, opacity;
+}
+.mn-final-title {
+  font-size: clamp(34px, 6vw, 88px); /* 풀스크린에서 크게 강조, 모바일은 줄바꿈으로 안 잘리게 */
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  color: var(--ink);
+  margin: 0 0 20px;
+  line-height: 1.1;
+}
+.mn-final-sub {
+  margin: 0 0 36px;
+  color: var(--ink-2);
+  font-weight: 400;
+  font-size: clamp(15px, 1.7vw, 22px);
+  /* 제목보다 살짝 늦게 등장(스태거) */
+  opacity: clamp(0, calc((var(--p) - 0.45) / 0.35), 1);
+  transform: translateY(calc((1 - clamp(0, calc((var(--p) - 0.45) / 0.35), 1)) * 14px));
+}
+.mn-final-cta-row {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+  /* 버튼은 가장 마지막에 등장 */
+  opacity: clamp(0, calc((var(--p) - 0.6) / 0.32), 1);
+  transform: translateY(calc((1 - clamp(0, calc((var(--p) - 0.6) / 0.32), 1)) * 16px));
+}
+/* 모션 최소화: 확대·스태거 없이 원래 흐름의 일반 CTA로 (자동 스크롤도 훅에서 비활성) */
+@media (prefers-reduced-motion: reduce) {
+  .mn-final { min-height: 0; }
+  .mn-final-inner { transform: none; opacity: 1; padding: 96px 32px; }
+  .mn-final-sub,
+  .mn-final-cta-row { opacity: 1; transform: none; }
+}
 
 /* ===== FOOTER ===== */
 .mn-footer { border-top: 1px solid var(--line); background: var(--bg); }
