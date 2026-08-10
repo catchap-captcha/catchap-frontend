@@ -619,6 +619,19 @@ export const opsSettingsApi = {
         { rules },
       )
       .then((r) => r.data),
+  /** (강사 계정 × 코스 과목)별 출제 규칙 — 저장된 전용본 목록 + 설정 가능한 (강사,과목) 쌍 */
+  getScopedPrompts: () =>
+    client
+      .get<{
+        overrides: { instructor_id: string; instructor_name: string; subject: string; rules: string }[];
+        pairs: { instructor_id: string; instructor_name: string; subject: string }[];
+      }>('/ops/settings/ai/prompts/scoped')
+      .then((r) => r.data),
+  /** (강사, 과목) 전용 출제 규칙 저장 — 빈 값이면 그 조합의 전용본 삭제(전역/기본값 복귀) */
+  putScopedPrompt: (instructor_id: string, subject: string, rules: string) =>
+    client
+      .put<{ ok: boolean }>('/ops/settings/ai/prompts/scoped', { instructor_id, subject, rules })
+      .then((r) => r.data),
 };
 
 /** 운영자 AI 모델 선택(#26) — 실제 LLM 호출(문항 생성·자기검증)에 쓰는 모델의 런타임 설정.
