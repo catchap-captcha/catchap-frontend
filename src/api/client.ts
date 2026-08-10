@@ -16,18 +16,50 @@ export const client = axios.create({
 const ACCESS_KEY = 'catchap_access_token';
 const REFRESH_KEY = 'catchap_refresh_token';
 
-export function getAccessToken() {
-  return localStorage.getItem(ACCESS_KEY);
+// 로그인 유지 정책 —
+//  ON  = localStorage  : 브라우저를 닫아도 세션 유지(만료는 서버가 역할별로 — 학생·강사 14일, 운영자 8시간)
+//  OFF = sessionStorage: 탭을 닫으면 토큰이 사라져 자동 로그아웃(공용 PC 대비)
+// 토큰은 둘 중 한 저장소에만 존재하므로 read는 local→session 순으로 조회한다.
+function readToken(key: string): string | null {
+  return localStorage.getItem(key) ?? sessionStorage.getItem(key);
 }
 
-export function setTokens(access: string, refresh: string) {
-  localStorage.setItem(ACCESS_KEY, access);
-  localStorage.setItem(REFRESH_KEY, refresh);
+/** 지금 토큰이 담긴 저장소 — 없으면 null. 회전(remember 미지정) 때 저장소를 바꾸지 않으려 참조한다. */
+function activeStore(): Storage | null {
+  if (localStorage.getItem(REFRESH_KEY) !== null) return localStorage;
+  if (sessionStorage.getItem(REFRESH_KEY) !== null) return sessionStorage;
+  return null;
+}
+
+export function getAccessToken() {
+  return readToken(ACCESS_KEY);
+}
+
+export function getRefreshToken() {
+  return readToken(REFRESH_KEY);
+}
+
+/**
+ * remember=true  → localStorage  (로그인 유지: 브라우저를 닫아도 유지)
+ * remember=false → sessionStorage (탭을 닫으면 로그아웃 — 공용 PC 대비)
+ * remember 생략  → 토큰 회전(refresh). 로그인 때 고른 저장소를 그대로 유지한다.
+ * 어느 경우든 반대편 저장소의 잔재를 지워 토큰이 두 곳에 동시에 남지 않게 한다.
+ */
+export function setTokens(access: string, refresh: string, remember?: boolean) {
+  const store =
+    remember === undefined ? (activeStore() ?? localStorage) : remember ? localStorage : sessionStorage;
+  const other = store === localStorage ? sessionStorage : localStorage;
+  other.removeItem(ACCESS_KEY);
+  other.removeItem(REFRESH_KEY);
+  store.setItem(ACCESS_KEY, access);
+  store.setItem(REFRESH_KEY, refresh);
 }
 
 export function clearTokens() {
   localStorage.removeItem(ACCESS_KEY);
   localStorage.removeItem(REFRESH_KEY);
+  sessionStorage.removeItem(ACCESS_KEY);
+  sessionStorage.removeItem(REFRESH_KEY);
 }
 
 client.interceptors.request.use((config) => {
@@ -62,7 +94,7 @@ async function refreshAccessToken(): Promise<string | null> {
   try {
     // 무토큰 조기 반환도 try 안에 — finally 밖에서 반환하면 공유 상태(refreshing)에
     // resolved Promise<null>이 영구 잔존해, 재로그인 후에도 갱신이 영영 안 도는 버그가 된다.
-    const refresh = localStorage.getItem(REFRESH_KEY);
+    const refresh = getRefreshToken();
     if (!refresh) return null;
     const res = await axios.post(`${BASE_URL}/api/v1/auth/refresh`, {
       refresh_token: refresh,
