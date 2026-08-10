@@ -14,6 +14,14 @@
   gap: 10px;
   align-items: center;
 }
+/* ★공용 .op-logrow(4열: 2fr 1.2fr 1.4fr 1.2fr)가 소스 순서상 위 6열을 덮어써서, 관리 버튼
+   (문항·자료·수정·삭제)이 둘째 줄 가운데로 접히던 문제(2026-08-10). 컴파운드 선택자로 특이도를
+   올려 6열이 항상 이기게 한다 → 액션이 제자리(오른쪽 끝 열)로. 좁은 폭 1fr 스택은 아래 미디어쿼리도
+   같은 컴파운드로 맞춰 계속 이기게 둔다. */
+.op-logrow.op-lect-grid,
+.op-loghead.op-lect-grid {
+  grid-template-columns: minmax(0, 2fr) 64px 90px 64px 76px minmax(336px, 1.3fr);
+}
 .op-lect-dim { color: var(--ink-3); }
 .op-lect-actions { display: inline-flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
 .op-lect-danger { color: var(--danger) !important; }
@@ -635,7 +643,9 @@
 .op-lect-matmode { display: flex; gap: 8px; margin-bottom: 10px; }
 
 @media (max-width: 900px) {
-  .op-lect-grid { grid-template-columns: 1fr; gap: 4px; }
+  /* 컴파운드로 맞춰 위 6열 규칙(.op-logrow.op-lect-grid)을 좁은 폭에서 다시 이긴다. */
+  .op-logrow.op-lect-grid, .op-loghead.op-lect-grid { grid-template-columns: 1fr; }
+  .op-lect-grid { gap: 4px; }
   .op-lect-grid > .op-col-right { justify-content: flex-start; }
   .op-course-grid { grid-template-columns: 1fr; gap: 4px; }
   .op-course-grid > .op-col-right { justify-content: flex-start; }
