@@ -7,6 +7,8 @@
 export const PATHS = {
   // 공개 — handoff: CatChap 메인/문의하기/고객지원/이용약관/개인정보처리방침
   HOME: '/',
+  // 가입 없이 둘러보는 체험 — 랜딩 히어로에서 진입. 자체완결(실 API·계정·결제 안 씀).
+  DEMO: '/demo',
   CONTACT: '/contact',
   // 접힌 페이지 — /contact 로 리다이렉트만 한다(북마크·이메일에 남은 링크 보호). 새 링크는 CONTACT 를 쓴다.
   SUPPORT: '/support',

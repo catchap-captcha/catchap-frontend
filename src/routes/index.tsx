@@ -7,6 +7,7 @@ import { useAuth } from '../hooks/useAuth';
 
 // 공개
 const MainPage = lazy(() => import('../pages/public/MainPage'));
+const DemoPage = lazy(() => import('../pages/public/DemoPage'));
 const ContactPage = lazy(() => import('../pages/public/ContactPage'));
 const TermsPage = lazy(() => import('../pages/public/TermsPage'));
 const PrivacyPage = lazy(() => import('../pages/public/PrivacyPage'));
@@ -98,6 +99,8 @@ export default function AppRoutes() {
       <Routes>
         {/* 공개 — 랜딩은 로그아웃 전용(로그인 시 역할별 홈으로 보낸다) */}
         <Route path={PATHS.HOME} element={<HomeRoute />} />
+        {/* 가입 없이 둘러보는 체험 — 로그인 여부와 무관하게 공개(자체완결 샘플) */}
+        <Route path={PATHS.DEMO} element={<DemoPage />} />
         <Route path={PATHS.CONTACT} element={<ContactPage />} />
         {/* 고객지원 페이지는 접었다(0730) — 문의 양식·FAQ가 문의하기로 합쳐졌다.
             404 대신 리다이렉트로 둔다: 마이페이지·이메일·외부에 /support 링크가 남아 있다. */}
