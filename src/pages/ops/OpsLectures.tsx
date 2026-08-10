@@ -3110,17 +3110,23 @@ export function QuestionsModal({
               ? '소리 자동 변환 자막 기반'
               : '강사 제공 자막 기반'
             : '자막 없이 제목·설명 기반';
+          // 요청 개수에 못 미치면 이유를 정직하게 붙인다 — 짧은 영상·좁은 주제는 '서로 다른'
+          // 문항 수가 내용에 막히고, 유사·중복 문항은 자동 제외된다(품질 우선 정책).
+          const shortNote =
+            job.created < job.n
+              ? ` (요청 ${job.n}개 중 ${job.created}개 — 영상 길이·내용상 서로 다른 문항이 여기까지예요. 유사·중복 문항은 자동 제외됩니다.)`
+              : '';
           if (job.self_verified) {
             const discardNote = job.discard_candidates
               ? ` · 불량 의심 ${job.discard_candidates}개(자막을 줘도 안 풀림 — 폐기 검토)`
               : '';
             setBanner(
-              `${trNote}로 AI가 ${job.created}개 생성 → 확인 문항 적합 ${job.captcha_candidates}개(강의를 봐야 풀림)·` +
+              `${trNote}로 AI가 ${job.created}개 생성${shortNote} → 확인 문항 적합 ${job.captcha_candidates}개(강의를 봐야 풀림)·` +
                 `은행 적합 ${job.bank_candidates}개(상식으로 풀림)${discardNote}. 각 문항 배지를 보고 검수·배치하세요.`,
             );
           } else {
             setBanner(
-              `${trNote}로 AI가 ${job.created}개 문항을 생성했어요(draft) — 검수 후 승인하세요.` +
+              `${trNote}로 AI가 ${job.created}개 문항을 생성했어요(draft)${shortNote} — 검수 후 승인하세요.` +
                 (job.verify_error ? ` (자기검증 미수행: ${job.verify_error})` : ''),
             );
           }
