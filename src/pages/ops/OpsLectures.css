@@ -566,6 +566,51 @@
   animation: op-spin 1s linear infinite;
 }
 
+/* ===== AI 문항 생성 완료 팝업 (op-formmodal 24px 패딩을 그대로 쓰고 내부는 세로 여백만) ===== */
+.op-lect-gendone-ov { z-index: 95; } /* QuestionsModal(90) 위에 뜬다 */
+.op-lect-gendone { max-width: 460px; }
+.op-lect-gendone-count {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 8px;
+  margin-top: 16px; font-size: 15px; font-weight: 700; color: var(--ink-2);
+}
+.op-lect-gendone-count b { font-size: 26px; font-weight: 850; color: var(--ink); line-height: 1; }
+.op-lect-gendone-of { font-size: 13px; font-weight: 700; color: var(--ink-3); }
+.op-lect-gendone-src {
+  margin-left: auto; font-size: 11.5px; font-weight: 700; color: var(--ink-3);
+  padding: 3px 9px; border: 1px solid var(--line); border-radius: 999px; white-space: nowrap;
+}
+.op-lect-gendone-short {
+  display: flex; gap: 9px; align-items: flex-start;
+  margin-top: 12px; padding: 11px 13px;
+  background: var(--warn-soft); border: 1px solid var(--line); border-radius: 12px;
+  color: var(--warn-ink); font-size: 12.5px; font-weight: 650; line-height: 1.6;
+}
+.op-lect-gendone-short i { flex-shrink: 0; margin-top: 1px; font-size: 15px; }
+.op-lect-gendone-short b { font-weight: 850; }
+.op-lect-gendone-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.op-lect-gendone-chip {
+  display: flex; flex-direction: column; gap: 2px; flex: 1 1 0; min-width: 100px;
+  padding: 9px 12px; border-radius: 12px; border: 1px solid var(--line);
+  font-size: 12px; font-weight: 750; color: var(--ink-2);
+}
+.op-lect-gendone-chip b { font-size: 18px; font-weight: 850; line-height: 1.1; }
+.op-lect-gendone-chip small { font-size: 10.5px; font-weight: 650; color: var(--ink-3); }
+.op-lect-gendone-chip.is-ok { background: var(--ok-soft); border-color: color-mix(in srgb, var(--ok) 26%, transparent); }
+.op-lect-gendone-chip.is-ok b { color: var(--ok-ink); }
+.op-lect-gendone-chip.is-warn { background: var(--warn-soft); border-color: color-mix(in srgb, var(--warn) 26%, transparent); }
+.op-lect-gendone-chip.is-warn b { color: var(--warn-ink); }
+.op-lect-gendone-chip.is-danger { background: var(--danger-soft); border-color: color-mix(in srgb, var(--danger) 26%, transparent); }
+.op-lect-gendone-chip.is-danger b { color: var(--danger-ink); }
+.op-lect-gendone-verr {
+  margin-top: 12px; padding: 9px 12px; font-size: 12px; font-weight: 650;
+  color: var(--warn-ink); background: var(--warn-soft); border-radius: 10px;
+}
+.op-lect-gendone-hint {
+  margin-top: 14px; font-size: 12px; font-weight: 650; color: var(--ink-3); line-height: 1.6;
+}
+.op-lect-gendone-hint b { color: var(--ink-2); }
+.op-lect-gendone .op-lect-guide-foot { margin-top: 16px; }
+
 /* 출제 규칙(프롬프트) 마지막 저장 시각 바 — 자막 바 위. 정보성이라 톤을 낮춘다. */
 .op-lect-rulesinfo {
   display: flex;
