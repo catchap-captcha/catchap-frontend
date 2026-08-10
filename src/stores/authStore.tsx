@@ -13,11 +13,18 @@ import type { LoginRequest, MeResponse, StudentLoginRequest, TokenPair } from '.
 interface AuthContextValue {
   me: MeResponse | null;
   loading: boolean;
-  login: (req: LoginRequest) => Promise<MeResponse>;
-  opsLogin: (email: string, password: string, captchaToken?: string) => Promise<MeResponse>;
-  studentLogin: (req: StudentLoginRequest) => Promise<MeResponse>;
+  // remember: 로그인 유지 체크박스 — true=localStorage(브라우저 닫아도 유지),
+  //           false=sessionStorage(탭 닫으면 로그아웃, 공용 PC 대비). 생략 시 유지 안 함(=false).
+  login: (req: LoginRequest, remember?: boolean) => Promise<MeResponse>;
+  opsLogin: (
+    email: string,
+    password: string,
+    captchaToken?: string,
+    remember?: boolean,
+  ) => Promise<MeResponse>;
+  studentLogin: (req: StudentLoginRequest, remember?: boolean) => Promise<MeResponse>;
   // 공개 로그인 폼(/login) 단일 진입 — 서버가 학생·강사를 판별(운영자 제외).
-  publicLogin: (req: StudentLoginRequest) => Promise<MeResponse>;
+  publicLogin: (req: StudentLoginRequest, remember?: boolean) => Promise<MeResponse>;
   logout: () => Promise<void>;
   reloadMe: () => Promise<MeResponse | null>;
 }
@@ -65,9 +72,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [me]);
 
   const login = useCallback(
-    async (req: LoginRequest) => {
+    async (req: LoginRequest, remember?: boolean) => {
       const res = await client.post<TokenPair>('/auth/login', req);
-      setTokens(res.data.access_token, res.data.refresh_token);
+      setTokens(res.data.access_token, res.data.refresh_token, remember);
       localStorage.setItem('catchap_login_ts', String(Date.now()));
       const loaded = await reloadMe();
       if (!loaded) throw new Error('로그인 정보를 불러오지 못했어요.');
@@ -77,14 +84,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const opsLogin = useCallback(
-    async (email: string, password: string, captchaToken?: string) => {
+    async (email: string, password: string, captchaToken?: string, remember?: boolean) => {
       // 운영자 전용 /ops/login 진입. 공개 로그인 폼(학생·강사)은 publicLogin이 전담한다.
       const res = await client.post<TokenPair>('/auth/ops-login', {
         email,
         password,
         ...(captchaToken ? { captcha_token: captchaToken } : {}),
       });
-      setTokens(res.data.access_token, res.data.refresh_token);
+      setTokens(res.data.access_token, res.data.refresh_token, remember);
       localStorage.setItem('catchap_login_ts', String(Date.now()));
       const loaded = await reloadMe();
       if (!loaded) throw new Error('로그인 정보를 불러오지 못했어요.');
@@ -94,9 +101,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const studentLogin = useCallback(
-    async (req: StudentLoginRequest) => {
+    async (req: StudentLoginRequest, remember?: boolean) => {
       const res = await client.post<TokenPair>('/auth/student-login', req);
-      setTokens(res.data.access_token, res.data.refresh_token);
+      setTokens(res.data.access_token, res.data.refresh_token, remember);
       localStorage.setItem('catchap_login_ts', String(Date.now()));
       const loaded = await reloadMe();
       if (!loaded) throw new Error('로그인 정보를 불러오지 못했어요.');
@@ -106,10 +113,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const publicLogin = useCallback(
-    async (req: StudentLoginRequest) => {
+    async (req: StudentLoginRequest, remember?: boolean) => {
       // 서버가 학생·강사를 판별하는 단일 진입(운영자 제외). 프론트 try-then-fallback 대체.
       const res = await client.post<TokenPair>('/auth/public-login', req);
-      setTokens(res.data.access_token, res.data.refresh_token);
+      setTokens(res.data.access_token, res.data.refresh_token, remember);
       localStorage.setItem('catchap_login_ts', String(Date.now()));
       const loaded = await reloadMe();
       if (!loaded) throw new Error('로그인 정보를 불러오지 못했어요.');

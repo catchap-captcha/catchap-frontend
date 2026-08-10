@@ -58,6 +58,9 @@ export default function LoginPage() {
   const [formError, setFormError] = useState('');
   const [loginError, setLoginError] = useState('');
   const [loginBad, setLoginBad] = useState(false);
+  // 로그인 유지 — 켜면 localStorage(브라우저 닫아도 유지), 끄면 sessionStorage(탭 닫으면 로그아웃).
+  // 기본은 끔: 공용 PC에서 켜져 있으면 다음 사용자에게 세션이 넘어갈 수 있어서다.
+  const [remember, setRemember] = useState(false);
   // 아이디+비밀번호가 여러 기관에서 일치할 때(409)만 후보 기관 버튼 노출
   const [orgCandidates, setOrgCandidates] = useState<
     { organization_id: string; organization_name: string }[] | null
@@ -371,12 +374,15 @@ export default function LoginPage() {
       const orgId = orgOverride ?? rememberedOrg(id);
       lastOrgRef.current = orgId; // 캡차 재시도가 같은 기관으로 가게 기억
       try {
-        const me = await publicLogin({
-          organization_id: orgId,
-          student_login_id: id,
-          password: pw,
-          captcha_token: captchaToken,
-        });
+        const me = await publicLogin(
+          {
+            organization_id: orgId,
+            student_login_id: id,
+            password: pw,
+            captcha_token: captchaToken,
+          },
+          remember,
+        );
         if (orgId) rememberOrg(id, orgId);
         setCaptchaNeeded(false);
         navigate(ROLE_HOME[me.role]);
@@ -386,11 +392,14 @@ export default function LoginPage() {
         // 기억해 둔 기관이 더 이상 맞지 않으면(전학 등) 잊고 전체에서 한 번 더
         if (resp?.status === 401 && orgId && !orgOverride) {
           forgetOrg(id);
-          const me = await publicLogin({
-            student_login_id: id,
-            password: pw,
-            captcha_token: captchaToken,
-          });
+          const me = await publicLogin(
+            {
+              student_login_id: id,
+              password: pw,
+              captcha_token: captchaToken,
+            },
+            remember,
+          );
           setCaptchaNeeded(false);
           navigate(ROLE_HOME[me.role]);
           return;
@@ -566,14 +575,16 @@ export default function LoginPage() {
 
             <div className="lg-rememberrow">
               <label className="lg-remember">
-                <input type="checkbox" />
+                <input
+                  type="checkbox"
+                  checked={remember}
+                  onChange={(e) => setRemember(e.target.checked)}
+                />
                 로그인 유지
               </label>
               <span className="lg-findrow">
-                <Link to={PATHS.FIND_ID} className="lg-forgot">
-                  아이디 찾기
-                </Link>
-                <span className="lg-findsep" aria-hidden="true" />
+                {/* 아이디 찾기 제거(2026-08-10) — 새 계정은 '이메일=아이디'라 이메일을 아는
+                    사람에겐 무의미. 비밀번호 찾기만 남긴다. */}
                 <Link to={PATHS.PASSWORD_RESET} className="lg-forgot">
                   비밀번호를 잊으셨나요?
                 </Link>

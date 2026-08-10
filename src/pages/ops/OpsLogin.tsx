@@ -40,6 +40,9 @@ export default function OpsLogin() {
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  // 로그인 유지 — 콘솔 계정은 공용 PC를 가정하므로 기본 OFF(탭 닫으면 세션 종료).
+  // 켜도 서버가 운영자 세션을 8시간으로 짧게 끊는다(학생·강사 14일과 다름).
+  const [remember, setRemember] = useState(false);
   // 5회+ 실패 시 서버가 captcha_required를 알림 — 이후 시도는 캡차 통과 후 재시도
   const [captchaNeeded, setCaptchaNeeded] = useState(false);
   const [captchaOpen, setCaptchaOpen] = useState(false);
@@ -55,7 +58,7 @@ export default function OpsLogin() {
     setBusy(true);
     setError('');
     try {
-      const loaded = await opsLogin(email.trim(), password, captchaToken);
+      const loaded = await opsLogin(email.trim(), password, captchaToken, remember);
       setCaptchaNeeded(false);
       const dest =
         next ??
@@ -162,14 +165,20 @@ export default function OpsLogin() {
             />
           </div>
 
-          {/* 학습자 로그인의 '로그인 유지 / 찾기' 줄과 같은 자리.
-              콘솔 계정은 공용 PC 사용을 가정해 로그인 유지를 두지 않고 찾기 링크만 오른쪽에 둔다. */}
-          <div className="lg-rememberrow opl-findonly">
+          {/* 학습자 로그인의 '로그인 유지 / 찾기' 줄과 같은 자리·같은 규격.
+              콘솔 계정도 로그인 유지를 쓸 수 있게 하되(2026-08-10) 기본은 OFF(공용 PC 대비),
+              켜도 서버가 운영자 세션을 8시간으로 짧게 끊는다. 오른쪽은 비밀번호 찾기만. */}
+          <div className="lg-rememberrow">
+            <label className="lg-remember">
+              <input
+                type="checkbox"
+                checked={remember}
+                onChange={(e) => setRemember(e.target.checked)}
+              />
+              로그인 유지 (8시간)
+            </label>
             <span className="lg-findrow">
-              <Link to={PATHS.FIND_ID} className="lg-forgot">
-                아이디 찾기
-              </Link>
-              <span className="lg-findsep" aria-hidden="true" />
+              {/* 아이디 찾기 제거(2026-08-10) — 이메일=아이디라 불필요. 비밀번호 찾기만. */}
               <Link to={PATHS.PASSWORD_RESET} className="lg-forgot">
                 비밀번호를 잊으셨나요?
               </Link>
