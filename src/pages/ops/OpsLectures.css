@@ -408,7 +408,7 @@
 /* op-formmodal의 max-width:560px를 반드시 함께 풀어야 넓은 폭이 실제로 적용된다.
    안 그러면 모달이 560px로 갇혀 코스 목록 5열 그리드(최소 ~602px)가 카드 밖으로 넘치고,
    .op-logcard{overflow:hidden}이 맨 오른쪽 '관리' 열(수정·삭제)을 잘라 넓은 화면에서 안 보인다. */
-.op-lect-widemodal { width: min(760px, calc(100vw - 40px)); max-width: min(760px, calc(100vw - 40px)); max-height: 86vh; overflow-y: auto; }
+.op-lect-widemodal { width: min(860px, calc(100vw - 40px)); max-width: min(860px, calc(100vw - 40px)); max-height: 86vh; overflow-y: auto; }
 .op-lect-qtools { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
 .op-lect-qbtns { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 /* 보조 액션(가져오기·AI 생성) — 주 액션(문항 추가·초록)보다 낮은 시각 위계 */

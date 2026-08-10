@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { deploymentApi, type DeploymentSnapshot } from '../../api/deployments';
 import OpsNav from '../../components/ops/OpsNav';
+import './OpsApproval.css'; // 표준 콘솔 셸(op-root/op-main)·테마 토큰 — 다른 페이지와 폭·색을 맞춘다
 import './OpsDeployments.css';
 
 /**
@@ -70,9 +71,9 @@ export default function OpsDeployments() {
   }, [load]);
 
   return (
-    <div className="ops-page">
+    <div className="op-root">
       <OpsNav />
-      <main className="ops-main">
+      <main className="op-main">
         <header className="dep-head">
           <div>
             <h1>배포 현황</h1>

@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import OpsNav from '../../components/ops/OpsNav';
-import OpsSubTabs, { LLM_TABS } from '../../components/ops/OpsSubTabs';
 import { KeyCard } from './OpsLlmParts';
 import { opsSettingsApi, type AiSettings } from '../../api/ops';
 import { errorDetail } from '../../api/lectures';
@@ -64,8 +63,6 @@ export default function OpsLlmKeys() {
             </p>
           </div>
         </div>
-
-        <OpsSubTabs tabs={LLM_TABS} />
 
         {loadErr && (
           <div className="op-form-err ops-set-banner">

@@ -1,4 +1,6 @@
-/* 배포 현황 — 읽기 전용 표. 색은 「정상/확인 필요」 둘만 쓴다. */
+/* 배포 현황 — 읽기 전용 표. 색은 「정상/확인 필요」 둘만 쓴다.
+   ★색·선·면은 전부 콘솔 테마 토큰(var(--...))만 참조한다 — 종전엔 하드코딩 hex라 다크 모드가
+   안 먹고 다른 운영 페이지와 톤이 어긋났다(2026-08-10 정리). 폭은 표준 셸(.op-main)이 진다. */
 
 .dep-head {
   display: flex;
@@ -11,13 +13,14 @@
 .dep-head h1 {
   margin: 0 0 6px;
   font-size: 22px;
-  font-weight: 700;
+  font-weight: 800;
+  color: var(--ink);
 }
 
 .dep-sub {
   margin: 0;
   max-width: 60ch;
-  color: var(--text-muted, #6b7280);
+  color: var(--ink-3);
   font-size: 13px;
   line-height: 1.6;
 }
@@ -25,33 +28,40 @@
 .dep-refresh {
   flex: none;
   padding: 8px 14px;
-  border: 1px solid var(--border, #d1d5db);
-  border-radius: 8px;
-  background: var(--surface, #fff);
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--ink);
+  font-family: inherit;
   font-size: 13px;
+  font-weight: 700;
   cursor: pointer;
+  transition: border-color 0.15s, transform 0.15s;
 }
+.dep-refresh:hover:not(:disabled) { border-color: var(--ink-3); transform: translateY(-1px); }
 .dep-refresh:disabled { opacity: 0.5; cursor: default; }
 
 /* ── 못 읽었을 때 ── 빈 화면으로 두지 않고 사유를 그대로 보여 준다 */
 .dep-error {
   margin-bottom: 20px;
   padding: 14px 16px;
-  border: 1px solid #fca5a5;
-  border-left: 4px solid #dc2626;
-  border-radius: 8px;
-  background: #fef2f2;
+  border: 1px solid var(--danger);
+  border-left: 4px solid var(--danger);
+  border-radius: 12px;
+  background: var(--danger-soft);
 }
+.dep-error strong { color: var(--danger-ink); }
 .dep-error-detail {
   margin: 6px 0 8px;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 12px;
   line-height: 1.6;
+  color: var(--danger-ink);
   word-break: break-all;
 }
 .dep-error-hint {
   margin: 0;
-  color: #7f1d1d;
+  color: var(--danger-ink);
   font-size: 12px;
   line-height: 1.6;
 }
@@ -65,52 +75,60 @@
 }
 .dep-meta {
   margin-left: auto;
-  color: var(--text-muted, #6b7280);
+  color: var(--ink-3);
   font-size: 12px;
 }
 
 .dep-chip {
   display: inline-block;
-  padding: 2px 9px;
+  padding: 3px 10px;
   border-radius: 999px;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
 }
-.dep-chip.ok  { background: #dcfce7; color: #166534; }
-.dep-chip.bad { background: #fee2e2; color: #991b1b; }
+.dep-chip.ok  { background: var(--ok-soft); color: var(--ok-ink); }
+.dep-chip.bad { background: var(--danger-soft); color: var(--danger-ink); }
 
-/* ── 표 ── */
+/* ── 표 ── 카드 안에 담아 다른 페이지 카드들과 같은 무게로 보이게 한다 */
 .dep-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 14px;
+  background: var(--surface);
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
 }
 .dep-table th,
 .dep-table td {
-  padding: 12px 10px;
-  border-bottom: 1px solid var(--border, #e5e7eb);
+  padding: 13px 14px;
+  border-bottom: 1px solid var(--line);
   text-align: left;
   vertical-align: top;
 }
-.dep-table th {
-  color: var(--text-muted, #6b7280);
+.dep-table tbody tr:last-child td { border-bottom: none; }
+.dep-table thead th {
+  background: var(--surface-2);
+  color: var(--ink-3);
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
 }
-.dep-table tr.bad td { background: #fffbfb; }
+.dep-table tbody tr:hover td { background: var(--surface-2); }
+.dep-table tr.bad td { background: color-mix(in srgb, var(--danger-soft) 45%, var(--surface)); }
 
-.dep-name { display: block; font-weight: 600; }
+.dep-name { display: block; font-weight: 700; color: var(--ink); }
 .dep-raw {
   display: block;
   margin-top: 2px;
-  color: var(--text-muted, #9ca3af);
+  color: var(--ink-3);
   font-size: 11px;
 }
 
 .dep-tag {
   padding: 2px 7px;
   border-radius: 6px;
-  background: var(--surface-2, #f3f4f6);
+  background: var(--surface-2);
+  color: var(--ink-2);
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 12px;
 }
@@ -118,7 +136,7 @@
 .dep-conds {
   margin: 6px 0 0;
   padding-left: 16px;
-  color: #991b1b;
+  color: var(--danger-ink);
   font-size: 12px;
   line-height: 1.5;
 }
@@ -126,14 +144,15 @@
 .dep-empty,
 .dep-foot {
   margin-top: 16px;
-  color: var(--text-muted, #6b7280);
+  color: var(--ink-3);
   font-size: 13px;
   line-height: 1.7;
 }
 .dep-foot code {
   padding: 1px 5px;
   border-radius: 5px;
-  background: var(--surface-2, #f3f4f6);
+  background: var(--surface-2);
+  color: var(--ink-2);
   font-size: 12px;
 }
 
