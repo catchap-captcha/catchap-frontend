@@ -2559,6 +2559,18 @@ function TranscriptBar({
   );
 }
 
+/** AI 문항 생성 완료 팝업이 담는 결과 요약(생성 잡 done 응답에서 추림). */
+type GenDoneInfo = {
+  created: number;
+  n: number;
+  transcript_source: 'srt' | 'vtt' | 'paste' | 'stt' | null;
+  self_verified: boolean;
+  captcha_candidates: number | null;
+  bank_candidates: number | null;
+  discard_candidates: number | null;
+  verify_error: string | null;
+};
+
 /** 확인 문항 모달 — '강의 관리' 목록에서 여는 것과 완전히 같은 컴포넌트를 '문항 검수' 화면
  *  (OpsQuestionReview.tsx)의 '수정' 버튼에서도 그대로 재사용한다(중복 구현 대신 export).
  *  initialEditId를 주면 목록 로드 후 그 문항의 편집 폼을 자동으로 연다(딥링크 진입점). */
@@ -2584,6 +2596,8 @@ export function QuestionsModal({
   const [saving, setSaving] = useState(false);
   const [genN, setGenN] = useState('3');
   const [generating, setGenerating] = useState(false);
+  // 생성 완료 결과 팝업 — 인라인 배너보다 눈에 띄게(사용자 요청). done일 때 요약을 담아 연다.
+  const [genDone, setGenDone] = useState<GenDoneInfo | null>(null);
   const [genPhase, setGenPhase] = useState<string | null>(null); // 생성 중 세부 단계 라벨용
   // 지금 생성 중인 잡의 요청 개수 — 재진입 시 편집용 기본값(3) 대신 실제 개수(job.n)를 보이게 한다(사용자 제보).
   const [genActiveN, setGenActiveN] = useState<number | null>(null);
@@ -3104,6 +3118,17 @@ export function QuestionsModal({
         if (job.status === 'done') {
           changedRef.current = true;
           setBannerOk(true);
+          // 결과 팝업(눈에 띄게) — 특히 '요청 개수 > 실제 생성'일 때 이유를 분명히 전한다.
+          setGenDone({
+            created: job.created,
+            n: job.n,
+            transcript_source: job.transcript_source,
+            self_verified: job.self_verified,
+            captcha_candidates: job.captcha_candidates,
+            bank_candidates: job.bank_candidates,
+            discard_candidates: job.discard_candidates,
+            verify_error: job.verify_error,
+          });
           // 전사 출처를 정직하게 앞에 밝힌다 — 강사 자막 / 소리 자동 변환 / 자막 없음(메타)
           const trNote = job.transcript_source
             ? job.transcript_source === 'stt'
@@ -3251,6 +3276,7 @@ export function QuestionsModal({
       : null;
 
   return (
+    <>
     <div className="op-bh-overlay" onClick={close}>
       <div
         className="op-formmodal op-lect-widemodal"
@@ -4034,6 +4060,90 @@ export function QuestionsModal({
             onClose={() => setCapture(null)}
           />
         )}
+      </div>
+    </div>
+    {genDone && <GenDoneModal info={genDone} onClose={() => setGenDone(null)} />}
+    </>
+  );
+}
+
+/* ================= AI 문항 생성 완료 팝업 ================= */
+/** 생성이 끝나면 결과를 인라인 배너보다 눈에 띄게 알린다(사용자 요청). 특히 '요청 개수 > 실제
+ *  생성'일 때 왜 적은지(영상 길이·중복 자동 제외)를 팝업으로 분명히 전한다. 배치 제안(확인
+ *  문항 적합/은행/불량 의심) 요약도 함께 보여 바로 검수로 이어지게 한다. */
+function GenDoneModal({ info, onClose }: { info: GenDoneInfo; onClose: () => void }) {
+  const ref = useModalA11y<HTMLDivElement>(onClose);
+  const short = info.created < info.n;
+  const trNote = info.transcript_source
+    ? info.transcript_source === 'stt'
+      ? '소리 자동 변환 자막 기반'
+      : '강사 제공 자막 기반'
+    : '자막 없이 제목·설명 기반';
+  return (
+    <div className="op-bh-overlay op-lect-gendone-ov" onClick={onClose}>
+      <div
+        className="op-formmodal op-lect-gendone"
+        onClick={(e) => e.stopPropagation()}
+        ref={ref}
+        tabIndex={-1}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="gendone-title"
+      >
+        <div className="op-bh-modal-h">
+          <span id="gendone-title">
+            <i className="ph-fill ph-check-circle" /> AI 문항 생성 완료
+          </span>
+          <button className="op-bh-modal-x" onClick={onClose}>
+            <i className="ph-bold ph-x" />
+          </button>
+        </div>
+
+        <div className="op-lect-gendone-count">
+          <b>{info.created}개</b> 생성
+          {short && <span className="op-lect-gendone-of">· 요청 {info.n}개 중</span>}
+          <span className="op-lect-gendone-src">{trNote}</span>
+        </div>
+
+        {short && (
+          <div className="op-lect-gendone-short">
+            <i className="ph-fill ph-info" />
+            <span>
+              영상 길이·내용상 <b>서로 다른 문항이 여기까지</b>예요. 유사·중복 문항은 자동
+              제외됩니다. 더 필요하면 강의를 나눠 올리거나 더 긴 영상으로 올려 보세요.
+            </span>
+          </div>
+        )}
+
+        {info.self_verified ? (
+          <div className="op-lect-gendone-chips">
+            <span className="op-lect-gendone-chip is-ok">
+              <b>{info.captcha_candidates ?? 0}</b> 확인 문항 적합 <small>강의를 봐야 풀림</small>
+            </span>
+            <span className="op-lect-gendone-chip is-warn">
+              <b>{info.bank_candidates ?? 0}</b> 은행 적합 <small>상식으로 풀림</small>
+            </span>
+            {!!info.discard_candidates && (
+              <span className="op-lect-gendone-chip is-danger">
+                <b>{info.discard_candidates}</b> 불량 의심 <small>자막 줘도 안 풀림</small>
+              </span>
+            )}
+          </div>
+        ) : (
+          info.verify_error && (
+            <p className="op-lect-gendone-verr">자기검증 미수행: {info.verify_error}</p>
+          )
+        )}
+
+        <p className="op-lect-gendone-hint">
+          만든 문항은 초안이에요 — 각 배지를 보고 검수한 뒤 <b>‘공개’</b>해야 학생에게 출제돼요.
+        </p>
+
+        <div className="op-lect-guide-foot">
+          <button className="op-btn op-btn--approve" onClick={onClose}>
+            <i className="ph-bold ph-check" /> 확인
+          </button>
+        </div>
       </div>
     </div>
   );
