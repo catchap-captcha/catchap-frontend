@@ -46,6 +46,56 @@ const AUDIENCE = [
   },
 ];
 
+// '모두를 위한 화면' — 역할 카드를 누르면 펼쳐지는 '역대 협업 사례'.
+// ★서비스 소개용 예시 콘텐츠(실존 인물·기관 아님, 이름은 가림표기·가상). 패널에 '예시' 표기를 둔다.
+type RoleCase = {
+  intro: string;
+  stats: { num: string; label: string }[];
+  partners: string[];
+  quotes: { who: string; quote: string }[];
+};
+const ROLE_CASES: Record<string, RoleCase> = {
+  학습자: {
+    intro: '부트캠프·대학·평생교육원과 함께한 학습자들이 CatChap으로 “진짜 시청”을 증명했습니다.',
+    stats: [
+      { num: '12,400+', label: '누적 수료 학습자' },
+      { num: '87%', label: '평균 완주율' },
+      { num: '79%', label: '확인 문제 정답률' },
+    ],
+    partners: ['코드스쿼드 백엔드 3기', '청년취업사관학교', '한국방송통신대 교양', '패스트러너 데이터 트랙'],
+    quotes: [
+      { who: '김O민 · 취업 준비생', quote: '딴짓하면 바로 문제가 떠서 진짜로 다 봤어요. 이 수료증은 부끄럽지 않아요.' },
+      { who: '이O서 · 재직자', quote: '배속·건너뛰기가 막히니까 오히려 끝까지 집중해서 보게 되더라고요.' },
+    ],
+  },
+  강사: {
+    intro: '현업 전문가·인기 강사들이 CatChap에 강의를 올려 “실제로 본 학습자”만 수료하게 했습니다.',
+    stats: [
+      { num: '3,200+', label: '등록 강의' },
+      { num: '4.8/5', label: '강사 평균 만족도' },
+      { num: '92%', label: 'AI 문항 초안 채택률' },
+    ],
+    partners: ['클라우드 아키텍처', '데이터 사이언스', '백엔드 15년차', 'UX 리서치'],
+    quotes: [
+      { who: '박O우 · 클라우드 강사', quote: '시청 검증 덕에 “수료=학습”이 성립해요. 기업 교육 문의가 눈에 띄게 늘었습니다.' },
+      { who: '정O늘 · 데이터 강사', quote: 'AI가 자막을 읽고 문항 초안을 만들어줘서 출제 시간이 1/5로 줄었어요.' },
+    ],
+  },
+  '기업 · 기관': {
+    intro: '임직원·구성원 필수 교육의 “진짜 이수”를 데이터로 증명한 도입 사례입니다.',
+    stats: [
+      { num: '140+', label: '도입 기업·기관' },
+      { num: '96%', label: '평균 이수율' },
+      { num: '60%↓', label: '교육 관리 공수' },
+    ],
+    partners: ['한빛금융 정보보호 교육', '누리에너지 안전보건', '세종교육청 교원 연수', '그린모빌리티 온보딩'],
+    quotes: [
+      { who: '한빛금융그룹 · HRD팀', quote: '클릭만 하고 방치하던 이수가 사라졌어요. 감사 대응이 훨씬 편해졌습니다.' },
+      { who: '누리에너지 · 안전관리팀', quote: '법정 필수교육을 “실제로 봤다”고 데이터로 증명할 수 있게 됐어요.' },
+    ],
+  },
+};
+
 // 히어로 프리뷰 카드의 분필체 파이차트 해칭선 — CatChap 랜딩.dc.html의 SVG 원본 좌표 그대로.
 const HATCH_LINES: [number, number, number, number][] = [
   [130, 34, 0, 164], [144, 34, 14, 164], [158, 34, 28, 164], [172, 34, 42, 164],
@@ -72,6 +122,18 @@ export default function MainPage() {
   // 스크롤에 따라 상단바를 투명→불투명(로고도 흰색→검정)으로 전환 — 히어로가 다크라 필요.
   const [scrolled, setScrolled] = useState(false);
   const [menu, setMenu] = useState<Menu>(null);
+  // '모두를 위한 화면' 역할 카드 → 협업 사례 펼침. activeRole=열린 카드(없으면 null),
+  // shownRole=패널에 그릴 내용(닫힐 때도 남겨 접힘 애니메이션이 내용과 함께 부드럽게 되게 한다).
+  const [activeRole, setActiveRole] = useState<string | null>(null);
+  const [shownRole, setShownRole] = useState<string | null>(null);
+  const toggleRole = (title: string) => {
+    if (activeRole === title) {
+      setActiveRole(null); // 접기 — shownRole은 유지
+    } else {
+      setShownRole(title);
+      setActiveRole(title);
+    }
+  };
   const closeTimer = useRef<number | undefined>(undefined);
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > window.innerHeight * 0.6);
@@ -349,25 +411,82 @@ export default function MainPage() {
         </div>
       </section>
 
-      {/* ROLES */}
+      {/* ROLES — 카드 클릭 시 '역대 협업 사례'가 애니메이션으로 펼쳐진다(그 아래 공용 패널). */}
       <section id="roles" className="mn-roles">
         <div className="mn-roles-head cc-reveal">
           <h2 className="mn-roles-title">모두를 위한 화면</h2>
-          <p className="mn-sec-sub">같은 시청 데이터를 학습자·강사·기관에게 목적에 맞게 다르게 보여줍니다.</p>
+          <p className="mn-sec-sub">
+            같은 시청 데이터를 학습자·강사·기관에게 목적에 맞게 다르게 보여줍니다.{' '}
+            <span className="mn-roles-hint">카드를 눌러 협업 사례를 확인하세요.</span>
+          </p>
         </div>
         <div className="mn-roles-grid cc-reveal-group">
-          {AUDIENCE.map((a) => (
-            <div key={a.title} className="mn-role-card">
-              <i className={`ph ${a.icon} mn-role-icon`} />
-              <h3 className="mn-role-title">{a.title}</h3>
-              <p className="mn-role-desc">{a.desc}</p>
-              <div className="mn-role-list">
-                {a.points.map((p) => (
-                  <span key={p} className="mn-role-item"><i className="ph ph-check" />{p}</span>
-                ))}
-              </div>
+          {AUDIENCE.map((a) => {
+            const open = activeRole === a.title;
+            return (
+              <button
+                key={a.title}
+                type="button"
+                className={'mn-role-card' + (open ? ' is-open' : '')}
+                onClick={() => toggleRole(a.title)}
+                aria-expanded={open}
+              >
+                <i className={`ph ${a.icon} mn-role-icon`} />
+                <h3 className="mn-role-title">{a.title}</h3>
+                <p className="mn-role-desc">{a.desc}</p>
+                <div className="mn-role-list">
+                  {a.points.map((p) => (
+                    <span key={p} className="mn-role-item"><i className="ph ph-check" />{p}</span>
+                  ))}
+                </div>
+                <span className="mn-role-more">
+                  <i className="ph-bold ph-handshake" /> 협업 사례 {open ? '접기' : '보기'}
+                  <i className="ph-bold ph-caret-down mn-role-morecaret" />
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* 선택한 역할의 역대 협업 사례 — grid-rows 0fr→1fr로 부드럽게 펼침 */}
+        <div className={'mn-rolecases-wrap' + (activeRole ? ' is-open' : '')}>
+          <div className="mn-rolecases-clip">
+            <div className="mn-rolecases-inner">
+              {shownRole && ROLE_CASES[shownRole] && (
+                <div className="mn-rolecases" key={shownRole}>
+                  <div className="mn-rolecases-head">
+                    <span className="mn-rolecases-kicker">
+                      <i className="ph-fill ph-handshake" /> {shownRole} · 역대 협업 사례
+                    </span>
+                    <p className="mn-rolecases-intro">{ROLE_CASES[shownRole].intro}</p>
+                  </div>
+                  <div className="mn-rolecases-stats">
+                    {ROLE_CASES[shownRole].stats.map((s) => (
+                      <div key={s.label} className="mn-rolecases-stat">
+                        <b>{s.num}</b>
+                        <span>{s.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mn-rolecases-partners">
+                    {ROLE_CASES[shownRole].partners.map((p) => (
+                      <span key={p} className="mn-rolecases-chip">{p}</span>
+                    ))}
+                  </div>
+                  <div className="mn-rolecases-quotes">
+                    {ROLE_CASES[shownRole].quotes.map((q) => (
+                      <blockquote key={q.who} className="mn-rolecases-quote">
+                        <i className="ph-fill ph-quotes" />
+                        <p>{q.quote}</p>
+                        <cite>{q.who}</cite>
+                      </blockquote>
+                    ))}
+                  </div>
+                  <p className="mn-rolecases-note">* 서비스 소개용 예시입니다.</p>
+                </div>
+              )}
             </div>
-          ))}
+          </div>
         </div>
       </section>
 
