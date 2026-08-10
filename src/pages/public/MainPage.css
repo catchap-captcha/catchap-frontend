@@ -532,16 +532,17 @@ html:has(.mn-page) { scroll-behavior: smooth; }
 .mn-ai-desc { margin: 0; font-size: 13.5px; color: var(--ink-2); font-weight: 400; line-height: 1.65; }
 
 /* ===== ROLES (이용 대상) — 카드 없이 아이콘+텍스트 ===== */
-.mn-roles { border-top: 1px solid var(--line); }
+.mn-roles { border-top: 1px solid var(--line); padding-bottom: 48px; }
 .mn-roles-head { max-width: 1200px; margin: 0 auto; padding: 88px 32px 0; }
 .mn-roles-title { font-size: 40px; font-weight: 700; letter-spacing: -0.035em; color: var(--ink); margin: 0 0 12px; line-height: 1.15; }
 .mn-roles-grid {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 56px 32px 88px;
+  padding: 56px 32px 40px;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 56px;
+  gap: 40px;
+  align-items: start;
 }
 .mn-role-icon { display: block; font-size: 32px; color: var(--ink); }
 .mn-role-title { font-size: 24px; font-weight: 700; letter-spacing: -0.02em; color: var(--ink); margin: 20px 0 10px; }
@@ -549,6 +550,98 @@ html:has(.mn-page) { scroll-behavior: smooth; }
 .mn-role-list { display: flex; flex-direction: column; gap: 11px; border-top: 1px solid var(--line); padding-top: 20px; }
 .mn-role-item { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 500; color: var(--ink-2); }
 .mn-role-item i { color: var(--ink); font-size: 16px; }
+
+/* ── 역할 카드: 버튼으로 만들어 클릭 시 협업 사례를 펼친다 ── */
+.mn-roles-hint { color: var(--ink-3); font-weight: 500; }
+.mn-role-card {
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  border: 0;
+  margin: 0;
+  padding: 16px;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  width: 100%;
+  display: block;
+  cursor: pointer;
+  border-radius: 16px;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+.mn-role-card:hover { background: var(--brand-soft); transform: translateY(-2px); }
+.mn-role-card:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.mn-role-card.is-open { background: var(--brand-soft); }
+.mn-role-more {
+  display: inline-flex; align-items: center; gap: 7px;
+  margin-top: 18px; font-size: 13.5px; font-weight: 700; color: var(--ink);
+}
+.mn-role-more > i { font-size: 15px; }
+.mn-role-morecaret { color: var(--ink-3); transition: transform 0.25s ease; }
+.mn-role-card:hover .mn-role-morecaret { transform: translateY(2px); }
+.mn-role-card.is-open .mn-role-morecaret { transform: rotate(180deg); color: var(--ink); }
+
+/* 공용 협업 사례 패널 — grid-rows 0fr→1fr로 높이를 부드럽게(레이아웃 점프 없음) */
+.mn-rolecases-wrap { max-width: 1200px; margin: 0 auto; padding: 0 32px; }
+.mn-rolecases-clip {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.mn-rolecases-wrap.is-open .mn-rolecases-clip { grid-template-rows: 1fr; }
+.mn-rolecases-inner { overflow: hidden; min-height: 0; }
+.mn-rolecases {
+  padding: 30px 32px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--brand-soft);
+  /* 펼쳐질 때(내용 교체 포함) 살짝 떠오르며 나타남 */
+  animation: mn-rolecase-in 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+@keyframes mn-rolecase-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.mn-rolecases-kicker {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 13px; font-weight: 800; letter-spacing: 0.01em; color: var(--ink);
+}
+.mn-rolecases-kicker i { color: var(--brand-ink, var(--ink)); }
+.mn-rolecases-intro {
+  margin: 10px 0 0; font-size: 17px; font-weight: 600; color: var(--ink);
+  line-height: 1.6; max-width: 760px;
+}
+.mn-rolecases-stats { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 22px; }
+.mn-rolecases-stat {
+  flex: 1 1 150px; display: flex; flex-direction: column; gap: 4px;
+  padding: 16px 18px; border-radius: 14px;
+  background: var(--surface); border: 1px solid var(--line);
+}
+.mn-rolecases-stat b { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; color: var(--ink); }
+.mn-rolecases-stat span { font-size: 13px; font-weight: 500; color: var(--ink-2); }
+.mn-rolecases-partners { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+.mn-rolecases-chip {
+  padding: 7px 13px; border-radius: 999px; font-size: 13px; font-weight: 600;
+  color: var(--ink-2); background: var(--surface); border: 1px solid var(--line);
+}
+.mn-rolecases-quotes { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 22px; }
+.mn-rolecases-quote {
+  margin: 0; padding: 20px; border-radius: 16px;
+  background: var(--surface); border: 1px solid var(--line);
+}
+.mn-rolecases-quote > i { font-size: 20px; color: var(--line-strong); }
+.mn-rolecases-quote p { margin: 8px 0 12px; font-size: 15px; font-weight: 500; color: var(--ink); line-height: 1.65; }
+.mn-rolecases-quote cite { font-style: normal; font-size: 13px; font-weight: 700; color: var(--ink-2); }
+.mn-rolecases-note { margin: 18px 0 0; font-size: 12px; color: var(--ink-3); font-weight: 500; }
+@media (max-width: 720px) {
+  .mn-rolecases-quotes { grid-template-columns: 1fr; }
+  .mn-rolecases { padding: 22px 18px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mn-rolecases-clip { transition: none; }
+  .mn-rolecases { animation: none; }
+  .mn-role-card { transition: none; }
+}
 
 /* ===== HOW IT WORKS ===== */
 .mn-how { border-top: 1px solid var(--line); background: var(--bg); }
