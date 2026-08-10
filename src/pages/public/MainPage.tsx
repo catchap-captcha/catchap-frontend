@@ -240,7 +240,7 @@ export default function MainPage() {
             배우고, 기관은 시청 완료를 신뢰합니다.
           </p>
           <div className="mn-hero-cta-row hero-in hero-d3">
-            <a href="#games" className="mn-hero-cta-white">서비스 둘러보기</a>
+            <Link to={PATHS.DEMO} className="mn-hero-cta-white">가입 없이 체험하기</Link>
             <Link to={PATHS.LOGIN} className="mn-hero-cta-outline">회원가입</Link>
           </div>
         </div>
