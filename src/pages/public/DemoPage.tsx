@@ -5,10 +5,10 @@ import './DemoPage.css';
 
 /**
  * 가입 없이 둘러보는 '체험 모드'(/demo) — 랜딩 히어로에서 진입.
- * ★자체완결: 실 API·계정·결제를 전혀 건드리지 않는다(읽기전용). 아래 순서로 제품을 훑는다:
+ * ★자체완결: 실 API·계정·결제를 전혀 건드리지 않는다(읽기전용). 번호로 나뉜 3구간으로 훑는다:
  *   1) 시청 검증(재생 중 확인 문제) — 이 제품의 핵심 차별점을 직접 조작
  *   2) 문제은행 맛보기 — 한 문제 풀어보기
- *   3) 이런 기능들이 있어요 — 수료증 등 기능 정리(+수료증 미니 미리보기)
+ *   3) 더 있어요 — 수료증 등 기능 정리(+수료증 미니 미리보기)
  *  콘텐츠(강의·문항)는 서비스 소개용 예시.
  */
 const LECTURE = { subject: '클라우드', chapter: 'AWS IAM 입문 · 2강', title: '사용자와 그룹으로 권한 관리하기' };
@@ -41,7 +41,6 @@ const CHECKPOINTS: Checkpoint[] = [
   },
 ];
 
-// 문제은행 맛보기(한 문제)
 const BANK = {
   subject: 'IT 기초',
   level: '난이도 ★★☆',
@@ -60,6 +59,19 @@ const FEATURES = [
   { icon: 'ph-target', title: '맞춤 추천', desc: '관심사·기록으로 다음 강의를 추천해요.' },
 ];
 
+function SecHead({ num, kicker, title, desc }: { num: number; kicker: string; title: string; desc: string }) {
+  return (
+    <div className="dm-sec-head">
+      <span className="dm-sec-num">{num}</span>
+      <div className="dm-sec-headtext">
+        <span className="dm-sec-kicker">{kicker}</span>
+        <h2 className="dm-sec-title">{title}</h2>
+        <p className="dm-sec-desc">{desc}</p>
+      </div>
+    </div>
+  );
+}
+
 export default function DemoPage() {
   const [started, setStarted] = useState(false);
   const [playing, setPlaying] = useState(false);
@@ -70,7 +82,6 @@ export default function DemoPage() {
   const [wrong, setWrong] = useState(false);
   const [done, setDone] = useState(false);
 
-  // 문제은행 맛보기 상태
   const [bankSel, setBankSel] = useState<number | null>(null);
   const [bankGraded, setBankGraded] = useState(false);
 
@@ -147,29 +158,27 @@ export default function DemoPage() {
 
       <div className="dm-wrap">
         {/* ── 1. 시청 검증 ── */}
-        <div className="dm-intro">
-          <span className="dm-step">1 · 시청 검증</span>
-          <h1 className="dm-h1">
-            이게 <b>시청 검증</b>이에요
-          </h1>
-          <p className="dm-sub">
-            재생 중 무작위 시점에 확인 문제가 떠요. 건너뛰기·배속·딴짓으론 못 풀죠 — 그래서 “봤다”가
-            증명됩니다. <b>직접 재생을 눌러보세요.</b>
-          </p>
-        </div>
+        <section className="dm-sec">
+          <SecHead
+            num={1}
+            kicker="시청 검증"
+            title="이게 시청 검증이에요"
+            desc="재생 중 무작위 시점에 확인 문제가 떠요. 건너뛰기·배속·딴짓으론 못 풀죠 — 그래서 “봤다”가 증명됩니다. 직접 재생을 눌러보세요."
+          />
 
-        <div className="dm-stage">
           <div className="dm-player">
             <div className="dm-scene">
               <span className="dm-scene-tag">
                 {LECTURE.subject} · {LECTURE.chapter}
               </span>
-              <div className="dm-scene-title">{LECTURE.title}</div>
-              {!started && (
-                <button type="button" className="dm-bigplay" onClick={play}>
-                  <i className="ph-fill ph-play" /> 재생하기
-                </button>
-              )}
+              <div className="dm-scene-mid">
+                <div className="dm-scene-title">{LECTURE.title}</div>
+                {!started && (
+                  <button type="button" className="dm-bigplay" onClick={play}>
+                    <i className="ph-fill ph-play" /> 재생하기
+                  </button>
+                )}
+              </div>
               {started && !cp && !done && (
                 <span className={'dm-live' + (playing ? ' is-on' : '')}>
                   <span className="dm-live-dot" /> {playing ? '재생 중' : '일시정지'}
@@ -206,8 +215,8 @@ export default function DemoPage() {
                   </div>
                   {wrong && (
                     <p className="dm-quiz-hint">
-                      <i className="ph-fill ph-warning" /> 그 대목을 다시 보고 답해 주세요 — 찍어선
-                      통과 못 해요.
+                      <i className="ph-fill ph-lightbulb" /> 그 대목을 한 번 더 보면 답이 보여요.
+                      편하게 다시 골라 주세요.
                     </p>
                   )}
                   <button type="button" className="dm-quiz-submit" onClick={submit} disabled={selected === null}>
@@ -221,7 +230,7 @@ export default function DemoPage() {
               <div className="dm-done">
                 <div className="dm-done-card">
                   <i className="ph-fill ph-check-circle dm-done-ic" />
-                  <h2>시청 완료 — 검증됐어요</h2>
+                  <h3>시청 완료 — 검증됐어요</h3>
                   <p>
                     방금 그 과정이 CatChap의 <b>시청 검증</b>이에요. 실제 서비스에선 시청 데이터와
                     확인 문제 기록이 남아 “진짜 학습”을 증명합니다.
@@ -260,39 +269,40 @@ export default function DemoPage() {
             </div>
           </div>
 
-          <aside className="dm-side">
-            <div className="dm-side-item">
+          <div className="dm-points">
+            <div className="dm-point">
               <i className="ph-bold ph-fast-forward" />
               <div>
                 <b>건너뛰기·배속 차단</b>
                 <span>안 본 구간은 서버가 막아요.</span>
               </div>
             </div>
-            <div className="dm-side-item">
+            <div className="dm-point">
               <i className="ph-bold ph-seal-question" />
               <div>
                 <b>무작위 시점 확인 문제</b>
                 <span>실제로 본 사람만 풀 수 있어요.</span>
               </div>
             </div>
-            <div className="dm-side-item">
+            <div className="dm-point">
               <i className="ph-bold ph-shield-check" />
               <div>
                 <b>시청 = 증명</b>
                 <span>수료가 곧 학습의 증거가 됩니다.</span>
               </div>
             </div>
-            <p className="dm-side-note">* 가입 없이 보는 체험이에요. 강의·문항은 소개용 예시입니다.</p>
-          </aside>
-        </div>
-
-        {/* ── 2. 문제은행 맛보기 ── */}
-        <section className="dm-block">
-          <div className="dm-block-head">
-            <span className="dm-step">2 · 문제은행</span>
-            <h2 className="dm-h2">과목별 연습 문제도 풀어봐요</h2>
-            <p className="dm-p">강의 밖에서도 문제은행으로 실력을 다져요. 한 문제 풀어보세요.</p>
           </div>
+          <p className="dm-note">가입 없이 보는 체험이에요. 강의·문항은 서비스 소개용 예시입니다.</p>
+        </section>
+
+        {/* ── 2. 문제은행 ── */}
+        <section className="dm-sec">
+          <SecHead
+            num={2}
+            kicker="문제은행"
+            title="과목별 연습 문제도 풀어봐요"
+            desc="강의 밖에서도 문제은행으로 실력을 다져요. 아래 한 문제를 풀어보세요."
+          />
           <div className="dm-bank">
             <div className="dm-bank-meta">
               <span className="dm-bank-subj">{BANK.subject}</span>
@@ -352,18 +362,18 @@ export default function DemoPage() {
               </div>
             )}
           </div>
-          <p className="dm-note">* 실제 문제은행엔 과목별 수백 문항이 있어요. 여긴 한 문제 예시.</p>
+          <p className="dm-note">실제 문제은행엔 과목별 수백 문항이 있어요. 여긴 한 문제 예시.</p>
         </section>
 
-        {/* ── 3. 이런 기능들이 있어요 (+수료증 미리보기) ── */}
-        <section className="dm-block">
-          <div className="dm-block-head">
-            <span className="dm-step">3 · 더 있어요</span>
-            <h2 className="dm-h2">가입하면 이런 것도 써요</h2>
-            <p className="dm-p">수료증부터 학습 기록·오답노트까지 — 학습을 끝까지 이어가게 돕는 기능들.</p>
-          </div>
+        {/* ── 3. 더 있어요 ── */}
+        <section className="dm-sec">
+          <SecHead
+            num={3}
+            kicker="더 있어요"
+            title="가입하면 이런 것도 써요"
+            desc="수료증부터 학습 기록·오답노트까지 — 학습을 끝까지 이어가게 돕는 기능들."
+          />
 
-          {/* 수료증 미니 미리보기 */}
           <div className="dm-cert">
             <div className="dm-cert-paper">
               <span className="dm-cert-kicker">CERTIFICATE · 수료증</span>
@@ -398,13 +408,13 @@ export default function DemoPage() {
             ))}
           </div>
           <p className="dm-note">
-            * 강사·기업 기능(강의 업로드·AI 문항 생성·학습 분석)은 로그인 후 또는 도입 문의로 안내해요.
+            강사·기업 기능(강의 업로드·AI 문항 생성·학습 분석)은 로그인 후 또는 도입 문의로 안내해요.
           </p>
         </section>
 
         {/* ── 최종 CTA ── */}
-        <div className="dm-final">
-          <h2 className="dm-final-h">여기부터는 진짜예요</h2>
+        <section className="dm-final">
+          <h2 className="dm-final-h">지금 CatChap 시작하기</h2>
           <p className="dm-final-p">가입하면 실제 강의·수료증·학습 기록으로 이어집니다.</p>
           <div className="dm-final-cta">
             <Link to={PATHS.LOGIN} className="dm-cta-primary">
@@ -414,7 +424,7 @@ export default function DemoPage() {
               도입 문의
             </Link>
           </div>
-        </div>
+        </section>
       </div>
     </div>
   );
