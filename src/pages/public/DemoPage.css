@@ -307,8 +307,9 @@
   margin: 12px 0 0;
   font-size: 13px;
   font-weight: 600;
-  color: var(--danger-ink, var(--danger));
+  color: var(--ink-2); /* 경고(빨강)가 아니라 힌트 톤(중립) */
 }
+.dm-quiz-hint i { color: var(--warn); }
 .dm-quiz-submit {
   width: 100%;
   margin-top: 16px;

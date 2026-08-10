@@ -206,8 +206,8 @@ export default function DemoPage() {
                   </div>
                   {wrong && (
                     <p className="dm-quiz-hint">
-                      <i className="ph-fill ph-warning" /> 그 대목을 다시 보고 답해 주세요 — 찍어선
-                      통과 못 해요.
+                      <i className="ph-fill ph-lightbulb" /> 그 대목을 한 번 더 보면 답이 보여요.
+                      편하게 다시 골라 주세요.
                     </p>
                   )}
                   <button type="button" className="dm-quiz-submit" onClick={submit} disabled={selected === null}>
