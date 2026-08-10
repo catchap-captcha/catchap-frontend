@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
 import { useRevealOnScroll } from '../../hooks/useRevealOnScroll';
+import { useCtaAutoReveal } from '../../hooks/useCtaAutoReveal';
 import wordmarkDark from '../../assets/brand/catchap-wordmark.png';
 import wordmarkWhite from '../../assets/brand/catchap-wordmark-white.png';
 import './MainPage.css';
@@ -65,6 +66,8 @@ type Menu = 'about' | 'lectures' | 'audience' | 'how' | null;
 export default function MainPage() {
   const rootRef = useRef<HTMLDivElement>(null);
   useRevealOnScroll(rootRef);
+  // 최종 CTA 섹션 — 스크롤 연동 확대 + 3초 유휴 시 1회 부드러운 자동 스크롤(접근성·모바일 안전).
+  const finalRef = useCtaAutoReveal<HTMLElement>();
 
   // 스크롤에 따라 상단바를 투명→불투명(로고도 흰색→검정)으로 전환 — 히어로가 다크라 필요.
   const [scrolled, setScrolled] = useState(false);
@@ -384,13 +387,14 @@ export default function MainPage() {
         </div>
       </section>
 
-      {/* FINAL CTA */}
-      <section className="mn-final">
-        <div className="mn-final-inner cc-reveal">
+      {/* FINAL CTA — 진입 시 스르륵 확대되는 풀스크린 연출(useCtaAutoReveal). cc-reveal은
+          transform이 겹쳐 충돌하므로 쓰지 않고, 이 훅의 --mn-p 스케일이 등장까지 담당한다. */}
+      <section className="mn-final" ref={finalRef}>
+        <div className="mn-final-inner">
           <h2 className="mn-final-title">시청을 신뢰로 바꾸세요</h2>
           <p className="mn-final-sub">지금 CatChap을 시작하고 실제 학습을 증명하세요.</p>
           <div className="mn-final-cta-row">
-            <Link to={PATHS.LOGIN} className="mn-hero-cta">무료로 시작하기</Link>
+            <Link to={PATHS.LOGIN} className="mn-hero-cta">로그인 하기</Link>
             <Link to={PATHS.CONTACT} className="mn-hero-cta-secondary">도입 문의</Link>
           </div>
         </div>
