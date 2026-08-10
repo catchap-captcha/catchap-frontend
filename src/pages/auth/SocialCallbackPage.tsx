@@ -37,13 +37,23 @@ const LABELS: Record<SocialProvider, string> = {
   google: '구글',
 };
 
+type ErrorDetail = string | { message?: string; action?: string };
+
 function errorMessage(err: unknown, fallback: string): string {
-  const detail = (err as AxiosError<{ detail?: string | { message?: string } }>)?.response?.data
-    ?.detail;
+  const detail = (err as AxiosError<{ detail?: ErrorDetail }>)?.response?.data?.detail;
   if (typeof detail === 'string') return detail;
   if (detail && typeof detail === 'object' && typeof detail.message === 'string')
     return detail.message;
   return fallback;
+}
+
+/** 서버가 붙여 준 후속 행동 표시. ★문구가 아니라 이 값으로 판별한다 —
+ *  문구를 다듬는 순간 버튼이 조용히 사라지는 일을 막는다. */
+function errorAction(err: unknown): string | null {
+  const detail = (err as AxiosError<{ detail?: ErrorDetail }>)?.response?.data?.detail;
+  return detail && typeof detail === 'object' && typeof detail.action === 'string'
+    ? detail.action
+    : null;
 }
 
 /** 만 나이 — 생일이 안 지났으면 1 뺀다(서버 _age_on과 같은 규칙). */
@@ -69,6 +79,9 @@ export default function SocialCallbackPage() {
   // 연결(connect) 왕복이 실패했을 때 되돌아갈 곳. 로그인 왕복이면 null이라 로그인 화면으로 간다.
   // (콘솔 사용자를 학생 로그인으로 보내지 않기 위해 출발지를 기억한다)
   const [returnTo, setReturnTo] = useState<string | null>(null);
+  // 서버가 '콘솔 계정이라 아직 연결이 없다'고 알려 준 경우. 이 화면에서 끝내지 않고
+  // 연결하러 갈 길을 열어 준다 — 안내만 하고 갈 곳이 없으면 막다른 길이다.
+  const [needsConsoleLink, setNeedsConsoleLink] = useState(false);
 
   // 가입 폼
   const [nickname, setNickname] = useState('');
@@ -153,6 +166,7 @@ export default function SocialCallbackPage() {
       .catch((err) => {
         clearSocialIntent();
         setError(errorMessage(err, '간편 로그인에 실패했어요. 다시 시도해 주세요.'));
+        setNeedsConsoleLink(errorAction(err) === 'console_link');
         setPhase('error');
       });
   }, [params, navigate, finishLogin]);
@@ -211,13 +225,34 @@ export default function SocialCallbackPage() {
               <i className="ph-fill ph-warning-circle" />
             </span>
             <h1 className="sc-title">
-              {returnTo ? '계정을 연결하지 못했어요' : '로그인을 마치지 못했어요'}
+              {needsConsoleLink
+                ? '아직 연결되지 않은 계정이에요'
+                : returnTo
+                  ? '계정을 연결하지 못했어요'
+                  : '로그인을 마치지 못했어요'}
             </h1>
             <p className="sc-sub">{error}</p>
-            <Link to={returnTo ?? PATHS.LOGIN} className="sc-primary" replace>
-              <i className="ph-bold ph-arrow-left" />{' '}
-              {returnTo ? '돌아가기' : '로그인으로 돌아가기'}
-            </Link>
+            {needsConsoleLink ? (
+              <>
+                {/* 콘솔 로그인 → 곧바로 연결 화면으로. next 를 실어 보내 로그인 뒤 대시보드로
+                    새지 않게 한다(로그인만 하고 끝나면 사용자는 또 길을 잃는다). */}
+                <Link
+                  to={`${PATHS.OPS_LOGIN}?next=${encodeURIComponent(PATHS.OPS_INSTRUCTOR_PROFILE)}`}
+                  className="sc-primary"
+                  replace
+                >
+                  <i className="ph-bold ph-link" /> 콘솔에 로그인하고 연결하기
+                </Link>
+                <Link to={PATHS.LOGIN} className="sc-cancel" replace>
+                  학습자 로그인으로
+                </Link>
+              </>
+            ) : (
+              <Link to={returnTo ?? PATHS.LOGIN} className="sc-primary" replace>
+                <i className="ph-bold ph-arrow-left" />{' '}
+                {returnTo ? '돌아가기' : '로그인으로 돌아가기'}
+              </Link>
+            )}
           </div>
         )}
 
