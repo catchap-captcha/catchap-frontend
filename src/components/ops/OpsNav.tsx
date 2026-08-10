@@ -52,7 +52,7 @@ const GROUPS: NavGroup[] = [
       { to: PATHS.OPS_API_KEYS, icon: 'ph-key', label: 'API 발급' },
       // '설정' 우산을 걷고 그 안의 API 키·프롬프트를 시스템 드롭다운에 직접 노출한다(2026-08-08).
       // 셋(AI 모델·API 키·프롬프트)은 LLM 운영 묶음이라 나란히 둔다.
-      { to: PATHS.OPS_LLM_MODELS, icon: 'ph-cpu', label: 'AI 모델' },
+      { to: PATHS.OPS_LLM_MODELS, icon: 'ph-cpu', label: 'LLM 모델' },
       { to: PATHS.OPS_LLM_KEYS, icon: 'ph-key', label: 'API 키' },
       { to: PATHS.OPS_LLM_PROMPTS, icon: 'ph-note-pencil', label: '프롬프트' },
       { to: PATHS.OPS_MONITORING, icon: 'ph-gauge', label: '모니터링' },

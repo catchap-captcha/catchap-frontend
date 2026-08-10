@@ -1,5 +1,4 @@
 import OpsNav from '../../components/ops/OpsNav';
-import OpsSubTabs, { LLM_TABS } from '../../components/ops/OpsSubTabs';
 import { PromptEditor } from './OpsLlmParts';
 import { opsSettingsApi } from '../../api/ops';
 import './OpsApproval.css';
@@ -25,8 +24,6 @@ export default function OpsLlmPrompts() {
             </p>
           </div>
         </div>
-
-        <OpsSubTabs tabs={LLM_TABS} />
 
         <PromptEditor
           title="문항 생성 프롬프트 — 출제 규칙"

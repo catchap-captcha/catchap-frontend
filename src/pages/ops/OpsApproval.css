@@ -431,11 +431,18 @@
   opacity: 0;
   animation: op-topmitem-in 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
+/* 항목 stagger — 운영(6개: 계정 잠금 해제 포함)·시스템(8개)의 뒷 항목까지 이어지게 확장했다
+   (종전엔 5개까지만이라 6번째부터 stagger 없이 한꺼번에 떴다). */
 .op-top-menu > :nth-child(1) { animation-delay: 0.05s; }
 .op-top-menu > :nth-child(2) { animation-delay: 0.09s; }
 .op-top-menu > :nth-child(3) { animation-delay: 0.13s; }
 .op-top-menu > :nth-child(4) { animation-delay: 0.17s; }
 .op-top-menu > :nth-child(5) { animation-delay: 0.21s; }
+.op-top-menu > :nth-child(6) { animation-delay: 0.25s; }
+.op-top-menu > :nth-child(7) { animation-delay: 0.29s; }
+.op-top-menu > :nth-child(8) { animation-delay: 0.33s; }
+.op-top-menu > :nth-child(9) { animation-delay: 0.37s; }
+.op-top-menu > :nth-child(10) { animation-delay: 0.41s; }
 
 @keyframes op-topcheck-pop {
   from { opacity: 0; transform: scale(0.4); }

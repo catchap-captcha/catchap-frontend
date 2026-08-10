@@ -1,5 +1,4 @@
 import OpsNav from '../../components/ops/OpsNav';
-import OpsSubTabs, { LLM_TABS } from '../../components/ops/OpsSubTabs';
 import OpsAiRuntimeSection from './OpsAiRuntimeSection';
 import './OpsApproval.css';
 import './OpsSettings.css';
@@ -21,7 +20,6 @@ export default function OpsLlmModels() {
             </p>
           </div>
         </div>
-        <OpsSubTabs tabs={LLM_TABS} />
         <OpsAiRuntimeSection />
       </main>
     </div>
