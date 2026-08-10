@@ -185,8 +185,8 @@ export default function OpsInstructorProfile() {
         {/* 간편 로그인 연결 — 콘솔 계정은 여기서 직접 연결해야만 소셜 로그인이 열린다.
             서버는 이메일이 같아도 자동으로 붙이지 않는다(고권한 계정 탈취 경로 차단). */}
         <SocialConnections
-          cardClassName="ipf-card ipf-social"
-          titleClassName="ipf-sectitle"
+          cardClassName="sx-card"
+          titleClassName="sx-cardtitle"
           returnTo={PATHS.OPS_INSTRUCTOR_PROFILE}
         />
       </main>

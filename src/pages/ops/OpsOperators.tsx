@@ -3,6 +3,8 @@ import { opsApi, type OpsOperator, type OpsOperatorCreated } from '../../api/ops
 import { settingsApi } from '../../api/settings';
 import { useAuth } from '../../hooks/useAuth';
 import OpsNav from '../../components/ops/OpsNav';
+import SocialConnections from '../../components/account/SocialConnections';
+import { PATHS } from '../../routes/paths';
 import './OpsApproval.css';
 
 const STATUS_META: Record<string, { label: string; cls: string }> = {
@@ -227,6 +229,24 @@ export default function OpsOperators() {
               );
             })}
         </div>
+
+        {/* ★내 계정 — 위 표는 '다른 사람들', 이건 '나'다.
+            운영자는 상단바 아바타가 이 화면으로 오므로, 콘솔 계정의 소셜 연결은 여기에 있어야
+            손이 닿는다. 강사는 /ops/profile 에 같은 카드가 있다(같은 컴포넌트). */}
+        <div className="op-head" style={{ marginTop: 28 }}>
+          <div>
+            <h2 className="op-title" style={{ fontSize: 20 }}>내 계정</h2>
+            <p className="op-sub">
+              내 로그인 수단이에요. 여기서 연결한 계정으로만 간편 로그인이 열려요 —
+              이메일이 같다고 자동으로 연결되지는 않아요.
+            </p>
+          </div>
+        </div>
+        <SocialConnections
+          cardClassName="sx-card"
+          titleClassName="sx-cardtitle"
+          returnTo={PATHS.OPS_OPERATORS}
+        />
       </main>
 
       {/* 운영자 추가 모달 */}
