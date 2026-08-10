@@ -5,8 +5,10 @@ import './DemoPage.css';
 
 /**
  * 가입 없이 둘러보는 '체험 모드'(/demo) — 랜딩 히어로에서 진입.
- * ★자체완결: 실 API·계정·결제를 전혀 건드리지 않는다(읽기전용). 샘플 강의 1개로 이 제품의
- *  유일한 차별점 — '재생 중 확인 문제로 시청을 검증' — 을 직접 눌러 경험하게 한다.
+ * ★자체완결: 실 API·계정·결제를 전혀 건드리지 않는다(읽기전용). 아래 순서로 제품을 훑는다:
+ *   1) 시청 검증(재생 중 확인 문제) — 이 제품의 핵심 차별점을 직접 조작
+ *   2) 문제은행 맛보기 — 한 문제 풀어보기
+ *   3) 이런 기능들이 있어요 — 수료증 등 기능 정리(+수료증 미니 미리보기)
  *  콘텐츠(강의·문항)는 서비스 소개용 예시.
  */
 const LECTURE = { subject: '클라우드', chapter: 'AWS IAM 입문 · 2강', title: '사용자와 그룹으로 권한 관리하기' };
@@ -39,6 +41,25 @@ const CHECKPOINTS: Checkpoint[] = [
   },
 ];
 
+// 문제은행 맛보기(한 문제)
+const BANK = {
+  subject: 'IT 기초',
+  level: '난이도 ★★☆',
+  q: 'HTTP 상태 코드 404는 무엇을 뜻하나요?',
+  options: ['요청 성공', '서버 내부 오류', '요청한 자원을 찾을 수 없음', '권한 없음'],
+  answer: 2,
+  explain: '404 Not Found — 요청한 페이지·자원이 서버에 없다는 뜻이에요. (200=성공, 500=서버 오류, 403=권한 없음)',
+};
+
+const FEATURES = [
+  { icon: 'ph-certificate', title: '수료증 발급', desc: '코스를 수료하면 수료증을 발급·다운로드해요.' },
+  { icon: 'ph-chart-line-up', title: '나의 학습 기록', desc: '시청 시간·정답률·완주율을 한눈에.' },
+  { icon: 'ph-notebook', title: '오답노트', desc: '틀린 확인 문제만 모아 복습해요.' },
+  { icon: 'ph-cards-three', title: '문제은행', desc: '과목별 연습 문제로 실력을 다져요.' },
+  { icon: 'ph-exam', title: '수료 시험', desc: '코스 완전학습을 시험으로 확인해요.' },
+  { icon: 'ph-target', title: '맞춤 추천', desc: '관심사·기록으로 다음 강의를 추천해요.' },
+];
+
 export default function DemoPage() {
   const [started, setStarted] = useState(false);
   const [playing, setPlaying] = useState(false);
@@ -49,14 +70,16 @@ export default function DemoPage() {
   const [wrong, setWrong] = useState(false);
   const [done, setDone] = useState(false);
 
-  // 재생 — 진행률 전진(가짜 타임라인)
+  // 문제은행 맛보기 상태
+  const [bankSel, setBankSel] = useState<number | null>(null);
+  const [bankGraded, setBankGraded] = useState(false);
+
   useEffect(() => {
     if (!playing) return;
     const id = window.setInterval(() => setProgress((p) => Math.min(100, p + 0.6)), 55);
     return () => window.clearInterval(id);
   }, [playing]);
 
-  // 체크포인트(확인 문제) / 완료 감시
   useEffect(() => {
     if (done) return;
     if (quizIdx === null) {
@@ -86,9 +109,9 @@ export default function DemoPage() {
       setPassed((ps) => [...ps, quizIdx]);
       setQuizIdx(null);
       setWrong(false);
-      setPlaying(true); // 통과 → 이어서 재생
+      setPlaying(true);
     } else {
-      setWrong(true); // 오답 → 다시 보고 답하게(건너뛰기 방지)
+      setWrong(true);
     }
   };
   const restart = () => {
@@ -123,7 +146,9 @@ export default function DemoPage() {
       </header>
 
       <div className="dm-wrap">
+        {/* ── 1. 시청 검증 ── */}
         <div className="dm-intro">
+          <span className="dm-step">1 · 시청 검증</span>
           <h1 className="dm-h1">
             이게 <b>시청 검증</b>이에요
           </h1>
@@ -201,14 +226,9 @@ export default function DemoPage() {
                     방금 그 과정이 CatChap의 <b>시청 검증</b>이에요. 실제 서비스에선 시청 데이터와
                     확인 문제 기록이 남아 “진짜 학습”을 증명합니다.
                   </p>
-                  <div className="dm-done-cta">
-                    <Link to={PATHS.LOGIN} className="dm-cta-primary">
-                      지금 시작하기
-                    </Link>
-                    <button type="button" className="dm-cta-ghost" onClick={restart}>
-                      다시 체험
-                    </button>
-                  </div>
+                  <button type="button" className="dm-cta-ghost" onClick={restart}>
+                    다시 체험
+                  </button>
                 </div>
               </div>
             )}
@@ -264,6 +284,136 @@ export default function DemoPage() {
             </div>
             <p className="dm-side-note">* 가입 없이 보는 체험이에요. 강의·문항은 소개용 예시입니다.</p>
           </aside>
+        </div>
+
+        {/* ── 2. 문제은행 맛보기 ── */}
+        <section className="dm-block">
+          <div className="dm-block-head">
+            <span className="dm-step">2 · 문제은행</span>
+            <h2 className="dm-h2">과목별 연습 문제도 풀어봐요</h2>
+            <p className="dm-p">강의 밖에서도 문제은행으로 실력을 다져요. 한 문제 풀어보세요.</p>
+          </div>
+          <div className="dm-bank">
+            <div className="dm-bank-meta">
+              <span className="dm-bank-subj">{BANK.subject}</span>
+              <span className="dm-bank-lvl">{BANK.level}</span>
+            </div>
+            <p className="dm-bank-q">{BANK.q}</p>
+            <div className="dm-bank-opts">
+              {BANK.options.map((o, i) => {
+                const state = !bankGraded
+                  ? bankSel === i
+                    ? ' is-sel'
+                    : ''
+                  : i === BANK.answer
+                    ? ' is-correct'
+                    : bankSel === i
+                      ? ' is-wrong'
+                      : '';
+                return (
+                  <button
+                    key={o}
+                    type="button"
+                    className={'dm-bank-opt' + state}
+                    disabled={bankGraded}
+                    onClick={() => setBankSel(i)}
+                  >
+                    <span className="dm-opt-mark">{'ABCD'[i]}</span>
+                    {o}
+                  </button>
+                );
+              })}
+            </div>
+            {!bankGraded ? (
+              <button
+                type="button"
+                className="dm-bank-submit"
+                disabled={bankSel === null}
+                onClick={() => setBankGraded(true)}
+              >
+                채점하기
+              </button>
+            ) : (
+              <div className={'dm-bank-result' + (bankSel === BANK.answer ? ' is-ok' : ' is-no')}>
+                <p>
+                  <b>{bankSel === BANK.answer ? '정답이에요! ' : '아쉬워요. '}</b>
+                  {BANK.explain}
+                </p>
+                <button
+                  type="button"
+                  className="dm-bank-retry"
+                  onClick={() => {
+                    setBankSel(null);
+                    setBankGraded(false);
+                  }}
+                >
+                  <i className="ph-bold ph-arrow-counter-clockwise" /> 다시 풀기
+                </button>
+              </div>
+            )}
+          </div>
+          <p className="dm-note">* 실제 문제은행엔 과목별 수백 문항이 있어요. 여긴 한 문제 예시.</p>
+        </section>
+
+        {/* ── 3. 이런 기능들이 있어요 (+수료증 미리보기) ── */}
+        <section className="dm-block">
+          <div className="dm-block-head">
+            <span className="dm-step">3 · 더 있어요</span>
+            <h2 className="dm-h2">가입하면 이런 것도 써요</h2>
+            <p className="dm-p">수료증부터 학습 기록·오답노트까지 — 학습을 끝까지 이어가게 돕는 기능들.</p>
+          </div>
+
+          {/* 수료증 미니 미리보기 */}
+          <div className="dm-cert">
+            <div className="dm-cert-paper">
+              <span className="dm-cert-kicker">CERTIFICATE · 수료증</span>
+              <div className="dm-cert-title">AWS IAM 입문</div>
+              <p className="dm-cert-body">
+                위 학습자는 본 과정의 모든 강의를 <b>시청 검증</b>을 통과하며 수료하였음을 증명합니다.
+              </p>
+              <div className="dm-cert-foot">
+                <span>발급 · CatChap</span>
+                <span>2026.08.10</span>
+              </div>
+              <i className="ph-fill ph-seal-check dm-cert-seal" />
+            </div>
+            <div className="dm-cert-say">
+              <h3>진짜 본 사람에게만 나가는 수료증</h3>
+              <p>
+                코스를 수료하면 이런 수료증이 발급돼요. 시청 검증을 통과한 기록이 근거라, “틀어만
+                놓은” 이수와는 무게가 달라요. PDF로 내려받아 제출할 수 있어요.
+              </p>
+            </div>
+          </div>
+
+          <div className="dm-feats">
+            {FEATURES.map((f) => (
+              <div key={f.title} className="dm-feat">
+                <i className={`ph-bold ${f.icon}`} />
+                <div>
+                  <b>{f.title}</b>
+                  <span>{f.desc}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="dm-note">
+            * 강사·기업 기능(강의 업로드·AI 문항 생성·학습 분석)은 로그인 후 또는 도입 문의로 안내해요.
+          </p>
+        </section>
+
+        {/* ── 최종 CTA ── */}
+        <div className="dm-final">
+          <h2 className="dm-final-h">여기부터는 진짜예요</h2>
+          <p className="dm-final-p">가입하면 실제 강의·수료증·학습 기록으로 이어집니다.</p>
+          <div className="dm-final-cta">
+            <Link to={PATHS.LOGIN} className="dm-cta-primary">
+              지금 시작하기
+            </Link>
+            <Link to={PATHS.CONTACT} className="dm-cta-outline">
+              도입 문의
+            </Link>
+          </div>
         </div>
       </div>
     </div>
