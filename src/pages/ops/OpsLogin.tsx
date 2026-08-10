@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { PATHS } from '../../routes/paths';
 import wordmarkWhite from '../../assets/brand/catchap-wordmark-white.png';
@@ -24,8 +24,17 @@ import './OpsLogin.css';
  * 테마 토글은 App의 GlobalThemeToggle(로그인 전 전역 고정)이 담당 — 학습자 로그인과 동일.
  * (종전엔 이 페이지가 토글을 하나 더 그려 같은 자리에 두 개가 겹쳐 있었다.)
  */
+/** 로그인 뒤 돌아갈 앱 내부 경로. 없거나 외부 주소면 null.
+ *  ★'/'로 시작하되 '//'·'/\'가 아닌 값만 통과시킨다 — 쿼리스트링은 누구나 만들 수 있어서,
+ *  검사 없이 navigate 하면 로그인 직후 외부 사이트로 튕기는 오픈 리다이렉트가 된다. */
+function safeNext(value: string | null): string | null {
+  return value && /^\/(?![/\\])/.test(value) ? value : null;
+}
+
 export default function OpsLogin() {
   const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const next = safeNext(params.get('next'));
   const { opsLogin, me, loading } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -38,9 +47,9 @@ export default function OpsLogin() {
   // 이미 운영자/강사로 로그인돼 있으면 각자 콘솔로 보냄. (다른 역할이면 여기 머무름)
   useEffect(() => {
     if (loading) return;
-    if (me?.role === 'ops') navigate(PATHS.OPS_DASHBOARD, { replace: true });
-    else if (me?.role === 'instructor') navigate(PATHS.OPS_LECTURES, { replace: true });
-  }, [loading, me, navigate]);
+    if (me?.role === 'ops') navigate(next ?? PATHS.OPS_DASHBOARD, { replace: true });
+    else if (me?.role === 'instructor') navigate(next ?? PATHS.OPS_LECTURES, { replace: true });
+  }, [loading, me, navigate, next]);
 
   const doLogin = async (captchaToken?: string) => {
     setBusy(true);
@@ -49,11 +58,12 @@ export default function OpsLogin() {
       const loaded = await opsLogin(email.trim(), password, captchaToken);
       setCaptchaNeeded(false);
       const dest =
-        loaded.role === 'ops'
+        next ??
+        (loaded.role === 'ops'
           ? PATHS.OPS_DASHBOARD
           : loaded.role === 'instructor'
             ? PATHS.OPS_LECTURES
-            : PATHS.HOME;
+            : PATHS.HOME);
       navigate(dest, { replace: true });
     } catch (err) {
       const detail = (err as {
