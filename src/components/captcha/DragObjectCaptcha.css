@@ -103,12 +103,17 @@
    ★버그였던 것: 예전엔 .fc-stage가 width:100% + max-height:300px였고 사진은 object-fit:contain
    이었다. 그러면 무대(예: 871×291)와 실제 그려진 사진(388×291, 좌우 241px 레터박스)이 달라지는데,
    객체는 무대 폭 기준 %로 절대배치되므로 사진에서 최대 195px까지 어긋나 "객체가 사진 밖에 따로
-   떠다니는" 상태가 됐다. 해결=무대를 사진에 shrink-wrap(width:fit-content)해서 무대 좌표계와
-   사진 좌표계를 일치시킨다. 크기 제한은 사진 자신(max-width/max-height)이 진다. */
+   떠다니는" 상태가 됐다.
+
+   지금 해법: 무대가 카드 폭을 채우고(width:100%), 사진이 무대를 정확히 채운다
+   (width:100%; height:auto). 레터박스가 생길 자리가 없으므로 두 좌표계가 같다.
+   높이 상한은 max-height 가 아니라 **폭으로 환산해서** 건다 — max-height 로 걸면
+   사진만 줄고 무대는 그대로여서 위 버그가 그대로 재현된다. --fc-ar 은 컴포넌트가
+   문항 비율(가로/세로)로 채운다(없으면 4/3). */
 .fc-stage {
+  width: 100%;
+  max-width: calc(520px * (var(--fc-ar, 4 / 3)));
   position: relative;
-  width: fit-content;
-  max-width: 100%;
   margin: 0 auto;
   touch-action: none;
   user-select: none;
@@ -119,11 +124,9 @@
 }
 .fc-bg {
   display: block;
-  max-width: 100%;
-  /* 세로 사진은 폭이 아니라 여기서 먼저 걸린다. 320px이면 375x500 문항이 232px로
-     줄어 풀기 어려웠다. 원본(대개 최대 500px)이 그대로 들어가는 값으로 올린다. */
-  max-height: 520px;
-  width: auto;
+  /* 스테이지를 정확히 채운다. max-height 로 사진만 줄이면 스테이지와 상자가
+     달라져 객체 히트영역이 어긋난다 — 높이 제한은 .fc-stage 의 max-width 가 맡는다. */
+  width: 100%;
   height: auto;
   border-radius: var(--r-sm);
   pointer-events: none;
