@@ -173,7 +173,7 @@
 }
 
 .lg-login-sub {
-  margin: 0 0 28px;
+  margin: 0 0 18px;
   color: var(--ink-3);
   font-weight: 500;
   font-size: 14.5px;
@@ -461,7 +461,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 22px;
+  margin-bottom: 18px;
 }
 
 .lg-remember {
@@ -567,7 +567,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  margin: 22px 0;
+  margin: 16px 0;
 }
 
 .lg-divider-line {
@@ -590,7 +590,7 @@
   border: 1px solid var(--line);
   border-radius: 10px;
   padding: 13px 14px;
-  margin-top: 22px;
+  margin-top: 16px;
 }
 
 .lg-notice--mt16 {
