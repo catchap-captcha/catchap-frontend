@@ -13,7 +13,8 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 14px 24px;
+  /* 상단 바 내용도 본문(max 1200)과 좌우 정렬 — 넓은 화면에서 가장자리로 벌어지지 않게 */
+  padding: 14px max(24px, calc((100% - 1200px) / 2 + 24px));
   border-bottom: 1px solid var(--line);
   background: var(--bg);
 }
@@ -52,13 +53,14 @@
 
 .dm-wrap {
   width: 100%;
-  max-width: 940px;
+  max-width: 1200px; /* 랜딩 등 다른 페이지와 좌우폭 통일(종전 940 → 1200) */
   margin: 0 auto;
-  padding: 8px 24px 40px;
+  padding: 8px 24px 64px;
 }
 
-/* ── 섹션 구획: 번호 배지 + 좌측 정렬 헤더 + 구분선 ── */
-.dm-sec { padding-top: 48px; }
+/* ── 섹션 구획: 번호 배지 + 좌측 정렬 헤더 + 구분선. 3섹션을 확실히 나누고 넉넉히 띄운다. ── */
+.dm-sec { padding: 56px 0; }
+.dm-sec:first-child { padding-top: 32px; }
 .dm-sec + .dm-sec { border-top: 1px solid var(--line); }
 .dm-sec-head { display: flex; gap: 16px; align-items: flex-start; margin-bottom: 22px; }
 .dm-sec-num {
