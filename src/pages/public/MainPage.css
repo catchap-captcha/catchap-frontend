@@ -107,6 +107,7 @@ html:has(.mn-page) { scroll-behavior: smooth; }
   font-weight: 500;
   font-size: 14px;
   color: var(--mn-navcolor, var(--ink));
+  text-decoration: none;
   cursor: pointer;
   transition: color 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
