@@ -21,6 +21,9 @@ interface AuthContextValue {
     password: string,
     captchaToken?: string,
     remember?: boolean,
+    // CatChap Guard 전환 시에만 온다 — 캡차 서버가 발급 때의 session_id·purpose 와
+    // 대조하므로 토큰만 보내면 검증이 실패한다.
+    captchaMeta?: { sessionId: string; purpose: string },
   ) => Promise<MeResponse>;
   studentLogin: (req: StudentLoginRequest, remember?: boolean) => Promise<MeResponse>;
   // 공개 로그인 폼(/login) 단일 진입 — 서버가 학생·강사를 판별(운영자 제외).
@@ -84,12 +87,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const opsLogin = useCallback(
-    async (email: string, password: string, captchaToken?: string, remember?: boolean) => {
+    async (
+      email: string,
+      password: string,
+      captchaToken?: string,
+      remember?: boolean,
+      // CatChap Guard 전환 시에만 온다. 캡차 서버가 발급 때의 두 값과 대조하므로
+      // 토큰만 보내면 검증이 실패한다(SPEC_BACKEND_CAPTCHA_20260804.md).
+      captchaMeta?: { sessionId: string; purpose: string },
+    ) => {
       // 운영자 전용 /ops/login 진입. 공개 로그인 폼(학생·강사)은 publicLogin이 전담한다.
       const res = await client.post<TokenPair>('/auth/ops-login', {
         email,
         password,
         ...(captchaToken ? { captcha_token: captchaToken } : {}),
+        ...(captchaToken && captchaMeta
+          ? { captcha_session_id: captchaMeta.sessionId, captcha_purpose: captchaMeta.purpose }
+          : {}),
       });
       setTokens(res.data.access_token, res.data.refresh_token, remember);
       localStorage.setItem('catchap_login_ts', String(Date.now()));

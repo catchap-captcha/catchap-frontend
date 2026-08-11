@@ -54,11 +54,15 @@ export default function OpsLogin() {
     else if (me?.role === 'instructor') navigate(next ?? PATHS.OPS_LECTURES, { replace: true });
   }, [loading, me, navigate, next]);
 
-  const doLogin = async (captchaToken?: string) => {
+  const doLogin = async (
+    captchaToken?: string,
+    // CatChap Guard 전환 시에만 온다 — 토큰만으로는 캡차 서버 검증이 실패한다.
+    captchaMeta?: { sessionId: string; purpose: string },
+  ) => {
     setBusy(true);
     setError('');
     try {
-      const loaded = await opsLogin(email.trim(), password, captchaToken, remember);
+      const loaded = await opsLogin(email.trim(), password, captchaToken, remember, captchaMeta);
       setCaptchaNeeded(false);
       const dest =
         next ??
@@ -100,9 +104,9 @@ export default function OpsLogin() {
   };
 
   // 메인 캡차 통과 → 단일사용 토큰을 실어 재시도
-  const onCaptchaToken = (token: string) => {
+  const onCaptchaToken = (token: string, meta?: { sessionId: string; purpose: string }) => {
     setCaptchaOpen(false);
-    void doLogin(token);
+    void doLogin(token, meta);
   };
 
   return (
