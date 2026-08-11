@@ -213,8 +213,11 @@
   position: absolute;
   inset: 0 0 55px 0;
   display: flex;
+  justify-content: center; /* 가로 중앙 */
+  align-items: center;
+  align-items: safe center; /* 세로 중앙 — 카드가 넘치면 위 정렬로 안전 폴백(짤림 대신 스크롤) */
   padding: 16px;
-  overflow-y: auto; /* 카드가 크면 삐져나오지 않고 스크롤 */
+  overflow-y: auto;
   background: rgba(8, 9, 12, 0.72);
   backdrop-filter: blur(4px);
   animation: dm-overlay-in 0.28s ease-out;
@@ -222,7 +225,7 @@
 @keyframes dm-overlay-in { from { opacity: 0; } to { opacity: 1; } }
 .dm-quiz-card,
 .dm-done-card {
-  margin: auto; /* flex 중앙 정렬 + 넘칠 때 스크롤 안전 */
+  flex-shrink: 0; /* 넘쳐도 카드 높이가 눌리지 않게 — 짤림 대신 스크롤 */
   width: 100%;
   max-width: 480px;
   background: var(--surface);
