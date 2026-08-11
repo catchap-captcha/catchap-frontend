@@ -92,7 +92,7 @@
 }
 .dm-scene {
   position: relative;
-  height: 440px;
+  height: 510px;
   background:
     radial-gradient(900px 400px at 30% -10%, #2b2f3a, #14161c 60%),
     linear-gradient(160deg, #171a21, #0e1014);
@@ -232,17 +232,17 @@
   color: var(--ink);
   border: 1px solid var(--line);
   border-radius: 18px;
-  padding: 22px;
+  padding: 20px;
   box-shadow: 0 30px 60px -24px rgba(0, 0, 0, 0.55);
   animation: dm-pop-in 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.1);
 }
 @keyframes dm-pop-in { from { opacity: 0; transform: translateY(12px) scale(0.98); } to { opacity: 1; transform: none; } }
 .dm-quiz-kicker { display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 800; color: var(--brand-ink, var(--ink)); }
-.dm-quiz-q { margin: 12px 0 16px; font-size: 16.5px; font-weight: 700; line-height: 1.5; }
-.dm-quiz-opts { display: flex; flex-direction: column; gap: 8px; }
+.dm-quiz-q { margin: 10px 0 13px; font-size: 16px; font-weight: 700; line-height: 1.45; }
+.dm-quiz-opts { display: flex; flex-direction: column; gap: 7px; }
 .dm-opt {
   display: flex; align-items: center; gap: 11px; text-align: left; width: 100%;
-  padding: 12px 13px; border: 1.5px solid var(--line); border-radius: 12px;
+  padding: 10px 13px; border: 1.5px solid var(--line); border-radius: 12px;
   background: var(--bg); color: var(--ink); font-size: 14px; font-weight: 500; cursor: pointer;
   transition: border-color 0.15s ease, background 0.15s ease;
 }
@@ -269,7 +269,7 @@
 }
 .dm-quiz-hint i { color: var(--warn); }
 .dm-quiz-submit {
-  width: 100%; margin-top: 16px; padding: 13px; border: 0; border-radius: 12px;
+  width: 100%; margin-top: 13px; padding: 12px; border: 0; border-radius: 12px;
   background: var(--ink); color: var(--on-brand, #fff); font-size: 15px; font-weight: 800; cursor: pointer;
   transition: opacity 0.15s ease;
 }
@@ -384,7 +384,7 @@
   .dm-points { grid-template-columns: 1fr; }
   .dm-feats { grid-template-columns: 1fr; }
   .dm-cert { grid-template-columns: 1fr; gap: 18px; }
-  .dm-scene { height: 380px; }
+  .dm-scene { height: 470px; }
   .dm-signup { margin-right: 40px; }
 }
 @media (prefers-reduced-motion: reduce) {
