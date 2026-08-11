@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type MouseEvent as ReactMouseEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
 import { useRevealOnScroll } from '../../hooks/useRevealOnScroll';
@@ -174,7 +174,6 @@ const FAQS: { q: string; a: string }[] = [
   },
 ];
 
-type Menu = 'about' | 'lectures' | 'audience' | 'how' | null;
 
 export default function MainPage() {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -184,7 +183,6 @@ export default function MainPage() {
 
   // 스크롤에 따라 상단바를 투명→불투명(로고도 흰색→검정)으로 전환 — 히어로가 다크라 필요.
   const [scrolled, setScrolled] = useState(false);
-  const [menu, setMenu] = useState<Menu>(null);
   // '모두를 위한 화면' 역할 카드 → 협업 사례 펼침. activeRole=열린 카드(없으면 null),
   // shownRole=패널에 그릴 내용(닫힐 때도 남겨 접힘 애니메이션이 내용과 함께 부드럽게 되게 한다).
   const [activeRole, setActiveRole] = useState<string | null>(null);
@@ -197,92 +195,43 @@ export default function MainPage() {
       setActiveRole(title);
     }
   };
-  const closeTimer = useRef<number | undefined>(undefined);
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > window.innerHeight * 0.6);
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
-  const openMenu = (m: Menu) => {
-    window.clearTimeout(closeTimer.current);
-    setMenu(m);
+  // 상단 카테고리 → 해당 섹션으로 부드럽게 스크롤(고정 헤더 높이만큼 보정). 드롭다운은 제거.
+  const scrollToSection = (id: string) => (e: ReactMouseEvent) => {
+    e.preventDefault();
+    const el = document.getElementById(id);
+    if (!el) return;
+    const y = el.getBoundingClientRect().top + window.scrollY - 72;
+    window.scrollTo({ top: y, behavior: 'smooth' });
   };
-  const scheduleClose = () => {
-    closeTimer.current = window.setTimeout(() => setMenu(null), 140);
-  };
-  const solid = scrolled || menu !== null;
+  const solid = scrolled;
 
   return (
     <div className="mn-page" ref={rootRef}>
-      {/* NAV */}
-      <div className="mn-navwrap" onMouseLeave={scheduleClose}>
+      {/* NAV — 카테고리를 누르면 해당 섹션으로 스크롤(드롭다운 제거, 2026-08-11) */}
+      <div className="mn-navwrap">
         <header className={'mn-nav' + (solid ? ' mn-nav--solid' : '')}>
           <div className="mn-nav-inner">
-            <Link to={PATHS.HOME} className="mn-brand" onClick={() => setMenu(null)}>
+            <Link to={PATHS.HOME} className="mn-brand">
               <span className="mn-brand-imgwrap">
                 <img src={wordmarkWhite} alt="CatChap" className="mn-brand-logo" style={{ opacity: solid ? 0 : 1 }} />
                 <img src={wordmarkDark} alt="CatChap" className="mn-brand-logo mn-brand-logo--abs" style={{ opacity: solid ? 1 : 0 }} />
               </span>
             </Link>
             <nav className="mn-nav-menu">
-              <span className="mn-nav-link" onMouseEnter={() => openMenu('about')}>서비스 소개</span>
-              <span className="mn-nav-link" onMouseEnter={() => openMenu('lectures')}>강의</span>
-              <span className="mn-nav-link" onMouseEnter={() => openMenu('audience')}>이용 대상</span>
-              <span className="mn-nav-link" onMouseEnter={() => openMenu('how')}>이용 방법</span>
+              <a href="#about" className="mn-nav-link" onClick={scrollToSection('about')}>서비스 소개</a>
+              <a href="#games" className="mn-nav-link" onClick={scrollToSection('games')}>강의</a>
+              <a href="#roles" className="mn-nav-link" onClick={scrollToSection('roles')}>이용 대상</a>
+              <a href="#how" className="mn-nav-link" onClick={scrollToSection('how')}>이용 방법</a>
             </nav>
             <div className="mn-nav-right">
               <Link to={PATHS.CONTACT} className="mn-contact-link">문의하기</Link>
               <Link to={PATHS.LOGIN} className="mn-login-link">로그인</Link>
               <Link to={PATHS.LOGIN} className="mn-cta-link">시작하기</Link>
-            </div>
-          </div>
-
-          <div className={'mn-navpanel' + (menu ? ' mn-navpanel--open' : '')}>
-            <div className="mn-navpanel-inner">
-              {menu === 'about' && (
-                <div className="mn-navpanel-grid">
-                  {ABOUT_ITEMS.map((it) => (
-                    <a key={it.title} href="#about" className="mn-navpanel-item">
-                      <i className={`ph ${it.icon}`} />
-                      <div className="mn-navpanel-item-title">{it.title}</div>
-                      <div className="mn-navpanel-item-desc">{it.desc}</div>
-                    </a>
-                  ))}
-                </div>
-              )}
-              {menu === 'lectures' && (
-                <div className="mn-navpanel-grid mn-navpanel-grid--4">
-                  {AI_FEATURES.map((f) => (
-                    <a key={f.title} href="#games" className="mn-navpanel-item mn-navpanel-item--center">
-                      <i className={`ph ${f.icon}`} />
-                      <span className="mn-navpanel-item-name">{f.title}</span>
-                    </a>
-                  ))}
-                </div>
-              )}
-              {menu === 'audience' && (
-                <div className="mn-navpanel-grid">
-                  {AUDIENCE.map((a) => (
-                    <a key={a.title} href="#roles" className="mn-navpanel-item">
-                      <i className={`ph ${a.icon}`} />
-                      <div className="mn-navpanel-item-title">{a.title}</div>
-                      <div className="mn-navpanel-item-desc">{a.desc}</div>
-                    </a>
-                  ))}
-                </div>
-              )}
-              {menu === 'how' && (
-                <div className="mn-navpanel-grid mn-navpanel-grid--4">
-                  {STEPS.map((st) => (
-                    <div key={st.n} className="mn-navpanel-item">
-                      <div className="mn-navpanel-step">STEP {st.n}</div>
-                      <i className={`ph ${st.icon}`} />
-                      <div className="mn-navpanel-item-title">{st.title}</div>
-                      <div className="mn-navpanel-item-desc">{st.desc}</div>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
           </div>
         </header>
