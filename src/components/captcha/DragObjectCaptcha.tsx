@@ -341,6 +341,11 @@ export default function DragObjectCaptcha({ onToken, onClose }: Props) {
               <div
                 ref={stageRef}
                 className={`fc-stage ${dragging ? 'is-dragging' : ''}`}
+                /* 문항 비율을 CSS 에 넘긴다. 스테이지가 사진 상자와 정확히 같아야
+                   객체 히트영역(스테이지 폭·높이의 %)이 사진 위에 맞는다 — 레터박스가
+                   생기면 그만큼 어긋난다. 폭은 CSS 가 카드에 맞춰 채우고, 높이 상한은
+                   이 비율로 환산해 건다. */
+                style={{ ['--fc-ar' as string]: `${challenge.width} / ${challenge.height}` }}
                 onPointerMove={moveDrag}
                 onPointerUp={endDrag}
                 onPointerCancel={cancelDrag}
