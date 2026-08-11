@@ -1107,3 +1107,61 @@
 @media (prefers-reduced-motion: reduce) {
   .mr-toast { animation: none; }
 }
+
+/* 리포트 저장 버튼 스피너 */
+.mr-reportbtn:disabled { opacity: 0.65; cursor: default; }
+.mr-reportbtn-spin { animation: mrSpin 0.8s linear infinite; }
+@keyframes mrSpin { to { transform: rotate(360deg); } }
+
+/* 저장할 학습 기록이 없을 때 뜨는 팝업 */
+.mr-popup-ov {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.5);
+  animation: mrPopupFade 0.16s ease;
+}
+.mr-popup {
+  width: 100%;
+  max-width: 380px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 28px 24px 22px;
+  text-align: center;
+  box-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.5);
+  animation: mrPopupPop 0.18s ease;
+}
+.mr-popup-ic { font-size: 40px; color: var(--ink-3); }
+.mr-popup-title { margin: 12px 0 6px; font-size: 18px; font-weight: 800; color: var(--ink); }
+.mr-popup-sub { margin: 0 0 22px; font-size: 14px; line-height: 1.6; color: var(--ink-2); }
+.mr-popup-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.mr-popup-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 11px 18px;
+  border-radius: 12px;
+  border: 0;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: inherit;
+  background: var(--ink);
+  color: var(--bg);
+}
+.mr-popup-btn--ghost { background: transparent; color: var(--ink-2); border: 1px solid var(--line-strong); }
+@keyframes mrPopupFade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes mrPopupPop {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mr-popup-ov,
+  .mr-popup { animation: none; }
+  .mr-reportbtn-spin { animation: none; }
+}

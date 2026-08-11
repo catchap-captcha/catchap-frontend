@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams, type NavigateFunction } from 'react-route
 import StudentLayout from '../../layouts/StudentLayout';
 import { useAuth } from '../../hooks/useAuth';
 import { useToast } from '../../hooks/useToast';
+import { tableToPdf } from '../../utils/pdf';
 import { studentApi } from '../../api/students';
 import { lectureApi, thumbnailSrc, type StudentCourse, type LectureItem } from '../../api/lectures';
 import { PATHS } from '../../routes/paths';
@@ -359,6 +360,9 @@ export default function MyRecords() {
   const [examCourses, setExamCourses] = useState<StudentCourse[] | null>(null);
   // 수료증 팝업 대상 코스 — null이면 닫힘. 수료한 카드의 '수료증' 버튼이 연다.
   const [certCourse, setCertCourse] = useState<StudentCourse | null>(null);
+  // 리포트 저장 — PDF 생성 중(비동기 jspdf 로드) 표시 + 저장할 기록이 없을 때 뜨는 팝업.
+  const [reportBusy, setReportBusy] = useState(false);
+  const [emptyPopup, setEmptyPopup] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -453,71 +457,68 @@ export default function MyRecords() {
     .sort((a, b) => b.pct - a.pct)
     .slice(0, 6);
 
-  // 리포트 저장 — 현재 학습 기록을 텍스트 파일로 내려받는다. 실집계된 값만 담고(데모 숫자 제외),
-  // 없는 항목은 '없습니다'로 정직하게 적는다. 외부 라이브러리 없이 Blob 다운로드(윈도우용 \r\n).
-  const saveReport = () => {
-    // 담을 게 하나도 없으면(문제 풀이·강의 시청·수료 전부 없음) 빈 파일 대신 안내만 띄운다.
+  // 리포트 저장 — 현재 학습 기록을 깔끔한 PDF로 내려받는다(utils/pdf.tableToPdf 재사용 — 수료증과 같은 인프라,
+  // A4 헤더 밴드 + 섹션별 표). 실집계된 값만 담고(데모 숫자 제외), 담을 게 하나도 없으면 파일 대신 팝업 안내.
+  const saveReport = async () => {
     const hasAnyRecord = !demo || lecReady || passedCourses.length > 0;
     if (!hasAnyRecord) {
-      flash('아직 저장할 학습 기록이 없어요. 강의를 듣고 문제를 풀면 리포트에 쌓여요.');
+      setEmptyPopup(true);
       return;
     }
-    const now = new Date();
-    const dateStr = now.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' });
-    const L: string[] = [
-      'CatChap 학습 리포트',
-      '====================================',
-      `이름: ${name}님`,
-      `생성일: ${dateStr}`,
-      '',
-      '[요약 · 문제 풀이]',
-    ];
-    if (demo) {
-      L.push('아직 문제 풀이 기록이 없습니다.');
-    } else {
-      L.push(`· 연속 학습: ${data.stats.streakDays}일`);
-      L.push(`· 지금까지 푼 문제: ${data.stats.totalSolved}개`);
-      L.push(`· 평균 정답률: ${data.stats.avgAccuracy}%`);
-    }
+    if (reportBusy) return;
+    setReportBusy(true);
+    try {
+      const now = new Date();
+      const rows: (string | number | null)[][] = [];
 
-    L.push('', '[학습 통계 · 강의 시청]');
-    if (!lecReady) {
-      L.push('아직 강의 시청 기록이 없습니다.');
-    } else {
-      L.push(`· 완주한 강의: ${lecDone}강 / 전체 ${lecTotal}강 (완주율 ${lecCompletionPct}%)`);
-      L.push(`· 시청 중: ${lecWatching}강`);
-      L.push(`· 수강 코스: ${myCourses.length}개`);
-      if (courseProgress.length) {
-        L.push('· 코스별 진도');
-        courseProgress.forEach((cp) => {
-          L.push(`    - ${cp.course.title}: ${cp.done}/${cp.total}강 (${cp.pct}%)`);
-        });
+      rows.push(['[요약 · 문제 풀이]']);
+      if (demo) {
+        rows.push(['아직 문제 풀이 기록이 없습니다']);
+      } else {
+        rows.push(['항목', '값']);
+        rows.push(['연속 학습', `${data.stats.streakDays}일`]);
+        rows.push(['지금까지 푼 문제', `${data.stats.totalSolved}개`]);
+        rows.push(['평균 정답률', `${data.stats.avgAccuracy}%`]);
       }
+      rows.push([]);
+
+      rows.push(['[학습 통계 · 강의 시청]']);
+      if (!lecReady) {
+        rows.push(['아직 강의 시청 기록이 없습니다']);
+      } else {
+        rows.push(['항목', '값']);
+        rows.push(['완주한 강의', `${lecDone} / ${lecTotal}강 (${lecCompletionPct}%)`]);
+        rows.push(['시청 중', `${lecWatching}강`]);
+        rows.push(['수강 코스', `${myCourses.length}개`]);
+      }
+      rows.push([]);
+
+      if (courseProgress.length) {
+        rows.push(['[코스별 강의 진도]']);
+        rows.push(['코스', '완주/전체', '진도']);
+        courseProgress.forEach((cp) =>
+          rows.push([cp.course.title, `${cp.done}/${cp.total}강`, `${cp.pct}%`]),
+        );
+        rows.push([]);
+      }
+
+      rows.push(['[수료 현황]']);
+      if (passedCourses.length === 0) {
+        rows.push(['아직 수료한 코스가 없습니다']);
+      } else {
+        rows.push(['코스', '상태', '수료일']);
+        passedCourses.forEach((c) =>
+          rows.push([c.title, c.exam?.perfect ? '만점 수료' : '수료', fmtPassedAt(c.exam?.passed_at) || '—']),
+        );
+      }
+
+      const stamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
+      await tableToPdf(`CatChap_학습리포트_${name}_${stamp}.pdf`, `${name}님 학습 리포트`, rows);
+    } catch {
+      flash('리포트 저장에 실패했어요. 잠시 후 다시 시도해 주세요.');
+    } finally {
+      setReportBusy(false);
     }
-
-    L.push('', '[수료 현황]');
-    if (passedCourses.length === 0) {
-      L.push('아직 수료한 코스가 없습니다.');
-    } else {
-      L.push(`· 수료한 코스: ${passedCourses.length}개${perfectCount > 0 ? ` (만점 ${perfectCount}개)` : ''}`);
-      passedCourses.forEach((c) => {
-        const at = fmtPassedAt(c.exam?.passed_at);
-        L.push(`    - ${c.title}${c.exam?.perfect ? ' [만점]' : ''}${at ? ` · ${at}` : ''}`);
-      });
-    }
-
-    L.push('', '— CatChap · 시청을 검증하는 강의 학습');
-
-    const blob = new Blob([L.join('\r\n')], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    const stamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
-    a.href = url;
-    a.download = `CatChap_학습리포트_${name}_${stamp}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
   };
 
   // 수료한 코스가 하나라도 있으면 '수료 현황'은 실데이터 — 데모(빈 상태)여도 탭을 살린다.
@@ -549,9 +550,9 @@ export default function MyRecords() {
               <p className="mr-subtitle">배운 강의·풀어 온 문제·수료한 코스를 한눈에 볼 수 있어요</p>
             </div>
           </div>
-          <button type="button" className="mr-reportbtn" onClick={saveReport}>
-            <i className="ph-fill ph-download-simple" />
-            리포트 저장
+          <button type="button" className="mr-reportbtn" onClick={saveReport} disabled={reportBusy}>
+            <i className={reportBusy ? 'ph ph-spinner-gap mr-reportbtn-spin' : 'ph-fill ph-download-simple'} />
+            {reportBusy ? 'PDF 저장 중…' : '리포트 저장'}
           </button>
         </div>
       </section>
@@ -878,6 +879,31 @@ export default function MyRecords() {
           autoTitle={certCourse.title}
           onClose={() => setCertCourse(null)}
         />
+      )}
+
+      {/* 저장할 학습 기록이 없을 때 뜨는 팝업 — 빈 PDF를 내리지 않고 안내한다. */}
+      {emptyPopup && (
+        <div className="mr-popup-ov" role="dialog" aria-modal="true" onClick={() => setEmptyPopup(false)}>
+          <div className="mr-popup" onClick={(e) => e.stopPropagation()}>
+            <i className="ph-fill ph-chart-line-up mr-popup-ic" />
+            <h3 className="mr-popup-title">저장할 학습 기록이 없어요</h3>
+            <p className="mr-popup-sub">강의를 듣고 확인 문제를 풀면 리포트에 학습 기록이 쌓여요.</p>
+            <div className="mr-popup-actions">
+              <button className="mr-popup-btn mr-popup-btn--ghost" onClick={() => setEmptyPopup(false)}>
+                닫기
+              </button>
+              <button
+                className="mr-popup-btn"
+                onClick={() => {
+                  setEmptyPopup(false);
+                  navigate(PATHS.STUDENT_LECTURES);
+                }}
+              >
+                <i className="ph-fill ph-television" /> 강의 시작하기
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {toast && <div className="mr-toast" role="status">{toast}</div>}
