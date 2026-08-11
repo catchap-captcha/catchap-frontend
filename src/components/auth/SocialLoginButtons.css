@@ -60,6 +60,16 @@
 .sl-toggle-caret {
   font-size: 12px;
   color: var(--ink-3);
+  transition: transform 0.18s ease;
+}
+
+/* 펼침 상태 — 화살표를 뒤집고, 아래 버튼 목록과 가깝게 붙인다 */
+.sl-toggle--open {
+  margin-bottom: 8px;
+}
+
+.sl-toggle--open .sl-toggle-caret {
+  transform: rotate(180deg);
 }
 
 .sl-btn {

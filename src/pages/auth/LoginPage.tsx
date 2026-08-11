@@ -659,27 +659,32 @@ export default function LoginPage() {
             {/* ============ 학습자 가입 (단일 흐름) ============ */}
             {(
               <>
-                <label className="lg-label">{nameLabel}</label>
-                <div className="lg-field lg-mb15">
-                  <i className="ph-fill ph-identification-card lg-field-icon" />
-                  <input type="text" data-req="이름" placeholder={namePlaceholder} className="lg-input" />
-                </div>
-
-                {/* 연령 분기(2026-07-17): 생년월일 필수 — 만 14세 미만이면
-                    보호자(법정대리인) 이메일 동의 섹션이 아래에 열린다. 서버가 최종 강제. */}
+                {/* 연령 분기(2026-07-17): 이름·생년월일 2열 배치(세로 축소). 만 14세 미만이면
+                    아래에 보호자(법정대리인) 이메일 동의 섹션이 열린다. 서버가 최종 강제. */}
                 {(
                   <>
-                    <label className="lg-label">생년월일</label>
-                    <div className="lg-field lg-mb12">
-                      <i className="ph-fill ph-cake lg-field-icon" />
-                      <input
-                        type="date"
-                        data-req="생년월일"
-                        value={birthDate}
-                        onChange={(e) => setBirthDate(e.target.value)}
-                        max={new Date().toISOString().slice(0, 10)}
-                        className="lg-input"
-                      />
+                    <div className="lg-row2 lg-mb12">
+                      <div className="lg-col">
+                        <label className="lg-label">{nameLabel}</label>
+                        <div className="lg-field">
+                          <i className="ph-fill ph-identification-card lg-field-icon" />
+                          <input type="text" data-req="이름" placeholder={namePlaceholder} className="lg-input" />
+                        </div>
+                      </div>
+                      <div className="lg-col">
+                        <label className="lg-label">생년월일</label>
+                        <div className="lg-field">
+                          <i className="ph-fill ph-cake lg-field-icon" />
+                          <input
+                            type="date"
+                            data-req="생년월일"
+                            value={birthDate}
+                            onChange={(e) => setBirthDate(e.target.value)}
+                            max={new Date().toISOString().slice(0, 10)}
+                            className="lg-input"
+                          />
+                        </div>
+                      </div>
                     </div>
                     {/* 본인 이메일 인증 블록과 같은 구조·문구 리듬으로 통일(사용자 요청).
                         종전엔 노란 강조 박스(.lg-guardian) 안에 따로 있어 폼에서 튀었다. */}
@@ -835,24 +840,29 @@ export default function LoginPage() {
                 {/* 학생 이메일 가입 전환(2026-07-16): 별도 아이디 칸 제거 — 이메일이 로그인 아이디.
                     (종전: 학생 전역 유일 아이디 + 중복 확인. 부활 시 git 이력 참고) */}
 
-                <label className="lg-label">비밀번호</label>
-                <div className="lg-field lg-mb12">
-                  <i className="ph-fill ph-lock-key lg-field-icon" />
-                  <PasswordInput
-                    data-req="비밀번호"
-                    placeholder="8자 이상 입력해 주세요"
-                    className="lg-input"
-                  />
-                </div>
-
-                <label className="lg-label">비밀번호 확인</label>
-                <div className="lg-field lg-mb16">
-                  <i className="ph-fill ph-lock-key-open lg-field-icon" />
-                  <PasswordInput
-                    data-req="비밀번호 확인"
-                    placeholder="비밀번호를 다시 입력해 주세요"
-                    className="lg-input"
-                  />
+                <div className="lg-row2 lg-mb16">
+                  <div className="lg-col">
+                    <label className="lg-label">비밀번호</label>
+                    <div className="lg-field">
+                      <i className="ph-fill ph-lock-key lg-field-icon" />
+                      <PasswordInput
+                        data-req="비밀번호"
+                        placeholder="8자 이상"
+                        className="lg-input"
+                      />
+                    </div>
+                  </div>
+                  <div className="lg-col">
+                    <label className="lg-label">비밀번호 확인</label>
+                    <div className="lg-field">
+                      <i className="ph-fill ph-lock-key-open lg-field-icon" />
+                      <PasswordInput
+                        data-req="비밀번호 확인"
+                        placeholder="다시 입력"
+                        className="lg-input"
+                      />
+                    </div>
+                  </div>
                 </div>
 
                 <label className="lg-terms">
