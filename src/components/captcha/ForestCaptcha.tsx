@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 
 import { client } from '../../api/client';
-import CatchapGuardCaptcha, { type GuardVerification } from './CatchapGuardCaptcha';
 import DragObjectCaptcha from './DragObjectCaptcha';
+import type { GuardVerification } from '../../lib/catchapGuard';
 import ForestCaptchaLegacy from './ForestCaptchaLegacy';
 
 interface Props {
@@ -28,13 +28,10 @@ interface Props {
  * 그래서 기본값은 꺼짐이고, 켜지 않는 한 아래 두 갈래는 지금과 완전히 동일하게 돈다.
  * 규약: `ai-service/docs/SPEC_BACKEND_CAPTCHA_20260804.md`
  */
-const USE_GUARD = (import.meta.env.VITE_LOGIN_CAPTCHA as string | undefined) === 'catchap';
-
 export default function ForestCaptcha({ onToken, onClose }: Props) {
   const [useDrag, setUseDrag] = useState<boolean | null>(null);
 
   useEffect(() => {
-    if (USE_GUARD) return; // Guard 로 가면 백엔드 드래그 플래그를 볼 필요가 없다
     let alive = true;
     client
       .get('/captcha/drag/config')
@@ -49,7 +46,6 @@ export default function ForestCaptcha({ onToken, onClose }: Props) {
     };
   }, []);
 
-  if (USE_GUARD) return <CatchapGuardCaptcha onToken={onToken} onClose={onClose} />;
   if (useDrag === null) return null; // 플래그 확인 중(1회, 짧음)
   return useDrag ? (
     <DragObjectCaptcha onToken={onToken} onClose={onClose} />

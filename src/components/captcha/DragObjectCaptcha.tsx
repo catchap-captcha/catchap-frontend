@@ -3,6 +3,10 @@ import { createPortal } from 'react-dom';
 
 import { client } from '../../api/client';
 import { API_ORIGIN } from '../../api/lectures';
+import {
+  createGuardChallenge, guardAssetSrc, type GuardVerification,
+  verifyGuardChallenge, GuardBehaviorSender,
+} from '../../lib/catchapGuard';
 import './DragObjectCaptcha.css';
 
 /**
@@ -28,7 +32,8 @@ import './DragObjectCaptcha.css';
  * 건드리지 않기 위해서다.
  */
 interface Props {
-  onToken: (token: string) => void;
+  /** `meta` 는 Guard 모드에서만 온다. 백엔드 토큰 검증에 session_id·purpose 가 필요하다. */
+  onToken: (token: string, meta?: GuardVerification) => void;
   onClose?: () => void;
 }
 
@@ -107,7 +112,21 @@ const frac = (value: number, dim: number): number => {
 };
 
 /** 서버가 주는 상대경로(`/api/v1/captcha/drag/assets/...`)를 절대 URL로. 이미 http면 그대로. */
-const assetSrc = (url: string): string => (url.startsWith('http') ? url : API_ORIGIN + url);
+/**
+ * CatChap Guard(성원·민서 캡차)를 API 로 직접 쓰는 모드.
+ *
+ * 왜 iframe 이 아닌가: 캡차 서버의 `ALLOWED_ORIGINS` 에 자기 자신이 없어서 그 주소를
+ * iframe 으로 띄우면 브라우저가 보내는 Origin 이 목록에 없어 403 이 난다(실측). www 에서
+ * API 로 부르면 201 이고 CORS 도 www 로 열려 있다. 그래서 화면은 이 컴포넌트가 그대로
+ * 그리고 문제·판정만 저쪽에서 받는다 — 응답 모양이 같아 렌더 코드는 바뀌지 않는다.
+ *
+ * 켜기 전 반드시: 백엔드가 `POST /api/verify-token` 으로 토큰을 확인해야 한다. 지금
+ * 로그인 API 는 자기가 발급한 토큰만 알아보므로, 이 플래그만 켜면 로그인이 막힌다.
+ */
+const USE_GUARD = (import.meta.env.VITE_LOGIN_CAPTCHA as string | undefined) === 'catchap';
+
+const assetSrc = (url: string): string =>
+  USE_GUARD ? guardAssetSrc(url) : url.startsWith('http') ? url : API_ORIGIN + url;
 
 export default function DragObjectCaptcha({ onToken, onClose }: Props) {
   const [challenge, setChallenge] = useState<Challenge | null>(null);
@@ -141,6 +160,10 @@ export default function DragObjectCaptcha({ onToken, onClose }: Props) {
     });
   }, []);
 
+  // Guard 모드에서만 쓴다. 궤적은 verify 에 싣지 않고 별도 엔드포인트로 보내는데,
+  // 배치마다 영수증을 받아 다음 배치에 이어 붙여야 해서 챌린지마다 하나씩 만든다.
+  const senderRef = useRef<GuardBehaviorSender | null>(null);
+
   const load = useCallback(async () => {
     setPhase('loading');
     setMessage('새 문제를 불러오는 중입니다.');
@@ -149,10 +172,20 @@ export default function DragObjectCaptcha({ onToken, onClose }: Props) {
     setDragging(null);
     setDragPoint(null);
     try {
-      const { data } = await client.post<Challenge>('/captcha/drag/challenges', {
-        purpose: 'login',
-        session_id: sessionIdRef.current,
-      });
+      let data: Challenge;
+      if (USE_GUARD) {
+        const ch = await createGuardChallenge('login');
+        senderRef.current = new GuardBehaviorSender(
+          ch.challenge_id, ch.behavior_nonce, ch.behavior_batch_max_events,
+        );
+        data = ch as unknown as Challenge;
+      } else {
+        senderRef.current = null;
+        ({ data } = await client.post<Challenge>('/captcha/drag/challenges', {
+          purpose: 'login',
+          session_id: sessionIdRef.current,
+        }));
+      }
       setChallenge(data);
       // 새 문제마다 행동 기록을 초기화한다 — 이전 문제의 궤적이 섞이면 분석이 왜곡된다.
       startedAtRef.current = performance.now();
@@ -256,17 +289,42 @@ export default function DragObjectCaptcha({ onToken, onClose }: Props) {
     setPhase('verifying');
     setMessage('확인하는 중입니다.');
     track('submit');
+    // 서버 스키마 제약 100~180000ms — 오래 열어둔 창이 422로 죽지 않게 양쪽을 자른다.
+    const durationMs = Math.min(
+      180000, Math.max(100, Math.round(performance.now() - startedAtRef.current)),
+    );
     try {
-      const { data } = await client.post<VerifyResult>(
-        `/captcha/drag/challenges/${challenge.challenge_id}/verify`,
-        {
-          selected_object_ids: selected,
-          session_id: sessionIdRef.current,
-          // 서버 스키마 제약 100~180000ms — 오래 열어둔 창이 422로 죽지 않게 양쪽을 자른다.
-          duration_ms: Math.min(180000, Math.max(100, Math.round(performance.now() - startedAtRef.current))),
-          events: eventsRef.current.slice(0, MAX_EVENTS),
-        },
-      );
+      let data: VerifyResult;
+      if (USE_GUARD) {
+        // 궤적을 먼저 올린다. 판정 뒤에 보내면 서버가 챌린지를 닫아 배치가 거부된다.
+        // 실패해도 진행한다 — 수집이 안 됐다고 로그인을 막을 이유가 없다.
+        await senderRef.current?.flush(eventsRef.current);
+        const out = await verifyGuardChallenge(challenge, selected, durationMs);
+        if (out.success && out.captcha_token) {
+          setPhase('success');
+          setMessage('확인되었습니다.');
+          // 백엔드가 `POST /api/verify-token` 으로 확인할 때 발급 당시의 session_id·purpose
+          // 와 대조한다. 토큰만 넘기면 유효해도 거부된다.
+          onToken(out.captcha_token, { token: out.captcha_token, sessionId: out.session_id, purpose: 'login' });
+          return;
+        }
+        if (out.pow_failed) {
+          setPhase('error');
+          setMessage('확인 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
+          return;
+        }
+        data = { success: false, remaining_attempts: out.remaining_attempts };
+      } else {
+        ({ data } = await client.post<VerifyResult>(
+          `/captcha/drag/challenges/${challenge.challenge_id}/verify`,
+          {
+            selected_object_ids: selected,
+            session_id: sessionIdRef.current,
+            duration_ms: durationMs,
+            events: eventsRef.current.slice(0, MAX_EVENTS),
+          },
+        ));
+      }
       if (data.success) {
         setPhase('success');
         setMessage('확인되었습니다.');
