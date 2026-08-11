@@ -307,6 +307,65 @@ html:has(.mn-page) { scroll-behavior: smooth; }
   50% { transform: translate(-50%, 8px); }
 }
 
+/* ===== 신뢰 로고 마퀴 (왼쪽 무한 스크롤) ===== */
+.mn-trust {
+  padding: 40px 0 44px;
+  border-bottom: 1px solid var(--line);
+  overflow: hidden;
+}
+.mn-trust-label {
+  text-align: center;
+  margin: 0 0 24px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--ink-3);
+}
+.mn-trust-ex {
+  margin-left: 7px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ink-3);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 2px 8px;
+  vertical-align: middle;
+}
+.mn-marquee {
+  position: relative;
+  overflow: hidden;
+  /* 양 끝을 흐리게(fade) — 로고가 갑자기 잘리지 않고 스르륵 나타나고 사라진다 */
+  -webkit-mask: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+  mask: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+}
+.mn-marquee-track {
+  display: flex;
+  width: max-content;
+  /* 리스트를 2번 이어 붙이고 -50%(정확히 한 세트)만큼 흘려 이음매 없는 무한 루프 */
+  animation: mn-marquee 34s linear infinite;
+}
+.mn-marquee:hover .mn-marquee-track { animation-play-state: paused; }
+.mn-marquee-item {
+  flex-shrink: 0;
+  padding: 0 40px;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--ink-3);
+  opacity: 0.85;
+  white-space: nowrap;
+}
+@keyframes mn-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mn-marquee-track { animation: none; }
+}
+@media (max-width: 640px) {
+  .mn-marquee-item { font-size: 18px; padding: 0 26px; }
+}
+
 /* ===== PRODUCT PREVIEW ===== */
 .mn-preview {
   max-width: 1200px;

@@ -111,6 +111,23 @@ const STEPS = [
   { n: '4', icon: 'ph-squares-four', title: '기록으로 봅니다', desc: '역할별 화면에 시청·학습 요약을 제공합니다.' },
 ];
 
+// 히어로 아래 신뢰 로고 마퀴(왼쪽 무한 스크롤)에 흐르는 이름 — 서비스 소개용 예시(가상 기관·기업).
+// 실제 도입처가 생기면 이 배열만 바꾸면 된다. 역할 카드 협업 사례와 같은 '예시 세계관'.
+const TRUST_LOGOS = [
+  '한빛금융그룹',
+  '누리에너지',
+  '그린모빌리티',
+  '세종테크',
+  '대한물산',
+  '미래로지스틱스',
+  '온누리제약',
+  '서울청년취업사관학교',
+  '한국방송통신대',
+  '코드스쿼드',
+  '패스트러너',
+  '정석엔지니어링',
+];
+
 type Menu = 'about' | 'lectures' | 'audience' | 'how' | null;
 
 export default function MainPage() {
@@ -247,6 +264,22 @@ export default function MainPage() {
         <a href="#next" className="mn-scroll-cue">
           <i className="ph ph-caret-down" />
         </a>
+      </section>
+
+      {/* 신뢰 로고 마퀴 — 왼쪽으로 무한 스크롤(Loom 스타일). 로고 이름은 서비스 소개용 예시. */}
+      <section className="mn-trust">
+        <p className="mn-trust-label">
+          함께하는 기관·기업 <span className="mn-trust-ex">예시</span>
+        </p>
+        <div className="mn-marquee" aria-hidden="true">
+          <div className="mn-marquee-track">
+            {[...TRUST_LOGOS, ...TRUST_LOGOS].map((name, i) => (
+              <span key={i} className="mn-marquee-item">
+                {name}
+              </span>
+            ))}
+          </div>
+        </div>
       </section>
 
       {/* PRODUCT PREVIEW */}
