@@ -244,6 +244,24 @@
   position: relative;
 }
 
+/* 2열 필드 배치 — 회원가입 세로 축소(이름·생년월일 / 비밀번호·비밀번호 확인).
+   좁은 화면(<=480px)에선 다시 1열로 쌓는다. */
+.lg-row2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.lg-col {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+@media (max-width: 480px) {
+  .lg-row2 {
+    grid-template-columns: 1fr;
+  }
+}
+
 .lg-field-grow {
   position: relative;
   flex: 1;
