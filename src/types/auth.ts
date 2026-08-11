@@ -40,6 +40,9 @@ export interface LoginRequest {
   password: string;
   /** 5회 이상 실패해 캡차가 요구된 뒤, 메인 캡차(forest) 통과 단일사용 토큰 */
   captcha_token?: string;
+  /** CatChap Guard 로 전환했을 때만 붙는다 — 아래 주석 참조 */
+  captcha_session_id?: string;
+  captcha_purpose?: string;
 }
 
 export interface StudentLoginRequest {
@@ -48,7 +51,20 @@ export interface StudentLoginRequest {
   student_login_id: string;
   password: string;
   captcha_token?: string;
+  captcha_session_id?: string;
+  captcha_purpose?: string;
 }
+
+/*
+ * `captcha_session_id` · `captcha_purpose` 는 로그인 캡차를 CatChap Guard
+ * (`captcha.catchap5.com`)로 바꿀 때만 채워진다(`VITE_LOGIN_CAPTCHA=catchap`).
+ *
+ * 그 캡차의 토큰은 백엔드가 캡차 서버에 물어봐야 유효해지는데,
+ * `POST /api/verify-token` 이 발급 때의 `session_id` 와 `purpose` 를 대조한다 —
+ * 하나라도 다르면 토큰이 멀쩡해도 실패한다. 그래서 프론트가 같이 넘긴다.
+ * 토큰은 1회용이라 재시도가 같은 값을 다시 보내면 정상 사용자가 막힌다.
+ * 규약: `ai-service/docs/SPEC_BACKEND_CAPTCHA_20260804.md`
+ */
 
 export type Gender = 'male' | 'female' | 'other';
 

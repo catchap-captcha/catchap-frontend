@@ -75,6 +75,9 @@ export default function LoginPage() {
   // (잃으면 다기관 학생은 후보 선택→캡차→후보 선택… 무한 루프가 된다)
   const lastOrgRef = useRef<string | undefined>(undefined);
   const capT = useRef<number | null>(null);
+  // CatChap Guard 로 전환했을 때만 채워진다. 토큰만으로는 백엔드 검증이 실패한다
+  // (session_id·purpose 를 발급 때 값과 대조하므로) — 재시도까지 살아 있어야 해서 ref 다.
+  const capMeta = useRef<{ sessionId: string; purpose: string } | null>(null);
   const boundRoots = useRef(new WeakSet<HTMLElement>());
 
   useEffect(
@@ -380,6 +383,10 @@ export default function LoginPage() {
             student_login_id: id,
             password: pw,
             captcha_token: captchaToken,
+            ...(captchaToken && capMeta.current
+              ? { captcha_session_id: capMeta.current.sessionId,
+                  captcha_purpose: capMeta.current.purpose }
+              : {}),
           },
           remember,
         );
@@ -397,6 +404,10 @@ export default function LoginPage() {
               student_login_id: id,
               password: pw,
               captcha_token: captchaToken,
+              ...(captchaToken && capMeta.current
+                ? { captcha_session_id: capMeta.current.sessionId,
+                    captcha_purpose: capMeta.current.purpose }
+                : {}),
             },
             remember,
           );
@@ -469,8 +480,9 @@ export default function LoginPage() {
 
   // 메인 캡차(forest) 통과 → 단일사용 토큰을 로그인에 실어 재시도.
   // 기관 선택(lastOrgRef)을 유지해야 다기관 학생이 후보선택↔캡차 사이에서 맴돌지 않는다.
-  const onCaptchaToken = (token: string) => {
+  const onCaptchaToken = (token: string, meta?: { sessionId: string; purpose: string }) => {
     setCaptcha(false);
+    capMeta.current = meta ? { sessionId: meta.sessionId, purpose: meta.purpose } : null;
     void doLogin(lastOrgRef.current, token);
   };
 

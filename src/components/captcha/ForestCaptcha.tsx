@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 
 import { client } from '../../api/client';
+import CatchapGuardCaptcha, { type GuardVerification } from './CatchapGuardCaptcha';
 import DragObjectCaptcha from './DragObjectCaptcha';
 import ForestCaptchaLegacy from './ForestCaptchaLegacy';
 
 interface Props {
-  onToken: (token: string) => void;
+  /** `meta` 는 CatChap Guard 로 전환했을 때만 온다. 기존 캡차는 토큰만 준다. */
+  onToken: (token: string, meta?: GuardVerification) => void;
   onClose?: () => void;
 }
 
@@ -18,11 +20,21 @@ interface Props {
  * 백엔드 플래그(GET /captcha/drag/config)를 먼저 보고 — 켜져 있으면 드래그 캡차, 꺼져 있으면
  * 기존 forest 캡차를 렌더한다. 호출부(LoginPage/OpsLogin)는 이 컴포넌트만 쓰므로 무변경으로
  * 플래그 하나로 전환된다.
+ *
+ * 세 번째 갈래 — `VITE_LOGIN_CAPTCHA=catchap`:
+ * 로그인 캡차를 CatChap Guard(성원/민서, `captcha.catchap5.com`)로 바꾸는 전환용이다.
+ * **백엔드가 `POST /api/verify-token` 을 붙이기 전에는 켜면 안 된다.** 그 위젯의 토큰은
+ * 캡차 서버에 물어봐야 유효해지는데, 지금 로그인 API 는 자기가 발급한 토큰만 알아본다.
+ * 그래서 기본값은 꺼짐이고, 켜지 않는 한 아래 두 갈래는 지금과 완전히 동일하게 돈다.
+ * 규약: `ai-service/docs/SPEC_BACKEND_CAPTCHA_20260804.md`
  */
+const USE_GUARD = (import.meta.env.VITE_LOGIN_CAPTCHA as string | undefined) === 'catchap';
+
 export default function ForestCaptcha({ onToken, onClose }: Props) {
   const [useDrag, setUseDrag] = useState<boolean | null>(null);
 
   useEffect(() => {
+    if (USE_GUARD) return; // Guard 로 가면 백엔드 드래그 플래그를 볼 필요가 없다
     let alive = true;
     client
       .get('/captcha/drag/config')
@@ -37,6 +49,7 @@ export default function ForestCaptcha({ onToken, onClose }: Props) {
     };
   }, []);
 
+  if (USE_GUARD) return <CatchapGuardCaptcha onToken={onToken} onClose={onClose} />;
   if (useDrag === null) return null; // 플래그 확인 중(1회, 짧음)
   return useDrag ? (
     <DragObjectCaptcha onToken={onToken} onClose={onClose} />
