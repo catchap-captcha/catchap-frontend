@@ -80,6 +80,13 @@ const BUTTON_LABELS: Record<SocialProvider, string> = {
   google: 'Google로 로그인',
 };
 
+/** 접기 토글의 안내 힌트에 쓰는 축약 이름 — 규정 문구는 실제 버튼에만, 여긴 힌트라 축약 허용. */
+const SHORT_NAMES: Record<SocialProvider, string> = {
+  kakao: '카카오',
+  naver: '네이버',
+  google: 'Google',
+};
+
 interface Props {
   /** 화면 맥락만 구분한다 — 버튼 문구는 브랜드 가이드 고정값이라 모드와 무관하다 */
   mode?: 'login' | 'signup';
@@ -97,6 +104,8 @@ export default function SocialLoginButtons({
   const [providers, setProviders] = useState<SocialProviderInfo[]>([]);
   const [busy, setBusy] = useState<SocialProvider | null>(null);
   const [error, setError] = useState('');
+  // 간편 로그인 접기 — 기본 접힘(세로 길이 축소), 토글 클릭 시 펼침. 계정 연결(마이페이지)은 접지 않는다.
+  const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -140,30 +149,49 @@ export default function SocialLoginButtons({
         </div>
       )}
 
-      <div className="sl-list">
-        {providers.map((p) => {
-          const Mark = MARKS[p.provider];
-          return (
-            <button
-              key={p.provider}
-              type="button"
-              className={`sl-btn sl-btn--${p.provider}`}
-              onClick={() => start(p.provider)}
-              disabled={busy !== null}
-              aria-label={
-                intent === 'connect' ? `${p.label} 계정 연결` : BUTTON_LABELS[p.provider]
-              }
-            >
-              <span className="sl-mark">
-                {busy === p.provider ? <i className="ph-bold ph-circle-notch sl-spin" /> : <Mark />}
-              </span>
-              <span className="sl-text">
-                {intent === 'connect' ? `${p.label} 계정 연결하기` : BUTTON_LABELS[p.provider]}
-              </span>
-            </button>
-          );
-        })}
-      </div>
+      {intent === 'connect' || expanded ? (
+        <div className="sl-list">
+          {providers.map((p) => {
+            const Mark = MARKS[p.provider];
+            return (
+              <button
+                key={p.provider}
+                type="button"
+                className={`sl-btn sl-btn--${p.provider}`}
+                onClick={() => start(p.provider)}
+                disabled={busy !== null}
+                aria-label={
+                  intent === 'connect' ? `${p.label} 계정 연결` : BUTTON_LABELS[p.provider]
+                }
+              >
+                <span className="sl-mark">
+                  {busy === p.provider ? <i className="ph-bold ph-circle-notch sl-spin" /> : <Mark />}
+                </span>
+                <span className="sl-text">
+                  {intent === 'connect' ? `${p.label} 계정 연결하기` : BUTTON_LABELS[p.provider]}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      ) : (
+        // 접힘 상태 — 한 줄 토글만 노출해 세로 길이를 줄인다. 누르면 위 브랜드 버튼들이 펼쳐진다.
+        <button
+          type="button"
+          className="sl-toggle"
+          onClick={() => setExpanded(true)}
+          aria-expanded={false}
+        >
+          <span className="sl-toggle-main">
+            <i className="ph-fill ph-lightning" />
+            {mode === 'signup' ? '간편 가입' : '간편 로그인'}
+          </span>
+          <span className="sl-toggle-sub">
+            {providers.map((p) => SHORT_NAMES[p.provider]).join(' · ')}
+          </span>
+          <i className="ph-bold ph-caret-down sl-toggle-caret" />
+        </button>
+      )}
 
       {error && (
         <div className="lg-formerr">

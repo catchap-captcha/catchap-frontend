@@ -7,6 +7,61 @@
   margin-bottom: 12px;
 }
 
+/* 간편 로그인 접기 토글 — 접힘 상태의 한 줄. 클릭하면 .sl-list(브랜드 버튼들)가 펼쳐진다.
+   기본 노출은 이 한 줄뿐이라 세로 길이를 크게 줄인다. */
+.sl-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 14px;
+  margin-bottom: 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 14.5px;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+
+.sl-toggle:hover {
+  border-color: var(--brand);
+  background: var(--bg);
+}
+
+.sl-toggle:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.sl-toggle-main {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.sl-toggle-main i {
+  color: var(--warn);
+  font-size: 15px;
+}
+
+.sl-toggle-sub {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-3);
+}
+
+.sl-toggle-caret {
+  font-size: 12px;
+  color: var(--ink-3);
+}
+
 .sl-btn {
   position: relative;
   width: 100%;
