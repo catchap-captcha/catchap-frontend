@@ -610,6 +610,18 @@ export default function OpsLectures() {
                           <i className="ph-fill ph-warning" /> 검증 없음
                         </span>
                       )}
+                      {/* 활성>0이라 '검증 없음'은 안 뜨지만 검수 대기(draft)가 남은 강의 — 방치 방지.
+                          draft = 전체(비삭제) - 활성(question_count - active_question_count). */}
+                      {lec.active_question_count > 0 &&
+                        lec.question_count - lec.active_question_count > 0 && (
+                          <span
+                            className="lu-draftwarn"
+                            title="검수 대기(draft) 문항이 남아 있어요 — 공개해야 학생에게 출제돼요"
+                          >
+                            <i className="ph-fill ph-eye-slash" /> 미공개{' '}
+                            {lec.question_count - lec.active_question_count}
+                          </span>
+                        )}
                     </span>
                     <span>
                       <span
@@ -3001,6 +3013,7 @@ export function QuestionsModal({
   const [sel, setSel] = useState<Set<string>>(new Set());
   const [promoting, setPromoting] = useState(false);
   const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [publishing, setPublishing] = useState(false);
   const toggleSel = (id: string) =>
     setSel((s) => {
       const n = new Set(s);
@@ -3014,6 +3027,11 @@ export function QuestionsModal({
     setSel(allSelected ? new Set() : new Set((items ?? []).map((q) => q.id)));
   // '은행 적합'만 추린 선택분 — '선택 N개 은행으로'는 이 부분집합에만 적용된다(나머지는 무시).
   const selectedBankIds = bankCandidates.filter((q) => sel.has(q.id)).map((q) => q.id);
+  // 검수 대기(draft) 일괄 공개 — 선택분 중 draft만(선택 없으면 서버가 이 강의 draft 전체 대상).
+  const draftCount = (items ?? []).filter((q) => q.status === 'draft').length;
+  const selectedDraftIds = (items ?? [])
+    .filter((q) => sel.has(q.id) && q.status === 'draft')
+    .map((q) => q.id);
   const bulkDelete = async () => {
     if (selectedIds.length === 0) return;
     if (!window.confirm(`선택한 문항 ${selectedIds.length}개를 삭제할까요?\n되돌릴 수 없어요.`)) return;
@@ -3069,6 +3087,42 @@ export function QuestionsModal({
       setBanner(errorDetail(e, '일괄 승격에 실패했어요.'));
     } finally {
       setPromoting(false);
+    }
+  };
+  // draft 문항 일괄 공개(active) — 선택분(ids)만 또는 이 강의 draft 전체(ids 없음). 개별 PUT과
+  // 같은 불변식: 시점 없는 것·같은 시점 중복은 서버가 건너뛰고 사유별 수를 돌려준다.
+  const bulkPublish = async (ids?: string[]) => {
+    const target = ids && ids.length ? ids : undefined; // undefined = 이 강의 draft 전체
+    if (!target && draftCount === 0) return;
+    const label = target ? `선택한 ${target.length}개` : `이 강의 검수 대기 ${draftCount}개`;
+    if (
+      !window.confirm(
+        `${label} 문항을 공개(active)할까요?\n시청 검증에 바로 출제돼요. (시점 없는 것·같은 시점 중복은 자동으로 건너뜁니다.)`,
+      )
+    )
+      return;
+    setPublishing(true);
+    try {
+      const res = await lectureApi.opsBulkPublishQuestions(lec.id, target);
+      changedRef.current = true;
+      const up = res.skipped?.unplaced ?? 0;
+      const cf = res.skipped?.conflict ?? 0;
+      setBannerOk(res.published > 0);
+      let msg = `${res.published}개 문항을 공개했어요`;
+      if (up || cf) {
+        const parts: string[] = [];
+        if (up) parts.push(`시점 미지정 ${up}개`);
+        if (cf) parts.push(`같은 시점 중복 ${cf}개`);
+        msg += ` (건너뜀: ${parts.join(', ')} — 개별로 시점을 지정한 뒤 공개하세요)`;
+      }
+      setBanner(msg);
+      setSel(new Set());
+      load();
+    } catch (e) {
+      setBannerOk(false);
+      setBanner(errorDetail(e, '일괄 공개에 실패했어요.'));
+    } finally {
+      setPublishing(false);
     }
   };
 
@@ -3379,6 +3433,17 @@ export function QuestionsModal({
                       {bulkDeleting ? '삭제 중…' : `선택 ${selectedIds.length}개 삭제`}
                     </button>
                   )}
+                  {selectedDraftIds.length > 0 && (
+                    <button
+                      className="op-btn op-btn--approve"
+                      disabled={publishing}
+                      onClick={() => bulkPublish(selectedDraftIds)}
+                      title="선택한 검수 대기(draft) 문항을 공개해요 — 시점 없는 것·같은 시점 중복은 건너뜁니다."
+                    >
+                      <i className="ph-bold ph-checks" />
+                      {publishing ? '공개 중…' : `선택 ${selectedDraftIds.length}개 공개`}
+                    </button>
+                  )}
                   {bankCandidates.length > 0 && (
                     <>
                       <span className="op-lect-bankbulk-lb" title="봇이 상식으로 풀어 확인 문항엔 부적합 — 선택해 전체학습 은행으로 보내세요(선택=검토)">
@@ -3445,12 +3510,32 @@ export function QuestionsModal({
             <i className="ph-fill ph-warning-circle" /> {loadErr}
           </div>
         )}
-        {/* 활성 문항 0개 = 확인 문항이 아예 안 떠서 시청 검증이 조용히 꺼진다 — 모달 안에서도 경고 */}
+        {/* 활성 0개 = 시청 검증이 조용히 꺼짐(severe). 활성>0인데 draft가 남으면 '미공개 N개'
+            — active 1~2개로 '검증 없음' 경고가 꺼지고 나머지가 방치되던 것을 드러낸다. 둘 다 일괄 공개. */}
         {items !== null && !loadErr && activeCount === 0 && (
-          <div className="op-form-err op-lect-banner">
-            <i className="ph-fill ph-warning" /> 공개(active) 문항이 없어 이 강의는 시청 검증이
-            동작하지 않아요 — 학생이 확인 없이 끝까지 볼 수 있어요. 문항을 추가하거나 draft 문항을
-            승인하세요.
+          <div className="op-form-err op-lect-banner op-lect-banner--action">
+            <span>
+              <i className="ph-fill ph-warning" /> 공개(active) 문항이 없어 이 강의는 시청 검증이
+              동작하지 않아요 — 학생이 확인 없이 끝까지 볼 수 있어요. 문항을 추가하거나 draft 문항을 공개하세요.
+            </span>
+            {draftCount > 0 && (
+              <button className="op-btn op-btn--approve" disabled={publishing} onClick={() => bulkPublish()}>
+                <i className={publishing ? 'ph ph-spinner-gap' : 'ph-bold ph-checks'} />
+                {publishing ? '공개 중…' : `검수 대기 ${draftCount}개 일괄 공개`}
+              </button>
+            )}
+          </div>
+        )}
+        {items !== null && !loadErr && activeCount > 0 && draftCount > 0 && (
+          <div className="op-lect-banner op-lect-banner--draft op-lect-banner--action">
+            <span>
+              <i className="ph-fill ph-eye-slash" /> 미공개(검수 대기) 문항이 {draftCount}개 있어요 —
+              공개해야 학생 강의에 출제돼요.
+            </span>
+            <button className="op-btn op-btn--approve" disabled={publishing} onClick={() => bulkPublish()}>
+              <i className={publishing ? 'ph ph-spinner-gap' : 'ph-bold ph-checks'} />
+              {publishing ? '공개 중…' : `검수 대기 ${draftCount}개 일괄 공개`}
+            </button>
           </div>
         )}
         {form && (

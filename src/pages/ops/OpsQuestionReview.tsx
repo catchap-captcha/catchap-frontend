@@ -40,6 +40,7 @@ export default function OpsQuestionReview() {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [toast, setToast] = useState('');
   const [generating, setGenerating] = useState(false);
+  const [bulkBusy, setBulkBusy] = useState(false);
   // 문항 편집 — '강의 관리'의 확인 문항 모달을 그대로 열어(딥링크), 이 문항의 편집 폼이
   // 자동으로 펼쳐지게 한다(QuestionsModal의 initialEditId).
   const [editTarget, setEditTarget] = useState<{ lec: OpsLecture; questionId: string } | null>(null);
@@ -84,6 +85,27 @@ export default function OpsQuestionReview() {
       say(err.response?.data?.detail ?? '공개에 실패했어요.');
     } finally {
       setBusyId(null);
+    }
+  };
+
+  // 이 강의 draft를 한 번에 공개 — 개별로 하나씩 누르던 걸 묶는다. 시점 없는 것·같은 시점
+  // 중복은 서버가 건너뛰고 사유별 수를 돌려주므로, 몇 개가 공개됐고 몇 개가 남았는지 알린다.
+  const bulkPublish = async () => {
+    if (!lectureId || bulkBusy) return;
+    setBulkBusy(true);
+    try {
+      const r = await lectureApi.opsBulkPublishQuestions(lectureId);
+      const skipped = (r.skipped?.unplaced ?? 0) + (r.skipped?.conflict ?? 0);
+      if (r.published > 0 && skipped === 0) say(`${r.published}개 문항을 공개했어요.`);
+      else if (r.published > 0) say(`${r.published}개 공개 · ${skipped}개는 시점 지정/중복이라 개별 처리가 필요해요.`);
+      else if (skipped > 0) say(`공개할 게 없었어요 — ${skipped}개는 시점 지정/중복이라 개별 처리가 필요해요.`);
+      else say('공개할 검수 대기 문항이 없어요.');
+      load();
+    } catch (e) {
+      const err = e as { response?: { data?: { detail?: string } } };
+      say(err.response?.data?.detail ?? '일괄 공개에 실패했어요.');
+    } finally {
+      setBulkBusy(false);
     }
   };
 
@@ -235,6 +257,17 @@ export default function OpsQuestionReview() {
               }}
             >
               <i className="ph ph-x" />전체 보기
+            </button>
+          )}
+          {/* 이 강의 검수 대기(draft) 일괄 공개 — 한 강의로 좁혔을 때만(공개는 강의 단위 작업) */}
+          {lectureId && counts.pending > 0 && (
+            <button
+              className="orn-btn orn-btn--ok qr-bulkpub"
+              disabled={bulkBusy}
+              onClick={bulkPublish}
+            >
+              <i className={bulkBusy ? 'ph ph-spinner-gap' : 'ph ph-checks'} />
+              검수 대기 {counts.pending}개 일괄 공개
             </button>
           )}
         </div>

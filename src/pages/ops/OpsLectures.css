@@ -1464,3 +1464,38 @@
 .lu-capture { margin-top: 12px; border: 0.5px solid var(--line); border-radius: 12px; padding: 12px; background: var(--surface-2); }
 .lu-capture-video { width: 100%; max-height: 340px; border-radius: 10px; background: #000; display: block; }
 .lu-capture-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+
+/* ── 검수 대기(draft) 일괄 공개 ── */
+/* 배너에 문구 + [일괄 공개] 버튼을 좌우로 */
+.op-lect-banner--action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.op-lect-banner--action > span { display: inline-flex; align-items: center; gap: 7px; }
+.op-lect-banner--action .op-btn { flex: none; }
+/* 활성>0인데 draft가 남음 — '검증 없음'(빨강)보다 약한 미공개 알림(앰버) */
+.op-lect-banner--draft {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--warn-soft);
+  color: var(--warn-ink);
+  font-weight: 700;
+  font-size: 13px;
+}
+/* 강의 목록 '미공개 N개' 칩 — lu-nowarn(검증 없음)과 같은 모양, 앰버 톤 */
+.lu-draftwarn {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: 6px;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: var(--warn-soft);
+  color: var(--warn-ink);
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
