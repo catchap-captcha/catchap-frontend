@@ -47,7 +47,6 @@ const BANK = {
   q: 'HTTP 상태 코드 404는 무엇을 뜻하나요?',
   options: ['요청 성공', '서버 내부 오류', '요청한 자원을 찾을 수 없음', '권한 없음'],
   answer: 2,
-  explain: '404 Not Found — 요청한 페이지·자원이 서버에 없다는 뜻이에요. (200=성공, 500=서버 오류, 403=권한 없음)',
 };
 
 const FEATURES = [
@@ -346,8 +345,7 @@ export default function DemoPage() {
             ) : (
               <div className={'dm-bank-result' + (bankSel === BANK.answer ? ' is-ok' : ' is-no')}>
                 <p>
-                  <b>{bankSel === BANK.answer ? '정답이에요! ' : '아쉬워요. '}</b>
-                  {BANK.explain}
+                  <b>{bankSel === BANK.answer ? '정답이에요!' : '아쉬워요.'}</b>
                 </p>
                 <button
                   type="button"
