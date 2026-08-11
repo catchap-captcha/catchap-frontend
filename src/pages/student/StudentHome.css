@@ -179,6 +179,7 @@
 .sh2-ccard-badge i { font-size: 13px; }
 /* 우상단 강의 배지 — 강의 유무/개수(좌상단 수강 상태 배지의 반대 모서리라 안 겹친다).
    커버는 그대로 두고 글자만 얹는다. 있으면 개수(다크 글래스), 없으면 '강의 준비 중'(주황). */
+/* 강의수 배지 — N개(값 있음)=노란색, 0개(비었음)=검은색으로 서로 바꿈(2026-08-11 사용자 요청). */
 .sh2-ccard-lec {
   position: absolute;
   top: 8px;
@@ -189,21 +190,21 @@
   gap: 4px;
   font-size: 11px;
   font-weight: 800;
-  color: #fff;
-  background: rgba(18, 18, 20, 0.52);
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  -webkit-backdrop-filter: blur(6px);
-  backdrop-filter: blur(6px);
+  color: var(--on-brand);
+  background: var(--warn);
+  border: 1px solid transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
   padding: 3px 9px;
   border-radius: 999px;
 }
 .sh2-ccard-lec i { font-size: 11px; }
 .sh2-ccard-lec--empty {
-  color: var(--on-brand);
-  background: var(--warn);
-  border-color: transparent;
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
+  color: #fff;
+  background: rgba(18, 18, 20, 0.52);
+  border-color: rgba(255, 255, 255, 0.22);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
 }
 .sh2-ccard-cta--learn { color: var(--ok-ink); border-color: var(--ok); }
 .sh2-ccard--enrolled:hover .sh2-ccard-cta {

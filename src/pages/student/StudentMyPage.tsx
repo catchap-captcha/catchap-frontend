@@ -13,6 +13,7 @@ import { useTheme } from '../../hooks/useTheme';
 import { playSfx } from '../../utils/feedback';
 import StatTile from '../../components/student/StatTile';
 import CourseCover from '../../components/course/CourseCover';
+import { courseCoverUrl } from './demoCover';
 import './StudentSettings.css';
 import './StudentMyPage.css';
 
@@ -376,7 +377,7 @@ export default function StudentMyPage() {
                   <ul className="mp-courselist">
                     {courses.map((c) => (
                       <li key={c.id} className="mp-course">
-                        <CourseCover seed={c.id} label={c.title || c.subject} imageUrl={thumbnailSrc(c.thumbnail_url)} size="sm" />
+                        <CourseCover seed={c.id} label={c.title || c.subject} imageUrl={thumbnailSrc(c.thumbnail_url) ?? courseCoverUrl(c)} size="sm" />
                         <div className="mp-course-main">
                           <span className="mp-course-title">{c.title}</span>
                           <span className="mp-course-sub">
