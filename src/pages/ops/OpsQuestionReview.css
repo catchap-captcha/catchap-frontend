@@ -230,9 +230,13 @@
 }
 .orn-btn--bank:hover:not(:disabled) { background: var(--warn); color: #fff; }
 
+/* 이 강의 draft 일괄 공개 버튼 — 선택 바 오른쪽 끝으로 */
+.qr-bulkpub { margin-left: auto; flex: none; white-space: nowrap; }
+
 @media (max-width: 760px) {
   .qr-kpigrid { grid-template-columns: 1fr 1fr; }
   .qr-options { grid-template-columns: 1fr; }
   .qr-lecbar { flex-wrap: wrap; gap: 10px; }
   .qr-lecsel-wrap { max-width: none; flex-basis: 100%; }
+  .qr-bulkpub { margin-left: 0; flex-basis: 100%; justify-content: center; }
 }

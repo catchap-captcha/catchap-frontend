@@ -954,6 +954,17 @@ export const lectureApi = {
       )
       .then((r) => r.data),
 
+  /** draft 문항 일괄 공개(active) — 강사가 선택한 것(questionIds) 또는 이 강의 draft 전체.
+   *  ★개별 공개와 같은 불변식: 시점 있는(1초~길이) 것만 올리고, 같은 시점 중복(배치 내
+   *  충돌 포함)·미배치는 건너뛰어 사유별 수로 보고(unplaced=시점 미지정, conflict=시점 중복). */
+  opsBulkPublishQuestions: (lectureId: string, questionIds?: string[]) =>
+    client
+      .post<{ published: number; skipped: Record<string, number>; candidates: number }>(
+        `/ops/lectures/${lectureId}/questions/bulk-publish`,
+        questionIds ? { question_ids: questionIds } : {},
+      )
+      .then((r) => r.data),
+
   /** 문항 이미지 첨부(multipart) — slot=prompt는 문제, slot=option은 optionIndex 보기(0부터).
    *  같은 슬롯에 다시 올리면 교체. png/jpg/jpeg/gif/webp만(svg는 서버 400 detail). 용량 상한 없음.
    *  갱신된 문항 행을 돌려주지만, 성공 표기는 호출자가 재조회로 실재 확인 후에만 한다. */
