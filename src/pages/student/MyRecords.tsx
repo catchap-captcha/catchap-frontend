@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams, type NavigateFunction } from 'react-router-dom';
 import StudentLayout from '../../layouts/StudentLayout';
 import { useAuth } from '../../hooks/useAuth';
+import { useToast } from '../../hooks/useToast';
 import { studentApi } from '../../api/students';
 import { lectureApi, thumbnailSrc, type StudentCourse, type LectureItem } from '../../api/lectures';
 import { PATHS } from '../../routes/paths';
@@ -342,6 +343,7 @@ const REC_TABS: { key: RecTab; label: string; icon: string }[] = [
 
 export default function MyRecords() {
   const { me } = useAuth();
+  const { toast, flash } = useToast();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const recTabRaw = searchParams.get('tab') as RecTab | null;
@@ -454,6 +456,12 @@ export default function MyRecords() {
   // 리포트 저장 — 현재 학습 기록을 텍스트 파일로 내려받는다. 실집계된 값만 담고(데모 숫자 제외),
   // 없는 항목은 '없습니다'로 정직하게 적는다. 외부 라이브러리 없이 Blob 다운로드(윈도우용 \r\n).
   const saveReport = () => {
+    // 담을 게 하나도 없으면(문제 풀이·강의 시청·수료 전부 없음) 빈 파일 대신 안내만 띄운다.
+    const hasAnyRecord = !demo || lecReady || passedCourses.length > 0;
+    if (!hasAnyRecord) {
+      flash('아직 저장할 학습 기록이 없어요. 강의를 듣고 문제를 풀면 리포트에 쌓여요.');
+      return;
+    }
     const now = new Date();
     const dateStr = now.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' });
     const L: string[] = [
@@ -871,6 +879,8 @@ export default function MyRecords() {
           onClose={() => setCertCourse(null)}
         />
       )}
+
+      {toast && <div className="mr-toast" role="status">{toast}</div>}
     </StudentLayout>
   );
 }
