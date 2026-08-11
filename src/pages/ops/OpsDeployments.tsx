@@ -76,7 +76,7 @@ export default function OpsDeployments() {
       <main className="op-main">
         <header className="dep-head">
           <div>
-            <h1>배포 현황</h1>
+            <h1 className="op-title">배포 현황</h1>
             <p className="dep-sub">
               지금 클러스터에 떠 있는 것입니다. <strong>읽기 전용</strong>이라
               여기서 배포하거나 되돌릴 수는 없습니다 — 그건 ArgoCD 화면에서 합니다.

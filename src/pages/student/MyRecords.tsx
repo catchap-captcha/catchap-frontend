@@ -451,6 +451,67 @@ export default function MyRecords() {
     .sort((a, b) => b.pct - a.pct)
     .slice(0, 6);
 
+  // 리포트 저장 — 현재 학습 기록을 텍스트 파일로 내려받는다. 실집계된 값만 담고(데모 숫자 제외),
+  // 없는 항목은 '없습니다'로 정직하게 적는다. 외부 라이브러리 없이 Blob 다운로드(윈도우용 \r\n).
+  const saveReport = () => {
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' });
+    const L: string[] = [
+      'CatChap 학습 리포트',
+      '====================================',
+      `이름: ${name}님`,
+      `생성일: ${dateStr}`,
+      '',
+      '[요약 · 문제 풀이]',
+    ];
+    if (demo) {
+      L.push('아직 문제 풀이 기록이 없습니다.');
+    } else {
+      L.push(`· 연속 학습: ${data.stats.streakDays}일`);
+      L.push(`· 지금까지 푼 문제: ${data.stats.totalSolved}개`);
+      L.push(`· 평균 정답률: ${data.stats.avgAccuracy}%`);
+    }
+
+    L.push('', '[학습 통계 · 강의 시청]');
+    if (!lecReady) {
+      L.push('아직 강의 시청 기록이 없습니다.');
+    } else {
+      L.push(`· 완주한 강의: ${lecDone}강 / 전체 ${lecTotal}강 (완주율 ${lecCompletionPct}%)`);
+      L.push(`· 시청 중: ${lecWatching}강`);
+      L.push(`· 수강 코스: ${myCourses.length}개`);
+      if (courseProgress.length) {
+        L.push('· 코스별 진도');
+        courseProgress.forEach((cp) => {
+          L.push(`    - ${cp.course.title}: ${cp.done}/${cp.total}강 (${cp.pct}%)`);
+        });
+      }
+    }
+
+    L.push('', '[수료 현황]');
+    if (passedCourses.length === 0) {
+      L.push('아직 수료한 코스가 없습니다.');
+    } else {
+      L.push(`· 수료한 코스: ${passedCourses.length}개${perfectCount > 0 ? ` (만점 ${perfectCount}개)` : ''}`);
+      passedCourses.forEach((c) => {
+        const at = fmtPassedAt(c.exam?.passed_at);
+        L.push(`    - ${c.title}${c.exam?.perfect ? ' [만점]' : ''}${at ? ` · ${at}` : ''}`);
+      });
+    }
+
+    L.push('', '— CatChap · 시청을 검증하는 강의 학습');
+
+    const blob = new Blob([L.join('\r\n')], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const stamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
+    a.href = url;
+    a.download = `CatChap_학습리포트_${name}_${stamp}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   // 수료한 코스가 하나라도 있으면 '수료 현황'은 실데이터 — 데모(빈 상태)여도 탭을 살린다.
   const hasCompletion = passedCourses.length > 0;
   const emptyHero = (
@@ -480,7 +541,7 @@ export default function MyRecords() {
               <p className="mr-subtitle">배운 강의·풀어 온 문제·수료한 코스를 한눈에 볼 수 있어요</p>
             </div>
           </div>
-          <button className="mr-reportbtn">
+          <button type="button" className="mr-reportbtn" onClick={saveReport}>
             <i className="ph-fill ph-download-simple" />
             리포트 저장
           </button>
