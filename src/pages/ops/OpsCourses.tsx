@@ -390,6 +390,8 @@ function CourseCoverModal({
 }) {
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
+  const [savedUrl, setSavedUrl] = useState<string | null>(null); // 방금 저장한 커버 — 미리보기 즉시 반영
+  const [savedPopup, setSavedPopup] = useState(false); // '코스 커버 사진이 수정되었습니다.' 팝업
   const cur = course.thumbnail_url ? thumbnailSrc(course.thumbnail_url) ?? null : null;
   const objUrl = useMemo(() => (file ? URL.createObjectURL(file) : null), [file]);
   useEffect(
@@ -398,7 +400,7 @@ function CourseCoverModal({
     },
     [objUrl],
   );
-  const preview = objUrl ?? cur;
+  const preview = objUrl ?? savedUrl ?? cur;
 
   const pick = (f: File | null) => {
     if (f && !/\.(jpe?g|png|webp)$/i.test(f.name))
@@ -410,13 +412,16 @@ function CourseCoverModal({
     if (!file) return;
     setBusy(true);
     try {
-      await lectureApi.opsUploadCourseThumbnail(course.id, file);
-      say('코스 커버를 저장했어요.');
-      onSaved();
-      onClose();
+      const updated = await lectureApi.opsUploadCourseThumbnail(course.id, file);
+      // 모달을 닫지 않고, 방금 저장한 커버를 즉시 미리보기에 반영('커버 없음'이 아니라 사진이 뜨게).
+      setSavedUrl(thumbnailSrc(updated.thumbnail_url) ?? null);
+      setFile(null);
+      setSavedPopup(true); // 저장 완료 팝업
+      onSaved(); // 목록 갱신 — 학생 카드에도 반영
     } catch (e) {
       const err = e as { response?: { data?: { detail?: string } } };
       say(err.response?.data?.detail ?? '업로드에 실패했어요.');
+    } finally {
       setBusy(false);
     }
   };
@@ -525,6 +530,39 @@ function CourseCoverModal({
             <i className="ph ph-check" /> {busy ? '저장 중…' : '저장'}
           </button>
         </div>
+        {/* 저장 완료 팝업 — 카드 안에 두어(카드 stopPropagation) 팝업 클릭이 모달을 닫지 않게 한다. */}
+        {savedPopup && (
+          <div
+            onClick={(e) => {
+              e.stopPropagation();
+              setSavedPopup(false);
+            }}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              background: 'rgba(0,0,0,.55)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 1100,
+              padding: 20,
+            }}
+          >
+            <div
+              className="orn-card"
+              onClick={(e) => e.stopPropagation()}
+              style={{ width: 'min(360px, 92vw)', padding: '26px 22px', textAlign: 'center' }}
+            >
+              <i className="ph-fill ph-check-circle" style={{ fontSize: 40, color: 'var(--ok)' }} />
+              <p style={{ margin: '12px 0 18px', fontSize: 15, fontWeight: 700, color: 'var(--ink)' }}>
+                코스 커버 사진이 수정되었습니다.
+              </p>
+              <button className="orn-btn orn-btn--primary" onClick={() => setSavedPopup(false)}>
+                확인
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
