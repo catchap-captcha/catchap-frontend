@@ -135,3 +135,134 @@ export async function tableToPdf(filename: string, title: string, rows: Row[]) {
   });
   pdf.save(filename);
 }
+
+/* ===== 학습 리포트 — CatChap 톤(모노크롬 + 완주/수료 그린 포인트)으로 디자인한 A4 1페이지 =====
+   종전 tableToPdf(코럴레드 표)가 사이트와 겉돌아, 앱 디자인(흑백·굵은 숫자·여백)에 맞춘 전용 렌더러. */
+export interface LearningReport {
+  name: string;
+  date: string;
+  /** 문제 풀이 요약 — 데모(실집계 없음)면 null */
+  summary: { streak: number; solved: number; accuracy: number } | null;
+  /** 강의 시청 통계 — 시청 기록 없으면 null */
+  lectures: { done: number; total: number; watching: number; courses: number; pct: number } | null;
+  courseProgress: { title: string; done: number; total: number; pct: number }[];
+  completions: { title: string; perfect: boolean; at: string }[];
+}
+
+export async function learningReportPdf(filename: string, r: LearningReport) {
+  const W = 1240, H = 1754, M = 96;
+  const INK = '#18181b', INK2 = '#57575c', INK3 = '#9a9aa0', LINE = '#e7e7ea', SOFT = '#f5f5f6', OK = '#2e7d5b';
+  const cv = document.createElement('canvas');
+  cv.width = W; cv.height = H;
+  const x = cv.getContext('2d')!;
+  x.fillStyle = '#fff'; x.fillRect(0, 0, W, H);
+  x.textBaseline = 'alphabetic';
+
+  const rr = (px: number, py: number, pw: number, ph: number, rad: number) => {
+    const rd = Math.min(rad, pw / 2, ph / 2);
+    x.beginPath();
+    x.moveTo(px + rd, py);
+    x.arcTo(px + pw, py, px + pw, py + ph, rd);
+    x.arcTo(px + pw, py + ph, px, py + ph, rd);
+    x.arcTo(px, py + ph, px, py, rd);
+    x.arcTo(px, py, px + pw, py, rd);
+    x.closePath();
+  };
+  const ell = (s: string, max: number) => {
+    if (x.measureText(s).width <= max) return s;
+    let t = s;
+    while (t.length > 1 && x.measureText(t + '…').width > max) t = t.slice(0, -1);
+    return t + '…';
+  };
+
+  let y = 112;
+  // 헤더 — 워드마크 느낌 + 제목 + 이름/날짜
+  x.fillStyle = INK; x.font = `900 22px ${F}`; x.fillText('CATCHAP', M, y - 42);
+  x.font = `800 46px ${F}`; x.fillText('학습 리포트', M, y);
+  x.fillStyle = INK3; x.font = `600 19px ${F}`; x.textAlign = 'right';
+  x.fillText(`${r.name}님 · ${r.date}`, W - M, y - 4); x.textAlign = 'left';
+  y += 26;
+  x.fillStyle = INK; x.fillRect(M, y, W - M * 2, 2);
+  y += 58;
+
+  const secHead = (t: string) => { x.fillStyle = INK; x.font = `800 25px ${F}`; x.fillText(t, M, y); y += 36; };
+  const emptyNote = (t: string) => {
+    rr(M, y, W - M * 2, 66, 14); x.fillStyle = SOFT; x.fill();
+    x.fillStyle = INK3; x.font = `600 17px ${F}`; x.fillText(t, M + 24, y + 40); y += 66 + 30;
+  };
+
+  // 요약 · 문제 풀이 — 스탯 카드 3개
+  secHead('요약 · 문제 풀이');
+  if (r.summary) {
+    const cards: [string, string, string][] = [
+      ['연속 학습', String(r.summary.streak), '일'],
+      ['지금까지 푼 문제', String(r.summary.solved), '개'],
+      ['평균 정답률', String(r.summary.accuracy), '%'],
+    ];
+    const gap = 20, cw = (W - M * 2 - gap * 2) / 3, ch = 132;
+    cards.forEach(([label, num, unit], i) => {
+      const cx = M + i * (cw + gap);
+      rr(cx, y, cw, ch, 16); x.fillStyle = SOFT; x.fill();
+      x.strokeStyle = LINE; x.lineWidth = 1; rr(cx, y, cw, ch, 16); x.stroke();
+      const nx = cx + 26;
+      x.fillStyle = INK; x.font = `800 48px ${F}`; x.fillText(num, nx, y + 76);
+      const nw = x.measureText(num).width;
+      x.fillStyle = INK3; x.font = `700 22px ${F}`; x.fillText(unit, nx + nw + 7, y + 76);
+      x.fillStyle = INK2; x.font = `600 17px ${F}`; x.fillText(label, nx, y + 108);
+    });
+    y += ch + 36;
+  } else { emptyNote('아직 문제 풀이 기록이 없습니다.'); }
+
+  // 학습 통계 · 강의 시청
+  secHead('학습 통계 · 강의 시청');
+  if (r.lectures) {
+    const L = r.lectures;
+    x.fillStyle = INK2; x.font = `600 18px ${F}`; x.fillText(`완주한 강의  ${L.done} / ${L.total}강`, M, y + 4);
+    x.textAlign = 'right'; x.fillStyle = INK; x.font = `800 20px ${F}`; x.fillText(`${L.pct}%`, W - M, y + 4); x.textAlign = 'left';
+    y += 22;
+    rr(M, y, W - M * 2, 14, 7); x.fillStyle = LINE; x.fill();
+    if (L.pct > 0) { rr(M, y, (W - M * 2) * Math.min(1, L.pct / 100), 14, 7); x.fillStyle = INK; x.fill(); }
+    y += 42;
+    x.fillStyle = INK2; x.font = `600 17px ${F}`;
+    x.fillText(`시청 중 ${L.watching}강      수강 코스 ${L.courses}개`, M, y);
+    y += 44;
+    if (r.courseProgress.length) {
+      x.fillStyle = INK3; x.font = `700 15px ${F}`; x.fillText('코스별 진도', M, y); y += 28;
+      r.courseProgress.slice(0, 5).forEach((cp) => {
+        x.fillStyle = INK; x.font = `600 17px ${F}`; x.fillText(ell(cp.title, W - M * 2 - 260), M, y);
+        x.textAlign = 'right'; x.fillStyle = INK2; x.font = `700 16px ${F}`;
+        x.fillText(`${cp.done}/${cp.total}강 · ${cp.pct}%`, W - M, y); x.textAlign = 'left';
+        y += 14;
+        rr(M, y, W - M * 2, 8, 4); x.fillStyle = LINE; x.fill();
+        if (cp.pct > 0) { rr(M, y, (W - M * 2) * Math.min(1, cp.pct / 100), 8, 4); x.fillStyle = INK; x.fill(); }
+        y += 32;
+      });
+      if (r.courseProgress.length > 5) { x.fillStyle = INK3; x.font = `600 14px ${F}`; x.fillText(`외 ${r.courseProgress.length - 5}개 코스`, M, y); y += 26; }
+    }
+    y += 14;
+  } else { emptyNote('아직 강의 시청 기록이 없습니다.'); }
+
+  // 수료 현황 — 그린 체크 배지
+  secHead('수료 현황');
+  if (r.completions.length) {
+    x.fillStyle = INK2; x.font = `600 17px ${F}`; x.fillText(`수료한 코스 ${r.completions.length}개`, M, y); y += 34;
+    r.completions.slice(0, 6).forEach((cp) => {
+      x.fillStyle = OK; x.beginPath(); x.arc(M + 12, y - 6, 12, 0, Math.PI * 2); x.fill();
+      x.strokeStyle = '#fff'; x.lineWidth = 2.6; x.lineJoin = 'round'; x.lineCap = 'round';
+      x.beginPath(); x.moveTo(M + 6, y - 6); x.lineTo(M + 10.5, y - 1.5); x.lineTo(M + 18, y - 11); x.stroke();
+      x.fillStyle = INK; x.font = `600 18px ${F}`; x.fillText(ell(cp.title, W - M * 2 - 240), M + 36, y);
+      x.textAlign = 'right'; x.fillStyle = INK3; x.font = `600 15px ${F}`;
+      x.fillText((cp.perfect ? '만점 수료' : '수료') + (cp.at ? ` · ${cp.at}` : ''), W - M, y); x.textAlign = 'left';
+      y += 42;
+    });
+    if (r.completions.length > 6) { x.fillStyle = INK3; x.font = `600 14px ${F}`; x.fillText(`외 ${r.completions.length - 6}개`, M + 36, y); }
+  } else { emptyNote('아직 수료한 코스가 없습니다.'); }
+
+  // 푸터
+  x.fillStyle = LINE; x.fillRect(M, H - 98, W - M * 2, 1);
+  x.fillStyle = INK3; x.font = `600 15px ${F}`;
+  x.fillText('CatChap · 시청을 검증하는 강의 학습', M, H - 60);
+  x.textAlign = 'right'; x.fillText(`생성일 ${r.date}`, W - M, H - 60); x.textAlign = 'left';
+
+  await canvasToPdf(filename, cv);
+}

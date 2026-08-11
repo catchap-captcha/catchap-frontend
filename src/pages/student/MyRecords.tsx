@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams, type NavigateFunction } from 'react-route
 import StudentLayout from '../../layouts/StudentLayout';
 import { useAuth } from '../../hooks/useAuth';
 import { useToast } from '../../hooks/useToast';
-import { tableToPdf } from '../../utils/pdf';
+import { learningReportPdf } from '../../utils/pdf';
 import { studentApi } from '../../api/students';
 import { lectureApi, thumbnailSrc, type StudentCourse, type LectureItem } from '../../api/lectures';
 import { PATHS } from '../../routes/paths';
@@ -457,8 +457,8 @@ export default function MyRecords() {
     .sort((a, b) => b.pct - a.pct)
     .slice(0, 6);
 
-  // 리포트 저장 — 현재 학습 기록을 깔끔한 PDF로 내려받는다(utils/pdf.tableToPdf 재사용 — 수료증과 같은 인프라,
-  // A4 헤더 밴드 + 섹션별 표). 실집계된 값만 담고(데모 숫자 제외), 담을 게 하나도 없으면 파일 대신 팝업 안내.
+  // 리포트 저장 — 현재 학습 기록을 CatChap 톤(모노크롬 + 완주/수료 그린 포인트)으로 디자인한 PDF로
+  // 내려받는다(utils/pdf.learningReportPdf). 실집계된 값만 담고(데모 숫자 제외), 담을 게 하나도 없으면 팝업 안내.
   const saveReport = async () => {
     const hasAnyRecord = !demo || lecReady || passedCourses.length > 0;
     if (!hasAnyRecord) {
@@ -469,51 +469,23 @@ export default function MyRecords() {
     setReportBusy(true);
     try {
       const now = new Date();
-      const rows: (string | number | null)[][] = [];
-
-      rows.push(['[요약 · 문제 풀이]']);
-      if (demo) {
-        rows.push(['아직 문제 풀이 기록이 없습니다']);
-      } else {
-        rows.push(['항목', '값']);
-        rows.push(['연속 학습', `${data.stats.streakDays}일`]);
-        rows.push(['지금까지 푼 문제', `${data.stats.totalSolved}개`]);
-        rows.push(['평균 정답률', `${data.stats.avgAccuracy}%`]);
-      }
-      rows.push([]);
-
-      rows.push(['[학습 통계 · 강의 시청]']);
-      if (!lecReady) {
-        rows.push(['아직 강의 시청 기록이 없습니다']);
-      } else {
-        rows.push(['항목', '값']);
-        rows.push(['완주한 강의', `${lecDone} / ${lecTotal}강 (${lecCompletionPct}%)`]);
-        rows.push(['시청 중', `${lecWatching}강`]);
-        rows.push(['수강 코스', `${myCourses.length}개`]);
-      }
-      rows.push([]);
-
-      if (courseProgress.length) {
-        rows.push(['[코스별 강의 진도]']);
-        rows.push(['코스', '완주/전체', '진도']);
-        courseProgress.forEach((cp) =>
-          rows.push([cp.course.title, `${cp.done}/${cp.total}강`, `${cp.pct}%`]),
-        );
-        rows.push([]);
-      }
-
-      rows.push(['[수료 현황]']);
-      if (passedCourses.length === 0) {
-        rows.push(['아직 수료한 코스가 없습니다']);
-      } else {
-        rows.push(['코스', '상태', '수료일']);
-        passedCourses.forEach((c) =>
-          rows.push([c.title, c.exam?.perfect ? '만점 수료' : '수료', fmtPassedAt(c.exam?.passed_at) || '—']),
-        );
-      }
-
       const stamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
-      await tableToPdf(`CatChap_학습리포트_${name}_${stamp}.pdf`, `${name}님 학습 리포트`, rows);
+      await learningReportPdf(`CatChap_학습리포트_${name}_${stamp}.pdf`, {
+        name,
+        date: now.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' }),
+        summary: demo
+          ? null
+          : { streak: data.stats.streakDays, solved: data.stats.totalSolved, accuracy: data.stats.avgAccuracy },
+        lectures: lecReady
+          ? { done: lecDone, total: lecTotal, watching: lecWatching, courses: myCourses.length, pct: lecCompletionPct }
+          : null,
+        courseProgress: courseProgress.map((cp) => ({ title: cp.course.title, done: cp.done, total: cp.total, pct: cp.pct })),
+        completions: passedCourses.map((c) => ({
+          title: c.title,
+          perfect: !!c.exam?.perfect,
+          at: fmtPassedAt(c.exam?.passed_at),
+        })),
+      });
     } catch {
       flash('리포트 저장에 실패했어요. 잠시 후 다시 시도해 주세요.');
     } finally {
