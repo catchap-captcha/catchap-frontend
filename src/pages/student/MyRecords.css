@@ -1081,3 +1081,29 @@
 @media (max-width: 520px) {
   .mr-lrow { grid-template-columns: 1fr 80px 34px; gap: 8px; }
 }
+
+/* 리포트 저장 등 안내 토스트 — 화면 하단 중앙 알약. 테마 반전(라이트=검정/다크=흰색). */
+.mr-toast {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 60;
+  max-width: calc(100vw - 32px);
+  padding: 11px 18px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--bg);
+  font-size: 13.5px;
+  font-weight: 700;
+  text-align: center;
+  box-shadow: 0 12px 32px -10px rgba(0, 0, 0, 0.45);
+  animation: mrToastIn 0.22s ease;
+}
+@keyframes mrToastIn {
+  from { opacity: 0; transform: translate(-50%, 8px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mr-toast { animation: none; }
+}
