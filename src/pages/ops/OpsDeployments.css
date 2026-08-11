@@ -10,12 +10,8 @@
   margin-bottom: 20px;
 }
 
-.dep-head h1 {
-  margin: 0 0 6px;
-  font-size: 22px;
-  font-weight: 800;
-  color: var(--ink);
-}
+/* 제목은 다른 콘솔 페이지와 동일하게 .op-title(32px, font-display)로 통일한다.
+   종전엔 여기서 22px로 따로 줘서 다른 시스템 페이지보다 작아 보였다(2026-08-11). */
 
 .dep-sub {
   margin: 0;
