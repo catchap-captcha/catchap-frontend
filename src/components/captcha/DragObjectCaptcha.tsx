@@ -213,6 +213,30 @@ export default function DragObjectCaptcha({ onToken, onClose }: Props) {
     setDragPoint({ x: e.clientX, y: e.clientY });
   };
 
+  /**
+   * 조준 구간 — 집기 직전 포인터 이동.
+   *
+   * 왜 필요한가: 드래그 하나는 12점·0.65초뿐이라 사람과 재생 궤적을 못 가른다
+   * (AUC 0.516, 동전 던지기). 조준을 앞에 붙이면 31점을 넘겨 변형 재생 검출이
+   * 4% -> 96.8% 로 오른다. 문항마다 객체 위치가 달라 훔친 조준 자취는 재사용이
+   * 안 되는 것이 이 신호의 근거다.
+   *
+   * 드래그 중에는 기록하지 않는다 — 그 구간은 moveDrag 가 pointer_move 로 이미
+   * 남기고, 둘이 섞이면 어디까지가 조준인지 나중에 못 가른다.
+   *
+   * Guard 모드에서만 보낸다. 백엔드 자체 캡차는 이 타입을 모른다.
+   */
+  const aimLastRef = useRef(0);
+
+  const trackAim = (e: ReactPointerEvent) => {
+    if (!USE_GUARD || dragging || phase !== 'ready') return;
+    const now = performance.now();
+    if (now - aimLastRef.current < MOVE_SAMPLE_MS) return;
+    aimLastRef.current = now;
+    const p = norm(e.clientX, e.clientY);
+    track('aim_move', { x: p.x, y: p.y });
+  };
+
   const moveDrag = (e: ReactPointerEvent) => {
     if (!dragging) return;
     setDragPoint({ x: e.clientX, y: e.clientY });
@@ -404,7 +428,7 @@ export default function DragObjectCaptcha({ onToken, onClose }: Props) {
                    생기면 그만큼 어긋난다. 폭은 CSS 가 카드에 맞춰 채우고, 높이 상한은
                    이 비율로 환산해 건다. */
                 style={{ ['--fc-ar' as string]: `${challenge.width} / ${challenge.height}` }}
-                onPointerMove={moveDrag}
+                onPointerMove={(e) => { trackAim(e); moveDrag(e); }}
                 onPointerUp={endDrag}
                 onPointerCancel={cancelDrag}
               >
