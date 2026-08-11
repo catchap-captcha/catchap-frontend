@@ -62,7 +62,7 @@ const ROLE_CASES: Record<string, RoleCase> = {
       { num: '87%', label: '평균 완주율' },
       { num: '79%', label: '확인 문제 정답률' },
     ],
-    partners: ['코드스쿼드 백엔드 3기', '청년취업사관학교', '한국방송통신대 교양', '패스트러너 데이터 트랙'],
+    partners: ['코드무브캠프 백엔드 3기', '한결직업전문학교', '아라디지털대학 교양', '데이터런 아카데미'],
     quotes: [
       { who: '김O민 · 취업 준비생', quote: '딴짓하면 바로 문제가 떠서 진짜로 다 봤어요. 이 수료증은 부끄럽지 않아요.' },
       { who: '이O서 · 재직자', quote: '배속·건너뛰기가 막히니까 오히려 끝까지 집중해서 보게 되더라고요.' },
@@ -88,10 +88,10 @@ const ROLE_CASES: Record<string, RoleCase> = {
       { num: '96%', label: '평균 이수율' },
       { num: '60%↓', label: '교육 관리 공수' },
     ],
-    partners: ['한빛금융 정보보호 교육', '누리에너지 안전보건', '세종교육청 교원 연수', '그린모빌리티 온보딩'],
+    partners: ['하람금융 정보보호 교육', '세윤에너지 안전보건', '가온인재개발원 교원 연수', '라온모빌리티 온보딩'],
     quotes: [
-      { who: '한빛금융그룹 · HRD팀', quote: '클릭만 하고 방치하던 이수가 사라졌어요. 감사 대응이 훨씬 편해졌습니다.' },
-      { who: '누리에너지 · 안전관리팀', quote: '법정 필수교육을 “실제로 봤다”고 데이터로 증명할 수 있게 됐어요.' },
+      { who: '하람금융그룹 · HRD팀', quote: '클릭만 하고 방치하던 이수가 사라졌어요. 감사 대응이 훨씬 편해졌습니다.' },
+      { who: '세윤에너지 · 안전관리팀', quote: '법정 필수교육을 “실제로 봤다”고 데이터로 증명할 수 있게 됐어요.' },
     ],
   },
 };
@@ -111,21 +111,67 @@ const STEPS = [
   { n: '4', icon: 'ph-squares-four', title: '기록으로 봅니다', desc: '역할별 화면에 시청·학습 요약을 제공합니다.' },
 ];
 
-// 히어로 아래 신뢰 로고 마퀴(왼쪽 무한 스크롤)에 흐르는 이름 — 서비스 소개용 예시(가상 기관·기업).
+// 신뢰 로고 마퀴(왼쪽 무한 스크롤)에 흐르는 이름 — 전부 실존하지 않는 가상 기업·기관(임의 작명).
 // 실제 도입처가 생기면 이 배열만 바꾸면 된다. 역할 카드 협업 사례와 같은 '예시 세계관'.
 const TRUST_LOGOS = [
-  '한빛금융그룹',
-  '누리에너지',
-  '그린모빌리티',
-  '세종테크',
-  '대한물산',
-  '미래로지스틱스',
-  '온누리제약',
-  '서울청년취업사관학교',
-  '한국방송통신대',
-  '코드스쿼드',
-  '패스트러너',
-  '정석엔지니어링',
+  '하람금융그룹',
+  '세윤에너지',
+  '라온모빌리티',
+  '세움소프트',
+  '다온물산',
+  '노을로지스틱스',
+  '해든바이오',
+  '아라디지털대학',
+  '온빛평생교육원',
+  '코드무브캠프',
+  '한결직업전문학교',
+  '도담엔지니어링',
+];
+
+// 신뢰 지표 — 화면에 들어오면 0→목표로 카운트업. 역할 카드 협업 사례 수치와 같은 예시 세계관.
+const TRUST_STATS: { to: number; suffix?: string; label: string }[] = [
+  { to: 12400, suffix: '+', label: '누적 수료 학습자' },
+  { to: 3200, suffix: '+', label: '등록 강의' },
+  { to: 140, suffix: '+', label: '도입 기업·기관' },
+  { to: 96, suffix: '%', label: '평균 이수율' },
+];
+
+// 후기 캐러셀 — 서비스 소개용 예시 후기(가명·가상 기관, 역할 카드 사례와 같은 세계관).
+const TESTIMONIALS: { quote: string; who: string; role: string }[] = [
+  { quote: '딴짓하면 바로 문제가 떠서 진짜로 다 봤어요. 이 수료증은 부끄럽지 않아요.', who: '김O민', role: '취업 준비생' },
+  { quote: '시청 검증 덕에 "수료=학습"이 성립해요. 기업 교육 문의가 눈에 띄게 늘었습니다.', who: '박O우', role: '클라우드 강사' },
+  { quote: '클릭만 하고 방치하던 이수가 사라졌어요. 감사 대응이 훨씬 편해졌습니다.', who: '하람금융그룹', role: 'HRD팀' },
+  { quote: '배속·건너뛰기가 막히니까 오히려 끝까지 집중해서 보게 되더라고요.', who: '이O서', role: '재직자' },
+  { quote: 'AI가 자막을 읽고 문항 초안을 만들어줘서 출제 시간이 1/5로 줄었어요.', who: '정O늘', role: '데이터 강사' },
+  { quote: '법정 필수교육을 실제로 봤다고 데이터로 증명할 수 있게 됐어요.', who: '세윤에너지', role: '안전관리팀' },
+];
+
+// 자주 묻는 질문(FAQ) — 실제 제품 규약(시청 검증·AI 출제·환불·데이터 보호·무가입 체험) 기반.
+const FAQS: { q: string; a: string }[] = [
+  {
+    q: '시청 검증은 어떻게 이뤄지나요?',
+    a: '재생 중 무작위 시점에 확인 문제가 나타납니다. 건너뛰기·과속·동시 재생은 서버가 감지해 차단하고, 그 대목을 실제로 본 경우에만 통과합니다.',
+  },
+  {
+    q: '확인 문제는 누가 만드나요?',
+    a: 'AI가 강의 음성을 자막으로 옮기고 그 내용을 근거로 확인 문항을 자동 생성합니다. 2차 AI가 "안 보고도 풀리는지"를 검증해 진짜 시청이 필요한 문항만 남기며, 강사가 문항과 출제 시점을 직접 손볼 수도 있습니다.',
+  },
+  {
+    q: '수료증은 신뢰할 수 있나요?',
+    a: '시청 완료가 곧 학습의 증거이므로, CatChap 수료증은 강의를 실제로 본 이수를 의미합니다. 기업·기관은 구성원의 이수 현황을 데이터로 확인할 수 있습니다.',
+  },
+  {
+    q: '결제와 환불은 어떻게 되나요?',
+    a: '코스별로 수강 신청 후 결제하며, 환불은 학습 진행률에 따라 규정된 비율로 처리됩니다. 자세한 규정은 결제 단계와 이용약관에서 확인할 수 있습니다.',
+  },
+  {
+    q: '개인정보는 안전하게 보호되나요?',
+    a: '가명·최소 수집 원칙으로 학습자 정보를 보호합니다. 시청·학습 데이터는 학습 분석 목적에 한해 사용됩니다.',
+  },
+  {
+    q: '가입하지 않고 먼저 체험해볼 수 있나요?',
+    a: '네. "가입 없이 체험하기"로 시청 검증·확인 문제·문제은행·수료증 미리보기를 로그인 없이 둘러볼 수 있습니다.',
+  },
 ];
 
 type Menu = 'about' | 'lectures' | 'audience' | 'how' | null;
@@ -266,21 +312,8 @@ export default function MainPage() {
         </a>
       </section>
 
-      {/* 신뢰 로고 마퀴 — 왼쪽으로 무한 스크롤(Loom 스타일). 로고 이름은 서비스 소개용 예시. */}
-      <section className="mn-trust">
-        <p className="mn-trust-label">
-          함께하는 기관·기업 <span className="mn-trust-ex">예시</span>
-        </p>
-        <div className="mn-marquee" aria-hidden="true">
-          <div className="mn-marquee-track">
-            {[...TRUST_LOGOS, ...TRUST_LOGOS].map((name, i) => (
-              <span key={i} className="mn-marquee-item">
-                {name}
-              </span>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* 신뢰 지표 — 스크롤 진입 시 0→목표로 카운트업 */}
+      <TrustStats />
 
       {/* PRODUCT PREVIEW */}
       <section id="next" className="mn-preview">
@@ -355,6 +388,47 @@ export default function MainPage() {
               <div>
                 <div className="mn-preview-quiz-title">확인 문제 · 지금 화면에 답하기</div>
                 <div className="mn-preview-quiz-sub">무작위 시점 출제 · 건너뛰기 차단</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 제품 데모 루프 — 시청검증→확인문제 흐름을 자동 재생으로 재현하고 /demo로 연결.
+          연출은 순수 CSS 타임라인(dlFill/dlQuiz/dlCorrect/dlCheck 7s 루프). */}
+      <section className="mn-demoloop">
+        <div className="mn-demoloop-inner">
+          <div className="mn-demoloop-copy cc-reveal">
+            <span className="mn-eyebrow">직접 보기</span>
+            <h2 className="mn-demoloop-title">보는 순간, 검증됩니다</h2>
+            <p className="mn-demoloop-desc">
+              재생 중 무작위로 확인 문제가 떠요. 그 대목을 실제로 본 사람만 통과하죠. 아래는 실제
+              흐름을 그대로 재현한 미리보기입니다.
+            </p>
+            <Link to={PATHS.DEMO} className="mn-hero-cta mn-demoloop-cta">
+              가입 없이 전체 체험하기 <i className="ph-bold ph-arrow-right" />
+            </Link>
+          </div>
+          <div className="mn-demoloop-stage cc-reveal" aria-hidden="true">
+            <div className="dl-player">
+              <div className="dl-scene">
+                <span className="dl-livetag"><span className="dl-livedot" /> 재생 중</span>
+                <i className="ph-fill ph-play-circle dl-play" />
+                <span className="dl-scene-cap">클라우드 입문 · 3강</span>
+              </div>
+              <div className="dl-bar">
+                <div className="dl-bar-fill" />
+              </div>
+              <div className="dl-quiz">
+                <div className="dl-quiz-top">
+                  <i className="ph-fill ph-seal-question" /> 확인 문제
+                </div>
+                <div className="dl-quiz-q">이 대목에서 IAM 역할(Role)의 핵심 목적은?</div>
+                <div className="dl-opt">임시 권한을 안전하게 위임하려고</div>
+                <div className="dl-opt dl-opt--correct">
+                  꼭 필요한 권한만 최소로 부여하려고
+                  <i className="ph-bold ph-check dl-check" />
+                </div>
               </div>
             </div>
           </div>
@@ -539,6 +613,28 @@ export default function MainPage() {
         </div>
       </section>
 
+      {/* 후기 캐러셀 — 예시 후기를 한 장씩 자동으로 넘김 */}
+      <Testimonials />
+
+      {/* FAQ 아코디언 — 자주 묻는 질문 */}
+      <Faq />
+
+      {/* 신뢰 로고 마퀴 — 최종 CTA 바로 위. 왼쪽 무한 스크롤. 이름은 전부 가상 기업·기관. */}
+      <section className="mn-trust">
+        <p className="mn-trust-label">
+          함께하는 기관·기업 <span className="mn-trust-ex">예시</span>
+        </p>
+        <div className="mn-marquee" aria-hidden="true">
+          <div className="mn-marquee-track">
+            {[...TRUST_LOGOS, ...TRUST_LOGOS].map((name, i) => (
+              <span key={i} className="mn-marquee-item">
+                {name}
+              </span>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* FINAL CTA — 진입 시 스르륵 확대되는 풀스크린 연출(useCtaAutoReveal). cc-reveal은
           transform이 겹쳐 충돌하므로 쓰지 않고, 이 훅의 --mn-p 스케일이 등장까지 담당한다. */}
       <section className="mn-final" ref={finalRef}>
@@ -568,5 +664,170 @@ export default function MainPage() {
         <p className="mn-footer-copy">© 2026 CatChap · 카카오클라우드 AIaaS 마스터 클래스 5기. 학습자의 시청 데이터는 안전하게 보호됩니다.</p>
       </footer>
     </div>
+  );
+}
+
+/** 신뢰 지표 밴드 — 화면에 들어오면 각 숫자가 0→목표로 카운트업(1회). */
+function TrustStats() {
+  const ref = useRef<HTMLDivElement>(null);
+  const [run, setRun] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([e]) => {
+        if (e.isIntersecting) {
+          setRun(true);
+          io.disconnect();
+        }
+      },
+      { threshold: 0.3 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  return (
+    <section className="mn-stats" aria-label="서비스 지표">
+      <div className="mn-stats-inner" ref={ref}>
+        {TRUST_STATS.map((s) => (
+          <div key={s.label} className="mn-stat">
+            <div className="mn-stat-big">
+              <CountNum to={s.to} run={run} />
+              <span className="mn-stat-suffix">{s.suffix}</span>
+            </div>
+            <div className="mn-stat-cap">{s.label}</div>
+          </div>
+        ))}
+      </div>
+      <p className="mn-stats-note">* 서비스 소개용 예시 지표입니다.</p>
+    </section>
+  );
+}
+
+/** 0→to 카운트업 숫자(easeOutCubic). 모션 최소화 설정 시 즉시 최종값 표시. */
+function CountNum({ to, run }: { to: number; run: boolean }) {
+  const [val, setVal] = useState(0);
+  useEffect(() => {
+    if (!run) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setVal(to);
+      return;
+    }
+    let raf = 0;
+    let start: number | null = null;
+    const dur = 1400;
+    const tick = (t: number) => {
+      if (start === null) start = t;
+      const p = Math.min(1, (t - start) / dur);
+      const eased = 1 - Math.pow(1 - p, 3);
+      setVal(Math.round(to * eased));
+      if (p < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [run, to]);
+  return <>{val.toLocaleString('ko-KR')}</>;
+}
+
+/** 후기 캐러셀 — 한 장씩 좌우로 슬라이드, 5초 자동 넘김(호버 시 정지), 점·화살표로 이동. */
+function Testimonials() {
+  const [idx, setIdx] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const n = TESTIMONIALS.length;
+  useEffect(() => {
+    if (paused) return;
+    const id = window.setInterval(() => setIdx((i) => (i + 1) % n), 5000);
+    return () => window.clearInterval(id);
+  }, [paused, n]);
+  const go = (d: number) => setIdx((i) => (i + d + n) % n);
+  return (
+    <section
+      className="mn-tst"
+      aria-label="사용자 후기"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+    >
+      <div className="mn-tst-inner">
+        <div className="mn-tst-head cc-reveal">
+          <span className="mn-eyebrow">사용자 후기</span>
+          <h2 className="mn-tst-title">시청을 증명한 사람들</h2>
+        </div>
+        <div className="mn-tst-stage cc-reveal">
+          <button className="mn-tst-arrow" onClick={() => go(-1)} aria-label="이전 후기">
+            <i className="ph-bold ph-caret-left" />
+          </button>
+          <div className="mn-tst-viewport">
+            <div className="mn-tst-track" style={{ transform: `translateX(-${idx * 100}%)` }}>
+              {TESTIMONIALS.map((t, i) => (
+                <figure className="mn-tst-card" key={i} aria-hidden={i !== idx}>
+                  <i className="ph-fill ph-quotes mn-tst-qmark" />
+                  <blockquote className="mn-tst-quote">{t.quote}</blockquote>
+                  <figcaption className="mn-tst-cap">
+                    <span className="mn-tst-avatar">{t.who.slice(0, 1)}</span>
+                    <span className="mn-tst-who">
+                      <b>{t.who}</b>
+                      <span className="mn-tst-role">{t.role}</span>
+                    </span>
+                  </figcaption>
+                </figure>
+              ))}
+            </div>
+          </div>
+          <button className="mn-tst-arrow" onClick={() => go(1)} aria-label="다음 후기">
+            <i className="ph-bold ph-caret-right" />
+          </button>
+        </div>
+        <div className="mn-tst-dots">
+          {TESTIMONIALS.map((_, i) => (
+            <button
+              key={i}
+              className={'mn-tst-dot' + (i === idx ? ' is-on' : '')}
+              onClick={() => setIdx(i)}
+              aria-label={`${i + 1}번째 후기 보기`}
+              aria-current={i === idx}
+            />
+          ))}
+        </div>
+        <p className="mn-tst-note">* 서비스 소개용 예시 후기입니다.</p>
+      </div>
+    </section>
+  );
+}
+
+/** FAQ 아코디언 — 한 번에 하나 펼침(grid-rows 0fr→1fr로 부드럽게). */
+function Faq() {
+  const [open, setOpen] = useState<number | null>(0);
+  return (
+    <section id="faq" className="mn-faq">
+      <div className="mn-faq-inner">
+        <div className="mn-faq-head cc-reveal">
+          <span className="mn-eyebrow">자주 묻는 질문</span>
+          <h2 className="mn-faq-title">궁금한 점을 먼저 풀어드릴게요</h2>
+        </div>
+        <div className="mn-faq-list cc-reveal">
+          {FAQS.map((f, i) => {
+            const isOpen = open === i;
+            return (
+              <div key={i} className={'mn-faq-item' + (isOpen ? ' is-open' : '')}>
+                <button
+                  type="button"
+                  className="mn-faq-q"
+                  onClick={() => setOpen(isOpen ? null : i)}
+                  aria-expanded={isOpen}
+                >
+                  <span>{f.q}</span>
+                  <i className="ph-bold ph-plus mn-faq-plus" />
+                </button>
+                <div className="mn-faq-aclip">
+                  <div className="mn-faq-a">
+                    <p>{f.a}</p>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
   );
 }
