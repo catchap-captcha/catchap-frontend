@@ -188,7 +188,7 @@
    객체와 겹치고(정답이 이미 정답존 안에 들어가 있는 문항이 생긴다) 사진 내용과 무관한 자리에
    상자가 떠서 이상해 보인다. 드롭 판정은 이 패널의 화면 좌표(getBoundingClientRect)로 한다. */
 .fc-drop {
-  min-height: 180px;
+  min-height: 150px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -305,7 +305,7 @@
     grid-template-columns: 1fr;
   }
   .fc-drop {
-    min-height: 130px;
+    min-height: 112px;
   }
 }
 
@@ -373,7 +373,9 @@
   .fc-layout { gap: 8px; padding: 8px 12px; }
   /* 안내문은 접는다 — 정답존 자체가 무엇인지 이미 보이고, 이 줄이 18px 를 쓴다 */
   .fc-drop-kbd { display: none; }
-  .fc-drop { min-height: 64px; }
+  /* 낮은 화면에서는 min-height 가 아니라 내용물(아이콘+문구+패딩)이 높이를 정한다.
+     그래서 패딩까지 줄여야 실제로 낮아진다 — 실측 77px → 65px. */
+  .fc-drop { min-height: 56px; padding: 8px; }
   .fc-foot { padding: 8px 12px; }
   .fc-stage { max-width: calc(34vh * (var(--fc-ar, 4 / 3))); }
 }
