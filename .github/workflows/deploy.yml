@@ -93,8 +93,13 @@ jobs:
           # ★비면 여기서 멈춥니다. 빈 값으로 구우면 배포된 뒤에야 드러납니다.
           [ -n "$B" ] || { echo "::error::VITE_API_BASE_URL 이 비었습니다"; exit 1; }
           [ -n "$K" ] || { echo "::error::VITE_CATCHAP_EDU_SITE_KEY 가 비었습니다"; exit 1; }
+          # 로그인 캡차 전환 플래그. 비어 있어도 배포를 막지 않는다 — 없으면 기존
+          # 캡차로 도는 것이 정상 상태이기 때문이다(위 둘과 성격이 다르다).
+          L=$(grep -E '^VITE_LOGIN_CAPTCHA=' .env.production | head -1 | cut -d= -f2- || true)
           echo "base=$B"    >> "$GITHUB_OUTPUT"
           echo "sitekey=$K" >> "$GITHUB_OUTPUT"
+          echo "logincaptcha=${L:-}" >> "$GITHUB_OUTPUT"
+          echo "로그인 캡차: ${L:-(기존 캡차)}"
           echo "API 주소: $B"
 
       - name: Buildx 준비
@@ -119,6 +124,7 @@ jobs:
           build-args: |
             VITE_API_BASE_URL=${{ steps.vite.outputs.base }}
             VITE_CATCHAP_EDU_SITE_KEY=${{ steps.vite.outputs.sitekey }}
+            VITE_LOGIN_CAPTCHA=${{ steps.vite.outputs.logincaptcha }}
           # ★latest 는 일부러 안 붙입니다 — 무엇이 떠 있는지 알 수 없어집니다
           cache-from: type=gha
           cache-to: type=gha,mode=max
