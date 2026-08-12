@@ -530,18 +530,36 @@ export default function LecturePlayer() {
   const toggleFullscreen = () => {
     const el = shellRef.current;
     const v = videoRef.current as (HTMLVideoElement & { webkitEnterFullscreen?: () => void }) | null;
+    // iOS CSS 강제 전체화면 종료 — 이 방식엔 fullscreenchange 이벤트가 없어 여기서 직접 처리.
+    if (el?.classList.contains('lp-shell--iosfs')) {
+      el.classList.remove('lp-shell--iosfs');
+      document.body.style.overflow = '';
+      setIsFull(false);
+      return;
+    }
     if (document.fullscreenElement) {
       lockOrientation(null);
       document.exitFullscreen().catch(() => {});
       return;
     }
+    // iOS(iPhone/iPad)는 표준 전체화면이 기기 회전을 안 따라가고 방향 잠금(orientation.lock)도
+    // 막혀 있다. 그래서 CSS로 화면을 꽉 채우고, 세로면 90도 돌려 '가로'로 본다. 컨트롤·캡차
+    // 게이트가 셸의 자식이라 함께 회전해 시청검증도 그대로 유지된다.
+    const isIOS =
+      /iP(hone|od|ad)/.test(navigator.userAgent) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    if (isIOS && el) {
+      el.classList.add('lp-shell--iosfs');
+      document.body.style.overflow = 'hidden';
+      setIsFull(true);
+      return;
+    }
     if (el?.requestFullscreen) {
-      // 표준(데스크톱·안드로이드 크롬): 플레이어 셸을 전체화면 → 모바일이면 가로로 잠근다.
+      // 표준(데스크톱·안드로이드 크롬): 셸을 전체화면 → 가로로 잠근다.
       el.requestFullscreen()
         .then(() => lockOrientation('landscape'))
         .catch(() => showToast('전체화면을 사용할 수 없어요'));
     } else if (v?.webkitEnterFullscreen) {
-      // iOS Safari: div 전체화면 불가 → 비디오를 네이티브 전체화면(자동 가로)으로 띄운다.
       v.webkitEnterFullscreen();
     } else {
       showToast('전체화면을 사용할 수 없어요');
@@ -554,7 +572,10 @@ export default function LecturePlayer() {
       if (!full) lockOrientation(null); // 종료 시 가로 잠금 해제 → 원래 세로로 복귀
     };
     document.addEventListener('fullscreenchange', onFs);
-    return () => document.removeEventListener('fullscreenchange', onFs);
+    return () => {
+      document.removeEventListener('fullscreenchange', onFs);
+      document.body.style.overflow = ''; // 언마운트 시 iOS 가짜 전체화면 스크롤 잠금 해제
+    };
   }, []);
 
   // 다시보기 모드 동기화 — 서버 정본이 'done'이면(이미 완주·검증됨) 확인 문제·탐색 제한을 풀고,
