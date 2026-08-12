@@ -147,14 +147,19 @@ export interface LearningReport {
   lectures: { done: number; total: number; watching: number; courses: number; pct: number } | null;
   courseProgress: { title: string; done: number; total: number; pct: number }[];
   completions: { title: string; perfect: boolean; at: string }[];
+  /** 최근 7일 일자별 학습(요일·문제 수·강의 분) — 추이 그래프용. 없으면 빈 배열. */
+  days: { label: string; solved: number; watchMin: number }[];
 }
 
 export async function learningReportPdf(filename: string, r: LearningReport) {
   const W = 1240, H = 1754, M = 96;
   const INK = '#18181b', INK2 = '#57575c', INK3 = '#9a9aa0', LINE = '#e7e7ea', SOFT = '#f5f5f6', OK = '#2e7d5b';
+  // 2배 해상도로 그려 PDF 텍스트를 또렷하게(인쇄 시 DPI 2배). 좌표는 그대로 W/H 공간을 쓴다.
+  const SCALE = 2;
   const cv = document.createElement('canvas');
-  cv.width = W; cv.height = H;
+  cv.width = W * SCALE; cv.height = H * SCALE;
   const x = cv.getContext('2d')!;
+  x.scale(SCALE, SCALE);
   x.fillStyle = '#fff'; x.fillRect(0, 0, W, H);
   x.textBaseline = 'alphabetic';
 
@@ -175,15 +180,15 @@ export async function learningReportPdf(filename: string, r: LearningReport) {
     return t + '…';
   };
 
-  let y = 112;
-  // 헤더 — 워드마크 느낌 + 제목 + 이름/날짜
-  x.fillStyle = INK; x.font = `900 22px ${F}`; x.fillText('CATCHAP', M, y - 42);
-  x.font = `800 46px ${F}`; x.fillText('학습 리포트', M, y);
+  let y = 134;
+  // 헤더 — 워드마크(작게, 위) + 제목(간격 넉넉히) + 이름/날짜
+  x.fillStyle = INK2; x.font = `900 22px ${F}`; x.fillText('CATCHAP', M, y - 62);
+  x.fillStyle = INK; x.font = `800 48px ${F}`; x.fillText('학습 리포트', M, y);
   x.fillStyle = INK3; x.font = `600 19px ${F}`; x.textAlign = 'right';
-  x.fillText(`${r.name}님 · ${r.date}`, W - M, y - 4); x.textAlign = 'left';
-  y += 26;
+  x.fillText(`${r.name}님 · ${r.date}`, W - M, y - 8); x.textAlign = 'left';
+  y += 30;
   x.fillStyle = INK; x.fillRect(M, y, W - M * 2, 2);
-  y += 58;
+  y += 56;
 
   const secHead = (t: string) => { x.fillStyle = INK; x.font = `800 25px ${F}`; x.fillText(t, M, y); y += 36; };
   const emptyNote = (t: string) => {
@@ -212,6 +217,54 @@ export async function learningReportPdf(filename: string, r: LearningReport) {
     });
     y += ch + 36;
   } else { emptyNote('아직 문제 풀이 기록이 없습니다.'); }
+
+  // 최근 7일 학습 추이 — 일자별 라인 차트(문제 수 + 강의 분)
+  secHead('최근 7일 학습 추이');
+  const trendDays = (r.days || []).slice(-7);
+  if (trendDays.some((d) => d.solved + d.watchMin > 0)) {
+    const chW = W - M * 2, chH = 212, padX = 42, padT = 46, padB = 42;
+    rr(M, y, chW, chH, 16); x.fillStyle = '#fff'; x.fill();
+    x.strokeStyle = LINE; x.lineWidth = 1; rr(M, y, chW, chH, 16); x.stroke();
+    const n = trendDays.length;
+    const val = (d: { solved: number; watchMin: number }) => d.solved + d.watchMin;
+    const ceil = Math.max(...trendDays.map(val), 1) * 1.3;
+    const plotW = chW - padX * 2, plotH = chH - padT - padB;
+    const gx = (i: number) => M + padX + (n <= 1 ? plotW / 2 : (i / (n - 1)) * plotW);
+    const gy = (v: number) => y + padT + (1 - v / ceil) * plotH;
+    const baseY = y + padT + plotH;
+    x.strokeStyle = LINE; x.lineWidth = 1;
+    [0.34, 0.67].forEach((f) => {
+      const yy = y + padT + f * plotH;
+      x.beginPath(); x.moveTo(M + padX, yy); x.lineTo(M + chW - padX, yy); x.stroke();
+    });
+    x.strokeStyle = '#d7d7da'; x.beginPath(); x.moveTo(M + padX, baseY); x.lineTo(M + chW - padX, baseY); x.stroke();
+    const active = trendDays.map((d, i) => ({ d, i, v: val(d) })).filter((o) => o.v > 0);
+    if (active.length >= 2) {
+      x.strokeStyle = INK; x.lineWidth = 2.5; x.lineJoin = 'round'; x.lineCap = 'round';
+      x.beginPath();
+      active.forEach((o, k) => { const X = gx(o.i), Y = gy(o.v); if (k === 0) x.moveTo(X, Y); else x.lineTo(X, Y); });
+      x.stroke();
+    }
+    x.textAlign = 'center';
+    trendDays.forEach((d, i) => {
+      const v = val(d), X = gx(i), isToday = i === n - 1;
+      if (v > 0) {
+        const Y = gy(v);
+        x.fillStyle = isToday ? INK : '#fff'; x.strokeStyle = INK; x.lineWidth = 2.5;
+        x.beginPath(); x.arc(X, Y, isToday ? 7 : 5, 0, Math.PI * 2); x.fill(); if (!isToday) x.stroke();
+        const lbl = [d.solved > 0 ? `${d.solved}문제` : null, d.watchMin > 0 ? `${d.watchMin}분` : null].filter(Boolean).join('·');
+        x.fillStyle = isToday ? INK : INK2; x.font = `${isToday ? '800 18' : '700 15'}px ${F}`;
+        x.fillText(lbl, X, Y - 16);
+      }
+      x.fillStyle = isToday ? INK : INK3; x.font = `${isToday ? '800' : '600'} 16px ${F}`;
+      x.fillText(d.label, X, baseY + 26);
+    });
+    const tS = trendDays.reduce((s, d) => s + d.solved, 0), tW = trendDays.reduce((s, d) => s + d.watchMin, 0);
+    x.fillStyle = INK3; x.font = `600 15px ${F}`;
+    x.fillText(`문제 ${tS}개 · 강의 ${tW}분`, M + chW / 2, y + chH - 16);
+    x.textAlign = 'left';
+    y += chH + 36;
+  } else { emptyNote('아직 학습 추이가 없습니다.'); }
 
   // 학습 통계 · 강의 시청
   secHead('학습 통계 · 강의 시청');
