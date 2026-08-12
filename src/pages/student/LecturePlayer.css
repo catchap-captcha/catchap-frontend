@@ -288,6 +288,37 @@
   font-family: inherit;
 }
 .lp-chipbtn:hover { background: rgba(255, 255, 255, 0.28); }
+/* 배속 잠금(미완강) — 흐리게 + 자물쇠. 눌러도 메뉴 대신 안내 토스트만 뜬다. */
+.lp-chipbtn--locked {
+  opacity: 0.55;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.lp-chipbtn--locked:hover { background: rgba(255, 255, 255, 0.16); }
+.lp-chipbtn--locked i { font-size: 12px; }
+
+/* 모바일 가운데 재생/일시정지 버튼 — 화면 탭으로 컨트롤을 토글하는 동안에만 표시. */
+.lp-centerplay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 7;
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0, 0, 0, 0.48);
+  color: #fff;
+  font-size: 28px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.lp-centerplay:active { transform: translate(-50%, -50%) scale(0.9); }
+
 .lp-speedwrap { position: relative; }
 .lp-speedmenu {
   position: absolute;

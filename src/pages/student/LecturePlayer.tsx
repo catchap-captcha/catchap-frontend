@@ -474,12 +474,12 @@ export default function LecturePlayer() {
     setOverlay({ kind: 'videoError' });
   };
 
-  const togglePlay = () => {
+  const togglePlay = useCallback(() => {
     const v = videoRef.current;
     if (!v || overlay || gate) return;
     if (v.paused) v.play().catch(() => setOverlay({ kind: 'videoError' }));
     else v.pause();
-  };
+  }, [overlay, gate]);
 
   /** 마우스 활동 시 컨트롤을 보이고, 재생 중이면 2.6초 뒤 다시 숨긴다.
    *  만료 시점에 실제 재생 중인지(video.paused)로 판단해 일시정지·게이트 중엔 계속 보이게 한다. */
@@ -489,6 +489,23 @@ export default function LecturePlayer() {
     idleTimerRef.current = window.setTimeout(() => {
       if (videoRef.current && !videoRef.current.paused) setIdle(true);
     }, 2600);
+  };
+
+  // 영상 영역 탭/클릭. 데스크톱(마우스)은 기존대로 클릭=재생/정지.
+  // 터치 기기는 표준 모바일 영상 UX — 화면을 탭하면 컨트롤(재생바+가운데 재생버튼)을
+  // 보였다/숨겼다 토글한다. 재생/정지는 가운데 재생버튼으로 한다.
+  const onVideoTap = () => {
+    if (overlay || gate) return;
+    if (!isTouch) {
+      togglePlay();
+      return;
+    }
+    if (idle) {
+      bumpActivity(); // 숨김 → 보이게 (+ 재생 중이면 잠시 뒤 자동 숨김)
+    } else {
+      setIdle(true); // 보임 → 숨기기
+      if (idleTimerRef.current) window.clearTimeout(idleTimerRef.current);
+    }
   };
   // 언마운트 시 유휴 타이머 정리
   useEffect(
@@ -603,6 +620,22 @@ export default function LecturePlayer() {
       document.body.style.overflow = ''; // 언마운트 시 iOS 가짜 전체화면 스크롤 잠금 해제
     };
   }, []);
+
+  // 스페이스바로 재생/정지(표준 영상 플레이어). 입력창(메모·후기)에 포커스가 있으면 무시하고,
+  // 그 외엔 기본 스크롤을 막고 재생을 토글한다. 컨트롤 버튼에 포커스가 있어도 space는 재생 토글로
+  // 통일(preventDefault가 버튼 기본 활성화를 막는다 — YouTube 등과 동일).
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.code !== 'Space' && e.key !== ' ') return;
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+      if (phase !== 'ready' || gateRef.current || overlayRef.current) return;
+      e.preventDefault();
+      togglePlay();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [phase, togglePlay]);
 
   // 다시보기 모드 동기화 — 서버 정본이 'done'이면(이미 완주·검증됨) 확인 문제·탐색 제한을 풀고,
   // 강의당 1회만 안내한다. 안 본 강의는 done=false라 시청검증이 그대로 유지된다.
@@ -741,6 +774,9 @@ export default function LecturePlayer() {
   };
   const durationSec = meta?.duration_sec ?? 0;
   const orderNo = meta && meta.order_no > 0 ? meta.order_no : null;
+  // 완강(시청 완료) 여부 — 서버 정본(status==='done') 또는 이번 세션에서 방금 완주했을 때.
+  // 완강한 강의만 배속 조절을 허용한다(첫 시청은 1배속 고정 — 시청검증 취지와 일관).
+  const isDone = meta?.progress?.status === 'done' || doneCelebrated;
 
   const numToc = (r: LectureItem, i: number) => (r.order_no > 0 ? r.order_no : i + 1);
 
@@ -837,7 +873,7 @@ export default function LecturePlayer() {
                 ref={videoRef}
                 className="lp-video"
                 src={streamSrc}
-                preload="metadata"
+                preload="auto"
                 playsInline
                 onLoadedMetadata={onLoadedMetadata}
                 onTimeUpdate={onTimeUpdate}
@@ -862,10 +898,25 @@ export default function LecturePlayer() {
                 disablePictureInPicture
                 onEnded={onEnded}
                 onError={onVideoError}
-                onClick={togglePlay}
+                onClick={onVideoTap}
               />
             ) : (
               <div className="lp-video lp-video-empty" />
+            )}
+
+            {/* 모바일 가운데 재생/일시정지 — 화면을 탭해 컨트롤이 보이는 동안에만 뜬다.
+                재생/정지는 이 버튼으로(영상 영역 탭은 컨트롤 토글 전용). */}
+            {phase === 'ready' && isTouch && !idle && !gate && !overlay && (playing || curTime > 0) && (
+              <button
+                className="lp-centerplay"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  togglePlay();
+                }}
+                aria-label={playing ? '일시정지' : '재생'}
+              >
+                <i className={playing ? 'ph-fill ph-pause' : 'ph-fill ph-play'} />
+              </button>
             )}
 
             {/* 재생 전 타이틀 오버레이 (목업: 아이콘 + n강 + 제목) */}
@@ -915,10 +966,22 @@ export default function LecturePlayer() {
                   </span>
                   <div className="lp-ctrlspace" />
                   <div className="lp-speedwrap">
-                    <button className="lp-chipbtn" onClick={() => setSpeedOpen((o) => !o)}>
+                    <button
+                      className={`lp-chipbtn${isDone ? '' : ' lp-chipbtn--locked'}`}
+                      onClick={() => {
+                        if (!isDone) {
+                          showToast('완강하면 배속을 조절할 수 있어요 🐾');
+                          return;
+                        }
+                        setSpeedOpen((o) => !o);
+                      }}
+                      aria-label="재생 속도"
+                      title={isDone ? '재생 속도' : '완강 후 배속 조절 가능'}
+                    >
+                      {!isDone && <i className="ph-fill ph-lock-simple" />}
                       {formatRate(speed)}배속
                     </button>
-                    {speedOpen && (
+                    {speedOpen && isDone && (
                       <div className="lp-speedmenu">
                         {SPEEDS.map((r) => (
                           <button
