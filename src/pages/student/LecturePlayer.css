@@ -145,9 +145,10 @@
   border-radius: 0;
 }
 
-/* iOS 강제 가로 전체화면(JS lp-shell--iosfs 토글) — 표준 전체화면이 기기 회전을 안 따라가서
-   CSS로 화면을 채우고, 세로일 땐 90도 돌려 가로로 본다. 컨트롤·캡차 게이트가 셸 자식이라 함께
-   회전한다. (가로 상태에선 회전 없이 그대로 꽉 채움) */
+/* iOS CSS 전체화면(JS lp-shell--iosfs 토글) — 표준 전체화면이 기기 회전을 안 따라가서
+   CSS로 화면을 꽉 채운다. 기본은 '자연 방향'(세로면 세로 그대로, 영상은 레터박스)이라
+   회전잠금을 켠 사람은 세로로 본다. 회전 버튼을 누르면 .lp-shell--rotated가 붙어 세로일 때만
+   90도 돌려 가로로 본다. 컨트롤·캡차 게이트가 셸 자식이라 함께 회전해 시청검증도 유지된다. */
 .lp-shell--iosfs {
   position: fixed;
   top: 0;
@@ -159,8 +160,10 @@
   background: #000;
   z-index: 2147483647;
 }
+/* 회전 버튼을 눌렀고(.lp-shell--rotated) 기기가 세로일 때만 90도 회전.
+   기기를 물리적으로 가로로 돌리면 (orientation: portrait)가 풀려 회전 없이 그대로 꽉 찬다. */
 @media (orientation: portrait) {
-  .lp-shell--iosfs {
+  .lp-shell--iosfs.lp-shell--rotated {
     width: 100vh;
     height: 100vw;
     left: 100vw;

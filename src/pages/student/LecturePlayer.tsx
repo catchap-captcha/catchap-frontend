@@ -87,6 +87,12 @@ export default function LecturePlayer() {
   const [muted, setMuted] = useState(false);
   const [volOpen, setVolOpen] = useState(false);
   const [isFull, setIsFull] = useState(false);
+  const [rotated, setRotated] = useState(false); // 전체화면 안에서 가로로 돌렸는지(회전 버튼)
+  const [isTouch] = useState(
+    () =>
+      typeof window !== 'undefined' &&
+      (navigator.maxTouchPoints > 0 || window.matchMedia?.('(pointer: coarse)').matches === true),
+  );
   const [watchedMax, setWatchedMax] = useState(0);
   const [doneCelebrated, setDoneCelebrated] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
@@ -530,34 +536,37 @@ export default function LecturePlayer() {
   const toggleFullscreen = () => {
     const el = shellRef.current;
     const v = videoRef.current as (HTMLVideoElement & { webkitEnterFullscreen?: () => void }) | null;
-    // iOS CSS 강제 전체화면 종료 — 이 방식엔 fullscreenchange 이벤트가 없어 여기서 직접 처리.
+    // iOS CSS 전체화면 종료 — 이 방식엔 fullscreenchange 이벤트가 없어 여기서 직접 처리.
     if (el?.classList.contains('lp-shell--iosfs')) {
-      el.classList.remove('lp-shell--iosfs');
+      el.classList.remove('lp-shell--iosfs', 'lp-shell--rotated');
       document.body.style.overflow = '';
+      setRotated(false);
       setIsFull(false);
       return;
     }
     if (document.fullscreenElement) {
       lockOrientation(null);
+      setRotated(false);
       document.exitFullscreen().catch(() => {});
       return;
     }
     // iOS(iPhone/iPad)는 표준 전체화면이 기기 회전을 안 따라가고 방향 잠금(orientation.lock)도
-    // 막혀 있다. 그래서 CSS로 화면을 꽉 채우고, 세로면 90도 돌려 '가로'로 본다. 컨트롤·캡차
-    // 게이트가 셸의 자식이라 함께 회전해 시청검증도 그대로 유지된다.
+    // 막혀 있다. 그래서 CSS로 화면을 꽉 채운다. 기본은 '자연 방향'(세로면 세로)이라 회전잠금을 켠
+    // 사람은 세로 그대로 보고, 가로로 보고 싶으면 회전 버튼(toggleRotate)을 눌러 90도 돌린다.
     const isIOS =
       /iP(hone|od|ad)/.test(navigator.userAgent) ||
       (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     if (isIOS && el) {
       el.classList.add('lp-shell--iosfs');
       document.body.style.overflow = 'hidden';
+      setRotated(false);
       setIsFull(true);
       return;
     }
     if (el?.requestFullscreen) {
-      // 표준(데스크톱·안드로이드 크롬): 셸을 전체화면 → 가로로 잠근다.
+      // 표준(데스크톱·안드로이드 크롬): 전체화면만. 방향은 회전 버튼으로 제어(자동 가로 강제 안 함).
       el.requestFullscreen()
-        .then(() => lockOrientation('landscape'))
+        .then(() => setRotated(false))
         .catch(() => showToast('전체화면을 사용할 수 없어요'));
     } else if (v?.webkitEnterFullscreen) {
       v.webkitEnterFullscreen();
@@ -565,11 +574,28 @@ export default function LecturePlayer() {
       showToast('전체화면을 사용할 수 없어요');
     }
   };
+
+  // 회전 버튼 — 전체화면 안에서 가로↔세로 토글. iOS CSS 전체화면은 셸을 90도 돌리고,
+  // 표준 전체화면(안드로이드 등)은 화면 방향 잠금을 건다. 다시 누르면 세로로 복귀.
+  const toggleRotate = () => {
+    const el = shellRef.current;
+    if (!el) return;
+    const next = !rotated;
+    setRotated(next);
+    if (el.classList.contains('lp-shell--iosfs')) {
+      el.classList.toggle('lp-shell--rotated', next);
+    } else {
+      lockOrientation(next ? 'landscape' : null);
+    }
+  };
   useEffect(() => {
     const onFs = () => {
       const full = !!document.fullscreenElement;
       setIsFull(full);
-      if (!full) lockOrientation(null); // 종료 시 가로 잠금 해제 → 원래 세로로 복귀
+      if (!full) {
+        lockOrientation(null); // 종료 시 가로 잠금 해제 → 원래 세로로 복귀
+        setRotated(false);
+      }
     };
     document.addEventListener('fullscreenchange', onFs);
     return () => {
@@ -933,6 +959,18 @@ export default function LecturePlayer() {
                       />
                     </button>
                   </div>
+                  {isFull && isTouch && (
+                    <button
+                      className="lp-iconbtn"
+                      onClick={toggleRotate}
+                      aria-label={rotated ? '세로로 보기' : '가로로 보기'}
+                      title={rotated ? '세로로 보기' : '가로로 보기'}
+                    >
+                      <i
+                        className={rotated ? 'ph-fill ph-device-mobile' : 'ph-fill ph-arrows-clockwise'}
+                      />
+                    </button>
+                  )}
                   <button className="lp-iconbtn" onClick={toggleFullscreen} aria-label="전체화면">
                     <i className={isFull ? 'ph-fill ph-corners-in' : 'ph-fill ph-corners-out'} />
                   </button>
