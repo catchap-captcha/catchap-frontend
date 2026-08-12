@@ -9,6 +9,7 @@ import { lectureApi, thumbnailSrc, type StudentCourse, type LectureItem } from '
 import { PATHS } from '../../routes/paths';
 import CourseCover from '../../components/course/CourseCover';
 import CertificateModal from '../../components/course/CertificateModal';
+import WeeklyLearningChart from '../../components/student/WeeklyLearningChart';
 import './MyRecords.css';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -626,6 +627,13 @@ export default function MyRecords() {
         </div>
       </section>
 
+      )}
+
+      {/* 요약 탭 · 주간 학습 추이 그래프 — 서버가 내려주지만 그동안 안 그리던 data.weeks를 시각화(#3) */}
+      {recTab === 'summary' && !demo && (
+        <section className="mr-section">
+          <WeeklyLearningChart weeks={data.weeks} />
+        </section>
       )}
 
       {/* ===== 수료 현황 탭 ===== */}

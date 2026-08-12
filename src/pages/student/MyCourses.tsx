@@ -47,7 +47,9 @@ function completionStage(r: CourseRow): Stage {
     }
     return {
       label: '수료 시험 진행 중',
-      detail: `${ex.mastered_count}/${ex.question_count}문항 정복`,
+      // 미통과 상태에서는 '정복 문항 수'가 오해를 줘(회차마다 리셋되는 걸로 보임),
+      // 대신 지금까지 시험을 몇 번 봤는지를 보여 준다(#2).
+      detail: ex.attempts ? `시험 ${ex.attempts}회 시도 · 아직 미통과` : `${r.total}강 완주 · 시험 진행 중`,
       cls: 'progress',
       icon: 'ph-exam',
     };
