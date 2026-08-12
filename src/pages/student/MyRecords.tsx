@@ -63,7 +63,14 @@ interface ActivityItem {
   time: string;
 }
 
+interface DayPoint {
+  label: string; // 요일(월~일)
+  solved: number; // 그날 푼 문제 수(위젯 solve_time=0이라 시간 대신 개수)
+  watchMin: number; // 그날 강의 시청 분(근사 — 마지막 시청일 귀속)
+}
+
 interface RecordsData {
+  days: DayPoint[];
   weeks: WeekBar[];
   calendar: CalendarData;
   mastery: MasteryItem[];
@@ -75,6 +82,7 @@ interface RecordsData {
 
 // TODO(api): studentApi.records() 실패 시 원본 하드코딩 데이터 유지
 const FALLBACK: RecordsData = {
+  days: [], // 데모(실집계 없음)에선 요약 탭이 통째로 빈 상태라 그래프 미표시
   weeks: [
     { label: '3주 전', v: 62, minutes: 130 },
     { label: '2주 전', v: 82, minutes: 172 },
@@ -246,6 +254,17 @@ function mapRecords(d: any, prev: RecordsData): Partial<RecordsData> {
         minutes: typeof w?.minutes === 'number' ? w.minutes : Math.round((v / 100) * 210),
       };
     });
+  }
+
+  // 일자별(최근 7일) 학습 — 빈 배열도 그대로 반영(그래프가 '활동 없음'을 판단해 빈 상태 표시)
+  if (Array.isArray(d.days)) {
+    out.days = d.days.map(
+      (x: any): DayPoint => ({
+        label: typeof x?.label === 'string' ? x.label : '',
+        solved: typeof x?.solved === 'number' ? x.solved : 0,
+        watchMin: typeof x?.watch_min === 'number' ? x.watch_min : 0,
+      }),
+    );
   }
 
   if (d.calendar && Array.isArray(d.calendar.learned) && typeof d.calendar.today === 'number') {
@@ -632,7 +651,7 @@ export default function MyRecords() {
       {/* 요약 탭 · 주간 학습 추이 그래프 — 서버가 내려주지만 그동안 안 그리던 data.weeks를 시각화(#3) */}
       {recTab === 'summary' && !demo && (
         <section className="mr-section">
-          <WeeklyLearningChart weeks={data.weeks} />
+          <WeeklyLearningChart days={data.days} />
         </section>
       )}
 
