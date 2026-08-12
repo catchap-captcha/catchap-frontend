@@ -48,6 +48,10 @@ export default function LoginPage() {
   const [codeSent, setCodeSent] = useState(false);
   const [codeSecondsLeft, setCodeSecondsLeft] = useState(0); // 이메일 인증코드 유효시간(5분) 카운트다운
   const [verified, setVerified] = useState(false);
+  // 노션식 3단계 가입 — 1:이메일 · 2:인증코드 · 3:정보. goSignup/goLogin에서 리셋.
+  const [signupStep, setSignupStep] = useState(1);
+  // 인증 완료된 코드 — 3단계에선 코드 입력칸이 언마운트되므로 상태로 보관해 가입 확정에 쓴다.
+  const [verifiedCode, setVerifiedCode] = useState('');
   const [email, setEmail] = useState('');
   // 연령 분기(2026-07-17): 학생 가입은 생년월일 필수 — 만 14세 미만이면 보호자 동의 섹션 노출
   const [birthDate, setBirthDate] = useState(''); // YYYY-MM-DD
@@ -164,7 +168,7 @@ export default function LoginPage() {
   const submitPersonalRegistration = () => {
     const name = fieldVal('[data-req="이름"]');
     const pw = fieldVal('[data-req="비밀번호"]');
-    const emailCode = fieldVal('[data-req="인증코드"]');
+    const emailCode = verifiedCode; // 2단계에서 인증한 코드(코드칸이 언마운트돼 상태로 보관)
     // 학생 이메일 가입 전환(2026-07-16): 이메일(소문자)이 로그인 아이디.
     // 연령 분기(2026-07-17): 생년월일 필수, 만 14세 미만은 보호자 이메일 코드 동봉.
     authApi
@@ -249,7 +253,17 @@ export default function LoginPage() {
     submitPersonalRegistration();
   };
 
-  // ===== 이메일 인증 / 코드 확인 (authApi 연결, UI 흐름은 원본 그대로) =====
+  // ===== 이메일 인증 / 코드 확인 (authApi 연결) =====
+  // 가입 1단계 — 이메일 형식 검사 후 인증코드 발송(성공 시 sendCode가 2단계로 이동).
+  const continueSignupEmail = () => {
+    if (!isEmail(email)) {
+      setFormError(email ? '올바른 이메일 형식으로 입력해 주세요.' : '이메일을 입력해 주세요.');
+      return;
+    }
+    setFormError('');
+    sendCode();
+  };
+
   const sendCode = () => {
     // 학생 가입의 중복(이메일=아이디)은 가입 확정 시 409로 안내 — 발송 단계 검사는 생략
     authApi
@@ -258,6 +272,7 @@ export default function LoginPage() {
         setCodeSent(true);
         setVerified(false);
         setCodeSecondsLeft(300); // 5분 카운트다운 시작(재전송 시 초기화)
+        setSignupStep(2); // 이메일 확인 → 인증코드 단계로
       })
       .catch((err) => {
         const status = (err as { response?: { status?: number } })?.response?.status;
@@ -312,8 +327,12 @@ export default function LoginPage() {
     authApi
       .verifyEmailCode(email, code)
       .then((r) => {
-        if (r.verified) setVerified(true);
-        else setFormError('인증코드가 올바르지 않아요. 다시 확인해 주세요.');
+        if (r.verified) {
+          setVerified(true);
+          setVerifiedCode(code);
+          setFormError('');
+          setSignupStep(3); // 인증 완료 → 정보 입력 단계로
+        } else setFormError('인증코드가 올바르지 않아요. 다시 확인해 주세요.');
       })
       .catch(() => setFormError('인증코드가 올바르지 않아요. 다시 확인해 주세요.'));
   };
@@ -507,9 +526,12 @@ export default function LoginPage() {
   const goSignup = () => {
     // 학생 이메일 가입 전환(2026-07-16): 학생도 이메일 가입 폼 사용(종전 코드 활성화 리다이렉트 제거)
     setView('signup');
+    setSignupStep(1);
     setCodeSent(false);
     setCodeSecondsLeft(0);
     setVerified(false);
+    setVerifiedCode('');
+    setFormError('');
   };
   const goLogin = () => {
     setView('login');
@@ -681,14 +703,19 @@ export default function LoginPage() {
             <h2 className="lg-h2 lg-h2--signup">{signupTitle}</h2>
             <p className="lg-signup-sub">{signupSubtitle}</p>
 
-            {/* 이메일 가입이 주 경로(노션식) — 소셜 가입은 폼 아래 '또는 다음으로 계속하기'로 잇는다. */}
-
-            {/* ============ 학습자 가입 (단일 흐름) ============ */}
+            {/* ===== 노션식 3단계 가입 — 1:이메일 · 2:인증코드 · 3:정보입력 ===== */}
             {(
               <>
-                {/* 연령 분기(2026-07-17): 이름·생년월일 2열 배치(세로 축소). 만 14세 미만이면
-                    아래에 보호자(법정대리인) 이메일 동의 섹션이 열린다. 서버가 최종 강제. */}
-                {(
+                <div className="lg-steps" aria-hidden="true">
+                  <span className={'lg-step' + (signupStep >= 1 ? ' on' : '')}>1</span>
+                  <span className="lg-step-line" />
+                  <span className={'lg-step' + (signupStep >= 2 ? ' on' : '')}>2</span>
+                  <span className="lg-step-line" />
+                  <span className={'lg-step' + (signupStep >= 3 ? ' on' : '')}>3</span>
+                </div>
+
+                {/* 3단계: 이름·생년월일(2열). 만 14세 미만이면 보호자 이메일 동의 섹션이 아래에 열린다. */}
+                {signupStep === 3 && (
                   <>
                     <div className="lg-row2 lg-mb12">
                       <div className="lg-col">
@@ -788,41 +815,51 @@ export default function LoginPage() {
                   </>
                 )}
 
-                {/* 학생 이메일 가입 전환(2026-07-16): 학생도 이메일이 로그인 아이디 */}
-                <label className="lg-label">이메일 (로그인 아이디)</label>
-                <p className="lg-helper" style={{ margin: '-2px 0 8px' }}>
-                  이 이메일이 로그인 아이디가 돼요.
-                </p>
-                <div className="lg-inline lg-mb12">
-                  <div className="lg-field-grow">
-                    <i className="ph-fill ph-envelope-simple lg-field-icon" />
-                    <input
-                      type="email"
-                      data-req="이메일"
-                      placeholder="example@email.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className={'lg-input' + (emailInvalid ? ' lg-input--soft-invalid' : '')}
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    onClick={sendCode}
-                    className={'lg-sendbtn' + (codeSent ? ' lg-sendbtn--sent' : '')}
-                  >
-                    {codeSent ? '재전송' : '인증코드 받기'}
-                  </button>
-                </div>
+                {/* 1단계: 이메일 (로그인 아이디) — '계속'을 누르면 인증코드가 발송되고 2단계로 */}
+                {signupStep === 1 && (
+                  <>
+                    <label className="lg-label">이메일 (로그인 아이디)</label>
+                    <div className="lg-field">
+                      <i className="ph-fill ph-envelope-simple lg-field-icon" />
+                      <input
+                        type="email"
+                        placeholder="example@email.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            continueSignupEmail();
+                          }
+                        }}
+                        className={'lg-input' + (emailInvalid ? ' lg-input--soft-invalid' : '')}
+                        autoFocus
+                      />
+                    </div>
+                    <p className="lg-login-hint">이 이메일이 로그인 아이디가 돼요.</p>
 
-                {emailInvalid && (
-                  <div className="lg-emailerr">
-                    <i className="ph-fill ph-warning-circle" />
-                    <span>올바르지 않은 이메일 형식이에요. example@email.com 형식으로 입력해 주세요.</span>
-                  </div>
+                    {(formError || emailInvalid) && (
+                      <div className="lg-formerr">
+                        <i className="ph-fill ph-warning-circle" />
+                        <span>
+                          {formError ||
+                            '올바르지 않은 이메일 형식이에요. example@email.com 형식으로 입력해 주세요.'}
+                        </span>
+                      </div>
+                    )}
+
+                    <button type="button" onClick={continueSignupEmail} className="lg-primary">
+                      계속
+                    </button>
+                  </>
                 )}
 
-                {codeSent && (
+                {/* 2단계: 이메일 인증코드 */}
+                {signupStep === 2 && (
                   <>
+                    <p className="lg-helper" style={{ margin: '0 0 12px' }}>
+                      <b>{email}</b> 로 보낸 6자리 인증코드를 입력해 주세요.
+                    </p>
                     <label className="lg-label">인증코드</label>
                     <div className="lg-inline lg-mb9">
                       <div className="lg-field-grow">
@@ -833,97 +870,118 @@ export default function LoginPage() {
                           data-req="인증코드"
                           placeholder="6자리 코드"
                           className="lg-input lg-input--otp"
+                          autoFocus
                         />
                       </div>
-                      <button
-                        type="button"
-                        onClick={verifyCode}
-                        className={'lg-codebtn' + (verified ? ' lg-codebtn--valid' : '')}
-                      >
-                        {verified ? '인증됨' : '확인'}
+                      <button type="button" onClick={verifyCode} className="lg-codebtn">
+                        확인
                       </button>
                     </div>
-                    {verified && (
-                      <div className="lg-verified">
-                        <i className="ph-fill ph-check-circle" />
-                        <span>이메일 인증이 완료되었어요</span>
+                    <div className="lg-notverified">
+                      <i className="ph-fill ph-timer" />
+                      {codeSecondsLeft > 0 ? (
+                        <span>
+                          남은 시간 <b>{mmss(codeSecondsLeft)}</b> · 코드가 안 오면 재전송해 주세요.
+                        </span>
+                      ) : (
+                        <span>
+                          인증코드가 만료됐어요. <b>재전송</b>을 눌러 새 코드를 받아 주세요.
+                        </span>
+                      )}
+                    </div>
+
+                    {formError && (
+                      <div className="lg-formerr">
+                        <i className="ph-fill ph-warning-circle" />
+                        <span>{formError}</span>
                       </div>
                     )}
-                    {!verified && (
-                      <div className="lg-notverified">
-                        <i className="ph-fill ph-timer" />
-                        {codeSecondsLeft > 0 ? (
-                          <span>
-                            인증코드를 보냈어요. 남은 시간 <b>{mmss(codeSecondsLeft)}</b> · 시간이 지나면 재전송해 주세요.
-                          </span>
-                        ) : (
-                          <span>인증코드가 만료됐어요. <b>재전송</b>을 눌러 새 코드를 받아 주세요.</span>
-                        )}
-                      </div>
-                    )}
+
+                    <button type="button" onClick={sendCode} className="lg-secondary">
+                      인증코드 재전송
+                    </button>
+                    <p className="lg-signup-cta">
+                      <button type="button" onClick={() => setSignupStep(1)} className="lg-linkbtn">
+                        ← 이메일 다시 입력
+                      </button>
+                    </p>
                   </>
                 )}
 
-                {/* 학생 이메일 가입 전환(2026-07-16): 별도 아이디 칸 제거 — 이메일이 로그인 아이디.
-                    (종전: 학생 전역 유일 아이디 + 중복 확인. 부활 시 git 이력 참고) */}
-
-                <div className="lg-row2 lg-mb16">
-                  <div className="lg-col">
-                    <label className="lg-label">비밀번호</label>
-                    <div className="lg-field">
-                      <i className="ph-fill ph-lock-key lg-field-icon" />
-                      <PasswordInput
-                        data-req="비밀번호"
-                        placeholder="8자 이상"
-                        className="lg-input"
-                      />
+                {/* 3단계 계속: 비밀번호 + 약관 + 가입하기 (이메일이 로그인 아이디) */}
+                {signupStep === 3 && (
+                  <>
+                    <div className="lg-row2 lg-mb16">
+                      <div className="lg-col">
+                        <label className="lg-label">비밀번호</label>
+                        <div className="lg-field">
+                          <i className="ph-fill ph-lock-key lg-field-icon" />
+                          <PasswordInput
+                            data-req="비밀번호"
+                            placeholder="8자 이상"
+                            className="lg-input"
+                          />
+                        </div>
+                      </div>
+                      <div className="lg-col">
+                        <label className="lg-label">비밀번호 확인</label>
+                        <div className="lg-field">
+                          <i className="ph-fill ph-lock-key-open lg-field-icon" />
+                          <PasswordInput
+                            data-req="비밀번호 확인"
+                            placeholder="다시 입력"
+                            className="lg-input"
+                          />
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                  <div className="lg-col">
-                    <label className="lg-label">비밀번호 확인</label>
-                    <div className="lg-field">
-                      <i className="ph-fill ph-lock-key-open lg-field-icon" />
-                      <PasswordInput
-                        data-req="비밀번호 확인"
-                        placeholder="다시 입력"
-                        className="lg-input"
-                      />
-                    </div>
-                  </div>
-                </div>
 
-                <label className="lg-terms">
-                  <input type="checkbox" data-req-check="약관 동의" />
-                  <span>
-                    서비스 이용약관 및 개인정보 처리방침에 동의합니다.{' '}
-                    <span className="lg-req">(필수)</span>
-                  </span>
-                </label>
+                    <label className="lg-terms">
+                      <input type="checkbox" data-req-check="약관 동의" />
+                      <span>
+                        서비스 이용약관 및 개인정보 처리방침에 동의합니다.{' '}
+                        <span className="lg-req">(필수)</span>
+                      </span>
+                    </label>
 
-                {formError && (
-                  <div className="lg-formerr">
-                    <i className="ph-fill ph-warning-circle" />
-                    <span>{formError}</span>
-                  </div>
+                    {formError && (
+                      <div className="lg-formerr">
+                        <i className="ph-fill ph-warning-circle" />
+                        <span>{formError}</span>
+                      </div>
+                    )}
+                    <button type="button" onClick={() => validateAndSubmit()} className="lg-primary">
+                      <i className="ph-fill ph-user-plus lg-primary-icon20" />
+                      가입하기
+                    </button>
+                    <p className="lg-signup-cta">
+                      <button type="button" onClick={() => setSignupStep(2)} className="lg-linkbtn">
+                        ← 인증 단계로
+                      </button>
+                    </p>
+                  </>
                 )}
-                <button type="button" onClick={() => validateAndSubmit()} className="lg-primary">
-                  <i className="ph-fill ph-user-plus lg-primary-icon20" />
-                  가입하기
-                </button>
 
-                {/* 소셜 가입 — 이메일 가입(위)이 주 경로, 소셜은 아래로(노션식). 만 14세 미만은
-                    소셜에 보호자 동의 절차가 없어 위 이메일 가입으로 와야 한다. */}
-                <div className="lg-divider">
-                  <div className="lg-divider-line" />
-                  <span>또는 다음으로 계속하기</span>
-                  <div className="lg-divider-line" />
-                </div>
-                <SocialLoginButtons mode="signup" />
-
-                <div className="lg-notice lg-notice--mt16">
-                  <i className="ph-fill ph-info" />
-                  <p>{signupNotice}</p>
-                </div>
+                {/* 1단계 하단: 소셜 가입 + '로그인하기' 링크 (소셜은 보호자 절차가 없어 미성년자는 이메일 가입으로) */}
+                {signupStep === 1 && (
+                  <>
+                    <div className="lg-divider">
+                      <div className="lg-divider-line" />
+                      <span>또는 다음으로 계속하기</span>
+                      <div className="lg-divider-line" />
+                    </div>
+                    <SocialLoginButtons mode="signup" />
+                    <p className="lg-signup-cta">
+                      기존 사용자이신가요?{' '}
+                      <button type="button" onClick={goLogin} className="lg-linkbtn">
+                        로그인하기
+                      </button>
+                    </p>
+                    <p className="lg-login-hint" style={{ textAlign: 'center', margin: '10px 0 0' }}>
+                      {signupNotice}
+                    </p>
+                  </>
+                )}
               </>
             )}
 
