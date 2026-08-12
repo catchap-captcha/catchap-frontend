@@ -462,6 +462,7 @@ export default function LoginPage() {
               | {
                   message?: string;
                   captcha_required?: boolean;
+                  locked?: boolean;
                   candidates?: { organization_id: string; organization_name: string }[];
                 };
           };
@@ -481,6 +482,22 @@ export default function LoginPage() {
       // /ops/login을 몰라도 여기서 로그인된다. 운영자(ops)는 서버가 이 경로에서 제외하므로
       // 전용 /ops/login으로만 로그인한다(고권한 내부 계정을 공개 로그인에 노출 안 함).
       // 실패하면 아래 공통 오류 처리로 이어진다.
+
+      // 잠금(429)은 캡차 판단보다 먼저 가른다.
+      //
+      // 서버는 "약 15분" 이라고 정확히 알려주는데 이 자리에서 공통 문구로 뭉개고 있었다.
+      // 그러면 비밀번호가 맞는 사용자에게도 "비밀번호가 올바르지 않아요" 가 뜨고, 원인을
+      // 모르니 계속 시도하게 된다. 시도할 때마다 잠금 창이 갱신돼 **더 오래 갇힌다.**
+      // 캡차도 이 구간에서는 안 뜬다 — 잠금 검사가 캡차 게이트보다 앞이기 때문이다.
+      if (resp?.status === 429 || detailObj?.locked) {
+        setLoginBad(true);
+        setCaptchaNeeded(false);
+        setCaptcha(false);
+        setLoginError(
+          detailObj?.message ?? '로그인 시도가 너무 많아요. 잠시 후(약 15분) 다시 시도해 주세요.',
+        );
+        return;
+      }
 
       // 서버가 5회 이상 실패를 알리면 캡차 요구. 단, 방금 캡차를 통과한 시도(captchaToken
       // 있음)가 '비밀번호 오류'로 실패한 경우엔 팝업을 즉시 다시 열지 않는다 — 재오픈하면
