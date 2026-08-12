@@ -145,6 +145,31 @@
   border-radius: 0;
 }
 
+/* iOS 강제 가로 전체화면(JS lp-shell--iosfs 토글) — 표준 전체화면이 기기 회전을 안 따라가서
+   CSS로 화면을 채우고, 세로일 땐 90도 돌려 가로로 본다. 컨트롤·캡차 게이트가 셸 자식이라 함께
+   회전한다. (가로 상태에선 회전 없이 그대로 꽉 채움) */
+.lp-shell--iosfs {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  aspect-ratio: auto;
+  border-radius: 0;
+  background: #000;
+  z-index: 2147483647;
+}
+@media (orientation: portrait) {
+  .lp-shell--iosfs {
+    width: 100vh;
+    height: 100vw;
+    left: 100vw;
+    top: 0;
+    transform: rotate(90deg);
+    transform-origin: top left;
+  }
+}
+
 /* 재생 전 타이틀 오버레이 */
 .lp-idle {
   position: absolute;
