@@ -178,6 +178,10 @@
   .al-qcard {
     flex-direction: column;
     align-items: stretch;
+    padding: 18px 16px; /* 좁은 화면 여백 축소 */
+  }
+  .al-qcard-left {
+    min-width: 0; /* 280px 고정폭이 320~374px에서 가로 넘침을 유발하던 걸 해제 */
   }
   .al-qcard-start {
     justify-content: center;
