@@ -117,6 +117,10 @@ export default function LecturePlayer() {
   const sessionTokenRef = useRef<string | null>(null);
   const hadOwnSessionRef = useRef(false); // 이 탭에서 발급받은 세션이 있었나(강의 전환 시 자동 이어받기 판단)
   const watchedMaxRef = useRef(0);
+  // 시청 완료(다시보기) 모드 — 서버 정본 status==='done'인 강의는 이미 시청검증을 통과했으므로
+  // 재시청 땐 확인 문제(캡차)·앞으로-seek 제한을 푼다. 안 본 강의는 false라 검증이 그대로 걸린다.
+  const reviewModeRef = useRef(false);
+  const reviewHintedForRef = useRef(''); // 완료 안내 토스트를 강의당 1회만 띄우기 위한 가드
   const nextCpRef = useRef<number | null>(null);
   // (제거됨 0717) interacted/tab_hidden 자기신고 추적 — 면제·의심 가중이 서버에서
   // 걷혀 보낼 곳이 없다. 하트비트 본문은 position_sec 하나다.
@@ -252,11 +256,15 @@ export default function LecturePlayer() {
       setWatchedMax(st.watched_max_sec);
       nextCpRef.current = st.next_checkpoint_sec;
       setHbWarn(false);
-      if (st.status === 'done' && !doneCelebrated) {
-        setDoneCelebrated(true);
-        showToast('강의를 끝까지 다 봤어요! 🎉');
+      if (st.status === 'done') {
+        // 완주하는 순간부터 다시보기 모드 — 이 뒤로는 확인 문제를 띄우지 않는다.
+        reviewModeRef.current = true;
+        if (!doneCelebrated) {
+          setDoneCelebrated(true);
+          showToast('강의를 끝까지 다 봤어요! 🎉');
+        }
       }
-      if (st.checkpoint_due && !gateRef.current) {
+      if (st.checkpoint_due && !gateRef.current && !reviewModeRef.current) {
         openGate(st.next_checkpoint_sec ?? Math.floor(videoRef.current?.currentTime ?? 0));
       }
     },
@@ -429,6 +437,7 @@ export default function LecturePlayer() {
   const onSeeking = () => {
     const v = videoRef.current;
     if (!v) return;
+    if (reviewModeRef.current) return; // 다시보기(시청 완료) — 하단 진행바로 자유 이동 허용
     // 안 본 구간 건너뛰기 차단 — 본 데(watched_max)까지만. 서버도 클램프하지만 UX로 먼저 막는다.
     if (v.currentTime > watchedMaxRef.current + SEEK_TOLERANCE_SEC) {
       v.currentTime = watchedMaxRef.current;
@@ -520,6 +529,17 @@ export default function LecturePlayer() {
     document.addEventListener('fullscreenchange', onFs);
     return () => document.removeEventListener('fullscreenchange', onFs);
   }, []);
+
+  // 다시보기 모드 동기화 — 서버 정본이 'done'이면(이미 완주·검증됨) 확인 문제·탐색 제한을 풀고,
+  // 강의당 1회만 안내한다. 안 본 강의는 done=false라 시청검증이 그대로 유지된다.
+  useEffect(() => {
+    const done = meta?.progress?.status === 'done';
+    reviewModeRef.current = done;
+    if (done && reviewHintedForRef.current !== lectureId) {
+      reviewHintedForRef.current = lectureId;
+      showToast('시청을 완료한 강의예요 — 확인 문제 없이 원하는 부분을 다시 볼 수 있어요');
+    }
+  }, [meta, lectureId, showToast]);
 
   const onScrub = (val: number) => {
     const v = videoRef.current;

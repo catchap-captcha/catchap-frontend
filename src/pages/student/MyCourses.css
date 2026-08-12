@@ -191,6 +191,43 @@
   color: var(--ink-3);
 }
 
+/* 완료 코스 — 상태 블록 + '강의 다시보기'(수료 후 캡차 없이 자유 시청) 세로 묶음 */
+.mc-doneblock {
+  flex: none;
+  width: 194px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.mc-doneblock .mc-status {
+  width: 100%;
+  box-sizing: border-box;
+}
+.mc-review {
+  width: 100%;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink);
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+.mc-review:hover:not(:disabled) {
+  background: var(--bg);
+}
+.mc-review:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
 /* 수강 중 카드 액션 — 계속 학습(주) 아래 수강 취소(보조 텍스트). 실수 방지로 눈에 덜 띄게. */
 .mc-actions {
   flex: none;
@@ -254,6 +291,7 @@
   .mc-btn,
   .mc-btn-ghost,
   .mc-actions,
+  .mc-doneblock,
   .mc-status {
     width: 100%;
     justify-content: center;
