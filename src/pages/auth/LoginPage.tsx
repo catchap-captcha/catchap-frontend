@@ -63,6 +63,8 @@ export default function LoginPage() {
   const [remember, setRemember] = useState(false);
   // 노션식 2단계 로그인 — 이메일 입력 → '계속' → 비밀번호 단계. goLogin에서 리셋.
   const [pwStep, setPwStep] = useState(false);
+  // 이메일 칸에 입력이 생기면 안내문(hint)을 숨긴다.
+  const [idFilled, setIdFilled] = useState(false);
   // 아이디+비밀번호가 여러 기관에서 일치할 때(409)만 후보 기관 버튼 노출
   const [orgCandidates, setOrgCandidates] = useState<
     { organization_id: string; organization_name: string }[] | null
@@ -483,7 +485,7 @@ export default function LoginPage() {
         serverMsg ??
           (detailObj?.captcha_required && (!captchaToken || gateRefused)
             ? '로그인에 여러 번 실패해서 보안 확인이 필요해요. 다시 시도해 주세요.'
-            : '아이디 또는 비밀번호가 올바르지 않아요. 다시 확인해 주세요.'),
+            : '가입되지 않은 이메일이거나 비밀번호가 올바르지 않아요. 다시 확인해 주세요.'),
       );
     }
   };
@@ -587,14 +589,17 @@ export default function LoginPage() {
                 type="text"
                 ref={loginIdRef}
                 placeholder={idPlaceholder}
-                onInput={() => setLoginBad(false)}
+                onInput={(e) => {
+                  setLoginBad(false);
+                  setIdFilled(!!e.currentTarget.value.trim());
+                }}
                 onKeyDown={onLoginKeyDown}
                 className={loginInputCls('lg-input')}
               />
             </div>
 
-            {/* 이메일 칸 밑 안내 — 작고 얇게(박스 없이) */}
-            <p className="lg-login-hint">{notice}</p>
+            {/* 이메일 칸 밑 안내 — 작고 얇게(박스 없이). 입력이 생기면 사라진다. */}
+            {!idFilled && <p className="lg-login-hint">{notice}</p>}
 
             {!pwStep ? (
               // 1단계 — '계속'을 누르면 비밀번호 단계가 열린다
