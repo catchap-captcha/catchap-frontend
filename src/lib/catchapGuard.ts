@@ -79,6 +79,27 @@ export function guardSessionId(): string {
   }
 }
 
+/**
+ * 궤적 밖 자동화 신호. 캡차 서버가 `automation_score()` 로 위험도에 더한다.
+ *
+ * 비워 보내면 안 된다 — 신호가 없는 것과 "봇이 아님"이 구분되지 않아 위험도 게이트에
+ * 걸린다(2026-08-12 에 이걸로 정답이 실패 처리됐다). 캡차 위젯(main.jsx)의
+ * clientSignals() 를 그대로 옮긴 것이라 값 구성을 임의로 바꾸지 않는다.
+ */
+function clientSignals(): Record<string, unknown> {
+  try {
+    const n = navigator as Navigator & { webdriver?: boolean };
+    return {
+      webdriver: n.webdriver === true,
+      headlessUA: /headless/i.test(n.userAgent || ''),
+      languages: (n.languages || []).length,
+      cores: n.hardwareConcurrency || 0,
+    };
+  } catch {
+    return {};
+  }
+}
+
 export const guardAssetSrc = (url: string): string =>
   url.startsWith('http') ? url : GUARD_ORIGIN + url;
 
@@ -107,6 +128,8 @@ export function createGuardChallenge(purpose = 'login'): Promise<GuardChallenge>
  */
 export class GuardBehaviorSender {
   private seq = 0;
+  /** 챌린지 전체에서 이어지는 이벤트 번호. 배치를 넘어가도 이어져야 한다. */
+  private sent = 0;
   private previousReceipt: string | null = null;
   private dead = false;
   private readonly max: number;
@@ -124,12 +147,21 @@ export class GuardBehaviorSender {
     return this.dead || !this.nonce;
   }
 
-  /** 큐를 비울 때까지 배치를 보낸다. 보낸 만큼 큐에서 지운다. */
+  /**
+   * 큐를 비울 때까지 배치를 보낸다. 보낸 만큼 큐에서 지운다.
+   *
+   * `seq` 는 서버 **필수** 필드인데 화면 쪽 기록기는 붙이지 않는다. 없으면 배치가
+   * 통째로 422 로 반려되고, 그러면 궤적이 하나도 안 쌓인 채 "행동이 없는 사용자"로
+   * 보여 위험도 게이트에 걸린다(2026-08-12 에 정답이 실패 처리된 원인). 여기서 붙인다.
+   */
   async flush(queue: unknown[]): Promise<void> {
     if (this.disabled || !queue.length) return;
     try {
       while (queue.length) {
-        const batch = queue.slice(0, this.max);
+        const batch = queue.slice(0, this.max).map((e, i) => ({
+          seq: this.sent + i,
+          ...(e as Record<string, unknown>),
+        }));
         const result = await call<{ accepted?: boolean; receipt?: string }>(
           `/api/captcha/challenges/${this.challengeId}/behavior-batches`,
           {
@@ -142,12 +174,17 @@ export class GuardBehaviorSender {
         );
         if (!result.accepted || !result.receipt) throw new Error('behavior_batch_rejected');
         queue.splice(0, batch.length);
+        this.sent += batch.length;
         this.seq += 1;
         this.previousReceipt = result.receipt;
       }
-    } catch {
+    } catch (error) {
       // 체인이 끊기면 회복이 안 된다. 더 보내지 않는다 — 캡차 풀이는 계속된다.
+      //
+      // 다만 **조용히 죽으면 안 된다.** 2026-08-12 에 seq 누락으로 모든 배치가 422 였는데
+      // 이 catch 가 삼켜서, 화면에는 "정답인데 실패" 로만 보이고 원인이 안 드러났다.
       this.dead = true;
+      console.warn('[catchap] 행동 배치 전송 실패 — 궤적이 쌓이지 않습니다', error);
     }
   }
 }
@@ -167,7 +204,7 @@ export async function verifyGuardChallenge(
       session_id: guardSessionId(),
       duration_ms: Math.max(100, Math.round(durationMs)),
       pow_nonce: powNonce,
-      client_signals: {},
+      client_signals: clientSignals(),
     },
   );
   return { ...out, session_id: guardSessionId() };
