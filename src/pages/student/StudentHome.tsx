@@ -362,7 +362,16 @@ export default function StudentHome() {
                 <CourseCover
                   seed={continueLec.course_id || continueLec.id}
                   label={continueLec.title}
-                  imageUrl={thumbnailSrc(continueLec.thumbnail_url)}
+                  imageUrl={
+                    // 강의 자체 썸네일 → (없으면) 코스 업로드 커버 → (없으면) 생성 커버.
+                    // 다른 카드들과 달리 이 히어로만 코스 폴백이 빠져 있어, 강의 썸네일이 null이면
+                    // 검은 생성커버(모노크롬 그라데이션)만 떠 '썸네일 없음'처럼 보였다.
+                    thumbnailSrc(continueLec.thumbnail_url) ??
+                    (continueCourse
+                      ? (thumbnailSrc(continueCourse.thumbnail_url) ??
+                        (isDemoId(continueCourse.id) ? undefined : courseCoverUrl(continueCourse)))
+                      : undefined)
+                  }
                   size="md"
                   className="sh3-continue-cover"
                 />

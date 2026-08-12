@@ -904,9 +904,9 @@ export default function LecturePlayer() {
               <div className="lp-video lp-video-empty" />
             )}
 
-            {/* 모바일 가운데 재생/일시정지 — 화면을 탭해 컨트롤이 보이는 동안에만 뜬다.
-                재생/정지는 이 버튼으로(영상 영역 탭은 컨트롤 토글 전용). */}
-            {phase === 'ready' && isTouch && !idle && !gate && !overlay && (playing || curTime > 0) && (
+            {/* 가운데 재생/일시정지 — 컨트롤이 보이는 동안에만 뜬다(모바일은 탭, 데스크톱은 마우스를
+                올리면 컨트롤이 나타나며 같이 보인다). 재생/정지는 이 버튼으로. */}
+            {phase === 'ready' && !idle && !gate && !overlay && (playing || curTime > 0) && (
               <button
                 className="lp-centerplay"
                 onClick={(e) => {
