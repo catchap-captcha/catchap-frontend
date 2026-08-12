@@ -505,6 +505,8 @@ export default function MyRecords() {
           perfect: !!c.exam?.perfect,
           at: fmtPassedAt(c.exam?.passed_at),
         })),
+        // 최근 7일 학습 추이 그래프용 — demo(실집계 없음)면 빈 배열(그래프 자리에 '기록 없음')
+        days: demo ? [] : data.days,
       });
     } catch {
       flash('리포트 저장에 실패했어요. 잠시 후 다시 시도해 주세요.');
