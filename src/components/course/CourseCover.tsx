@@ -24,7 +24,7 @@ export default function CourseCover({
   const art = courseCover(seed, label);
   return (
     <div
-      className={`cover cover--${size}${className ? ` ${className}` : ''}`}
+      className={`cover cover--${size}${imageUrl ? ' cover--img' : ''}${className ? ` ${className}` : ''}`}
       style={{ ['--cover-from' as string]: art.from, ['--cover-to' as string]: art.to }}
       aria-hidden="true"
     >
