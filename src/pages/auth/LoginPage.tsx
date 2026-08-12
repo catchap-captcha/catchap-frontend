@@ -67,8 +67,6 @@ export default function LoginPage() {
   const [remember, setRemember] = useState(false);
   // 노션식 2단계 로그인 — 이메일 입력 → '계속' → 비밀번호 단계. goLogin에서 리셋.
   const [pwStep, setPwStep] = useState(false);
-  // 이메일 칸에 입력이 생기면 안내문(hint)을 숨긴다.
-  const [idFilled, setIdFilled] = useState(false);
   // 아이디+비밀번호가 여러 기관에서 일치할 때(409)만 후보 기관 버튼 노출
   const [orgCandidates, setOrgCandidates] = useState<
     { organization_id: string; organization_name: string }[] | null
@@ -605,23 +603,20 @@ export default function LoginPage() {
 
             {/* 이메일(아이디) — 항상 노출. 계정은 이메일/아이디 모두 허용(서버가 판별). */}
             <label className="lg-label">{idLabel}</label>
-            <div className="lg-field">
+            <div className="lg-field lg-mb16">
               <i className="ph ph-user-circle lg-field-icon" />
               <input
                 type="text"
                 ref={loginIdRef}
                 placeholder={idPlaceholder}
-                onInput={(e) => {
-                  setLoginBad(false);
-                  setIdFilled(!!e.currentTarget.value.trim());
-                }}
+                onInput={() => setLoginBad(false)}
                 onKeyDown={onLoginKeyDown}
                 className={loginInputCls('lg-input')}
               />
             </div>
 
-            {/* 이메일 칸 밑 안내 — 작고 얇게(박스 없이). 입력이 생기면 사라진다. */}
-            {!idFilled && <p className="lg-login-hint">{notice}</p>}
+            {/* 이메일 칸 밑 안내 — 작고 얇게(박스 없이). '계속'을 눌러 비밀번호 단계로 가면 사라진다. */}
+            {!pwStep && <p className="lg-login-hint">{notice}</p>}
 
             {!pwStep ? (
               // 1단계 — '계속'을 누르면 비밀번호 단계가 열린다
@@ -706,14 +701,6 @@ export default function LoginPage() {
             {/* ===== 노션식 3단계 가입 — 1:이메일 · 2:인증코드 · 3:정보입력 ===== */}
             {(
               <>
-                <div className="lg-steps" aria-hidden="true">
-                  <span className={'lg-step' + (signupStep >= 1 ? ' on' : '')}>1</span>
-                  <span className="lg-step-line" />
-                  <span className={'lg-step' + (signupStep >= 2 ? ' on' : '')}>2</span>
-                  <span className="lg-step-line" />
-                  <span className={'lg-step' + (signupStep >= 3 ? ' on' : '')}>3</span>
-                </div>
-
                 {/* 3단계: 이름·생년월일(2열). 만 14세 미만이면 보호자 이메일 동의 섹션이 아래에 열린다. */}
                 {signupStep === 3 && (
                   <>
@@ -819,7 +806,7 @@ export default function LoginPage() {
                 {signupStep === 1 && (
                   <>
                     <label className="lg-label">이메일 (로그인 아이디)</label>
-                    <div className="lg-field">
+                    <div className="lg-field lg-mb16">
                       <i className="ph-fill ph-envelope-simple lg-field-icon" />
                       <input
                         type="email"

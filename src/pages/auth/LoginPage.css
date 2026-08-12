@@ -181,7 +181,7 @@
 
 /* 이메일 칸 밑 안내 — 작고 얇게(박스 없이). 종전 하단 .lg-notice 박스를 대체. */
 .lg-login-hint {
-  margin: 8px 0 16px;
+  margin: 0 0 14px;
   color: var(--ink-3);
   font-weight: 400;
   font-size: 11.5px;
