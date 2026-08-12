@@ -19,6 +19,7 @@ interface CourseRow {
   done: number;
   pct: number;
   continueLec: LectureItem | null;
+  firstLec: LectureItem | null; // 목차 첫 강의 — 완료 코스 '강의 다시보기' 진입점
   completed: boolean;
 }
 
@@ -136,7 +137,7 @@ export default function MyCourses() {
           null;
         // 완료 = 전 강의 완주 또는 수료 시험 통과
         const completed = (total > 0 && done === total) || !!c.exam?.passed;
-        return { course: c, total, done, pct, continueLec, completed };
+        return { course: c, total, done, pct, continueLec, firstLec: ls[0] ?? null, completed };
       });
   }, [courses, lectures]);
 
@@ -228,12 +229,22 @@ export default function MyCourses() {
                       </div>
                     </div>
                     {r.completed && st ? (
-                      <div className={`mc-status mc-status--${st.cls}`}>
-                        <span className="mc-status-head">
-                          <i className={`ph-fill ${st.icon}`} />
-                          {st.label}
-                        </span>
-                        <span className="mc-status-sub">{st.detail}</span>
+                      <div className="mc-doneblock">
+                        <div className={`mc-status mc-status--${st.cls}`}>
+                          <span className="mc-status-head">
+                            <i className={`ph-fill ${st.icon}`} />
+                            {st.label}
+                          </span>
+                          <span className="mc-status-sub">{st.detail}</span>
+                        </div>
+                        {/* 수료 후에도 강의 다시보기 — 완주한 강의는 캡차 없이 자유 시청(#1) */}
+                        <button
+                          className="mc-review"
+                          onClick={() => goWatch((r.firstLec ?? r.continueLec)?.id ?? '')}
+                          disabled={!r.firstLec && !r.continueLec}
+                        >
+                          <i className="ph-fill ph-arrow-counter-clockwise" /> 강의 다시보기
+                        </button>
                       </div>
                     ) : (
                       <div className="mc-actions">
