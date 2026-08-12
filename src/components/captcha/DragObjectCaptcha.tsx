@@ -138,6 +138,19 @@ export default function DragObjectCaptcha({ onToken, onClose }: Props) {
 
   const sessionIdRef = useRef<string>(makeSessionId());
   const startedAtRef = useRef<number>(0);
+  /**
+   * 문제가 뜬 시각을 epoch 로도 잡아둔다.
+   *
+   * Guard 로 보낼 때 이벤트 시각은 **절대(epoch)** 여야 한다. 행동 AI 의 품질 검사가
+   * 서버가 기록한 제시·제출 시각(epoch)과 대조하는데, `performance.now()` 기준
+   * 상대값을 보내면 창 밖으로 판정된다(`event_timestamps_outside_server_window`).
+   * 그러면 위험도가 올라 정상 사용자도 step_up 을 받는다 — 2026-08-12 에 로그인
+   * 캡차를 푼 네 건이 전부 이랬다. 위젯(`main.jsx`)은 `Date.now()` 를 쓴다.
+   *
+   * 간격은 `performance.now()` 로 재고 시작점만 epoch 로 둔다. 벽시계가 튀어도
+   * 이벤트 사이 간격이 흔들리지 않아야 하기 때문이다 — 간격은 특징으로 쓰인다.
+   */
+  const startedAtEpochRef = useRef<number>(0);
   const stageRef = useRef<HTMLDivElement | null>(null);
   const dropRef = useRef<HTMLDivElement | null>(null);
   const eventsRef = useRef<BehaviorEvent[]>([]);
@@ -155,7 +168,11 @@ export default function DragObjectCaptcha({ onToken, onClose }: Props) {
     if (eventsRef.current.length >= MAX_EVENTS) return;
     eventsRef.current.push({
       type,
-      timestamp_ms: Math.max(0, Math.round(performance.now() - startedAtRef.current)),
+      // Guard 는 epoch, 백엔드 자체 캡차는 지금까지처럼 상대값. 저쪽 스키마를
+      // 바꾸지 않으려고 갈라 둔다(위 `startedAtEpochRef` 주석 참고).
+      timestamp_ms: USE_GUARD
+        ? Math.round(startedAtEpochRef.current + (performance.now() - startedAtRef.current))
+        : Math.max(0, Math.round(performance.now() - startedAtRef.current)),
       ...extra,
     });
   }, []);
@@ -189,6 +206,7 @@ export default function DragObjectCaptcha({ onToken, onClose }: Props) {
       setChallenge(data);
       // 새 문제마다 행동 기록을 초기화한다 — 이전 문제의 궤적이 섞이면 분석이 왜곡된다.
       startedAtRef.current = performance.now();
+      startedAtEpochRef.current = Date.now();
       eventsRef.current = [];
       lastMoveRef.current = 0;
       track('challenge_loaded');
