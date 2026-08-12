@@ -973,15 +973,12 @@
   margin-bottom: 22px;
 }
 
+/* 인라인 경고 — 박스 없이 '! 문구'만(노션식). 로그인/가입 공통. */
 .lg-formerr {
   display: flex;
   align-items: center;
-  gap: 8px;
-  background: var(--surface);
-  border: 1.5px solid var(--line);
-  border-radius: 12px;
-  padding: 11px 13px;
-  margin-bottom: 12px;
+  gap: 6px;
+  margin: 2px 0 12px;
 }
 
 .lg-formerr i {
@@ -993,7 +990,7 @@
 .lg-formerr span {
   font-size: 12.5px;
   font-weight: 700;
-  color: var(--brand-ink);
+  color: var(--danger);
   line-height: 1.4;
 }
 
