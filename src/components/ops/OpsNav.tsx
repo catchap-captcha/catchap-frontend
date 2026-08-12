@@ -120,6 +120,8 @@ export default function OpsNav() {
   const [notes, setNotes] = useState<Notification[] | null>(null);
   // 상단바 드롭다운 — 열린 그룹 키(운영/데이터/시스템) 하나만. 스크림 클릭으로 닫힘.
   const [openGroup, setOpenGroup] = useState<string | null>(null);
+  // 모바일 햄버거 메뉴 — 좁은 화면(≤768px)에서 가로 네비 대신 접이식 메뉴로 연다.
+  const [menuOpen, setMenuOpen] = useState(false);
 
   // 호버로 펼치기 — 클릭 토글은 그대로 두고(터치·키보드 진입로) 마우스에선 갖다 대면 열린다.
   // 닫기는 약간 늦춘다: 버튼 → 메뉴로 포인터를 옮기는 중 잠깐 벗어나도 닫히지 않게.
@@ -133,6 +135,7 @@ export default function OpsNav() {
     }
   };
   useEffect(() => cancelClose, []); // 언마운트 후 setState 방지
+  useEffect(() => setMenuOpen(false), [pathname]); // 페이지 이동 시 모바일 메뉴 닫기
   // 터치 기기에선 탭이 mouseenter로도 잡혀 클릭 토글과 충돌한다 → 진짜 호버 가능할 때만.
   const canHover = () =>
     typeof window !== 'undefined' && window.matchMedia('(hover: hover)').matches;
@@ -315,8 +318,82 @@ export default function OpsNav() {
           <button type="button" className="op-top-icbtn" onClick={onLogout} title="로그아웃">
             <i className="ph ph-sign-out" />
           </button>
+          {/* 모바일 햄버거 — 데스크톱에선 CSS로 숨김(≤768px에서만 노출). */}
+          <button
+            type="button"
+            className="op-top-icbtn op-top-burger"
+            onClick={() => setMenuOpen((o) => !o)}
+            aria-label="메뉴"
+            aria-expanded={menuOpen}
+          >
+            <i className={menuOpen ? 'ph ph-x' : 'ph ph-list'} />
+          </button>
         </div>
       </div>
+
+      {/* 모바일 접이식 메뉴 — 햄버거로 여는 전체 네비(≤768px). 데스크톱은 CSS로 미표시. */}
+      {menuOpen && (
+        <div className="op-mobmenu">
+          {isInstructor ? (
+            <div className="op-mobsec">
+              {INSTRUCTOR_TABS.map((l) => (
+                <Link
+                  key={l.to}
+                  to={l.to}
+                  className={'op-mobitem' + (itemActive(l, pathname) ? ' op-mobitem--on' : '')}
+                  onClick={() => setMenuOpen(false)}
+                >
+                  <i className={`ph ${l.icon}`} />
+                  <span>{l.label}</span>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <>
+              <div className="op-mobsec">
+                <Link
+                  to={PATHS.OPS_DASHBOARD}
+                  className={'op-mobitem' + (pathname === PATHS.OPS_DASHBOARD ? ' op-mobitem--on' : '')}
+                  onClick={() => setMenuOpen(false)}
+                >
+                  <i className="ph ph-squares-four" />
+                  <span>운영 홈</span>
+                </Link>
+              </div>
+              {GROUPS.map((g) => (
+                <div key={g.key} className="op-mobsec">
+                  <div className="op-mobsec-label">{g.label}</div>
+                  {g.items.map((l) => (
+                    <Link
+                      key={l.to}
+                      to={l.to}
+                      className={'op-mobitem' + (itemActive(l, pathname) ? ' op-mobitem--on' : '')}
+                      onClick={() => setMenuOpen(false)}
+                    >
+                      <i className={`ph ${l.icon}`} />
+                      <span>{l.label}</span>
+                    </Link>
+                  ))}
+                </div>
+              ))}
+            </>
+          )}
+          <div className="op-mobsec op-mobsec--foot">
+            <Link to={PATHS.OPS_INQUIRY} className="op-mobitem" onClick={() => setMenuOpen(false)}>
+              <i className="ph-fill ph-chat-circle-text" />
+              <span>문의하기</span>
+            </Link>
+            <Link
+              to={isInstructor ? PATHS.OPS_INSTRUCTOR_PROFILE : PATHS.OPS_OPERATORS}
+              className="op-mobitem"
+              onClick={() => setMenuOpen(false)}
+            >
+              <i className="ph ph-user-circle" />
+              <span>{(me?.name ?? roleLabel) + ' · ' + roleLabel}</span>
+            </Link>
+          </div>
+        </div>
+      )}
 
       {/* 알림 패널 — 목록 + 읽음 처리(문항 생성 완료/실패 등) */}
       {notifOpen && (

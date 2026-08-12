@@ -573,6 +573,56 @@
   .op-top-gbtn, .op-top-tab { padding: 8px 10px; }
 }
 
+/* ══════════ 모바일 햄버거 메뉴 (≤768px) ══════════
+   좁은 화면에선 가로 네비(드롭다운 그룹/탭)가 넘쳐 페이지가 옆으로 스크롤됐다.
+   데스크톱 네비는 그대로 두고(아래 미디어쿼리 밖은 손대지 않음), 모바일에서만
+   가로 네비를 접고 햄버거로 여는 세로 메뉴로 대체한다. */
+.op-top-burger { display: none; } /* 데스크톱 미표시 — 미디어쿼리에서만 노출 */
+.op-mobmenu { display: none; }
+.op-mobsec { margin-bottom: 6px; }
+.op-mobsec--foot { margin-top: 4px; border-top: 1px solid var(--line); padding-top: 8px; }
+.op-mobsec-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-3);
+  padding: 10px 14px 4px;
+}
+.op-mobitem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 14px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--ink-2);
+  text-decoration: none;
+}
+.op-mobitem > i:first-child { font-size: 18px; width: 22px; text-align: center; flex-shrink: 0; }
+.op-mobitem:hover { background: var(--bg); color: var(--ink); }
+.op-mobitem--on { background: var(--brand-soft); color: var(--ink); }
+@media (max-width: 768px) {
+  .op-top-nav { display: none; }
+  .op-top-burger { display: flex; }
+  .op-top-inquiry,
+  .op-top-me,
+  .op-top-divider { display: none; }
+  .op-mobmenu {
+    display: block;
+    position: fixed;
+    top: 60px; /* 상단바(높이 60px) 바로 아래 */
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--surface);
+    border-top: 1px solid var(--line);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 12px;
+    z-index: 5;
+  }
+}
+
 .op-main {
   /* 본문 컨테이너 — 학생 콘솔 '강의 신청'(.ll-container)과 같은 폭으로 통일(2026-07-28).
      종전 1400px 고정이라 1920px 화면에서 콘텐츠가 281px에서 시작해, 학생 화면(85px)보다
