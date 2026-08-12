@@ -82,13 +82,14 @@ export default function StudentHome() {
   // 이어서 학습 — 시청 중인 강의 우선, 없으면 아직 안 끝낸 첫 강의(히어로 1건).
   const continueLec = useMemo(() => {
     if (!lectures) return null;
-    // ★내가 '수강신청한(enrolled)' 코스의 강의만 — 카탈로그엔 있지만 미수강인 코스(신청 안 한
-    //   코스가 '다음 강의'로 잡히던 버그)나 삭제·숨김·미개설 코스가 히어로에 뜨는 것을 막는다.
-    //   코스 미배정(course_id 없음) 강의는 그대로 허용.
+    // ★내가 '수강신청한(enrolled)' 코스의 강의만 노출한다 — 카탈로그엔 있지만 미수강인 코스,
+    //   삭제·숨김·미개설 코스, 그리고 코스 미배정(course_id 없음) 강의까지 전부 히어로에서 제외.
+    //   (미분류 강의가 '다음 강의'로 잡혀 미수강 코스가 뜨던 문제 — leqsss94 제보. 실제 강사가
+    //    코스를 만들고 강의를 올린, 내가 신청한 코스의 강의만 이어서 학습에 뜬다.)
     const enrolledCourseIds = new Set(
       (courses ?? []).filter((c) => c.enrolled).map((c) => c.id),
     );
-    const live = lectures.filter((l) => !l.course_id || enrolledCourseIds.has(l.course_id));
+    const live = lectures.filter((l) => !!l.course_id && enrolledCourseIds.has(l.course_id));
     return (
       live.find((l) => l.progress?.status === 'watching') ??
       live.find((l) => l.progress?.status !== 'done') ??
