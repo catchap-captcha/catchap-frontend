@@ -23,16 +23,21 @@
   border-radius: var(--r);
 }
 
-/* 실제 썸네일 이미지 — 있으면 생성 커버(그라데이션·패턴·모노그램) 위를 꽉 채워 덮는다.
-   컨테이너(.cover)는 이미 position:relative라 inset:0로 정확히 맞물린다. */
+/* 실제 썸네일 이미지 — 원본 비율을 유지한 채 영역 안에 '전체가' 보이게 맞춘다(object-fit:contain).
+   16:9가 아닌 칸(정사각 sm·히어로 등)에선 잘리지 않고 레터박스(빈 공간)가 생긴다. 그 빈 공간은
+   아래 .cover--img의 어두운 배경으로 깔끔하게 채운다(그라데이션이 비쳐 지저분해지지 않게). */
 .cover-img {
   position: absolute;
   inset: 0;
   z-index: 3;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   display: block;
+}
+/* 실제 이미지가 있을 때는 컨테이너 배경을 어둡게 — contain 레터박스가 깔끔하게 보이도록. */
+.cover--img {
+  background: #101012;
 }
 
 /* 미세 패턴 오버레이 — 흰색 저알파로 그라데이션 위에 질감 부여 */
