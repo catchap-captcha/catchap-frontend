@@ -970,7 +970,7 @@ export default function LecturePlayer() {
                       className={`lp-chipbtn${isDone ? '' : ' lp-chipbtn--locked'}`}
                       onClick={() => {
                         if (!isDone) {
-                          showToast('완강하면 배속을 조절할 수 있어요 🐾');
+                          showToast('완강하면 배속을 조절할 수 있어요');
                           return;
                         }
                         setSpeedOpen((o) => !o);
