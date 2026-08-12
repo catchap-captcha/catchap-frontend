@@ -179,6 +179,38 @@
   font-size: 14.5px;
 }
 
+/* 이메일 칸 밑 안내 — 작고 얇게(박스 없이). 종전 하단 .lg-notice 박스를 대체. */
+.lg-login-hint {
+  margin: 8px 0 16px;
+  color: var(--ink-3);
+  font-weight: 400;
+  font-size: 11.5px;
+  line-height: 1.55;
+}
+
+/* 하단 '신규 사용자이신가요? 가입하기' 줄 */
+.lg-signup-cta {
+  margin: 18px 0 0;
+  text-align: center;
+  font-size: 13px;
+  color: var(--ink-3);
+}
+.lg-linkbtn {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--brand-ink, var(--ink));
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+.lg-linkbtn:hover {
+  opacity: 0.8;
+}
+
 .lg-signup-sub {
   margin: 0 0 20px;
   color: var(--ink-3);

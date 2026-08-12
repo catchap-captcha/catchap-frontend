@@ -61,6 +61,8 @@ export default function LoginPage() {
   // 로그인 유지 — 켜면 localStorage(브라우저 닫아도 유지), 끄면 sessionStorage(탭 닫으면 로그아웃).
   // 기본은 끔: 공용 PC에서 켜져 있으면 다음 사용자에게 세션이 넘어갈 수 있어서다.
   const [remember, setRemember] = useState(false);
+  // 노션식 2단계 로그인 — 이메일 입력 → '계속' → 비밀번호 단계. goLogin에서 리셋.
+  const [pwStep, setPwStep] = useState(false);
   // 아이디+비밀번호가 여러 기관에서 일치할 때(409)만 후보 기관 버튼 노출
   const [orgCandidates, setOrgCandidates] = useState<
     { organization_id: string; organization_name: string }[] | null
@@ -123,8 +125,8 @@ export default function LoginPage() {
 
   // ===== 라벨/문구 — 학습자 단일 흐름 =====
   // 학생 이메일 가입 전환(2026-07-16): 새 계정은 이메일이 아이디 — 기존 아이디도 계속 유효
-  const idLabel = '아이디';
-  const idPlaceholder = '이메일 또는 아이디를 입력해 주세요';
+  const idLabel = '이메일';
+  const idPlaceholder = '이메일 주소를 입력하세요.';
   const notice =
     '강사·기관 담당자 계정도 여기서 로그인하면 각자 콘솔로 이동합니다. 만 14세 미만은 가입 시 보호자 동의가 필요합니다.';
 
@@ -326,11 +328,25 @@ export default function LoginPage() {
     else void doLogin();
   };
 
-  // 아이디/비밀번호 칸에서 Enter → 바로 로그인 (form 없이도 동작)
+  // 이메일(아이디) 입력 후 '계속' → 비밀번호 단계로. 비어 있으면 안내.
+  const continueToPassword = () => {
+    const id = loginIdRef.current?.value.trim() ?? '';
+    if (!id) {
+      setLoginBad(true);
+      setLoginError('이메일 또는 아이디를 입력해 주세요.');
+      return;
+    }
+    setLoginBad(false);
+    setLoginError('');
+    setPwStep(true);
+  };
+
+  // Enter → 1단계면 '계속', 2단계(비밀번호 노출)면 로그인 (form 없이도 동작)
   const onLoginKeyDown = (e: ReactKeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      submitLogin();
+      if (pwStep) submitLogin();
+      else continueToPassword();
     }
   };
 
@@ -493,7 +509,10 @@ export default function LoginPage() {
     setCodeSecondsLeft(0);
     setVerified(false);
   };
-  const goLogin = () => setView('login');
+  const goLogin = () => {
+    setView('login');
+    setPwStep(false);
+  };
 
   const loginInputCls = (base: string) => base + (loginBad ? ' lg-input--bad' : '');
   // 역할 탭 제거(기관·교사 0717 / 학부모 0718 은퇴) — 학습자 단일 흐름이라 탭 UI가 없다.
@@ -560,8 +579,9 @@ export default function LoginPage() {
               </>
             )}
 
+            {/* 이메일(아이디) — 항상 노출. 계정은 이메일/아이디 모두 허용(서버가 판별). */}
             <label className="lg-label">{idLabel}</label>
-            <div className="lg-field lg-mb16">
+            <div className="lg-field">
               <i className="ph ph-user-circle lg-field-icon" />
               <input
                 type="text"
@@ -573,35 +593,52 @@ export default function LoginPage() {
               />
             </div>
 
-            <label className="lg-label">비밀번호</label>
-            <div className="lg-field lg-mb12">
-              <i className="ph ph-lock-key lg-field-icon" />
-              <PasswordInput
-                ref={loginPwRef}
-                placeholder="비밀번호를 입력해 주세요"
-                onInput={() => setLoginBad(false)}
-                onKeyDown={onLoginKeyDown}
-                className={loginInputCls('lg-input')}
-              />
-            </div>
+            {/* 이메일 칸 밑 안내 — 작고 얇게(박스 없이) */}
+            <p className="lg-login-hint">{notice}</p>
 
-            <div className="lg-rememberrow">
-              <label className="lg-remember">
-                <input
-                  type="checkbox"
-                  checked={remember}
-                  onChange={(e) => setRemember(e.target.checked)}
-                />
-                로그인 유지
-              </label>
-              <span className="lg-findrow">
-                {/* 아이디 찾기 제거(2026-08-10) — 새 계정은 '이메일=아이디'라 이메일을 아는
-                    사람에겐 무의미. 비밀번호 찾기만 남긴다. */}
-                <Link to={PATHS.PASSWORD_RESET} className="lg-forgot">
-                  비밀번호를 잊으셨나요?
-                </Link>
-              </span>
-            </div>
+            {!pwStep ? (
+              // 1단계 — '계속'을 누르면 비밀번호 단계가 열린다
+              <button type="button" onClick={continueToPassword} className="lg-primary">
+                계속
+              </button>
+            ) : (
+              // 2단계 — 비밀번호 입력 + 로그인
+              <>
+                <label className="lg-label">비밀번호</label>
+                <div className="lg-field lg-mb12">
+                  <i className="ph ph-lock-key lg-field-icon" />
+                  <PasswordInput
+                    ref={loginPwRef}
+                    placeholder="비밀번호를 입력해 주세요"
+                    onInput={() => setLoginBad(false)}
+                    onKeyDown={onLoginKeyDown}
+                    className={loginInputCls('lg-input')}
+                    autoFocus
+                  />
+                </div>
+
+                <div className="lg-rememberrow">
+                  <label className="lg-remember">
+                    <input
+                      type="checkbox"
+                      checked={remember}
+                      onChange={(e) => setRemember(e.target.checked)}
+                    />
+                    로그인 유지
+                  </label>
+                  <span className="lg-findrow">
+                    <Link to={PATHS.PASSWORD_RESET} className="lg-forgot">
+                      비밀번호를 잊으셨나요?
+                    </Link>
+                  </span>
+                </div>
+
+                <button type="button" onClick={submitLogin} className="lg-primary">
+                  <i className="ph-bold ph-sign-in" />
+                  로그인
+                </button>
+              </>
+            )}
 
             {loginError && (
               <div className="lg-formerr">
@@ -610,30 +647,22 @@ export default function LoginPage() {
               </div>
             )}
 
-            <button type="button" onClick={submitLogin} className="lg-primary">
-              <i className="ph-bold ph-sign-in" />
-              로그인
-            </button>
-
             <div className="lg-divider">
               <div className="lg-divider-line" />
-              <span>또는</span>
+              <span>또는 다음으로 계속하기</span>
               <div className="lg-divider-line" />
             </div>
 
             {/* 간편 로그인 — 서버에 키가 설정된 provider만 그려진다(하나도 없으면 통째로 숨김) */}
             <SocialLoginButtons mode="login" />
 
-            <button type="button" onClick={goSignup} className="lg-secondary">
-              <i className="ph ph-user-plus" />
-              회원가입
-            </button>
-
-            {/* 통합 로그인 안내 — 강사·기관 담당자도 이 폼에서 로그인(입력 계정으로 자동 판별·역할별 콘솔로 이동) */}
-            <div className="lg-notice">
-              <i className="ph ph-info" />
-              <p>{notice}</p>
-            </div>
+            {/* 신규 사용자 → 회원가입으로 */}
+            <p className="lg-signup-cta">
+              신규 사용자이신가요?{' '}
+              <button type="button" onClick={goSignup} className="lg-linkbtn">
+                가입하기
+              </button>
+            </p>
           </div>
         )}
 
