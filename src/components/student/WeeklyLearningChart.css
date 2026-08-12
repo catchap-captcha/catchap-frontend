@@ -31,10 +31,12 @@
 .wlc-chartwrap {
   margin-top: 8px;
   max-width: 900px;
+  min-width: 0;
 }
 
 .wlc-svg {
   display: block;
+  width: 100%;
   overflow: visible;
 }
 

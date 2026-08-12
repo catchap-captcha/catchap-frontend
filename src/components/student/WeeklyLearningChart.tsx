@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import './WeeklyLearningChart.css';
 
 export interface DayPoint {
@@ -23,18 +23,25 @@ function fmtLabel(d: DayPoint): string {
 
 export default function WeeklyLearningChart({ days }: { days: DayPoint[] }) {
   const data = useMemo(() => (days || []).slice(-7), [days]);
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const [w, setW] = useState(680);
+  const roRef = useRef<ResizeObserver | null>(null);
+  const [w, setW] = useState(0);
 
-  useEffect(() => {
-    const el = wrapRef.current;
-    if (!el || typeof ResizeObserver === 'undefined') return;
-    const ro = new ResizeObserver((entries) => {
-      const cw = entries[0]?.contentRect.width;
+  // 콜백 ref — 차트 래퍼가 실제로 붙는 순간 clientWidth를 실측한다.
+  // (SVG는 width:100%라 부모를 넘길 수 없으니 실측폭이 항상 카드 폭과 일치 → 삐져나감/피드백 루프 방지)
+  const setWrap = useCallback((el: HTMLDivElement | null) => {
+    roRef.current?.disconnect();
+    roRef.current = null;
+    if (!el) return;
+    const measure = () => {
+      const cw = el.clientWidth;
       if (cw && cw > 0) setW(Math.round(cw));
-    });
-    ro.observe(el);
-    return () => ro.disconnect();
+    };
+    measure();
+    if (typeof ResizeObserver !== 'undefined') {
+      const ro = new ResizeObserver(measure);
+      ro.observe(el);
+      roRef.current = ro;
+    }
   }, []);
 
   const totals = useMemo(() => {
@@ -78,10 +85,11 @@ export default function WeeklyLearningChart({ days }: { days: DayPoint[] }) {
       </div>
 
       {totals.hasAny ? (
-        <div className="wlc-chartwrap" ref={wrapRef}>
+        <div className="wlc-chartwrap" ref={setWrap}>
+          {w > 0 && (
           <svg
             className="wlc-svg"
-            width={w}
+            width="100%"
             height={H}
             viewBox={`0 0 ${w} ${H}`}
             role="img"
@@ -117,7 +125,7 @@ export default function WeeklyLearningChart({ days }: { days: DayPoint[] }) {
                       className={`wlc-vlabel${isToday ? ' wlc-vlabel-cur' : ''}`}
                       x={p.cx}
                       y={p.cy - 15}
-                      textAnchor="middle"
+                      textAnchor={isToday ? 'end' : p.i === 0 ? 'start' : 'middle'}
                     >
                       {fmtLabel(p)}
                     </text>
@@ -134,6 +142,7 @@ export default function WeeklyLearningChart({ days }: { days: DayPoint[] }) {
               );
             })}
           </svg>
+          )}
           <div className="wlc-foot">
             <span className="wlc-foot-total">
               <i className="ph-fill ph-puzzle-piece" /> 문제 {totals.solved}개
