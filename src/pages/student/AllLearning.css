@@ -59,6 +59,10 @@
   flex-wrap: wrap;
   margin-bottom: 34px;
 }
+/* 다크모드: 페이지 배경(#161616)과 섞여 카드가 안 보이던 걸 진회색으로 분리 */
+:root[data-theme='dark'] .al-qcard {
+  background: #2a2a2a;
+}
 
 .al-qcard-left {
   flex: 1;
@@ -125,14 +129,16 @@
   max-width: 360px;
   height: 6px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.16);
+  /* 어두운 카드 위 빈 트랙이 보이도록 대비 강화(종전 0.16은 미진행 시 거의 안 보였다) */
+  background: rgba(255, 255, 255, 0.3);
   overflow: hidden;
 }
 
 .al-qcard-goalfill {
   height: 100%;
   border-radius: 999px;
-  background: var(--brand);
+  /* 카드가 항상 어두우므로 흰색으로 채운다 — var(--brand)는 라이트모드에서 검정이라 묻혔다 */
+  background: #fff;
   transition: width 0.25s ease;
 }
 
