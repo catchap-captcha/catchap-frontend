@@ -211,6 +211,43 @@
   opacity: 0.8;
 }
 
+/* 3단계 가입 진행 표시 (1 - 2 - 3) */
+.lg-steps {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 0 0 22px;
+}
+.lg-step {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--ink-3);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+.lg-step.on {
+  color: var(--on-brand);
+  background: var(--brand);
+  border-color: var(--brand);
+}
+.lg-step-line {
+  width: 24px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--line);
+}
+
 .lg-signup-sub {
   margin: 0 0 20px;
   color: var(--ink-3);
