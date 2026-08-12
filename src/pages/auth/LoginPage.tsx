@@ -647,14 +647,7 @@ export default function LoginPage() {
             <h2 className="lg-h2 lg-h2--signup">{signupTitle}</h2>
             <p className="lg-signup-sub">{signupSubtitle}</p>
 
-            {/* 간편 가입 — provider가 이메일 인증을 대신해 준다. 만 14세 미만은 여기서
-                가입되지 않고(보호자 동의 절차가 소셜에 없다) 아래 이메일 가입으로 와야 한다. */}
-            <SocialLoginButtons mode="signup" />
-            <div className="lg-divider">
-              <div className="lg-divider-line" />
-              <span>이메일로 가입</span>
-              <div className="lg-divider-line" />
-            </div>
+            {/* 이메일 가입이 주 경로(노션식) — 소셜 가입은 폼 아래 '또는 다음으로 계속하기'로 잇는다. */}
 
             {/* ============ 학습자 가입 (단일 흐름) ============ */}
             {(
@@ -883,6 +876,15 @@ export default function LoginPage() {
                   <i className="ph-fill ph-user-plus lg-primary-icon20" />
                   가입하기
                 </button>
+
+                {/* 소셜 가입 — 이메일 가입(위)이 주 경로, 소셜은 아래로(노션식). 만 14세 미만은
+                    소셜에 보호자 동의 절차가 없어 위 이메일 가입으로 와야 한다. */}
+                <div className="lg-divider">
+                  <div className="lg-divider-line" />
+                  <span>또는 다음으로 계속하기</span>
+                  <div className="lg-divider-line" />
+                </div>
+                <SocialLoginButtons mode="signup" />
 
                 <div className="lg-notice lg-notice--mt16">
                   <i className="ph-fill ph-info" />
