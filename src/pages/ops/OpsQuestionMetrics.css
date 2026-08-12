@@ -91,7 +91,8 @@
 .qm-tablewrap {
   border: 0.5px solid var(--line);
   border-radius: 16px;
-  overflow: hidden;
+  /* 고정폭 열 + nowrap 헤더라 좁은 폭에서 표가 넘친다 — 잘라내지 말고(overflow:hidden) 가로 스크롤 */
+  overflow-x: auto;
   background: var(--surface);
   box-shadow: var(--op-shadow);
 }

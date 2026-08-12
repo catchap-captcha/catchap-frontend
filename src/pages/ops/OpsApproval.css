@@ -1596,6 +1596,18 @@
 .op-aimodel-desc { display: block; color: var(--ink-3); font-weight: 600; font-size: 11.5px; }
 .op-form-span2 { grid-column: span 2; }
 
+/* ── 중간 폭(창 분할 등, ≤1000px): 사이드바 없는 풀폭 콘솔이라 다열 관리/행동데이터 표가
+   760px 이전에도 열이 눌려 읽기 어렵고 일부는 넘쳤다. 미리 세로 스택으로 접는다(헤더 숨김).
+   특히 .op-bhc-*(행동 비교 7열)는 접힘 규칙이 아예 없어 어느 폭에서도 안 접히던 걸 여기서 해결. ── */
+@media (max-width: 1000px) {
+  .op-loghead, .op-orghead, .op-ophead, .op-bh-head-row, .op-bhc-head { display: none; }
+  .op-logrow, .op-orgrow, .op-oprow, .op-bh-row, .op-bhc-row, .op-aimodel-grid {
+    grid-template-columns: 1fr !important;
+    gap: 6px;
+  }
+  .op-col-right { text-align: left; }
+}
+
 /* ── 운영 콘솔 모바일 최소 대응 (375px): 네비 가로 스크롤 + KPI/그리드 접기 ── */
 @media (max-width: 760px) {
   /* 네비 — 링크 9개가 한 줄 강제라 375px에서 뒤쪽 메뉴 접근 불가였음 → 가로 스크롤 허용 */

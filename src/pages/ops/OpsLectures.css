@@ -711,7 +711,9 @@
 .op-lect-matform { border: 1.5px solid var(--line); border-radius: 14px; padding: 14px; margin-bottom: 12px; background: var(--surface-2); }
 .op-lect-matmode { display: flex; gap: 8px; margin-bottom: 10px; }
 
-@media (max-width: 900px) {
+/* 강의명(minmax 0,2fr)이 336px 관리 열에 눌려 ~1000px에서 뭉개지고, 코스 표는 900~940px에서
+   넘쳤다 → 창 분할 등 중간 폭을 덮게 1000px부터 세로 스택으로 접는다. */
+@media (max-width: 1000px) {
   /* 컴파운드로 맞춰 위 6열 규칙(.op-logrow.op-lect-grid)을 좁은 폭에서 다시 이긴다. */
   .op-logrow.op-lect-grid, .op-loghead.op-lect-grid { grid-template-columns: 1fr; }
   .op-lect-grid { gap: 4px; }
