@@ -181,7 +181,9 @@
 .crs-abtn--icon:hover { border-color: var(--brand); color: var(--brand); }
 .crs-abtn:disabled { opacity: 0.5; cursor: default; transform: none; }
 
-@media (max-width: 860px) {
+/* 관리 열(버튼 5개·344px) 때문에 이 표는 뷰포트 ~1074px 아래서 넘쳐 잘렸다(카드 overflow:hidden).
+   창 분할 등 중간 폭에서 액션 버튼이 사라지지 않게 1080px부터 세로 스택으로 접는다. */
+@media (max-width: 1080px) {
   .crs-thead { display: none; }
   .crs-row { grid-template-columns: 1fr; gap: 6px; }
   .crs-rowactions { justify-content: flex-start; }
