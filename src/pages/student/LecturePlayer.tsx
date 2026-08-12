@@ -515,17 +515,44 @@ export default function LecturePlayer() {
     if (v) v.muted = next;
   };
 
+  // 화면 방향 잠금/해제 — 모바일 가로 전체화면용. 표준 미지원(iOS 등)에선 조용히 무시한다.
+  const lockOrientation = (dir: 'landscape' | null) => {
+    const orientation = window.screen?.orientation as
+      | (ScreenOrientation & { lock?: (o: string) => Promise<void> })
+      | undefined;
+    try {
+      if (dir) void orientation?.lock?.(dir).catch(() => {});
+      else orientation?.unlock?.();
+    } catch {
+      /* 미지원 — 전체화면은 되고 방향만 안 바뀐다 */
+    }
+  };
   const toggleFullscreen = () => {
     const el = shellRef.current;
-    if (!el) return;
+    const v = videoRef.current as (HTMLVideoElement & { webkitEnterFullscreen?: () => void }) | null;
     if (document.fullscreenElement) {
+      lockOrientation(null);
       document.exitFullscreen().catch(() => {});
+      return;
+    }
+    if (el?.requestFullscreen) {
+      // 표준(데스크톱·안드로이드 크롬): 플레이어 셸을 전체화면 → 모바일이면 가로로 잠근다.
+      el.requestFullscreen()
+        .then(() => lockOrientation('landscape'))
+        .catch(() => showToast('전체화면을 사용할 수 없어요'));
+    } else if (v?.webkitEnterFullscreen) {
+      // iOS Safari: div 전체화면 불가 → 비디오를 네이티브 전체화면(자동 가로)으로 띄운다.
+      v.webkitEnterFullscreen();
     } else {
-      el.requestFullscreen().catch(() => showToast('전체화면을 사용할 수 없어요'));
+      showToast('전체화면을 사용할 수 없어요');
     }
   };
   useEffect(() => {
-    const onFs = () => setIsFull(!!document.fullscreenElement);
+    const onFs = () => {
+      const full = !!document.fullscreenElement;
+      setIsFull(full);
+      if (!full) lockOrientation(null); // 종료 시 가로 잠금 해제 → 원래 세로로 복귀
+    };
     document.addEventListener('fullscreenchange', onFs);
     return () => document.removeEventListener('fullscreenchange', onFs);
   }, []);
