@@ -11,10 +11,9 @@ import InterestOnboardModal from '../../components/student/InterestOnboardModal'
 import {
   interestsToSubjects,
   interestsToFieldKeys,
-  interestsToExactDemoIds,
   MAX_INTEREST_FIELDS,
 } from '../../components/student/interestTaxonomy';
-import { DEMO_COURSES, DEMO_LECTURES, isDemoId, demoField } from './demoCourses';
+import { DEMO_COURSES, DEMO_LECTURES, isDemoId, demoField, interestsToExactDemoIds } from './demoCourses';
 import { courseCoverUrl } from './demoCover';
 import './StudentHome.css';
 
