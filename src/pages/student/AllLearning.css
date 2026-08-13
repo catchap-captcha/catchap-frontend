@@ -407,6 +407,17 @@
   transform: translateY(-2px);
 }
 
+/* 미수강 코스 — 구매(수강신청) 유도. 연습 버튼과 안 겹치도록(카드당 하나만 뜸) 브랜드색 유지하되
+   장바구니 아이콘으로 '구매' 성격을 드러낸다. */
+.al-course-btn--buy {
+  background: var(--brand);
+  color: var(--on-brand);
+}
+
+.al-course-btn--buy:hover {
+  background: var(--brand-ink);
+}
+
 /* ===== 모바일 반응형 (레이아웃만: 열 수·패딩) ===== */
 @media (max-width: 900px) {
   .al-course-grid {

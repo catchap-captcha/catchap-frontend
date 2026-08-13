@@ -202,7 +202,18 @@ export default function AllLearning() {
                     )}
                   </div>
 
-                  {unlocked > 0 ? (
+                  {!c.enrolled ? (
+                    /* 미수강 코스 — 연습·시청 전에 수강신청(구매)이 먼저다. 결제(수강신청) 페이지로
+                       보낸다. 구매가 끝나 enrolled=true가 되면(문제은행 재진입 시 재조회) 아래
+                       잠금/연습 버튼으로 자연 전환된다. 무료 코스는 문구만 바꾼다. */
+                    <Link
+                      to={`${PATHS.STUDENT_CHECKOUT}?course=${c.id}`}
+                      className="al-course-btn al-course-btn--buy"
+                    >
+                      <i className={`ph-bold ${c.pricing?.is_free ? 'ph-plus-circle' : 'ph-shopping-cart-simple'}`} />
+                      {c.pricing?.is_free ? '무료로 수강신청' : '강의 구매하기'}
+                    </Link>
+                  ) : unlocked > 0 ? (
                     <Link to={practiceHref} className="al-course-btn">
                       <i className="ph-bold ph-play" /> 연습하기
                     </Link>
