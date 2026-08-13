@@ -62,6 +62,11 @@ interface VerifySuccess {
 }
 interface VerifyFailure {
   success: false;
+  /**
+   * 서버가 주지만 **쓰지 않는다.** 그 챌린지 안에서만 세는 값인데 틀리면 곧바로 새
+   * 챌린지를 받으므로 늘 같은 숫자가 온다. 화면에 그대로 내보내면 사용자에게
+   * 거짓말이 된다. 실제 제한은 세션 단위 대기다(catchap-captcha#32).
+   */
   remaining_attempts?: number;
   blocked?: boolean;
   step_up?: boolean;
@@ -378,7 +383,7 @@ export default function DragObjectCaptcha({ onToken, onClose }: Props) {
           setMessage('확인 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
           return;
         }
-        data = { success: false, remaining_attempts: out.remaining_attempts };
+        data = { success: false };
       } else {
         ({ data } = await client.post<VerifyResult>(
           `/captcha/drag/challenges/${challenge.challenge_id}/verify`,
@@ -407,12 +412,14 @@ export default function DragObjectCaptcha({ onToken, onClose }: Props) {
         window.setTimeout(() => void load(), 1400);
         return;
       }
-      const remaining = data.remaining_attempts;
-      setMessage(
-        typeof remaining === 'number'
-          ? `확인에 실패했습니다. 남은 시도 ${remaining}회.`
-          : '확인에 실패했습니다. 다시 시도해주세요.',
-      );
+      // 남은 횟수는 보여주지 않는다. 서버의 `remaining_attempts` 는 **그 챌린지 안에서만**
+      // 세는데, 틀리면 여기서 곧바로 새 챌린지를 받으므로 카운터가 0 으로 돌아간다.
+      // 그래서 몇 번을 틀려도 늘 "남은 시도 2회" 였다 — 곧 못 하게 될 거라 믿게 해놓고
+      // 실제로는 아무 일도 일어나지 않는, 사용자에게 거짓인 숫자였다.
+      //
+      // 실제 제한은 세션 단위로 서버가 건다(catchap-captcha#32): 네 번째부터 대기가
+      // 붙고, 그건 429 + Retry-After 로 와서 `cooldown` 단계가 남은 초를 보여준다.
+      setMessage('확인에 실패했습니다. 다시 시도해주세요.');
       window.setTimeout(() => void load(), 1400);
     } catch {
       setPhase('error');
