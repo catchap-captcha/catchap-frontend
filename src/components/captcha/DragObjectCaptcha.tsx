@@ -99,6 +99,14 @@ const MAX_EVENTS = 550;
 /** pointer_move 표본 간격(ms). 원본(ms)도 40ms로 솎아낸다. */
 const MOVE_SAMPLE_MS = 40;
 
+/** 남은 시간을 사람이 읽는 모양으로. 차단은 분 단위라 300초 같은 숫자는 안 읽힌다. */
+function formatWait(seconds: number): string {
+  if (seconds < 60) return `${seconds}초`;
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}:${String(s).padStart(2, '0')}`;
+}
+
 /** 마운트당 한 번 만들어 challenge/verify에 재사용하는 세션 식별자(16자 이상). */
 function makeSessionId(): string {
   const c = globalThis.crypto;
@@ -142,6 +150,8 @@ export default function DragObjectCaptcha({ onToken, onClose }: Props) {
   const [dragPoint, setDragPoint] = useState<{ x: number; y: number } | null>(null);
   const [phase, setPhase] = useState<Phase>('loading');
   const [cooldown, setCooldown] = useState(0);
+  /** 잠깐 쉬는 것(false)과 자동화 의심으로 막힌 것(true)을 나눈다. */
+  const [blocked, setBlocked] = useState(false);
   const [message, setMessage] = useState('보안 확인을 준비하고 있습니다.');
 
   const sessionIdRef = useRef<string>(makeSessionId());
@@ -226,6 +236,7 @@ export default function DragObjectCaptcha({ onToken, onClose }: Props) {
       // 세어 보여주고 시간이 되면 스스로 다시 불러온다.
       if (error instanceof GuardRetryLater) {
         setPhase('cooldown');
+        setBlocked(error.reason === 'blocked');
         setCooldown(error.seconds);
         return;
       }
@@ -241,10 +252,12 @@ export default function DragObjectCaptcha({ onToken, onClose }: Props) {
       void load();
       return;
     }
-    setMessage(`잠시 후 다시 시도할 수 있습니다. ${cooldown}초`);
+    setMessage(blocked
+      ? '자동화가 의심되어 잠시 차단되었습니다.'
+      : '잠시 후 다시 시도할 수 있습니다.');
     const timer = window.setTimeout(() => setCooldown((n) => n - 1), 1000);
     return () => window.clearTimeout(timer);
-  }, [phase, cooldown, load]);
+  }, [phase, cooldown, blocked, load]);
 
   useEffect(() => {
     void load();
@@ -589,9 +602,13 @@ export default function DragObjectCaptcha({ onToken, onClose }: Props) {
             ) : phase === 'cooldown' ? (
               /* 스피너를 돌리면 "불러오는 중"으로 읽혀 사용자가 기다리는 이유를 모른다.
                  남은 초를 그대로 보여주고, 0 이 되면 저절로 다시 불러온다. */
-              <div className="fc-cooldown" role="status">
-                <strong>{cooldown}</strong>
-                <span>초 뒤에 다시 시도할 수 있습니다</span>
+              <div className={`fc-cooldown ${blocked ? 'is-blocked' : ''}`} role="status">
+                <strong>{formatWait(cooldown)}</strong>
+                <span>
+                  {blocked
+                    ? '자동화가 의심되어 차단되었습니다'
+                    : '뒤에 다시 시도할 수 있습니다'}
+                </span>
               </div>
             ) : (
               <span className="fc-spinner" aria-label="불러오는 중" />

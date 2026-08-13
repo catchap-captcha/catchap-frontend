@@ -112,11 +112,18 @@ export const guardAssetSrc = (url: string): string =>
  */
 export class GuardRetryLater extends Error {
   readonly seconds: number;
+  /**
+   * `wait` 는 여러 번 틀려 잠깐 쉬는 것이고, `blocked` 는 자동화가 의심돼 막힌 것이다.
+   * 사용자가 겪는 일이 다르므로 화면도 달라야 한다 — 같은 카운트다운으로 그리면
+   * "차단됐다" 가 전달되지 않는다.
+   */
+  readonly reason: 'wait' | 'blocked';
 
-  constructor(seconds: number) {
-    super(`guard_429_retry_after_${seconds}`);
+  constructor(seconds: number, reason: 'wait' | 'blocked' = 'wait') {
+    super(`guard_429_${reason}_${seconds}`);
     this.name = 'GuardRetryLater';
     this.seconds = seconds;
+    this.reason = reason;
   }
 }
 
@@ -130,7 +137,9 @@ async function call<T>(path: string, body: unknown): Promise<T> {
     // 헤더가 없거나 이상하면 기다릴 시간을 모른다. 0 으로 두면 즉시 재시도해 서버를
     // 다시 때리므로, 사람이 견딜 만한 기본값을 준다.
     const header = Number(res.headers.get('Retry-After'));
-    throw new GuardRetryLater(Number.isFinite(header) && header > 0 ? Math.ceil(header) : 5);
+    const reason = res.headers.get('X-Captcha-Retry-Reason') === 'blocked' ? 'blocked' : 'wait';
+    throw new GuardRetryLater(
+      Number.isFinite(header) && header > 0 ? Math.ceil(header) : 5, reason);
   }
   if (!res.ok) throw new Error(`guard_${res.status}`);
   return (await res.json()) as T;

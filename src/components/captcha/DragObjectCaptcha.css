@@ -360,6 +360,10 @@
   font-size: 13px;
   color: var(--ink-3);
 }
+/* 차단은 "잠깐 쉬세요" 와 다른 일이다 — 색으로도 구분해야 한 눈에 읽힌다. */
+.fc-cooldown.is-blocked strong {
+  color: var(--danger, #d64545);
+}
 .fc-spinner {
   width: 28px;
   height: 28px;
