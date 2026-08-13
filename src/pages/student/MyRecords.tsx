@@ -10,6 +10,7 @@ import { PATHS } from '../../routes/paths';
 import CourseCover from '../../components/course/CourseCover';
 import CertificateModal from '../../components/course/CertificateModal';
 import WeeklyLearningChart from '../../components/student/WeeklyLearningChart';
+import { subjectLabel } from '../../components/student/interestTaxonomy';
 import './MyRecords.css';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -153,7 +154,7 @@ function CompCard({
           <span className="mr-compbody">
             <span className="mr-comptitle">{c.title}</span>
             <span className="mr-compmeta">
-              {c.subject} · 문항 {ex.question_count}개
+              {subjectLabel(c.subject)} · 문항 {ex.question_count}개
               {fmtPassedAt(ex.passed_at) && ` · ${fmtPassedAt(ex.passed_at)}`}
             </span>
           </span>
@@ -174,7 +175,7 @@ function CompCard({
         <span className="mr-compbody">
           <span className="mr-comptitle">{c.title}</span>
           <span className="mr-compmeta">
-            {c.subject} · 수료까지 {Math.max(0, Math.ceil(ex.question_count * 0.8) - ex.mastered_count)}문항 ({ex.mastered_count}/{ex.question_count} 정답)
+            {subjectLabel(c.subject)} · 수료까지 {Math.max(0, Math.ceil(ex.question_count * 0.8) - ex.mastered_count)}문항 ({ex.mastered_count}/{ex.question_count} 정답)
           </span>
         </span>
         <span className="mr-compbadge mr-compbadge--progress">응시 가능</span>
@@ -187,7 +188,7 @@ function CompCard({
       <span className="mr-compbody">
         <span className="mr-comptitle">{c.title}</span>
         <span className="mr-compmeta">
-          {c.subject} · 강의 {ex.lectures_done}/{ex.lectures_total} 완주 시 열려요
+          {subjectLabel(c.subject)} · 강의 {ex.lectures_done}/{ex.lectures_total} 완주 시 열려요
         </span>
       </span>
       <span className="mr-compbadge mr-compbadge--locked">잠김</span>

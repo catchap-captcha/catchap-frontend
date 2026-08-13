@@ -1,20 +1,18 @@
 /**
- * 관심사 온보딩 택소노미 — 신규 학생 팝업에 보여줄 "데모 분야"들.
+ * 공통 분야 택소노미 — 이 파일의 INTEREST_GROUPS가 앱 전체 '분야'의 유일한 정본이다.
+ * 관심사 온보딩 · 코스 등록(분야 선택) · 문제은행 필터 · 홈 추천이 모두 이 목록/라벨을 공유한다.
  *
- * 의도(사용자 요청): 팝업엔 분야를 잘게 나눈 데모를 아주 많이 넣되, 홈의 '관심사 추천'에는
- * 진짜 생성된 코스만 뜬다. 그래서 각 그룹은 실제 코스 과목(subject)에 앵커된다 — 그 그룹의
- * 태그를 고르면 해당 subject의 실제 코스가 추천되고, 없으면 데모만(분야별 '비슷한 추천').
- *
- * 코스 과목 어휘는 강사 콘솔 드롭다운(OpsCourses COURSE_SUBJECTS)·백엔드 검증
- * (COURSE_SUBJECT_VOCAB)과 1:1로 맞춘다: 수학·어학·안전·IT·디자인·비즈니스·자격증·취미·일반.
- * 강사가 코스 과목을 그 어휘로 분류하면 이 추천이 그대로 따라간다. 세 곳을 함께 바꿔야 한다.
+ * 한 그룹 = 한 분야: label(설명형 표시 라벨, 예 'IT·프로그래밍')과 subject(코스에 저장되는 값 겸
+ * 문항 은행 스코프 키, 예 'IT')를 함께 갖는다. 화면 표시는 subjectLabel()로 subject→label 변환한다.
+ * 레거시 학교식 과목(과학·사회·국어…)과 '일반'은 '교양·자기계발'로 흡수한다(subjectLabel 참고).
+ * 코스 폼 드롭다운은 COURSE_FIELDS, 백엔드 허용 값은 COURSE_SUBJECT_VOCAB와 1:1.
  */
 export interface InterestGroup {
   key: string;
   label: string;
   /** Phosphor 아이콘 클래스(그룹 헤더 장식). */
   icon: string;
-  /** 매핑되는 실제 코스 분류(category). null이면 아직 실제 코스가 없는 데모 분야(추천엔 안 뜸). */
+  /** 이 분야의 코스 subject 값 겸 문항 은행 스코프 키(예 'IT'). 화면엔 label로 표시한다. */
   subject: string | null;
   tags: string[];
 }
@@ -85,6 +83,26 @@ export const INTEREST_GROUPS: InterestGroup[] = [
     tags: ['드로잉', '사진', '요리·베이킹', '악기·음악', '홈트·운동', '캘리그라피', '가드닝', '반려동물'],
   },
 ];
+
+/** 코스 등록 '분야' 드롭다운 정본 — value=저장 subject, label=표시 라벨. 관심사·필터와 같은 목록. */
+export const COURSE_FIELDS: { value: string; label: string }[] = INTEREST_GROUPS.flatMap((g) =>
+  g.subject ? [{ value: g.subject, label: g.label }] : [],
+);
+
+// subject 값 → 분야 라벨. '일반'과 레거시 학교식 과목(과학·사회·국어·영어·생활)은 '교양·자기계발'로 흡수.
+const _SUBJECT_LABEL: Record<string, string> = {};
+for (const g of INTEREST_GROUPS) if (g.subject) _SUBJECT_LABEL[g.subject] = g.label;
+const _GENERAL_LABEL = INTEREST_GROUPS.find((g) => g.key === 'general')?.label ?? '교양·자기계발';
+const _LEGACY_SUBJECTS = new Set(['과학', '사회', '국어', '영어', '생활']);
+
+/** 코스 subject → 화면에 보여줄 공통 분야 라벨. 관심사·코스폼·문제은행 필터가 같은 라벨을 쓰게 한다.
+ *  '일반'·레거시 학교식 과목은 '교양·자기계발'로 흡수하고, 알 수 없는 값은 원문을 유지한다(숨기지 않음). */
+export function subjectLabel(subject: string | null | undefined): string {
+  if (!subject) return '기타';
+  if (_SUBJECT_LABEL[subject]) return _SUBJECT_LABEL[subject];
+  if (_LEGACY_SUBJECTS.has(subject)) return _GENERAL_LABEL;
+  return subject;
+}
 
 /** 연령대 옵션(단일 선택). 추천 매칭엔 쓰지 않고(실제 코스에 연령 타깃 없음) 저장만 한다. */
 export const AGE_BANDS = ['10대', '20대', '30대', '40대', '50대 이상'];

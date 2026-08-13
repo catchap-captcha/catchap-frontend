@@ -1,19 +1,15 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { lectureApi, thumbnailSrc, type OpsCourse } from '../../api/lectures';
+import { COURSE_FIELDS, subjectLabel } from '../../components/student/interestTaxonomy';
 import OpsNav from '../../components/ops/OpsNav';
 import { ExamQuestionsModal, PricingModal } from './OpsLectures';
 import './OpsApproval.css';
 import './OpsRenewalShared.css';
 import './OpsCourses.css';
 
-/** 학생 카탈로그 브라우징용 대분류 — 과목(subject)과 별개인 세부 태그. 언제든 바꿀 수 있다.
- *  '강의 관리'의 코스 모달을 없애면서(상단 '코스 관리'로 일원화) 여기로 옮겨 왔다. */
-const COURSE_CATEGORIES = ['법정의무교육', '자격증', '어학', '직무/기업교육', 'IT/개발', '기타'];
-
-/** 코스 분류용 과목 어휘 — 관심사 추천 분야와 1:1(백엔드 COURSE_SUBJECT_VOCAB와 동기화).
- *  문항 은행이 없는 과목도 분류로 고를 수 있다(연습은 그 코스 강의 문항이 은행에 배치되면 열림). */
-const COURSE_SUBJECTS = ['수학', '어학', '안전', 'IT', '디자인', '비즈니스', '자격증', '취미', '일반'];
+// 코스 '분야' = 관심사·문제은행 필터와 공유하는 정본(interestTaxonomy COURSE_FIELDS).
+// 별도 '분류(category)'는 폐지 — 분야 하나로 일원화했다(과목 필드도 화면에선 '분야'로 부른다).
 
 /**
  * 코스 관리 — CatChap '코스 관리' 리뉴얼 화면 그대로. 여러 강의를 코스로 묶어 학생 화면에
@@ -26,7 +22,6 @@ export default function OpsCourses() {
 
   const [rows, setRows] = useState<OpsCourse[]>([]);
   const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading');
-  const [subjects, setSubjects] = useState<string[]>([]);
   const [toast, setToast] = useState('');
   const say = (m: string) => {
     setToast(m);
@@ -44,35 +39,26 @@ export default function OpsCourses() {
       .catch(() => setState('error'));
   };
   useEffect(load, []);
-  useEffect(() => {
-    lectureApi
-      .opsSubjects()
-      .then(setSubjects)
-      .catch(() => setSubjects([]));
-  }, []);
 
   // 생성/수정 — 레퍼런스와 동일하게 모달이 아니라 표 위에 펼쳐지는 인라인 폼 하나.
   const [form, setForm] = useState<{
     mode: 'create' | 'edit';
     id?: string;
     title: string;
-    subject: string;
-    /** 브라우징용 대분류('' = 미분류). 과목과 달리 만든 뒤에도 바꿀 수 있다. */
-    category: string;
+    subject: string; // = 분야. 화면 라벨은 '분야'(COURSE_FIELDS), 저장은 subject 값.
     description: string;
   } | null>(null);
   const [saving, setSaving] = useState(false);
   const [formErr, setFormErr] = useState('');
 
   const openCreate = () =>
-    setForm({ mode: 'create', title: '', subject: subjects[0] ?? '국어', category: '', description: '' });
+    setForm({ mode: 'create', title: '', subject: COURSE_FIELDS[0]?.value ?? '일반', description: '' });
   const openEdit = (c: OpsCourse) =>
     setForm({
       mode: 'edit',
       id: c.id,
       title: c.title,
       subject: c.subject,
-      category: c.category ?? '',
       description: c.description ?? '',
     });
   const closeForm = () => {
@@ -90,7 +76,6 @@ export default function OpsCourses() {
         await lectureApi.opsCourseCreate({
           title: form.title.trim(),
           subject: form.subject,
-          category: form.category.trim() || null,
           description: form.description.trim() || null,
         });
         say('코스를 만들었어요.');
@@ -98,7 +83,6 @@ export default function OpsCourses() {
         await lectureApi.opsCourseUpdate(form.id, {
           title: form.title.trim(),
           subject: form.subject,
-          category: form.category.trim() || null,
           description: form.description.trim() || null,
         });
         say('코스를 수정했어요.');
@@ -180,7 +164,7 @@ export default function OpsCourses() {
         <div className="crs-banner">
           <i className="ph ph-info" />
           <span>
-            코스를 삭제해도 담긴 강의는 삭제되지 않고 '미분류'로 풀립니다. 과목을 바꾸면 그 코스의 강의·연습문항도 함께 옮겨가요.
+            코스를 삭제해도 담긴 강의는 삭제되지 않고 '미분류'로 풀립니다. 분야를 바꾸면 그 코스의 강의·연습문항도 함께 옮겨가요.
           </span>
         </div>
 
@@ -204,36 +188,25 @@ export default function OpsCourses() {
                 />
               </div>
               <div>
-                <label className="crs-form-lb">과목</label>
+                <label className="crs-form-lb">분야</label>
                 <select
                   className="crs-form-sel"
                   value={form.subject}
                   onChange={(e) => setForm({ ...form, subject: e.target.value })}
                 >
-                  {Array.from(
-                    new Set([...COURSE_SUBJECTS, ...subjects, form.subject].filter(Boolean)),
-                  ).map((s) => (
-                    <option key={s} value={s}>{s}</option>
+                  {COURSE_FIELDS.map((f) => (
+                    <option key={f.value} value={f.value}>{f.label}</option>
                   ))}
+                  {/* 현재 값이 목록 밖(레거시 과학·사회 등)이면 선택이 유지되도록 항목을 덧붙인다 */}
+                  {!COURSE_FIELDS.some((f) => f.value === form.subject) && (
+                    <option value={form.subject}>{subjectLabel(form.subject)} (기존)</option>
+                  )}
                 </select>
                 {form.mode === 'edit' && (
                   <p style={{ margin: '6px 2px 0', fontSize: 12, color: 'var(--ink-3)', lineHeight: 1.4 }}>
-                    과목을 바꾸면 이 코스의 강의·연습문항도 함께 옮겨가요.
+                    분야를 바꾸면 이 코스의 강의·연습문항도 함께 옮겨가요.
                   </p>
                 )}
-              </div>
-              <div>
-                <label className="crs-form-lb">분류 (선택)</label>
-                <select
-                  className="crs-form-sel"
-                  value={form.category}
-                  onChange={(e) => setForm({ ...form, category: e.target.value })}
-                >
-                  <option value="">미분류</option>
-                  {COURSE_CATEGORIES.map((c) => (
-                    <option key={c} value={c}>{c}</option>
-                  ))}
-                </select>
               </div>
             </div>
             <div className="crs-form-full">
@@ -259,7 +232,7 @@ export default function OpsCourses() {
 
         <div className="orn-card crs-table">
           <div className="crs-thead">
-            <span>코스</span><span>과목</span><span>강의</span><span>수강료</span><span>상태</span>
+            <span>코스</span><span>분야</span><span>강의</span><span>수강료</span><span>상태</span>
             <span>관리</span>
           </div>
 
@@ -276,11 +249,9 @@ export default function OpsCourses() {
               <div key={c.id} className="crs-row">
                 <div style={{ minWidth: 0 }}>
                   <div className="crs-title">{c.title}</div>
-                  {/* 분류는 열을 하나 더 만들지 않고 제목 아래에 붙인다(관리 버튼 자리를 지키려고) */}
-                  {c.category && <div className="crs-cat">{c.category}</div>}
                   {c.description && <div className="crs-desc">{c.description}</div>}
                 </div>
-                <span className="crs-subject">{c.subject}</span>
+                <span className="crs-subject">{subjectLabel(c.subject)}</span>
                 <span className="crs-count">{c.lecture_count}개</span>
                 {/* 수강료 — 할인 중이면 실제 청구 금액 아래 정상가를 취소선으로 */}
                 <span className="crs-price">

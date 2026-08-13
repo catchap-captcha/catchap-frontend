@@ -85,7 +85,7 @@ const SPEC: FieldSpec[] = [
     ],
   },
   {
-    field: 'it', category: 'IT·프로그래밍', subject: '일반', instructor: '이서준',
+    field: 'it', category: 'IT·프로그래밍', subject: 'IT', instructor: '이서준',
     courses: [
       { title: '파이썬 기초', desc: '코딩이 처음이어도 OK.', lectures: ['변수와 자료형', '반복문·조건문', '함수와 모듈'], tag: '파이썬' },
       { title: '웹 개발 부트캠프', desc: 'HTML부터 배포까지.', lectures: ['HTML·CSS', 'JavaScript', '배포 실습'], tag: '웹 개발' },
@@ -98,7 +98,7 @@ const SPEC: FieldSpec[] = [
     ],
   },
   {
-    field: 'design', category: '디자인·크리에이티브', subject: '일반', instructor: '윤서아',
+    field: 'design', category: '디자인·크리에이티브', subject: '디자인', instructor: '윤서아',
     courses: [
       { title: '포토샵 실무', desc: '보정부터 합성까지.', lectures: ['툴 익히기', '보정 기법', '합성 실습'], tag: '포토샵' },
       { title: 'UX·UI 디자인', desc: '쓰기 좋은 화면 설계.', lectures: ['UX 리서치', '와이어프레임', '프로토타입'], tag: 'UX·UI' },
@@ -111,7 +111,7 @@ const SPEC: FieldSpec[] = [
     ],
   },
   {
-    field: 'biz', category: '비즈니스·직무', subject: '일반', instructor: '강도윤',
+    field: 'biz', category: '비즈니스·직무', subject: '비즈니스', instructor: '강도윤',
     courses: [
       { title: '디지털 마케팅', desc: '데이터로 파는 법.', lectures: ['퍼널 이해', 'SNS 광고', '성과 분석'], tag: '마케팅' },
       { title: '회계 기초', desc: '숫자로 회사를 읽다.', lectures: ['재무제표', '분개 원리', '원가 개념'], tag: '회계·세무' },
@@ -124,7 +124,7 @@ const SPEC: FieldSpec[] = [
     ],
   },
   {
-    field: 'cert', category: '자격증·시험', subject: '일반', instructor: '임재원',
+    field: 'cert', category: '자격증·시험', subject: '자격증', instructor: '임재원',
     courses: [
       { title: '컴활 1급 실기', desc: '합격 루틴 그대로.', lectures: ['스프레드시트', '데이터베이스', '기출 풀이'], tag: '컴활 1급' },
       { title: '한국사능력검정 심화', desc: '흐름으로 외운다.', lectures: ['전근대사', '근현대사', '기출 분석'], tag: '한국사능력검정' },
@@ -137,7 +137,7 @@ const SPEC: FieldSpec[] = [
     ],
   },
   {
-    field: 'life', category: '취미·라이프', subject: '일반', instructor: '한소율',
+    field: 'life', category: '취미·라이프', subject: '취미', instructor: '한소율',
     courses: [
       { title: '기초 드로잉', desc: '선 긋기부터 시작.', lectures: ['선과 형태', '명암', '간단 스케치'], tag: '드로잉' },
       { title: '홈 베이킹', desc: '집에서 굽는 디저트.', lectures: ['쿠키', '마들렌', '기초 빵'], tag: '요리·베이킹' },

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
 import { studentApi } from '../../api/students';
 import { lectureApi, type StudentCourse } from '../../api/lectures';
+import { subjectLabel } from '../../components/student/interestTaxonomy';
 import { StudentNav } from '../../layouts/StudentLayout';
 import './AllLearning.css';
 
@@ -45,15 +46,15 @@ export default function AllLearning() {
     };
   }, []);
 
-  // 과목 필터 — 내 코스에서 동적으로(하드코딩 6과목 아님)
-  const subjects = useMemo(() => {
+  // 분야 필터 — 내 코스의 분야에서 동적으로. 라벨은 관심사·코스폼과 같은 공통 분야(subjectLabel).
+  const fields = useMemo(() => {
     const s = new Set<string>();
-    (courses ?? []).forEach((c) => c.subject && s.add(c.subject));
+    (courses ?? []).forEach((c) => c.subject && s.add(subjectLabel(c.subject)));
     return Array.from(s);
   }, [courses]);
 
   const visibleCourses = (courses ?? []).filter(
-    (c) => subjFilter === 'all' || c.subject === subjFilter,
+    (c) => subjFilter === 'all' || subjectLabel(c.subject) === subjFilter,
   );
 
   /* 오늘의 Q 시작 과목 — 만기 많은 과목 우선 → 틀린 것 있는 과목 → 새 문항 많은 과목 */
@@ -136,8 +137,8 @@ export default function AllLearning() {
           </div>
         )}
 
-        {/* 과목 필터 — 내 코스의 과목에서 동적 생성(하드코딩 6과목 아님) */}
-        {subjects.length > 1 && (
+        {/* 분야 필터 — 내 코스의 분야에서 동적 생성(관심사·코스폼과 같은 공통 분야) */}
+        {fields.length > 1 && (
           <div className="al-chips">
             <button
               onClick={() => setSubjFilter('all')}
@@ -145,13 +146,13 @@ export default function AllLearning() {
             >
               <i className="ph-fill ph-squares-four" /> 전체
             </button>
-            {subjects.map((s) => (
+            {fields.map((f) => (
               <button
-                key={s}
-                onClick={() => setSubjFilter(s)}
-                className={`al-chip ${subjFilter === s ? 'al-chip-on' : 'al-chip-off'}`}
+                key={f}
+                onClick={() => setSubjFilter(f)}
+                className={`al-chip ${subjFilter === f ? 'al-chip-on' : 'al-chip-off'}`}
               >
-                {s}
+                {f}
               </button>
             ))}
           </div>
@@ -184,7 +185,7 @@ export default function AllLearning() {
               return (
                 <article key={c.id} className="al-course">
                   <div className="al-course-top">
-                    <span className="al-course-subj">{c.subject}</span>
+                    <span className="al-course-subj">{subjectLabel(c.subject)}</span>
                     {c.exam?.passed && <span className="al-course-done">수료</span>}
                   </div>
                   <h3 className="al-course-title">{c.title}</h3>

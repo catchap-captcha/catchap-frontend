@@ -11,6 +11,7 @@ import InterestOnboardModal from '../../components/student/InterestOnboardModal'
 import {
   interestsToSubjects,
   interestsToFieldKeys,
+  subjectLabel,
   MAX_INTEREST_FIELDS,
 } from '../../components/student/interestTaxonomy';
 import { DEMO_COURSES, DEMO_LECTURES, isDemoId, demoField, interestsToExactDemoIds } from './demoCourses';
@@ -168,12 +169,10 @@ export default function StudentHome() {
       return { recommendedExact: [] as HomeCourseGroup[], recommendedRelated: [] as HomeCourseGroup[] };
     const wantedSubjects = interestsToSubjects(interests);
     const exactDemoIds = interestsToExactDemoIds(interests);
-    // ① 딱 맞춤 — 실제 코스(분류 일치, 미분류 '일반'은 제외) + 데모 코스(태그에 정확히 대응). 실제가 앞.
+    // ① 딱 맞춤 — 실제 코스(분야 일치, 미분류 '일반'은 제외) + 데모 코스(태그에 정확히 대응). 실제가 앞.
     const realMatch = discoverGroups.filter((g) => {
-      const key =
-        g.course.category ||
-        (g.course.subject && g.course.subject !== '일반' ? g.course.subject : null);
-      return key != null && wantedSubjects.has(key);
+      const subj = g.course.subject;
+      return !!subj && subj !== '일반' && wantedSubjects.has(subj);
     });
     const exactDemos = demoGroups.filter((g) => exactDemoIds.has(g.course.id));
     const exact = [...realMatch, ...exactDemos].slice(0, 6);
@@ -205,22 +204,21 @@ export default function StudentHome() {
 
   const browseGroups = useMemo(() => [...allCourseGroups, ...demoGroups], [allCourseGroups, demoGroups]);
   const browseCats = useMemo(() => {
-    const cats = Array.from(
-      new Set(browseGroups.map((g) => g.course.category || g.course.subject || '기타')),
-    );
+    // 둘러보기 분야칩 — 공통 분야 라벨(subjectLabel)로. 관심사·문제은행 필터와 같은 어휘.
+    const cats = Array.from(new Set(browseGroups.map((g) => subjectLabel(g.course.subject))));
     return ['전체', ...cats];
   }, [browseGroups]);
   const shownCourses = useMemo(() => {
     let list = browseGroups;
     if (browseCat !== '전체')
-      list = list.filter((g) => (g.course.category || g.course.subject || '기타') === browseCat);
+      list = list.filter((g) => subjectLabel(g.course.subject) === browseCat);
     if (q)
       list = list.filter((g) => {
         const c = g.course;
         return (
           (c.title || '').toLowerCase().includes(q) ||
           (c.instructor_name || '').toLowerCase().includes(q) ||
-          (c.category || c.subject || '').toLowerCase().includes(q)
+          subjectLabel(c.subject).toLowerCase().includes(q)
         );
       });
     return list;
