@@ -5,6 +5,7 @@ import { PATHS } from '../../routes/paths';
 import { lectureApi, thumbnailSrc, type StudentCourse } from '../../api/lectures';
 import CourseCover from '../../components/course/CourseCover';
 import CertificateModal from '../../components/course/CertificateModal';
+import { subjectLabel } from '../../components/student/interestTaxonomy';
 import './StudentCertificates.css';
 
 /**
@@ -93,7 +94,7 @@ export default function StudentCertificates() {
                   </div>
                   <div className="sc-meta">
                     {c.instructor_name ? `${c.instructor_name} 강사 · ` : ''}
-                    {c.subject}
+                    {subjectLabel(c.subject)}
                     {fmtPassedAt(c.exam?.passed_at) && ` · ${fmtPassedAt(c.exam?.passed_at)}`}
                   </div>
                 </div>

@@ -7,6 +7,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { studentApi } from '../../api/students';
 import { settingsApi } from '../../api/settings';
 import { lectureApi, thumbnailSrc, type StudentCourse } from '../../api/lectures';
+import { subjectLabel } from '../../components/student/interestTaxonomy';
 import { StudentNav } from '../../layouts/StudentLayout';
 import { profileColor } from '../../utils/profileColor';
 import { useStudentSettings } from '../../stores/studentSettingsStore';
@@ -304,7 +305,7 @@ export default function StudentMyPage() {
                         to={PATHS.STUDENT_LECTURES}
                         className="mp-profile-coursechip"
                       >
-                        <span className="mp-profile-coursesubj">{c.subject}</span>
+                        <span className="mp-profile-coursesubj">{subjectLabel(c.subject)}</span>
                         {c.title}
                       </Link>
                     ))}

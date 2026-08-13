@@ -6,6 +6,7 @@ import { lectureApi, thumbnailSrc, type LectureItem, type StudentCourse } from '
 import { fmtWon } from '../../api/payments';
 import { formatClock } from './lectureSubjects';
 import CourseCover from '../../components/course/CourseCover';
+import { subjectLabel } from '../../components/student/interestTaxonomy';
 import { courseCoverUrl } from './demoCover';
 import './CourseDetail.css';
 
@@ -99,7 +100,7 @@ export default function CourseDetail() {
                 className="cd-cover"
               />
               <div className="cd-hero-info">
-                {course.category && <span className="cd-cat">{course.category}</span>}
+                {course.subject && <span className="cd-cat">{subjectLabel(course.subject)}</span>}
                 <h1 className="cd-title">{course.title}</h1>
                 <p className="cd-meta">
                   {course.instructor_name ? `${course.instructor_name} 강사 · ` : ''}총{' '}
