@@ -596,3 +596,11 @@
 }
 .mp-modal-pw:focus { border-color: var(--danger); }
 .mp-modal-pw::placeholder { color: var(--ink-3); }
+/* 소셜 전용 계정 탈퇴 — '탈퇴' 입력 안내(비밀번호 없음) */
+.mp-modal-hint {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-3);
+  line-height: 1.5;
+}
+.mp-modal-hint b { color: var(--ink-2); font-weight: 800; }
