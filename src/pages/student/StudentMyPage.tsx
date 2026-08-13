@@ -2,6 +2,7 @@ import { useEffect, useState, type CSSProperties } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
 import SocialConnections from '../../components/account/SocialConnections';
+import { socialApi } from '../../api/social';
 import { useAuth } from '../../hooks/useAuth';
 import { studentApi } from '../../api/students';
 import { settingsApi } from '../../api/settings';
@@ -119,15 +120,30 @@ export default function StudentMyPage() {
   const [deleting, setDeleting] = useState(false);
   const [delErr, setDelErr] = useState('');
   const [delPw, setDelPw] = useState('');
+  // 비밀번호로 로그인하는 계정인지 — 소셜 전용(카카오 등, 비밀번호 없음)이면 '탈퇴' 입력으로 확인.
+  // 조회 실패 시 true(안전: 비밀번호 입력칸을 보여줌 — 이메일 가입 계정 기본값).
+  const [hasPassword, setHasPassword] = useState(true);
+  useEffect(() => {
+    socialApi
+      .connections()
+      .then((d) => setHasPassword(d.has_password))
+      .catch(() => setHasPassword(true));
+  }, []);
   const doDeleteAccount = async () => {
-    if (!delPw.trim()) {
-      setDelErr('비밀번호를 입력해 주세요.');
+    const val = delPw.trim();
+    if (hasPassword) {
+      if (!val) {
+        setDelErr('비밀번호를 입력해 주세요.');
+        return;
+      }
+    } else if (val !== '탈퇴') {
+      setDelErr("'탈퇴'를 입력해 주세요.");
       return;
     }
     setDeleting(true);
     setDelErr('');
     try {
-      await settingsApi.deleteAccount(delPw);
+      await settingsApi.deleteAccount(hasPassword ? { password: delPw } : { confirm: '탈퇴' });
       logout(); // 로컬 토큰·세션 정리 후 로그인으로(계정은 서버에서 이미 비활성화됨)
       navigate(PATHS.LOGIN, { replace: true });
     } catch (e) {
@@ -135,7 +151,9 @@ export default function StudentMyPage() {
       const status = (e as { response?: { status?: number } })?.response?.status;
       setDelErr(
         status === 400
-          ? '비밀번호가 일치하지 않아요. 다시 확인해 주세요.'
+          ? hasPassword
+            ? '비밀번호가 일치하지 않아요. 다시 확인해 주세요.'
+            : "'탈퇴'를 정확히 입력해 주세요."
           : '탈퇴 처리 중 문제가 생겼어요. 잠시 후 다시 시도해 주세요.',
       );
     }
@@ -505,21 +523,42 @@ export default function StudentMyPage() {
               탈퇴하면 계정이 <b>비활성화</b>되고 즉시 로그아웃돼요. 수강 중인 코스와 학습 기록에
               다시 접근할 수 없어요. 이 작업은 되돌리기 어렵습니다.
             </p>
-            <label className="mp-modal-pwlabel">
-              비밀번호 확인
-              <input
-                type="password"
-                className="mp-modal-pw"
-                value={delPw}
-                onChange={(e) => setDelPw(e.target.value)}
-                placeholder="비밀번호를 입력하세요"
-                autoComplete="current-password"
-                autoFocus
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && delPw.trim() && !deleting) doDeleteAccount();
-                }}
-              />
-            </label>
+            {hasPassword ? (
+              <label className="mp-modal-pwlabel">
+                비밀번호 확인
+                <input
+                  type="password"
+                  className="mp-modal-pw"
+                  value={delPw}
+                  onChange={(e) => setDelPw(e.target.value)}
+                  placeholder="비밀번호를 입력하세요"
+                  autoComplete="current-password"
+                  autoFocus
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && delPw.trim() && !deleting) doDeleteAccount();
+                  }}
+                />
+              </label>
+            ) : (
+              <label className="mp-modal-pwlabel">
+                확인 입력
+                <input
+                  type="text"
+                  className="mp-modal-pw"
+                  value={delPw}
+                  onChange={(e) => setDelPw(e.target.value)}
+                  placeholder="탈퇴"
+                  autoComplete="off"
+                  autoFocus
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && delPw.trim() === '탈퇴' && !deleting) doDeleteAccount();
+                  }}
+                />
+                <span className="mp-modal-hint">
+                  카카오 등 간편가입 계정이라 비밀번호가 없어요. 확인을 위해 <b>탈퇴</b>를 입력해 주세요.
+                </span>
+              </label>
+            )}
             {delErr && (
               <p className="mp-modal-err"><i className="ph-fill ph-warning-circle" /> {delErr}</p>
             )}
@@ -535,7 +574,7 @@ export default function StudentMyPage() {
               <button
                 type="button"
                 className="mp-modal-confirm"
-                disabled={deleting || !delPw.trim()}
+                disabled={deleting || (hasPassword ? !delPw.trim() : delPw.trim() !== '탈퇴')}
                 onClick={doDeleteAccount}
               >
                 {deleting ? '처리 중…' : '탈퇴할게요'}
