@@ -2,14 +2,13 @@
    SVG는 컨테이너 실측 폭 × 고정 높이(230px)로 1:1 픽셀 매핑 — 폰트도 실제 px라
    넓은 화면에서 거대해지지 않는다. */
 .wlc {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  padding: 18px 18px 14px;
+  /* 카드 테두리·배경은 지표별 .wlc-card로 옮겼다(문제 풀이/강의 시청 칸 분리 — 사용자 요청).
+     .wlc는 '학습 추이' 제목 + 두 카드를 감싸는 투명 래퍼. */
+  display: block;
 }
 
 .wlc-head {
-  margin-bottom: 6px;
+  margin-bottom: 12px;
 }
 
 .wlc-title {
@@ -27,18 +26,22 @@
   color: var(--ink-3);
 }
 
-/* 지표별 분리 — 문제 풀이 / 그 아래 강의 시청, 두 그래프를 세로로 쌓는다(사용자 요청). */
+/* 지표별 분리 — 문제 풀이 카드 / 그 아래 강의 시청 카드를 세로로 쌓는다(사용자 요청). */
 .wlc-stack {
   display: flex;
   flex-direction: column;
+  gap: 14px;
 }
-.wlc-metric {
-  padding-top: 16px;
+
+/* 지표 카드 — 문제 풀이 / 강의 시청을 각각 독립된 칸으로. */
+.wlc-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 18px 18px 14px;
 }
-.wlc-metric + .wlc-metric {
-  margin-top: 8px;
-  border-top: 1px solid var(--line);
-}
+
+/* 카드 하나당 지표 하나 — 예전의 칸 내부 구분선(padding-top/border-top)은 카드 분리로 제거. */
 .wlc-metric-head {
   margin-bottom: 2px;
 }
@@ -50,10 +53,9 @@
   white-space: nowrap;
 }
 
-/* 실측 대상 래퍼 — 초대형 화면에서 그래프가 지나치게 늘어나지 않게 상한을 둔다. */
+/* 실측 대상 래퍼 — 카드 폭을 꽉 채운다(칸에 딱 맞게 — 사용자 요청). */
 .wlc-chartwrap {
   margin-top: 8px;
-  max-width: 900px;
   min-width: 0;
 }
 
