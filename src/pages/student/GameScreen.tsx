@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-do
 import { PATHS } from '../../routes/paths';
 import { studentApi } from '../../api/students';
 import { lectureApi } from '../../api/lectures';
+import { subjectLabel } from '../../components/student/interestTaxonomy';
 import { categoryTheme } from './lectureSubjects';
 import { getFreshAccessToken } from '../../api/client';
 import { playSfx } from '../../utils/feedback';
@@ -613,14 +614,14 @@ export default function GameScreen() {
      보통 '일반'). 성인 인강에선 코스 스코프면 코스 제목을, 그 밖의 bank(오늘의 Q)면
      '{과목} 문제 풀기'를 쓴다(makePreset 제네릭과 동일). */
   const displayTitle =
-    courseId && courseTitle ? courseTitle : bankMode ? `${s.key} 문제 풀기` : s.gameTitle;
+    courseId && courseTitle ? courseTitle : bankMode ? `${subjectLabel(s.key)} 문제 풀기` : s.gameTitle;
   const displaySub =
     courseId && courseTitle
       ? '이 코스의 확인문항으로 연습해요'
       : bankMode
         ? '문제은행에서 골라 풀어요'
         : s.gameSub;
-  const displayCat = bankMode ? s.key : s.catLabel;
+  const displayCat = bankMode ? subjectLabel(s.key) : s.catLabel;
 
   return (
     <div className="gs-root" style={themeVars}>
@@ -681,12 +682,12 @@ export default function GameScreen() {
                 style={{ background: 'var(--brand)', boxShadow: '0 8px 16px -8px var(--brand)' }}
               >
                 <i className={sub.gameIcon} />
-                {sub.key}
+                {subjectLabel(sub.key)}
               </button>
             ) : (
               <button key={sub.key} onClick={() => setSubjectIdx(i)} className="gs-tab gs-tab-inactive">
                 <i className={sub.gameIcon} />
-                {sub.key}
+                {subjectLabel(sub.key)}
               </button>
             ),
           )}
@@ -715,7 +716,7 @@ export default function GameScreen() {
           <p className="gs-subline">
             {EDU_SITE_KEY ? (
               <>
-                아래 <span className="gs-subhi">{s.key}</span> 문제를 풀어봐요.
+                아래 <span className="gs-subhi">{subjectLabel(s.key)}</span> 문제를 풀어봐요.
               </>
             ) : (
               <>
@@ -973,7 +974,7 @@ export default function GameScreen() {
         <div className="gs-bottombar">
           <div className="gs-bottombar-inner">
             <div className="gs-status">
-              {s.key} · {s.current}/{s.total}문제 진행 중
+              {subjectLabel(s.key)} · {s.current}/{s.total}문제 진행 중
             </div>
             <div className="gs-actions">
               <div className="gs-finishwrap" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
