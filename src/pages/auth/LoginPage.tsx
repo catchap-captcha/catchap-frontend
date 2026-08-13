@@ -543,7 +543,7 @@ export default function LoginPage() {
   const onCaptchaToken = (token: string, meta?: { sessionId: string; purpose: string }) => {
     capMeta.current = meta ? { sessionId: meta.sessionId, purpose: meta.purpose } : null;
 
-    // 캡차를 바로 닫지 않는다. 캡차가 "확인되었습니다." 를 띄운 직후 이 콜백이 오는데,
+    // 캡차를 바로 닫지 않는다. 캡차가 "인증되었습니다." 를 띄운 직후 이 콜백이 오는데,
     // 여기서 즉시 언마운트하면 그 문구가 한 프레임도 안 그려진다 — 사용자에게는 맞혔다는
     // 신호 없이 창만 사라진다. 예전에는 1100ms 지연이 있었고 3D 캡차 통합 때 사라졌다.
     //

@@ -344,7 +344,7 @@ export default function DragObjectCaptcha({ onToken, onClose }: Props) {
         const out = await verifyGuardChallenge(challenge, selected, durationMs);
         if (out.success && out.captcha_token) {
           setPhase('success');
-          setMessage('확인되었습니다.');
+          setMessage('인증되었습니다.');
           // 백엔드가 `POST /api/verify-token` 으로 확인할 때 발급 당시의 session_id·purpose
           // 와 대조한다. 토큰만 넘기면 유효해도 거부된다.
           onToken(out.captcha_token, { token: out.captcha_token, sessionId: out.session_id, purpose: 'login' });
@@ -369,7 +369,7 @@ export default function DragObjectCaptcha({ onToken, onClose }: Props) {
       }
       if (data.success) {
         setPhase('success');
-        setMessage('확인되었습니다.');
+        setMessage('인증되었습니다.');
         onToken(data.captcha_token);
         return;
       }
