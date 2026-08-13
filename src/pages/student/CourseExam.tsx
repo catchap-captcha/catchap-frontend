@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
 import {
@@ -9,6 +9,7 @@ import {
   type ExamSubmitResult,
 } from '../../api/lectures';
 import { StudentNav } from '../../layouts/StudentLayout';
+import { MotionCollector, watchPointer } from '../../lib/motionSummary';
 import CertificateModal from '../../components/course/CertificateModal';
 import './CourseExam.css';
 
@@ -34,6 +35,7 @@ const PASS_RATIO = 0.8;
 const fmtMMSS = (s: number) =>
   `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
 
+// 시험 화면에서만 듣는다. 화면을 벗어나면 해제된다.
 export default function CourseExam() {
   const [params] = useSearchParams();
   const courseId = params.get('course') ?? '';
@@ -42,12 +44,20 @@ export default function CourseExam() {
   const [state, setState] = useState<ExamState | null>(null);
   const [loadErr, setLoadErr] = useState('');
   const [phase, setPhase] = useState<Phase>('intro');
+  /** 푸는 동안의 포인터 움직임. 좌표는 이 안에서만 살아 있다. */
+  const motionRef = useRef(new MotionCollector());
   const [session, setSession] = useState<ExamSession | null>(null);
   // 문항별 선택(표시 순서 기준 인덱스 집합). question_id → Set<displayIdx>
   const [picks, setPicks] = useState<Record<string, number[]>>({});
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<ExamSubmitResult | null>(null);
   const [startedAt, setStartedAt] = useState(0);
+
+  // 문제를 푸는 동안에만 듣는다. 안내·결과 화면에서는 볼 이유가 없다.
+  useEffect(() => {
+    if (phase !== 'taking') return;
+    return watchPointer(motionRef.current);
+  }, [phase]);
   // 수료증 팝업 — 합격 직후 자동으로 열고(아래 submit), 인트로·결과지 버튼으로도 다시 연다.
   // 발급 자체(서버 수료 검증 → 캔버스 렌더 → 저장)는 CertificateModal이 맡는다.
   const [certOpen, setCertOpen] = useState(false);
@@ -124,6 +134,10 @@ export default function CourseExam() {
           picks: picks[q.question_id] ?? [],
         })),
         solve_time_ms: Math.max(0, Date.now() - startedAt),
+        // 푸는 동안의 포인터 움직임 요약. 좌표는 안 보낸다(`lib/motionSummary.ts`).
+        // "무엇을 아는가" 가 아니라 "누가 푸는가" 를 보는 값이다 — LLM 으로 답을
+        // 맞히는 봇은 정답률로는 안 걸리고 궤적으로 걸린다. 지금은 기록만 한다.
+        motion: motionRef.current.take(),
       });
       setResult(res);
       setPhase('result');
