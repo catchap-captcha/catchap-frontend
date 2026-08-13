@@ -27,6 +27,29 @@
   color: var(--ink-3);
 }
 
+/* 지표별 분리 — 문제 풀이 / 그 아래 강의 시청, 두 그래프를 세로로 쌓는다(사용자 요청). */
+.wlc-stack {
+  display: flex;
+  flex-direction: column;
+}
+.wlc-metric {
+  padding-top: 16px;
+}
+.wlc-metric + .wlc-metric {
+  margin-top: 8px;
+  border-top: 1px solid var(--line);
+}
+.wlc-metric-head {
+  margin-bottom: 2px;
+}
+.wlc-subtitle {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
 /* 실측 대상 래퍼 — 초대형 화면에서 그래프가 지나치게 늘어나지 않게 상한을 둔다. */
 .wlc-chartwrap {
   margin-top: 8px;

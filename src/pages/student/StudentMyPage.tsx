@@ -115,13 +115,15 @@ export default function StudentMyPage() {
   }, []);
   const courseCount = courses?.length ?? null;
 
-  // 계정 삭제(탈퇴) — 서버는 소프트 삭제(status=disabled)+토큰 폐기. 확인 모달에서 본인
-  // 비밀번호를 다시 입력받아 서버가 검증한 뒤에만 진행한다(파괴적 작업 재인증).
+  // 계정 삭제(탈퇴) — 서버는 소프트 삭제(status=disabled)+토큰 폐기. 확인 모달에서 재인증(파괴적 작업).
+  const DEL_CONFIRM = '탈퇴처리에 동의합니다.'; // 소셜 전용 계정이 직접 입력해 확인하는 문구
   const [delOpen, setDelOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [delErr, setDelErr] = useState('');
-  const [delPw, setDelPw] = useState('');
-  // 비밀번호로 로그인하는 계정인지 — 소셜 전용(카카오 등, 비밀번호 없음)이면 '탈퇴' 입력으로 확인.
+  const [delPw, setDelPw] = useState('');          // 비밀번호(비번 계정) 또는 확인 문구(소셜)
+  const [delAgree, setDelAgree] = useState(false); // 탈퇴 동의 체크박스
+  const [delReason, setDelReason] = useState('');  // 탈퇴 사유(선택)
+  // 비밀번호로 로그인하는 계정인지 — 소셜 전용(카카오 등, 비밀번호 없음)이면 확인 문구 입력으로 확인.
   // 조회 실패 시 true(안전: 비밀번호 입력칸을 보여줌 — 이메일 가입 계정 기본값).
   const [hasPassword, setHasPassword] = useState(true);
   useEffect(() => {
@@ -130,21 +132,35 @@ export default function StudentMyPage() {
       .then((d) => setHasPassword(d.has_password))
       .catch(() => setHasPassword(true));
   }, []);
+  const closeDel = () => {
+    setDelOpen(false);
+    setDelPw('');
+    setDelAgree(false);
+    setDelReason('');
+    setDelErr('');
+  };
   const doDeleteAccount = async () => {
+    if (!delAgree) {
+      setDelErr('탈퇴 안내를 확인하고 동의에 체크해 주세요.');
+      return;
+    }
     const val = delPw.trim();
     if (hasPassword) {
       if (!val) {
         setDelErr('비밀번호를 입력해 주세요.');
         return;
       }
-    } else if (val !== '탈퇴') {
-      setDelErr("'탈퇴'를 입력해 주세요.");
+    } else if (val !== DEL_CONFIRM) {
+      setDelErr(`'${DEL_CONFIRM}'를 입력해 주세요.`);
       return;
     }
     setDeleting(true);
     setDelErr('');
     try {
-      await settingsApi.deleteAccount(hasPassword ? { password: delPw } : { confirm: '탈퇴' });
+      const reason = delReason.trim() || undefined;
+      await settingsApi.deleteAccount(
+        hasPassword ? { password: delPw, reason } : { confirm: DEL_CONFIRM, reason },
+      );
       logout(); // 로컬 토큰·세션 정리 후 로그인으로(계정은 서버에서 이미 비활성화됨)
       navigate(PATHS.LOGIN, { replace: true });
     } catch (e) {
@@ -154,7 +170,7 @@ export default function StudentMyPage() {
         status === 400
           ? hasPassword
             ? '비밀번호가 일치하지 않아요. 다시 확인해 주세요.'
-            : "'탈퇴'를 정확히 입력해 주세요."
+            : `'${DEL_CONFIRM}'를 정확히 입력해 주세요.`
           : '탈퇴 처리 중 문제가 생겼어요. 잠시 후 다시 시도해 주세요.',
       );
     }
@@ -508,9 +524,9 @@ export default function StudentMyPage() {
         </div>
       </div>
 
-      {/* 탈퇴 확인 모달 — "정말 탈퇴?" 되묻고, 확인 시에만 계정 삭제 API 호출 */}
+      {/* 탈퇴 확인 모달 — 안내·확인 입력·사유·동의 후에만 계정 삭제 API 호출 */}
       {delOpen && (
-        <div className="mp-modal-overlay" onClick={() => { if (!deleting) { setDelOpen(false); setDelPw(''); } }}>
+        <div className="mp-modal-overlay" onClick={() => { if (!deleting) closeDel(); }}>
           <div
             className="mp-modal"
             role="dialog"
@@ -518,12 +534,19 @@ export default function StudentMyPage() {
             aria-labelledby="mp-del-title"
             onClick={(e) => e.stopPropagation()}
           >
+            <button
+              type="button"
+              className="mp-modal-close"
+              aria-label="닫기"
+              disabled={deleting}
+              onClick={closeDel}
+            >
+              <i className="ph-bold ph-x" />
+            </button>
             <div className="mp-modal-ic"><i className="ph-fill ph-warning" /></div>
             <h3 id="mp-del-title" className="mp-modal-title">정말 탈퇴하시겠어요?</h3>
-            <p className="mp-modal-desc">
-              탈퇴하면 계정이 <b>비활성화</b>되고 즉시 로그아웃돼요. 수강 중인 코스와 학습 기록에
-              다시 접근할 수 없어요. 이 작업은 되돌리기 어렵습니다.
-            </p>
+            <p className="mp-modal-desc">탈퇴 버튼 선택 시, 계정은 삭제되며 복구되지 않습니다.</p>
+
             {hasPassword ? (
               <label className="mp-modal-pwlabel">
                 비밀번호 확인
@@ -535,50 +558,63 @@ export default function StudentMyPage() {
                   placeholder="비밀번호를 입력하세요"
                   autoComplete="current-password"
                   autoFocus
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && delPw.trim() && !deleting) doDeleteAccount();
-                  }}
                 />
               </label>
             ) : (
               <label className="mp-modal-pwlabel">
-                확인 입력
+                확인 문구 입력
                 <input
                   type="text"
                   className="mp-modal-pw"
                   value={delPw}
                   onChange={(e) => setDelPw(e.target.value)}
-                  placeholder="탈퇴"
+                  placeholder={DEL_CONFIRM}
                   autoComplete="off"
                   autoFocus
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && delPw.trim() === '탈퇴' && !deleting) doDeleteAccount();
-                  }}
                 />
                 <span className="mp-modal-hint">
-                  카카오 등 간편가입 계정이라 비밀번호가 없어요. 확인을 위해 <b>탈퇴</b>를 입력해 주세요.
+                  카카오 등 간편가입 계정이라 비밀번호가 없어요. 확인을 위해 <b>{DEL_CONFIRM}</b>를 입력해 주세요.
                 </span>
               </label>
             )}
+
+            <label className="mp-modal-pwlabel">
+              탈퇴 사유 <span className="mp-modal-optional">(선택)</span>
+              <textarea
+                className="mp-modal-reason"
+                value={delReason}
+                onChange={(e) => setDelReason(e.target.value)}
+                placeholder="더 나은 서비스를 위해 탈퇴 이유를 남겨주세요."
+                rows={3}
+                maxLength={500}
+              />
+            </label>
+
+            <label className="mp-modal-agree">
+              <input
+                type="checkbox"
+                checked={delAgree}
+                onChange={(e) => setDelAgree(e.target.checked)}
+              />
+              <span className="mp-modal-agree-box" aria-hidden="true"><i className="ph-bold ph-check" /></span>
+              <span className="mp-modal-agree-text">해당 내용을 모두 확인했으며, 회원탈퇴에 동의합니다.</span>
+            </label>
+
             {delErr && (
               <p className="mp-modal-err"><i className="ph-fill ph-warning-circle" /> {delErr}</p>
             )}
+
             <div className="mp-modal-actions">
-              <button
-                type="button"
-                className="mp-modal-cancel"
-                disabled={deleting}
-                onClick={() => { setDelOpen(false); setDelPw(''); }}
-              >
+              <button type="button" className="mp-modal-cancel" disabled={deleting} onClick={closeDel}>
                 취소
               </button>
               <button
                 type="button"
                 className="mp-modal-confirm"
-                disabled={deleting || (hasPassword ? !delPw.trim() : delPw.trim() !== '탈퇴')}
+                disabled={deleting || !delAgree || (hasPassword ? !delPw.trim() : delPw.trim() !== DEL_CONFIRM)}
                 onClick={doDeleteAccount}
               >
-                {deleting ? '처리 중…' : '탈퇴할게요'}
+                {deleting ? '처리 중…' : '회원탈퇴'}
               </button>
             </div>
           </div>

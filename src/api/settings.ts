@@ -24,7 +24,8 @@ export const settingsApi = {
 
   exportData: () => client.get<any>('/settings/me/export').then((r) => r.data),
 
-  /** 계정 탈퇴 — 비밀번호 있는 계정은 password로, 소셜 전용은 confirm='탈퇴'로 재확인. */
-  deleteAccount: (payload: { password?: string; confirm?: string }) =>
+  /** 계정 탈퇴 — 비밀번호 있는 계정은 password로, 소셜 전용은 confirm='탈퇴처리에 동의합니다.'로 재확인.
+   *  reason(선택) = 탈퇴 사유(감사 로그에 남는다). */
+  deleteAccount: (payload: { password?: string; confirm?: string; reason?: string }) =>
     client.delete('/settings/me/account', { data: payload }).then((r) => r.data),
 };
