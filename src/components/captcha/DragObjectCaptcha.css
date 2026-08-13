@@ -200,6 +200,11 @@
   text-align: center;
   transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
 }
+/* 객체가 들어오면 안내를 지운다. 안내가 차지하던 높이만큼 칸이 갑자기 줄어들면 아래
+   버튼이 위로 튀므로, 채워진 상태에서도 최소 높이를 유지한다. */
+.fc-drop.filled {
+  justify-content: center;
+}
 .fc-drop.armed {
   border-color: var(--brand);
   background: color-mix(in srgb, var(--brand) 10%, var(--surface-2));

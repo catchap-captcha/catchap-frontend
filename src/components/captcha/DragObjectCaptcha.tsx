@@ -477,15 +477,26 @@ export default function DragObjectCaptcha({ onToken, onClose }: Props) {
                 ))}
               </div>
 
-              <div ref={dropRef} className={`fc-drop ${dragging ? 'armed' : ''}`}>
-                <span className="fc-drop-icon" aria-hidden="true">
-                  ↓
-                </span>
-                <strong>정답존</strong>
-                <small>해당 객체를 여기에 놓으세요</small>
-                {/* 마우스를 못 쓰는 사용자에게 대체 조작법을 알린다 — 안 적어두면 투명한
-                    히트 영역을 Tab으로 찾을 수 있다는 걸 알 방법이 없다. */}
-                <small className="fc-drop-kbd">키보드는 Tab으로 이동 후 Enter</small>
+              {/* 안내는 비어 있을 때만 그린다. 객체가 들어온 뒤에도 남겨두면 "여기에
+                  놓으세요" 가 이미 놓인 객체 위에 그대로 떠 있어, 넣은 게 맞는지 헷갈린다.
+                  aria-label 은 문구가 사라져도 이 영역이 무엇인지 남긴다. */}
+              <div
+                ref={dropRef}
+                aria-label="정답존"
+                className={`fc-drop ${dragging ? 'armed' : ''} ${selected.length ? 'filled' : ''}`}
+              >
+                {selected.length === 0 && (
+                  <>
+                    <span className="fc-drop-icon" aria-hidden="true">
+                      ↓
+                    </span>
+                    <strong>정답존</strong>
+                    <small>해당 객체를 여기에 놓으세요</small>
+                    {/* 마우스를 못 쓰는 사용자에게 대체 조작법을 알린다 — 안 적어두면 투명한
+                        히트 영역을 Tab으로 찾을 수 있다는 걸 알 방법이 없다. */}
+                    <small className="fc-drop-kbd">키보드는 Tab으로 이동 후 Enter</small>
+                  </>
+                )}
                 <div className="fc-drop-grid">
                   {selected.map((id) => {
                     const obj = challenge.objects.find((o) => o.object_id === id);
