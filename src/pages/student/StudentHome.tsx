@@ -11,6 +11,7 @@ import InterestOnboardModal from '../../components/student/InterestOnboardModal'
 import {
   interestsToSubjects,
   interestsToFieldKeys,
+  interestsToExactDemoIds,
   MAX_INTEREST_FIELDS,
 } from '../../components/student/interestTaxonomy';
 import { DEMO_COURSES, DEMO_LECTURES, isDemoId, demoField } from './demoCourses';
@@ -159,27 +160,39 @@ export default function StudentHome() {
     [],
   );
 
-  // 관심사 추천 — 고른 관심사(코스 분류)에 맞는 코스. 실제 코스는 분류(category)로만 매칭하고
-  // (category 없으면 레거시 subject를 쓰되 기본값 '일반'=미분류는 제외 → 분류 안 된 코스가
-  // 엉뚱한 관심사에 뜨는 것 방지), 데모는 고른 분야에서 골고루 뽑아 최대 RECO_TARGET개까지 채운다.
-  const recommendedGroups = useMemo(() => {
-    if (!interests || interests.length === 0) return [];
+  // 관심사 추천을 2단으로 — ① 딱 맞춤: 고른 항목에 '정확히 대응'하는 코스(실제는 분류 일치, 데모는
+  //   태그 1:1 대응). ② 비슷한 추천: 고른 '분야'의 다른 코스(①에 없는 것)를 같은 분야에 있는 만큼
+  //   (최대 4개, 부족하면 그 이하)로 채운다. 종전엔 둘을 섞어 6개로 뽑아 '고른 것과 무관한 코스'가
+  //   함께 떠 혼동을 줬다(사용자 피드백).
+  const { recommendedExact, recommendedRelated } = useMemo(() => {
+    if (!interests || interests.length === 0)
+      return { recommendedExact: [] as HomeCourseGroup[], recommendedRelated: [] as HomeCourseGroup[] };
     const wantedSubjects = interestsToSubjects(interests);
+    const exactDemoIds = interestsToExactDemoIds(interests);
+    // ① 딱 맞춤 — 실제 코스(분류 일치, 미분류 '일반'은 제외) + 데모 코스(태그에 정확히 대응). 실제가 앞.
     const realMatch = discoverGroups.filter((g) => {
       const key =
         g.course.category ||
         (g.course.subject && g.course.subject !== '일반' ? g.course.subject : null);
       return key != null && wantedSubjects.has(key);
     });
+    const exactDemos = demoGroups.filter((g) => exactDemoIds.has(g.course.id));
+    const exact = [...realMatch, ...exactDemos].slice(0, 6);
+    const exactIds = new Set(exact.map((g) => g.course.id));
+    // ② 비슷한 추천 — 고른 분야의 다른 데모 코스(①에 없는 것)를 분야별 라운드로빈으로, 최대 4개.
     const wantedFields = [...interestsToFieldKeys(interests)].slice(0, MAX_INTEREST_FIELDS);
-    const demoByField = wantedFields.map((f) => demoGroups.filter((g) => demoField(g.course.id) === f));
+    const demoByField = wantedFields.map((f) =>
+      demoGroups.filter((g) => demoField(g.course.id) === f && !exactIds.has(g.course.id)),
+    );
     const maxLen = Math.max(0, ...demoByField.map((l) => l.length));
-    const demoRoundRobin: HomeCourseGroup[] = [];
-    for (let i = 0; i < maxLen; i++) {
-      for (const list of demoByField) if (i < list.length) demoRoundRobin.push(list[i]);
+    const RELATED_MAX = 4; // 같은 분야에 있는 만큼만(최대 4). 부족하면 그 이하.
+    const related: HomeCourseGroup[] = [];
+    for (let i = 0; i < maxLen && related.length < RELATED_MAX; i++) {
+      for (const list of demoByField) {
+        if (i < list.length && related.length < RELATED_MAX) related.push(list[i]);
+      }
     }
-    const RECO_TARGET = 6; // 관심사 추천 전체 최대 개수(실제 매칭 우선 + 데모로 채움)
-    return [...realMatch, ...demoRoundRobin].slice(0, RECO_TARGET);
+    return { recommendedExact: exact, recommendedRelated: related };
   }, [discoverGroups, interests, demoGroups]);
 
   // 코스 둘러보기 — 검색 + 분야칩 + '더 보기'. 기본은 앞부분만 담백하게, 좁히거나 펼치면 전부.
@@ -476,16 +489,29 @@ export default function StudentHome() {
         )}
       </section>
 
-      {/* ===== 관심사 추천 — 고른 관심사에 맞는 코스(실제 우선). 없으면 섹션 숨김. ===== */}
-      {state === 'ready' && recommendedGroups.length > 0 && (
+      {/* ===== ① 관심사에 딱 맞는 코스 — 고른 항목에 정확히 대응. 없으면 섹션 숨김. ===== */}
+      {state === 'ready' && recommendedExact.length > 0 && (
         <section className="sh3-sec">
           <div className="sh3-sec-head">
             <h2 className="sh3-sec-title">
-              <i className="ph-fill ph-sparkle" /> 관심사 추천
+              <i className="ph-fill ph-target" /> 관심사에 딱 맞는 코스
             </h2>
-            <span className="sh3-sec-sub">고른 관심사에 맞춘 코스예요</span>
+            <span className="sh3-sec-sub">고른 관심사와 정확히 맞는 코스예요</span>
           </div>
-          <div className="sh3-rail">{recommendedGroups.map((g) => renderCourseCard(g))}</div>
+          <div className="sh3-rail">{recommendedExact.map((g) => renderCourseCard(g))}</div>
+        </section>
+      )}
+
+      {/* ===== ② 이런 코스도 어때요 — 같은 분야의 다른 코스(비슷한 추천). 없으면 섹션 숨김. ===== */}
+      {state === 'ready' && recommendedRelated.length > 0 && (
+        <section className="sh3-sec">
+          <div className="sh3-sec-head">
+            <h2 className="sh3-sec-title">
+              <i className="ph-fill ph-sparkle" /> 이런 코스도 어때요
+            </h2>
+            <span className="sh3-sec-sub">관심 분야의 다른 코스도 둘러보세요</span>
+          </div>
+          <div className="sh3-rail">{recommendedRelated.map((g) => renderCourseCard(g))}</div>
         </section>
       )}
 
