@@ -7,9 +7,13 @@ import './OpsApproval.css';
 import './OpsRenewalShared.css';
 import './OpsCourses.css';
 
-/** 학생 카탈로그 브라우징용 대분류 — 과목(subject, 생성 후 불변)과 달리 언제든 바꿀 수 있다.
+/** 학생 카탈로그 브라우징용 대분류 — 과목(subject)과 별개인 세부 태그. 언제든 바꿀 수 있다.
  *  '강의 관리'의 코스 모달을 없애면서(상단 '코스 관리'로 일원화) 여기로 옮겨 왔다. */
 const COURSE_CATEGORIES = ['법정의무교육', '자격증', '어학', '직무/기업교육', 'IT/개발', '기타'];
+
+/** 코스 분류용 과목 어휘 — 관심사 추천 분야와 1:1(백엔드 COURSE_SUBJECT_VOCAB와 동기화).
+ *  문항 은행이 없는 과목도 분류로 고를 수 있다(연습은 그 코스 강의 문항이 은행에 배치되면 열림). */
+const COURSE_SUBJECTS = ['수학', '어학', '안전', 'IT', '디자인', '비즈니스', '자격증', '취미', '일반'];
 
 /**
  * 코스 관리 — CatChap '코스 관리' 리뉴얼 화면 그대로. 여러 강의를 코스로 묶어 학생 화면에
@@ -93,6 +97,7 @@ export default function OpsCourses() {
       } else if (form.id) {
         await lectureApi.opsCourseUpdate(form.id, {
           title: form.title.trim(),
+          subject: form.subject,
           category: form.category.trim() || null,
           description: form.description.trim() || null,
         });
@@ -175,7 +180,7 @@ export default function OpsCourses() {
         <div className="crs-banner">
           <i className="ph ph-info" />
           <span>
-            코스를 삭제해도 담긴 강의는 삭제되지 않고 '미분류'로 풀립니다. 과목은 만든 뒤 변경할 수 없습니다.
+            코스를 삭제해도 담긴 강의는 삭제되지 않고 '미분류'로 풀립니다. 과목을 바꾸면 그 코스의 강의·연습문항도 함께 옮겨가요.
           </span>
         </div>
 
@@ -203,13 +208,19 @@ export default function OpsCourses() {
                 <select
                   className="crs-form-sel"
                   value={form.subject}
-                  disabled={form.mode === 'edit'}
                   onChange={(e) => setForm({ ...form, subject: e.target.value })}
                 >
-                  {subjects.map((s) => (
+                  {Array.from(
+                    new Set([...COURSE_SUBJECTS, ...subjects, form.subject].filter(Boolean)),
+                  ).map((s) => (
                     <option key={s} value={s}>{s}</option>
                   ))}
                 </select>
+                {form.mode === 'edit' && (
+                  <p style={{ margin: '6px 2px 0', fontSize: 12, color: 'var(--ink-3)', lineHeight: 1.4 }}>
+                    과목을 바꾸면 이 코스의 강의·연습문항도 함께 옮겨가요.
+                  </p>
+                )}
               </div>
               <div>
                 <label className="crs-form-lb">분류 (선택)</label>

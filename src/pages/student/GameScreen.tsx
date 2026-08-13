@@ -131,6 +131,8 @@ export default function GameScreen() {
   const [subjectIdx, setSubjectIdx] = useState(0);
   // 부트스트랩: 진입 과목 1개로 시작 → 아래 이펙트가 코스 기반 실제 과목 목록으로 교체한다.
   const [subjects, setSubjects] = useState<SubjectPreset[]>(() => [makePreset(initialSubjectName)]);
+  // 코스 스코프 연습이면 그 코스 제목(아래 courses() 이펙트가 채운다) — 게임 제목에 쓴다.
+  const [courseTitle, setCourseTitle] = useState<string | null>(null);
   /* API reward: {have, goal} — 디게임화(0723)로 화면 표시는 제거됐고 상태 로드만 유지(값 미사용) */
   const [, setRewards] = useState<Record<string, { have: number; goal: number }>>(() =>
     Object.fromEntries(Object.entries(REWARDS).map(([k, v]) => [k, { have: v, goal: 5 }])),
@@ -477,6 +479,11 @@ export default function GameScreen() {
       .courses()
       .then((cs: any[]) => {
         if (!alive) return;
+        // 코스 스코프 연습 — 그 코스 제목을 게임 제목으로 쓰려고 잡아 둔다(레거시 초등 프리셋 폴백 방지).
+        if (pCourse) {
+          const sc = (cs ?? []).find((c) => c?.id === pCourse);
+          if (sc?.title) setCourseTitle(sc.title);
+        }
         const names: string[] = [];
         (cs ?? []).forEach((c) => {
           const sub = c?.subject || c?.category;
@@ -601,6 +608,20 @@ export default function GameScreen() {
         }
   ) as CSSProperties;
 
+  /* 문제은행/코스 연습 게임 제목 — 서버 game-state는 (레거시) 초등 6과목(국어·영어…) 프리셋
+     이라, 과목이 그 6개에 없으면 국어로 폴백해 제목이 '한글 낱말 찾기'로 박힌다(코스 과목은
+     보통 '일반'). 성인 인강에선 코스 스코프면 코스 제목을, 그 밖의 bank(오늘의 Q)면
+     '{과목} 문제 풀기'를 쓴다(makePreset 제네릭과 동일). */
+  const displayTitle =
+    courseId && courseTitle ? courseTitle : bankMode ? `${s.key} 문제 풀기` : s.gameTitle;
+  const displaySub =
+    courseId && courseTitle
+      ? '이 코스의 확인문항으로 연습해요'
+      : bankMode
+        ? '문제은행에서 골라 풀어요'
+        : s.gameSub;
+  const displayCat = bankMode ? s.key : s.catLabel;
+
   return (
     <div className="gs-root" style={themeVars}>
       {/* TOP BAR */}
@@ -623,8 +644,8 @@ export default function GameScreen() {
               <i className={s.gameIcon} />
             </span>
             <div className="gs-gametext">
-              <div className="gs-gametitle">{s.gameTitle}</div>
-              <div className="gs-gamesub">{s.gameSub}</div>
+              <div className="gs-gametitle">{displayTitle}</div>
+              <div className="gs-gamesub">{displaySub}</div>
             </div>
           </div>
           {infinite ? (
@@ -678,7 +699,7 @@ export default function GameScreen() {
           <div className="gs-main-head">
             <span className="gs-catchip">
               <i className={s.catIcon} />
-              {s.catLabel}
+              {displayCat}
             </span>
             <span className="gs-guard">
               <span className="gs-guard-dotwrap">
@@ -690,7 +711,7 @@ export default function GameScreen() {
 
           {/* 위젯 모드(EDU_SITE_KEY): 실제 문제는 위젯이 보여주므로
               바깥 제목은 정적 문항 대신 게임 제목만 노출해 이중 질문을 피한다. */}
-          <h1 className="gs-question">{EDU_SITE_KEY ? s.gameTitle : qd.q}</h1>
+          <h1 className="gs-question">{EDU_SITE_KEY ? displayTitle : qd.q}</h1>
           <p className="gs-subline">
             {EDU_SITE_KEY ? (
               <>
