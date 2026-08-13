@@ -120,6 +120,31 @@ export function interestsToFieldKeys(interests: string[] | null | undefined): Se
   return out;
 }
 
+// 태그 → 그 태그에 '정확히 대응하는' 데모 코스 id. 각 anchored 분야엔 데모 코스가 3개뿐이라 그 3개와
+// 1:1로 이어지는 태그만 담는다(나머지 태그는 전용 코스가 없어 ②'비슷한 추천'에서 같은 분야 코스로만
+// 보인다). id는 demoCourses.ts의 'demo-{field}-{index}' 규약과 일치.
+const TAG_DEMO: Record<string, string> = {
+  // 수학·수리
+  미적분: 'demo-math-0', '확률과 통계': 'demo-math-1', '중등 수학': 'demo-math-2',
+  // 안전·자격
+  산업안전: 'demo-safety-0', 생활안전: 'demo-safety-1', '응급처치·CPR': 'demo-safety-2',
+  // 어학·외국어
+  TOEIC: 'demo-lang-0', '영어 회화': 'demo-lang-1', 일본어: 'demo-lang-2',
+  // 교양·자기계발
+  '엑셀·오피스': 'demo-general-0', '경제·재테크': 'demo-general-1', '인문·글쓰기': 'demo-general-2',
+};
+
+/** 저장된 관심사(태그) → 그 태그에 정확히 대응하는 데모 코스 id 집합(대응 코스가 있는 태그만). */
+export function interestsToExactDemoIds(interests: string[] | null | undefined): Set<string> {
+  const out = new Set<string>();
+  for (const raw of interests ?? []) {
+    if (!raw || raw.startsWith(AGE_PREFIX)) continue;
+    const id = TAG_DEMO[raw];
+    if (id) out.add(id);
+  }
+  return out;
+}
+
 /**
  * 저장된 관심사(태그 배열) → 추천에서 매칭할 실제 코스 분류(subject) 집합.
  * 데모 태그는 매핑된 subject로 치환하고, 그 밖의 문자열(직접 분류명 등 하위호환)은 그대로 포함한다.
