@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { lectureApi, thumbnailSrc, type OpsCourse } from '../../api/lectures';
 import { COURSE_FIELDS, subjectLabel } from '../../components/student/interestTaxonomy';
@@ -53,18 +53,28 @@ export default function OpsCourses() {
 
   const openCreate = () =>
     setForm({ mode: 'create', title: '', subject: COURSE_FIELDS[0]?.value ?? '일반', description: '' });
-  const openEdit = (c: OpsCourse) =>
+  const openEdit = (c: OpsCourse) => {
+    // 레거시 과목(과학·사회 등)이 공통 분야로 흡수되면 그 분야(canonical)로 맞춰 보여준다
+    // → 드롭다운에 '… (기존)' 중복 항목이 안 뜨고, 저장 시 정식 분야로 확정된다.
+    const field = COURSE_FIELDS.find((f) => f.label === subjectLabel(c.subject));
     setForm({
       mode: 'edit',
       id: c.id,
       title: c.title,
-      subject: c.subject,
+      subject: field ? field.value : c.subject,
       description: c.description ?? '',
     });
+  };
   const closeForm = () => {
     setForm(null);
     setFormErr('');
   };
+  // 수정/새 코스 폼이 열리면 그 카드로 부드럽게 스크롤한다(아래 코스에서 '수정'을 눌러도 폼이 보이게).
+  const formRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (form) formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form?.id, form?.mode]);
 
   const submit = async () => {
     if (!form) return;
@@ -171,7 +181,7 @@ export default function OpsCourses() {
         {toast && <div className="orn-toast"><i className="ph ph-check-circle" />{toast}</div>}
 
         {form && (
-          <div className="orn-card crs-formcard">
+          <div className="orn-card crs-formcard" ref={formRef}>
             <div className="crs-formcard-head">
               <i className="ph ph-stack" />
               <h2>{form.mode === 'create' ? '새 코스 만들기' : '코스 수정'}</h2>

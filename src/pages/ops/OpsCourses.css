@@ -15,7 +15,9 @@
 .crs-banner i { color: var(--info); font-size: 20px; flex-shrink: 0; }
 .crs-banner span { font-size: 14px; font-weight: 600; color: var(--info-ink); line-height: 1.5; }
 
-.crs-formcard { padding: 22px 24px; margin-bottom: 20px; }
+/* scroll-margin-top: '수정' 클릭 시 이 카드로 스크롤할 때 상단 고정바(.op-top, 60px)에
+   제목이 가리지 않도록 여백을 둔다. */
+.crs-formcard { padding: 22px 24px; margin-bottom: 20px; scroll-margin-top: 76px; }
 .crs-formcard-head {
   display: flex;
   align-items: center;
