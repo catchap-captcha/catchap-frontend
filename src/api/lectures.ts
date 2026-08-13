@@ -724,11 +724,13 @@ export const lectureApi = {
     description?: string | null;
   }) => client.post<OpsCourse>('/ops/courses', body).then((r) => r.data),
 
-  /** 코스 수정 — subject는 못 바꾼다(레거시 고정). category(분류)·제목·소개·순서·상태만. */
+  /** 코스 수정 — subject(과목/분류)를 바꾸면 서버가 그 코스의 강의·강의유래 문항까지 함께
+   *  옮기고 런타임 은행을 리로드한다(코스=과목 고정). category(분류)·제목·소개·순서·상태도. */
   opsCourseUpdate: (
     courseId: string,
     body: Partial<{
       title: string;
+      subject: string;
       category: string | null;
       description: string | null;
       order_no: number;
