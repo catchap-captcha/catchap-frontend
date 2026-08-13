@@ -66,19 +66,23 @@ function MetricChart({
     const y = (v: number) => PAD_T + (1 - v / ceil) * plotH;
     const baseY = PAD_T + plotH;
     const pts = data.map((d, i) => ({ ...d, i, v: getVal(d), cx: x(i), cy: y(getVal(d)) }));
-    const active = pts.filter((p) => p.v > 0);
+    // 선/면적은 값 있는 날 + 첫날·마지막날을 앵커로 이어 금~목 전체 폭을 채운다(사용자 요청).
+    // → 값이 마지막 며칠에만 있어도 오른쪽에 뭉쳐 세로로 '잘린' 블록처럼 보이지 않는다.
+    //   (점·값 라벨은 여전히 값 있는 날에만 찍는다 — 아래 JSX의 on 분기.)
+    const lastI = pts.length - 1;
+    const path = pts.filter((p) => p.v > 0 || p.i === 0 || p.i === lastI);
     const line =
-      active.length >= 2
-        ? active.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.cx.toFixed(1)},${p.cy.toFixed(1)}`).join(' ')
+      path.length >= 2
+        ? path.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.cx.toFixed(1)},${p.cy.toFixed(1)}`).join(' ')
         : '';
     const area =
-      active.length >= 2
-        ? `M${active[0].cx.toFixed(1)},${baseY} ` +
-          active.map((p) => `L${p.cx.toFixed(1)},${p.cy.toFixed(1)}`).join(' ') +
-          ` L${active[active.length - 1].cx.toFixed(1)},${baseY} Z`
+      path.length >= 2
+        ? `M${path[0].cx.toFixed(1)},${baseY} ` +
+          path.map((p) => `L${p.cx.toFixed(1)},${p.cy.toFixed(1)}`).join(' ') +
+          ` L${path[path.length - 1].cx.toFixed(1)},${baseY} Z`
         : '';
     const grid = [0.34, 0.67].map((f) => PAD_T + f * plotH);
-    return { pts, active, line, area, baseY, grid };
+    return { pts, line, area, baseY, grid };
   }, [data, w, getVal]);
 
   return (
@@ -175,36 +179,40 @@ export default function WeeklyLearningChart({ days }: { days: DayPoint[] }) {
         <p className="wlc-cap">최근 7일간 문제 풀이와 강의 시청 기록을 나눠서 보여줘요.</p>
       </div>
 
-      {/* 문제 풀이 → 그 아래 강의 시청, 두 그래프로 분리(사용자 요청) */}
+      {/* 문제 풀이 / 강의 시청을 각각 독립 카드로 분리(사용자 요청) — 위: 문제 풀이, 아래: 강의 시청 */}
       <div className="wlc-stack">
-        <MetricChart
-          data={data}
-          getVal={(d) => d.solved || 0}
-          fmtValue={(v) => `${v}문제`}
-          gradId="wlc-fill-solved"
-          title="문제 풀이"
-          cap="최근 7일간 하루에 푼 문제 수예요."
-          empty="문제를 풀면 여기에 추이가 그려져요."
-          foot={
-            <span className="wlc-foot-total">
-              <i className="ph-fill ph-puzzle-piece" /> 문제 {totals.solved}개
-            </span>
-          }
-        />
-        <MetricChart
-          data={data}
-          getVal={(d) => d.watchMin || 0}
-          fmtValue={(v) => `${v}분`}
-          gradId="wlc-fill-watch"
-          title="강의 시청"
-          cap="최근 7일간 하루 강의 시청 시간(분)이에요."
-          empty="강의를 들으면 여기에 추이가 그려져요."
-          foot={
-            <span className="wlc-foot-total">
-              <i className="ph-fill ph-television" /> 강의 {totals.watch}분
-            </span>
-          }
-        />
+        <div className="wlc-card">
+          <MetricChart
+            data={data}
+            getVal={(d) => d.solved || 0}
+            fmtValue={(v) => `${v}문제`}
+            gradId="wlc-fill-solved"
+            title="문제 풀이"
+            cap="최근 7일간 하루에 푼 문제 수예요."
+            empty="문제를 풀면 여기에 추이가 그려져요."
+            foot={
+              <span className="wlc-foot-total">
+                <i className="ph-fill ph-puzzle-piece" /> 문제 {totals.solved}개
+              </span>
+            }
+          />
+        </div>
+        <div className="wlc-card">
+          <MetricChart
+            data={data}
+            getVal={(d) => d.watchMin || 0}
+            fmtValue={(v) => `${v}분`}
+            gradId="wlc-fill-watch"
+            title="강의 시청"
+            cap="최근 7일간 하루 강의 시청 시간(분)이에요."
+            empty="강의를 들으면 여기에 추이가 그려져요."
+            foot={
+              <span className="wlc-foot-total">
+                <i className="ph-fill ph-television" /> 강의 {totals.watch}분
+              </span>
+            }
+          />
+        </div>
       </div>
     </div>
   );
