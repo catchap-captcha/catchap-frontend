@@ -231,6 +231,116 @@
   color: var(--on-brand);
 }
 
+/* ===== 계좌이체(가상계좌) — portone '계좌이체' 세부수단. 화면 UI만 제공(데모) ===== */
+.co-transfer {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.co-transfer-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.co-transfer-field > label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+.co-transfer-input {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 14px;
+  padding: 11px 12px;
+  transition: border-color 0.15s ease;
+}
+.co-transfer-input:focus {
+  outline: none;
+  border-color: var(--brand);
+}
+.co-transfer-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+.co-transfer-check input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--brand);
+}
+/* 발급 완료 목업 카드 */
+.co-transfer-va {
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-sm);
+  background: var(--bg);
+  padding: 16px;
+}
+.co-transfer-va-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 800;
+  font-size: 14px;
+  color: var(--ink);
+  margin-bottom: 12px;
+}
+.co-transfer-va-head i {
+  color: var(--brand);
+}
+.co-transfer-va-list {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.co-transfer-va-list > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+}
+.co-transfer-va-list dt {
+  margin: 0;
+  color: var(--ink-3);
+}
+.co-transfer-va-list dd {
+  margin: 0;
+  color: var(--ink);
+  font-weight: 600;
+  text-align: right;
+}
+.co-transfer-va-num {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+.co-transfer-reset {
+  margin-top: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  background: none;
+  color: var(--ink-3);
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 12.5px;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+}
+.co-transfer-reset:hover {
+  color: var(--ink);
+}
+
 /* ===== 약관 ===== */
 .co-agree {
   display: flex;

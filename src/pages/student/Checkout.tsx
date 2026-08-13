@@ -44,6 +44,12 @@ const TOSS_METHODS = [
   { key: '계좌이체', sdk: 'TRANSFER' as const },
 ];
 
+/** 계좌이체(가상계좌) 데모용 은행 목록 — 화면 UI만 제공한다(실제 발급·입금 확인 아직). */
+const TRANSFER_BANKS = [
+  '국민은행', '신한은행', '우리은행', '하나은행', 'NH농협은행',
+  'IBK기업은행', '카카오뱅크', '토스뱅크', 'SC제일은행', '우체국',
+];
+
 type Phase = 'loading' | 'ready' | 'confirming' | 'done' | 'error';
 
 /**
@@ -91,6 +97,12 @@ export default function Checkout() {
   // 결제 경로(PG)와, 토스를 골랐을 때 결제창에 넘길 세부 수단.
   const [provider, setProvider] = useState<PaymentProvider | null>(null);
   const [method, setMethod] = useState(TOSS_METHODS[0].key);
+  // portone 세부 수단 — 카드·간편결제(기본) / 계좌이체(가상계좌, 화면 UI만). 아래 계좌이체 상태들은 데모용.
+  const [poMethod, setPoMethod] = useState<'card' | 'transfer'>('card');
+  const [vaBank, setVaBank] = useState('');
+  const [vaDepositor, setVaDepositor] = useState('');
+  const [vaCashReceipt, setVaCashReceipt] = useState(false);
+  const [vaIssued, setVaIssued] = useState(false); // '가상계좌 발급받기'를 눌러 목업 계좌를 띄운 상태
   const [agreeAll, setAgreeAll] = useState(false);
   const [errMsg, setErrMsg] = useState('');
   const [paidMethod, setPaidMethod] = useState<string | null>(null);
@@ -122,6 +134,17 @@ export default function Checkout() {
   // "무료 코스는 결제 없이 수강신청해 주세요"라고 답한다. 결제수단이 하나도 설정되지 않은
   // 환경에서도 무료 코스 수강신청은 막히면 안 되므로, 이 경우 수강신청 API로 바로 간다.
   const freeOnly = payable.length > 0 && total === 0;
+
+  // 계좌이체(가상계좌) 화면 — portone에서 '계좌이체' 세부수단을 골랐을 때만. 실제 결제와는 별개(데모 UI).
+  const isTransfer = provider === 'portone' && poMethod === 'transfer' && !freeOnly;
+  // 목업 가상계좌번호 — 주문(코스 id)으로 안정적으로 파생한다(랜덤 아님 → 렌더마다 안 바뀜).
+  const vaNumber = useMemo(() => {
+    const seed = (payable[0]?.course_id ?? 'demo')
+      .split('')
+      .reduce((n, ch) => (n * 31 + ch.charCodeAt(0)) >>> 0, 7);
+    const d = String(seed).padStart(11, '0').slice(-11);
+    return `${d.slice(0, 4)}-${d.slice(4, 6)}-${d.slice(6)}`;
+  }, [payable]);
 
   // 토스 성공 리다이렉트 확정 — 되돌아온 값으로 서버 승인 확정(금액 대조는 서버가 한다).
   const confirmToss = useCallback(async () => {
@@ -184,6 +207,19 @@ export default function Checkout() {
     payable.length > 0 &&
     agreeAll &&
     (freeOnly || (!!provider && !kakaoMultiBlocked));
+
+  // 계좌이체 '가상계좌 발급'(데모) — 실제 결제(canPay)와 별개로 은행·입금자명·약관만 확인한다.
+  const canIssueVA =
+    phase === 'ready' &&
+    payable.length > 0 &&
+    agreeAll &&
+    !kakaoMultiBlocked &&
+    !!vaBank &&
+    vaDepositor.trim().length > 0 &&
+    !vaIssued;
+  const issueVA = () => {
+    if (canIssueVA) setVaIssued(true);
+  };
 
   /**
    * 결제하기 — 고른 PG에 따라 갈린다.
@@ -439,11 +475,108 @@ export default function Checkout() {
                     </p>
                   )}
                   {provider === 'portone' && (
-                    <p className="co-note">
-                      <i className="ph-fill ph-shield-check" />
-                      결제하기를 누르면 결제창이 열려요. 카드·계좌이체·간편결제 중에서 고를 수 있고,
-                      결제가 끝나면 서버가 결제 내역을 직접 확인한 뒤 수강신청이 열립니다.
-                    </p>
+                    <>
+                      {/* 카드·간편결제 / 계좌이체(가상계좌) 세부 수단 */}
+                      <div className="co-submethods">
+                        <button
+                          type="button"
+                          className={`co-submethod${poMethod === 'card' ? ' co-submethod--on' : ''}`}
+                          onClick={() => {
+                            setPoMethod('card');
+                            setVaIssued(false);
+                          }}
+                        >
+                          카드·간편결제
+                        </button>
+                        <button
+                          type="button"
+                          className={`co-submethod${poMethod === 'transfer' ? ' co-submethod--on' : ''}`}
+                          onClick={() => setPoMethod('transfer')}
+                        >
+                          계좌이체
+                        </button>
+                      </div>
+
+                      {poMethod === 'card' ? (
+                        <p className="co-note">
+                          <i className="ph-fill ph-shield-check" />
+                          결제하기를 누르면 결제창이 열려요. 카드·간편결제 중에서 고를 수 있고, 결제가
+                          끝나면 서버가 결제 내역을 직접 확인한 뒤 수강신청이 열립니다.
+                        </p>
+                      ) : !vaIssued ? (
+                        /* 계좌이체 입력 폼 — 은행·입금자명·현금영수증. '가상계좌 발급받기'로 아래 안내가 뜬다. */
+                        <div className="co-transfer">
+                          <div className="co-transfer-field">
+                            <label htmlFor="va-bank">입금 은행</label>
+                            <select
+                              id="va-bank"
+                              className="co-transfer-input"
+                              value={vaBank}
+                              onChange={(e) => setVaBank(e.target.value)}
+                            >
+                              <option value="">은행을 선택하세요</option>
+                              {TRANSFER_BANKS.map((b) => (
+                                <option key={b} value={b}>{b}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div className="co-transfer-field">
+                            <label htmlFor="va-depositor">입금자명</label>
+                            <input
+                              id="va-depositor"
+                              className="co-transfer-input"
+                              type="text"
+                              value={vaDepositor}
+                              onChange={(e) => setVaDepositor(e.target.value)}
+                              placeholder="예: 홍길동"
+                              maxLength={20}
+                            />
+                          </div>
+                          <label className="co-transfer-check">
+                            <input
+                              type="checkbox"
+                              checked={vaCashReceipt}
+                              onChange={(e) => setVaCashReceipt(e.target.checked)}
+                            />
+                            <span>현금영수증 신청 (소득공제용)</span>
+                          </label>
+                          <p className="co-note">
+                            <i className="ph-fill ph-info" />
+                            ‘가상계좌 발급받기’를 누르면 위 은행의 입금 전용 계좌가 발급돼요. 입금이 확인되면
+                            수강신청이 열립니다. <b>(지금은 화면만 제공되는 데모예요.)</b>
+                          </p>
+                        </div>
+                      ) : (
+                        /* 발급 완료 — 목업 가상계좌 안내(실제 입금·확인은 되지 않음) */
+                        <div className="co-transfer">
+                          <div className="co-transfer-va">
+                            <div className="co-transfer-va-head">
+                              <i className="ph-fill ph-bank" /> 가상계좌가 발급되었어요
+                            </div>
+                            <dl className="co-transfer-va-list">
+                              <div><dt>입금 은행</dt><dd>{vaBank}</dd></div>
+                              <div><dt>가상계좌번호</dt><dd className="co-transfer-va-num">{vaNumber}</dd></div>
+                              <div><dt>예금주</dt><dd>(주)캣챱</dd></div>
+                              <div><dt>입금액</dt><dd>{fmtWon(total)}</dd></div>
+                              <div><dt>입금자명</dt><dd>{vaDepositor}</dd></div>
+                              <div><dt>입금 기한</dt><dd>발급일로부터 3일 이내</dd></div>
+                              {vaCashReceipt && <div><dt>현금영수증</dt><dd>신청 완료</dd></div>}
+                            </dl>
+                            <p className="co-note">
+                              <i className="ph-fill ph-clock" />
+                              입금이 확인되면 자동으로 수강신청이 열려요. <b>(데모 화면 — 실제 입금·확인은 되지 않아요.)</b>
+                            </p>
+                            <button
+                              type="button"
+                              className="co-transfer-reset"
+                              onClick={() => setVaIssued(false)}
+                            >
+                              <i className="ph-bold ph-arrow-counter-clockwise" /> 다시 입력
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </>
                   )}
                   {kakaoMultiBlocked && (
                     <p className="co-note co-note--warn">
@@ -500,8 +633,8 @@ export default function Checkout() {
                   </div>
                   <button
                     className="co-btn co-pay"
-                    disabled={phase === 'confirming' || !canPay}
-                    onClick={pay}
+                    disabled={phase === 'confirming' || (isTransfer ? !canIssueVA : !canPay)}
+                    onClick={isTransfer ? issueVA : pay}
                   >
                     {phase === 'confirming' ? (
                       <>
@@ -511,6 +644,11 @@ export default function Checkout() {
                     ) : freeOnly ? (
                       <>
                         <i className="ph-fill ph-check-circle" /> 무료로 수강신청
+                      </>
+                    ) : isTransfer ? (
+                      <>
+                        <i className="ph-fill ph-bank" />{' '}
+                        {vaIssued ? '가상계좌 발급 완료' : '가상계좌 발급받기'}
                       </>
                     ) : (
                       <>
