@@ -103,12 +103,35 @@ function clientSignals(): Record<string, unknown> {
 export const guardAssetSrc = (url: string): string =>
   url.startsWith('http') ? url : GUARD_ORIGIN + url;
 
+/**
+ * 잠시 기다렸다 다시 시도해야 하는 상태(429).
+ *
+ * 서버는 계속 틀리는 세션에 대기를 요구하고 `Retry-After` 로 남은 초를 알려준다.
+ * 이걸 그냥 오류로 보여주면 사용자는 무엇이 잘못됐는지 알 수 없고, 눌러도 안 되는
+ * 화면 앞에서 막힌 것처럼 느낀다. 몇 초 뒤면 된다는 사실을 전할 수 있어야 한다.
+ */
+export class GuardRetryLater extends Error {
+  readonly seconds: number;
+
+  constructor(seconds: number) {
+    super(`guard_429_retry_after_${seconds}`);
+    this.name = 'GuardRetryLater';
+    this.seconds = seconds;
+  }
+}
+
 async function call<T>(path: string, body: unknown): Promise<T> {
   const res = await fetch(GUARD_ORIGIN + path, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'X-Captcha-Site-Key': SITE_KEY },
     body: JSON.stringify(body),
   });
+  if (res.status === 429) {
+    // 헤더가 없거나 이상하면 기다릴 시간을 모른다. 0 으로 두면 즉시 재시도해 서버를
+    // 다시 때리므로, 사람이 견딜 만한 기본값을 준다.
+    const header = Number(res.headers.get('Retry-After'));
+    throw new GuardRetryLater(Number.isFinite(header) && header > 0 ? Math.ceil(header) : 5);
+  }
   if (!res.ok) throw new Error(`guard_${res.status}`);
   return (await res.json()) as T;
 }
