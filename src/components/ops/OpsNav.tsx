@@ -191,7 +191,18 @@ export default function OpsNav() {
     <header className="op-top" aria-label={isInstructor ? '강사 콘솔 메뉴' : '운영 콘솔 메뉴'}>
       {openGroup && <div className="op-top-scrim" onClick={() => setOpenGroup(null)} />}
       <div className="op-top-inner">
-        <Link to={home} className="op-top-brand" onClick={() => setOpenGroup(null)}>
+        <Link
+          to={home}
+          className="op-top-brand"
+          onClick={(e) => {
+            setOpenGroup(null);
+            // 콘솔 홈에 있으면 이동 대신 맨 위로 스크롤, 다른 페이지면 기존대로 홈으로 이동.
+            if (pathname === home) {
+              e.preventDefault();
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+          }}
+        >
           <img
             src={theme === 'dark' ? wordmarkWhite : wordmarkDark}
             alt="CATCHAP"
