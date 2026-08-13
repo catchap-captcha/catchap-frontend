@@ -327,7 +327,9 @@
 /* 학습 요약 — 타일은 StatTile 컴포넌트(.stt)가 그린다 */
 .mp-stats {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  /* auto-fit(빈 트랙 접기)으로 타일이 카드 폭을 꽉 채운다 — auto-fill은 남는 칸을
+     오른쪽에 빈 트랙으로 남겨 '오른쪽이 비어 보이는' 문제가 있었다(사용자 요청). */
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: 12px;
 }
 
@@ -647,6 +649,25 @@
 }
 .mp-modal-reason:focus { border-color: var(--danger); }
 .mp-modal-reason::placeholder { color: var(--ink-3); }
+/* 탈퇴 사유 프리셋 칩(다중 선택) + 자유 입력 묶음 */
+.mp-modal-reason-group { margin: 0 0 16px; text-align: left; }
+.mp-modal-reason-head { font-size: 12.5px; font-weight: 700; color: var(--ink-2); margin-bottom: 8px; }
+.mp-modal-reasons { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 10px; }
+.mp-reason-chip {
+  padding: 7px 12px;
+  border: 1.5px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink-2);
+  font-size: 12.5px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+.mp-reason-chip:hover:not(:disabled) { border-color: var(--ink-3); }
+.mp-reason-chip--on { border-color: var(--danger); background: var(--danger-soft); color: var(--danger); }
+.mp-reason-chip:disabled { opacity: 0.55; cursor: default; }
 /* 탈퇴 동의 체크박스 */
 .mp-modal-agree {
   display: flex;
