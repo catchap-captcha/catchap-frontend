@@ -80,6 +80,18 @@ const LINK_ROWS = [
 ];
 const FONT_LABELS = ['작게', '보통', '크게'];
 
+// 회원탈퇴 사유(선택) — 여러 개 고를 수 있는 프리셋. 자유 입력칸과 함께 서버 reason으로 합쳐 보낸다.
+const DEL_REASONS = [
+  '원하는 강의·콘텐츠가 없어요',
+  '학습 효과를 느끼지 못했어요',
+  '사용법이 어렵고 불편해요',
+  '오류·버그가 자주 생겨요',
+  '자주 이용하지 않아요',
+  '다른 서비스를 이용하려고요',
+  '비용이 부담돼요',
+  '개인정보·보안이 걱정돼요',
+];
+
 export default function StudentMyPage() {
   const { me, logout } = useAuth();
   const navigate = useNavigate();
@@ -122,7 +134,8 @@ export default function StudentMyPage() {
   const [delErr, setDelErr] = useState('');
   const [delPw, setDelPw] = useState('');          // 비밀번호(비번 계정) 또는 확인 문구(소셜)
   const [delAgree, setDelAgree] = useState(false); // 탈퇴 동의 체크박스
-  const [delReason, setDelReason] = useState('');  // 탈퇴 사유(선택)
+  const [delReason, setDelReason] = useState('');  // 탈퇴 사유 — 자유 입력(선택)
+  const [delReasonTags, setDelReasonTags] = useState<string[]>([]); // 탈퇴 사유 — 프리셋 다중 선택
   // 비밀번호로 로그인하는 계정인지 — 소셜 전용(카카오 등, 비밀번호 없음)이면 확인 문구 입력으로 확인.
   // 조회 실패 시 true(안전: 비밀번호 입력칸을 보여줌 — 이메일 가입 계정 기본값).
   const [hasPassword, setHasPassword] = useState(true);
@@ -137,8 +150,11 @@ export default function StudentMyPage() {
     setDelPw('');
     setDelAgree(false);
     setDelReason('');
+    setDelReasonTags([]);
     setDelErr('');
   };
+  const toggleDelReason = (r: string) =>
+    setDelReasonTags((prev) => (prev.includes(r) ? prev.filter((x) => x !== r) : [...prev, r]));
   const doDeleteAccount = async () => {
     if (!delAgree) {
       setDelErr('탈퇴 안내를 확인하고 동의에 체크해 주세요.');
@@ -157,7 +173,8 @@ export default function StudentMyPage() {
     setDeleting(true);
     setDelErr('');
     try {
-      const reason = delReason.trim() || undefined;
+      // 프리셋(다중 선택) + 자유 입력을 합쳐 보낸다(서버는 감사 로그에 최대 200자 저장).
+      const reason = [...delReasonTags, delReason.trim()].filter(Boolean).join(' / ') || undefined;
       await settingsApi.deleteAccount(
         hasPassword ? { password: delPw, reason } : { confirm: DEL_CONFIRM, reason },
       );
@@ -578,17 +595,33 @@ export default function StudentMyPage() {
               </label>
             )}
 
-            <label className="mp-modal-pwlabel">
-              탈퇴 사유 <span className="mp-modal-optional">(선택)</span>
+            <div className="mp-modal-reason-group">
+              <div className="mp-modal-reason-head">
+                탈퇴 사유 <span className="mp-modal-optional">(선택 · 여러 개 선택할 수 있어요)</span>
+              </div>
+              <div className="mp-modal-reasons">
+                {DEL_REASONS.map((r) => (
+                  <button
+                    type="button"
+                    key={r}
+                    className={'mp-reason-chip' + (delReasonTags.includes(r) ? ' mp-reason-chip--on' : '')}
+                    aria-pressed={delReasonTags.includes(r)}
+                    disabled={deleting}
+                    onClick={() => toggleDelReason(r)}
+                  >
+                    {r}
+                  </button>
+                ))}
+              </div>
               <textarea
                 className="mp-modal-reason"
                 value={delReason}
                 onChange={(e) => setDelReason(e.target.value)}
-                placeholder="더 나은 서비스를 위해 탈퇴 이유를 남겨주세요."
+                placeholder="기타 의견이 있다면 자유롭게 남겨 주세요. (선택)"
                 rows={3}
                 maxLength={500}
               />
-            </label>
+            </div>
 
             <label className="mp-modal-agree">
               <input
