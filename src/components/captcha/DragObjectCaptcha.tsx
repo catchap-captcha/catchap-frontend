@@ -5,7 +5,7 @@ import { client } from '../../api/client';
 import { API_ORIGIN } from '../../api/lectures';
 import {
   createGuardChallenge, guardAssetSrc, type GuardVerification,
-  verifyGuardChallenge, GuardBehaviorSender,
+  verifyGuardChallenge, GuardBehaviorSender, GuardRetryLater,
 } from '../../lib/catchapGuard';
 import './DragObjectCaptcha.css';
 
@@ -68,7 +68,9 @@ interface VerifyFailure {
 }
 type VerifyResult = VerifySuccess | VerifyFailure;
 
-type Phase = 'loading' | 'ready' | 'verifying' | 'success' | 'error';
+// cooldown — 여러 번 틀려 서버가 잠깐 기다리라고 한 상태. error 와 나누는 이유는
+// 사용자가 할 일이 다르기 때문이다: error 는 다시 누르면 되고, cooldown 은 기다리면 된다.
+type Phase = 'loading' | 'ready' | 'verifying' | 'success' | 'error' | 'cooldown';
 
 /**
  * 서버 행동 분석 이벤트. 서버(drag_captcha_service.summarize)가 점수에 쓰는 type은
@@ -134,6 +136,7 @@ export default function DragObjectCaptcha({ onToken, onClose }: Props) {
   const [dragging, setDragging] = useState<CaptchaObject | null>(null);
   const [dragPoint, setDragPoint] = useState<{ x: number; y: number } | null>(null);
   const [phase, setPhase] = useState<Phase>('loading');
+  const [cooldown, setCooldown] = useState(0);
   const [message, setMessage] = useState('보안 확인을 준비하고 있습니다.');
 
   const sessionIdRef = useRef<string>(makeSessionId());
@@ -212,11 +215,31 @@ export default function DragObjectCaptcha({ onToken, onClose }: Props) {
       track('challenge_loaded');
       setPhase('ready');
       setMessage(data.instruction || '정답 객체를 정답존으로 옮겨 사람임을 증명하세요.');
-    } catch {
+    } catch (error) {
+      // 여러 번 틀린 뒤에는 서버가 잠깐 기다리라고 한다. 이걸 그냥 "불러오지
+      // 못했습니다" 로 보여주면 사용자는 고장난 줄 알고 계속 누른다 — 남은 초를
+      // 세어 보여주고 시간이 되면 스스로 다시 불러온다.
+      if (error instanceof GuardRetryLater) {
+        setPhase('cooldown');
+        setCooldown(error.seconds);
+        return;
+      }
       setPhase('error');
       setMessage('문제를 불러오지 못했습니다. 다시 시도해주세요.');
     }
   }, [track]);
+
+  // 남은 초를 1초씩 줄이고, 0 이 되면 새 문제를 부른다.
+  useEffect(() => {
+    if (phase !== 'cooldown') return;
+    if (cooldown <= 0) {
+      void load();
+      return;
+    }
+    setMessage(`잠시 후 다시 시도할 수 있습니다. ${cooldown}초`);
+    const timer = window.setTimeout(() => setCooldown((n) => n - 1), 1000);
+    return () => window.clearTimeout(timer);
+  }, [phase, cooldown, load]);
 
   useEffect(() => {
     void load();
@@ -556,6 +579,13 @@ export default function DragObjectCaptcha({ onToken, onClose }: Props) {
               <button type="button" className="fc-primary" onClick={() => void load()}>
                 다시 시도
               </button>
+            ) : phase === 'cooldown' ? (
+              /* 스피너를 돌리면 "불러오는 중"으로 읽혀 사용자가 기다리는 이유를 모른다.
+                 남은 초를 그대로 보여주고, 0 이 되면 저절로 다시 불러온다. */
+              <div className="fc-cooldown" role="status">
+                <strong>{cooldown}</strong>
+                <span>초 뒤에 다시 시도할 수 있습니다</span>
+              </div>
             ) : (
               <span className="fc-spinner" aria-label="불러오는 중" />
             )}

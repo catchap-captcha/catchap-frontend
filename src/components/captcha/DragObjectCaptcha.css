@@ -342,6 +342,24 @@
   min-height: 160px;
   padding: 24px;
 }
+/* 대기 안내 — 남은 초를 크게 보여준다. 스피너와 자리를 공유하므로 높이를 맞춰
+   카드가 들썩이지 않게 한다. */
+.fc-cooldown {
+  display: grid;
+  place-items: center;
+  gap: 4px;
+  text-align: center;
+}
+.fc-cooldown strong {
+  font-size: 32px;
+  font-variant-numeric: tabular-nums; /* 숫자 폭 고정 — 9→8 에서 글자가 안 흔들린다 */
+  color: var(--ink);
+  line-height: 1.1;
+}
+.fc-cooldown span {
+  font-size: 13px;
+  color: var(--ink-3);
+}
 .fc-spinner {
   width: 28px;
   height: 28px;
