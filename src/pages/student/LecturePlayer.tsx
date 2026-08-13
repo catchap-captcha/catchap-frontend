@@ -13,6 +13,7 @@ import {
   type LectureSession,
 } from '../../api/lectures';
 import { getFreshAccessToken } from '../../api/client';
+import { MotionCollector, watchPointer } from '../../lib/motionSummary';
 import CatchapWidget from '../../components/captcha/CatchapWidget';
 import CollectCaptcha from '../../components/captcha/CollectCaptcha';
 import { useCollectParticipant } from '../../hooks/useCollectParticipant';
@@ -277,6 +278,15 @@ export default function LecturePlayer() {
     [doneCelebrated, openGate, showToast],
   );
 
+  /** 하트비트 사이의 포인터 움직임을 모은다. 좌표는 이 안에서만 살아 있다. */
+  const motionRef = useRef(new MotionCollector());
+
+  // 재생 중일 때만 듣는다. 멈춰 있거나 캡차 게이트가 떠 있으면 볼 이유가 없다.
+  useEffect(() => {
+    if (phase !== 'ready') return;
+    return watchPointer(motionRef.current);
+  }, [phase]);
+
   const sendBeat = useCallback(async () => {
     const v = videoRef.current;
     const token = sessionTokenRef.current;
@@ -284,7 +294,13 @@ export default function LecturePlayer() {
     beatingRef.current = true;
     lastBeatAtRef.current = Date.now();
     const gen = genRef.current; // 이 비트가 속한 강의 세대
-    const body = { position_sec: Math.floor(v.currentTime) };
+    // 이 구간의 포인터 움직임을 숫자 몇 개로 접어 함께 보낸다. 좌표는 안 보낸다
+    // (`lib/motionSummary.ts` 헤더 참고). 지금은 기록만 하고 판정에 쓰지 않는다 —
+    // 정상 시청자의 분포를 먼저 알아야 기준을 정할 수 있다.
+    const body = {
+      position_sec: Math.floor(v.currentTime),
+      motion: motionRef.current.take(),
+    };
     try {
       const st = await lectureApi.heartbeat(lectureId, token, body);
       if (gen !== genRef.current) return; // 강의가 바뀐 뒤 도착한 stale 응답 — 버린다

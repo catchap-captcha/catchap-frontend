@@ -4,6 +4,7 @@ import { authApi } from '../../api/auth';
 import wordmarkWhite from '../../assets/brand/catchap-wordmark-white.png';
 import ForestCaptcha from '../../components/captcha/ForestCaptcha';
 import { useAuth } from '../../hooks/useAuth';
+import { MotionCollector, watchPointer } from '../../lib/motionSummary';
 import { PATHS } from '../../routes/paths';
 import { ROLE_HOME } from '../../routes/roleRoutes';
 import './LoginPage.css';
@@ -85,6 +86,13 @@ export default function LoginPage() {
   // 하지 않는다 — 로그인이 또 실패해 새 캡차가 뜬 순간 옛 타이머가 그것을 닫아버리는
   // 것을 막는다.
   const capGen = useRef(0);
+  /**
+   * 이 화면에 머무는 동안의 포인터 움직임. 좌표는 이 안에서만 살아 있다.
+   *
+   * 캡차는 캡차가 떠 있는 몇 초만 본다. 그 앞뒤 — 아이디를 치고 버튼을 찾는 동안 —
+   * 이 사람이 어떻게 움직였는지가 판단 재료로 더 길다. 지금은 기록만 한다.
+   */
+  const motionRef = useRef(new MotionCollector());
   // CatChap Guard 로 전환했을 때만 채워진다. 토큰만으로는 백엔드 검증이 실패한다
   // (session_id·purpose 를 발급 때 값과 대조하므로) — 재시도까지 살아 있어야 해서 ref 다.
   const capMeta = useRef<{ sessionId: string; purpose: string } | null>(null);
@@ -96,6 +104,9 @@ export default function LoginPage() {
     },
     [],
   );
+
+  // 이 화면에 있는 동안만 듣는다.
+  useEffect(() => watchPointer(motionRef.current), []);
 
   // 이메일 인증코드 5분 카운트다운 — 코드 발송 후 매초 감소, 인증 완료/미발송 시 정지.
   useEffect(() => {
@@ -406,6 +417,9 @@ export default function LoginPage() {
   };
 
   const doLogin = async (orgOverride?: string, captchaToken?: string) => {
+    // 이 시도까지의 움직임을 한 번만 뽑는다 — take() 는 버퍼를 비우므로 두 번 부르면
+    // 두 번째는 빈 값이 된다. 캡차를 풀고 재시도할 때는 그 사이 움직임이 다시 쌓인다.
+    const motion = motionRef.current.take();
     const id = loginIdRef.current?.value.trim() ?? '';
     const pw = loginPwRef.current?.value ?? '';
     setLoginError('');
@@ -430,6 +444,7 @@ export default function LoginPage() {
               ? { captcha_session_id: capMeta.current.sessionId,
                   captcha_purpose: capMeta.current.purpose }
               : {}),
+            motion,
           },
           remember,
         );
@@ -451,6 +466,7 @@ export default function LoginPage() {
                 ? { captcha_session_id: capMeta.current.sessionId,
                     captcha_purpose: capMeta.current.purpose }
                 : {}),
+              motion,
             },
             remember,
           );

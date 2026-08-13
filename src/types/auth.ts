@@ -1,3 +1,5 @@
+import type { MotionSummary } from '../lib/motionSummary';
+
 export type Role = 'student' | 'parent' | 'teacher' | 'grade_head' | 'org_admin' | 'ops' | 'instructor';
 
 export interface TokenPair {
@@ -43,6 +45,12 @@ export interface LoginRequest {
   /** CatChap Guard 로 전환했을 때만 붙는다 — 아래 주석 참조 */
   captcha_session_id?: string;
   captcha_purpose?: string;
+  /**
+   * 이 화면에 머무는 동안의 포인터 움직임 요약. 좌표는 보내지 않는다
+   * (`lib/motionSummary.ts`). 백엔드 모델이 모르는 필드를 조용히 무시하므로
+   * 받는 쪽보다 먼저 배포해도 안전하다.
+   */
+  motion?: MotionSummary;
 }
 
 export interface StudentLoginRequest {
@@ -53,6 +61,8 @@ export interface StudentLoginRequest {
   captcha_token?: string;
   captcha_session_id?: string;
   captcha_purpose?: string;
+  /** 위 `LoginRequest.motion` 과 같다. 두 로그인 경로가 같은 화면을 쓴다. */
+  motion?: MotionSummary;
 }
 
 /*

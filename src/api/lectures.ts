@@ -1,4 +1,5 @@
 import type { AxiosProgressEvent } from 'axios';
+import type { MotionSummary } from '../lib/motionSummary';
 import { client } from './client';
 
 /**
@@ -430,6 +431,12 @@ export interface ExamSubmitInput {
   sitting_id: string;
   answers: { question_id: string; picks: number[] }[]; // picks = 표시 순서 기준 선택
   solve_time_ms?: number;
+  /**
+   * 이 화면에 머무는 동안의 포인터 움직임 요약. 좌표는 보내지 않는다
+   * (`lib/motionSummary.ts`). 백엔드 모델이 모르는 필드를 조용히 무시하므로
+   * 받는 쪽보다 먼저 배포해도 안전하다.
+   */
+  motion?: MotionSummary;
 }
 export interface ExamResultItem {
   question_id: string;
@@ -591,7 +598,12 @@ export const lectureApi = {
   heartbeat: (
     lectureId: string,
     sessionToken: string,
-    body: { position_sec: number },
+    /**
+     * `motion` 은 그 구간의 포인터 움직임을 접은 숫자다(`lib/motionSummary.ts`).
+     * 좌표는 보내지 않는다. 서버가 모르는 필드를 무시하므로 백엔드가 받기 전에
+     * 프론트를 먼저 배포해도 안전하다.
+     */
+    body: { position_sec: number; motion?: MotionSummary },
   ) =>
     client
       .post<HeartbeatState>(`/lectures/${lectureId}/progress`, body, {
