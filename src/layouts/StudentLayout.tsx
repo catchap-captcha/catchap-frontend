@@ -78,7 +78,17 @@ export function StudentNav({
   return (
     <div className="sl-navbar">
       <div className="sl-navinner">
-        <Link to={PATHS.STUDENT_HOME} className="sl-logo">
+        <Link
+          to={PATHS.STUDENT_HOME}
+          className="sl-logo"
+          onClick={(e) => {
+            // 홈에 있으면 이동 대신 맨 위로 스크롤, 다른 페이지면 기존대로 홈으로 이동.
+            if (location.pathname === PATHS.STUDENT_HOME) {
+              e.preventDefault();
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+          }}
+        >
           <img
             src={theme === 'dark' ? wordmarkWhite : wordmark}
             alt="CATCHAP"

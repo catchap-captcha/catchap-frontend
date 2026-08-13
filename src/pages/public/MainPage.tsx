@@ -216,7 +216,15 @@ export default function MainPage() {
       <div className="mn-navwrap">
         <header className={'mn-nav' + (solid ? ' mn-nav--solid' : '')}>
           <div className="mn-nav-inner">
-            <Link to={PATHS.HOME} className="mn-brand">
+            <Link
+              to={PATHS.HOME}
+              className="mn-brand"
+              onClick={(e) => {
+                // 랜딩 로고 — 이동하지 않고 맨 위로 부드럽게 스크롤.
+                e.preventDefault();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+            >
               <span className="mn-brand-imgwrap">
                 <img src={wordmarkWhite} alt="CatChap" className="mn-brand-logo" style={{ opacity: solid ? 0 : 1 }} />
                 <img src={wordmarkDark} alt="CatChap" className="mn-brand-logo mn-brand-logo--abs" style={{ opacity: solid ? 1 : 0 }} />
