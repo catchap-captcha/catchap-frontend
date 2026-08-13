@@ -540,11 +540,14 @@ export default function Checkout() {
                             />
                             <span>현금영수증 신청 (소득공제용)</span>
                           </label>
-                          <p className="co-note">
-                            <i className="ph-fill ph-info" />
-                            ‘가상계좌 발급받기’를 누르면 위 은행의 입금 전용 계좌가 발급돼요. 입금이 확인되면
-                            수강신청이 열립니다. <b>(지금은 화면만 제공되는 데모예요.)</b>
-                          </p>
+                          <div className="co-transfer-guide">
+                            <p className="co-note">
+                              <i className="ph-fill ph-info" />
+                              ‘가상계좌 발급받기’를 누르면 위 은행의 입금 전용 계좌가 발급돼요. 입금이 확인되면
+                              수강신청이 열립니다.
+                            </p>
+                            <p className="co-transfer-demo">(지금은 화면만 제공되는 데모예요.)</p>
+                          </div>
                         </div>
                       ) : (
                         /* 발급 완료 — 목업 가상계좌 안내(실제 입금·확인은 되지 않음) */

@@ -238,6 +238,16 @@
   flex-direction: column;
   gap: 12px;
 }
+/* 안내문 + '데모' 캡션을 한 덩어리로 — 캡션은 문장 바로 아래(아이콘 폭만큼 들여써 정렬) */
+.co-transfer-guide .co-note {
+  margin-top: 0;
+}
+.co-transfer-demo {
+  margin: 4px 0 0 20px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-2);
+}
 .co-transfer-field {
   display: flex;
   flex-direction: column;
