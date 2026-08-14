@@ -499,12 +499,12 @@ export default function StudentHome() {
         </section>
       )}
 
-      {/* ===== ② 이런 코스도 어때요 — 같은 분야의 다른 코스(비슷한 추천). 없으면 섹션 숨김. ===== */}
+      {/* ===== ② 이런 코스는 어때요 — 같은 분야의 다른 코스(비슷한 추천). 없으면 섹션 숨김. ===== */}
       {state === 'ready' && recommendedRelated.length > 0 && (
         <section className="sh3-sec">
           <div className="sh3-sec-head">
             <h2 className="sh3-sec-title">
-              <i className="ph-fill ph-sparkle" /> 이런 코스도 어때요
+              <i className="ph-fill ph-sparkle" /> 이런 코스는 어때요
             </h2>
             <span className="sh3-sec-sub">관심 분야의 다른 코스도 둘러보세요</span>
           </div>

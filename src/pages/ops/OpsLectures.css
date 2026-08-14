@@ -10,7 +10,7 @@
    트랙 크기는 내용과 무관한 fr/고정값으로만 잡아야 열 정렬이 유지된다. */
 .op-lect-grid {
   display: grid;
-  grid-template-columns: minmax(0, 2fr) 64px 90px 64px 76px minmax(336px, 1.3fr);
+  grid-template-columns: minmax(0, 2fr) 64px 90px 92px 76px minmax(336px, 1.3fr);
   gap: 10px;
   align-items: center;
 }
@@ -20,9 +20,23 @@
    같은 컴파운드로 맞춰 계속 이기게 둔다. */
 .op-logrow.op-lect-grid,
 .op-loghead.op-lect-grid {
-  grid-template-columns: minmax(0, 2fr) 64px 90px 64px 76px minmax(336px, 1.3fr);
+  grid-template-columns: minmax(0, 2fr) 64px 90px 92px 76px minmax(336px, 1.3fr);
 }
 .op-lect-dim { color: var(--ink-3); }
+
+/* 문항 열 — 문항 수 위, 상태 칩('미공개 N' · '검증 없음') 아래로 쌓는다.
+   종전엔 숫자 옆에 가로로 붙어 64px 열을 넘겨 '상태' 열과 겹쳐 보였다(사용자 요청). */
+.op-lect-qcell {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  min-width: 0;
+}
+.op-lect-qnum { display: inline-flex; align-items: baseline; }
+/* 세로로 쌓이므로 칩의 좌측 여백(가로 배치용)은 제거 */
+.op-lect-qcell .lu-nowarn,
+.op-lect-qcell .lu-draftwarn { margin-left: 0; }
 .op-lect-actions { display: inline-flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
 .op-lect-danger { color: var(--danger) !important; }
 

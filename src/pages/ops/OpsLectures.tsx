@@ -599,9 +599,13 @@ export default function OpsLectures() {
                     </span>
                     <span>{lec.subject}</span>
                     <span>{fmtDur(lec.duration_sec)}</span>
-                    <span>
-                      <b>{lec.active_question_count}</b>
-                      <small className="op-lect-dim">/{lec.question_count}</small>
+                    {/* 문항 열 — 문항 수(위) / 상태 칩(아래)으로 쌓는다. 종전엔 옆으로 붙어
+                        열 폭을 넘겨 '상태(공개)' 열과 겹쳐 보였다(사용자 요청). */}
+                    <span className="op-lect-qcell">
+                      <span className="op-lect-qnum">
+                        <b>{lec.active_question_count}</b>
+                        <small className="op-lect-dim">/{lec.question_count}</small>
+                      </span>
                       {/* 문항 0개면 체크포인트에서 낼 문제가 없어 시청 검증이 통째로 없는
                           강의가 된다(챌린지 4xx → 게이트가 뜨지 않음). 숫자만 보고 넘기기
                           쉬우니 눈에 띄게 경고한다. */}

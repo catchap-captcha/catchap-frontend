@@ -497,6 +497,8 @@ export default function MyRecords() {
         summary: demo
           ? null
           : { streak: data.stats.streakDays, solved: data.stats.totalSolved, accuracy: data.stats.avgAccuracy },
+        // 누적 강의 시청 시간 — 리포트 상단 핵심 지표에 쓴다(화면 '학습 시간'과 같은 값)
+        watch: demo ? null : { hours: data.stats.totalHours, minutes: data.stats.totalMinutes },
         lectures: lecReady
           ? { done: lecDone, total: lecTotal, watching: lecWatching, courses: myCourses.length, pct: lecCompletionPct }
           : null,
