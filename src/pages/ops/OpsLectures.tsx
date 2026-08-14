@@ -486,7 +486,11 @@ export default function OpsLectures() {
             <span>강의</span>
             <span>과목</span>
             <span>길이</span>
-            <span>문항</span>
+            {/* '2/10'만 보면 뜻을 알 수 없어 보조 라벨을 단다(공개된 문항 / 전체 문항) */}
+            <span className="op-lect-qhead">
+              문항
+              <small>공개 / 전체</small>
+            </span>
             <span>상태</span>
             <span className="op-col-right">관리</span>
           </div>
@@ -602,7 +606,10 @@ export default function OpsLectures() {
                     {/* 문항 열 — 문항 수(위) / 상태 칩(아래)으로 쌓는다. 종전엔 옆으로 붙어
                         열 폭을 넘겨 '상태(공개)' 열과 겹쳐 보였다(사용자 요청). */}
                     <span className="op-lect-qcell">
-                      <span className="op-lect-qnum">
+                      <span
+                        className="op-lect-qcount"
+                        title={`전체 ${lec.question_count}문항 중 ${lec.active_question_count}문항 공개`}
+                      >
                         <b>{lec.active_question_count}</b>
                         <small className="op-lect-dim">/{lec.question_count}</small>
                       </span>
@@ -3942,7 +3949,7 @@ export function QuestionsModal({
                   />
                 </label>
                 {/* 문항 번호 — 목록 순서대로(1부터) 매긴 표시용 순번 */}
-                <span className="op-lect-qnum" title="문항 번호">{qi + 1}</span>
+                <span className="op-lect-qcount" title="문항 번호">{qi + 1}</span>
                 {/* 고정 핀 = 그 시점 정각에 출제. draft 0초 = 시점 미배치 */}
                 {q.status === 'draft' && q.position_sec < 1 ? (
                   <span className="op-mono" title="아직 출제 시점이 없어요 — 수정에서 시점을 지정한 뒤 승인하세요">
