@@ -33,7 +33,25 @@
   gap: 4px;
   min-width: 0;
 }
-.op-lect-qnum { display: inline-flex; align-items: baseline; }
+/* 문항 수 — '공개/전체'. 클래스명은 반드시 op-lect-qnum(문항 순번 배지, 검은 원형)과
+   달라야 한다 — 겹치면 그 배지 스타일을 뒤집어써 새까맣게 보인다.
+   아래 '미공개' 칩과 같은 소프트 칩 문법으로 맞추되, 폭은 내용만큼만 차지한다. */
+.op-lect-qcount {
+  display: inline-flex;
+  align-items: baseline;
+  align-self: flex-start;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: var(--surface-2);
+  font-variant-numeric: tabular-nums;
+}
+/* 공개 수는 진하게 · 전체 수는 한 단계 옅게 — 옅은 칩 배경 위에서 둘 다 대비를 확보한다 */
+.op-lect-qcount b { font-size: 13px; font-weight: 800; color: var(--ink); }
+.op-lect-qcount .op-lect-dim { font-size: 12px; font-weight: 700; color: var(--ink-2); }
+
+/* 열 머리 — '문항'만으론 2/10이 뭔지 알 수 없어 보조 라벨을 단다 */
+.op-lect-qhead { display: inline-flex; flex-direction: column; gap: 1px; line-height: 1.25; }
+.op-lect-qhead small { font-size: 10px; font-weight: 700; color: var(--ink-3); }
 /* 세로로 쌓이므로 칩의 좌측 여백(가로 배치용)은 제거 */
 .op-lect-qcell .lu-nowarn,
 .op-lect-qcell .lu-draftwarn { margin-left: 0; }
