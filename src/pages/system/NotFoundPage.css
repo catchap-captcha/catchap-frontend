@@ -61,7 +61,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 18px;
+  /* 가운데가 로고 배지(88px)였을 땐 18px이 맞았지만, 숫자 셋이 된 뒤로는
+     하나의 '404'로 읽히도록 좁힌다. */
+  gap: 4px;
   margin-bottom: 28px;
 }
 .nf-digit {
@@ -72,22 +74,7 @@
   letter-spacing: -0.04em;
   color: var(--ink);
 }
-.nf-badge {
-  width: 88px;
-  height: 88px;
-  border-radius: 24px;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: var(--shadow-md);
-}
-.nf-badge-img {
-  width: 60px;
-  height: 60px;
-  border-radius: 14px;
-}
+/* (.nf-badge / .nf-badge-img 제거 — 가운데 0을 로고 배지에서 숫자로 되돌리며 미사용) */
 
 .nf-pill {
   display: inline-flex;
@@ -195,11 +182,6 @@
 }
 
 /* ── 애플 머티리얼 이식(2026-07-23): 소프트 뱃지 · pill 액션 ── */
-.nf-badge {
-  border: 0.5px solid var(--line);
-  border-radius: 28px;
-  box-shadow: var(--ap-shadow-hi);
-}
 .nf-pill { border: 0.5px solid var(--line); box-shadow: var(--ap-shadow); }
 .nf-title { font-weight: 700; }
 .nf-btn-back {

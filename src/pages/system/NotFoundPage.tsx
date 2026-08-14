@@ -1,6 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
-import mascot from '../../assets/characters/catchap-logo.png';
 import './NotFoundPage.css';
 
 /* CatChap 404 — handoff `CatChap 404.dc.html` */
@@ -15,12 +14,10 @@ export default function NotFoundPage() {
   return (
     <div className="nf-page">
       <div className="nf-card">
-        {/* 4 [logo] 4 */}
+        {/* 404 — 가운데 0은 종전에 CatChap 로고 배지였는데, 숫자로 되돌렸다(사용자 요청) */}
         <div className="nf-code-row">
           <span className="nf-digit">4</span>
-          <span className="nf-badge">
-            <img src={mascot} alt="CatChap" className="nf-badge-img" />
-          </span>
+          <span className="nf-digit">0</span>
           <span className="nf-digit">4</span>
         </div>
 
