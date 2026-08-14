@@ -21,6 +21,10 @@
 .op-logrow.op-lect-grid,
 .op-loghead.op-lect-grid {
   grid-template-columns: minmax(0, 2fr) 64px 90px 92px 76px minmax(336px, 1.3fr);
+  /* ★첫 줄 기준(baseline)으로 맞춘다. 문항 칸만 2줄(문항 수 + 미공개 칩)이라
+     가운데 정렬하면 그 칸의 첫 줄이 다른 칸 글자보다 10.5px 위로 떠 줄이 어긋나 보였다.
+     baseline이면 모든 칸의 첫 줄이 한 줄에 놓인다(측정 편차 10.5px → 1.3px). */
+  align-items: baseline;
 }
 .op-lect-dim { color: var(--ink-3); }
 
@@ -36,7 +40,9 @@
      줄어들어 그 행만 10px 낮아지고 목록 줄이 들쭉날쭉해졌다.
      20px(문항 수 칩) + 4px(gap) + 17px(상태 칩) = 41px */
   min-height: 41px;
-  justify-content: center;
+  /* 위쪽 기준 — 가운데로 두면 칩이 없을 때 첫 줄이 내려앉아 baseline이 어긋나고
+     그 행만 낮아진다. 위로 붙이면 남는 자리는 칩 자리로 아래에 그대로 남는다. */
+  justify-content: flex-start;
 }
 /* 문항 수 — '공개/전체'. 클래스명은 반드시 op-lect-qnum(문항 순번 배지, 검은 원형)과
    달라야 한다 — 겹치면 그 배지 스타일을 뒤집어써 새까맣게 보인다.
