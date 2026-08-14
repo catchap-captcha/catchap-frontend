@@ -59,7 +59,7 @@
 }
 /* 썸네일 칸을 16:9로 — 84x60(1.4:1)이라 16:9 썸네일이 좌우로 잘렸다.
    칸 비율을 원본에 맞추면 여백(레터박스) 없이 꽉 차면서도 잘리지 않는다. */
-.mc-cover {
+.mc-cover.cover--sm {
   width: 107px;
   height: 60px;
   border-radius: 10px;
