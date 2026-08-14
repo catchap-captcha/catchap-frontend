@@ -414,7 +414,7 @@ export default function OpsLectures() {
                 </button>
               )}
             </div>
-            <div className="op-lect-chips" role="group" aria-label="과목 필터">
+            <div className="op-lect-chips" role="group" aria-label="분야 필터">
               <button
                 type="button"
                 className={`op-lect-chip${subjFilter === '' ? ' op-lect-chip--on' : ''}`}
@@ -423,7 +423,7 @@ export default function OpsLectures() {
                   setCourseFilter('');
                 }}
               >
-                전체 과목
+                전체 분야
               </button>
               {subjectOptions.map((s) => (
                 <button
@@ -484,7 +484,7 @@ export default function OpsLectures() {
         <div className="op-lect-listwrap">
           <div className="op-loghead op-lect-grid op-lect-collabel">
             <span>강의</span>
-            <span>과목</span>
+            <span>분야</span>
             <span>길이</span>
             {/* '2/10'만 보면 뜻을 알 수 없어 보조 라벨을 단다(공개된 문항 / 전체 문항) */}
             <span className="op-lect-qhead">
@@ -507,7 +507,7 @@ export default function OpsLectures() {
             <div className="op-logrow">등록된 강의가 없어요. 우측 상단에서 영상을 업로드해 보세요.</div>
           )}
           {state === 'ready' && rows.length > 0 && isFiltering && groups.length === 0 && (
-            <div className="op-logrow">검색 결과가 없어요. 다른 검색어나 과목을 시도해 보세요.</div>
+            <div className="op-logrow">검색 결과가 없어요. 다른 검색어나 분야를 시도해 보세요.</div>
           )}
           {state === 'ready' &&
             groups.map((g) => (
@@ -762,7 +762,7 @@ const _GUIDE_STEPS: { icon: string; title: string; body: string }[] = [
   {
     icon: 'ph-upload-simple',
     title: '1. 강의 영상 업로드',
-    body: "오른쪽 위 '강의 업로드'로 영상(mp4·webm)과 과목을 올려요. 코스에 소속시키면 학생 화면에서 코스 단위로 묶여 보여요.",
+    body: "오른쪽 위 '강의 업로드'로 영상(mp4·webm)과 분야를 올려요. 코스에 소속시키면 학생 화면에서 코스 단위로 묶여 보여요.",
   },
   {
     icon: 'ph-closed-captioning',
@@ -2391,7 +2391,7 @@ function GenRulesInfoBar({ lectureId }: { lectureId: string }) {
   }, [lectureId]);
   if (!info) return null;
   const label =
-    info.source === 'scoped' ? '강사·과목 전용' : info.source === 'global' ? '전역' : '서버 기본값';
+    info.source === 'scoped' ? '강사·분야 전용' : info.source === 'global' ? '전역' : '서버 기본값';
   return (
     <div className="op-lect-rulesinfo" title="문항 생성에 쓰이는 출제 규칙이에요 — 운영 콘솔의 '프롬프트'에서 저장해요">
       <i className="ph-bold ph-note-pencil" />
