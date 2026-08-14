@@ -89,10 +89,32 @@
   color: var(--ink-3);
   white-space: nowrap;
 }
+/* 액션 열 — '잠금 해제'는 모든 행에 있고 '임시 비밀번호'는 학습자 행에만 있다.
+   오른쪽 정렬로 두면 버튼이 하나인 행에서 '잠금 해제'가 오른쪽 끝으로 밀려, 행마다 위치가
+   달라 어긋나 보였다. 열 폭을 두 버튼 기준으로 고정하고 왼쪽부터 채워 항상 같은 자리에 오게 한다. */
+.au-actions-h,
+.au-table td.au-actions {
+  width: 232px;
+}
 .au-actions {
   display: flex;
-  gap: 6px;
-  justify-content: flex-end;
+  gap: 8px;
+  justify-content: flex-start;
+  align-items: center;
+}
+/* 두 버튼의 크기·모서리를 통일 — 종전엔 서로 다른 공용 버튼이라 높이가 미세하게 달랐다. */
+.au-actions button {
+  flex: 0 0 auto;
+  min-width: 104px;
+  height: 32px;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+  font-size: 12.5px;
+  font-weight: 700;
+  white-space: nowrap;
 }
 .au-tag {
   margin-left: 6px;
@@ -124,6 +146,21 @@
 .au-orphans code {
   font-family: var(--font-mono, monospace);
   color: var(--ink-2);
+}
+
+/* 안내문 안의 '전체 보기' 토글 — 링크처럼 보이되 버튼 의미는 유지 */
+.au-linkbtn {
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  color: var(--ink-2);
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.au-linkbtn:hover {
+  color: var(--ink);
 }
 
 @media (max-width: 720px) {

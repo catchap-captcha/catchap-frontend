@@ -19,6 +19,34 @@ import './OpsAccountUnlock.css';
  */
 type Busy = { kind: 'unlock' | 'reset'; key: string } | null;
 
+/**
+ * '가입되지 않은 아이디' 중 자동화·인프라·탐색 흔적 — 뒤에 사람이 없을 뿐 아니라 운영자가
+ * 볼 이유도 없는 기록이다. 실측상 이런 것이 목록의 대부분(186건 중 대다수)이라, 섞여 있으면
+ * 정작 봐야 할 '사람이 오타 낸 아이디'가 묻힌다.
+ * ★지우지는 않는다 — 숨긴 개수를 알려 주고 '전체 보기'로 되돌릴 수 있게 둔다(조용한 은폐 금지).
+ */
+const NOISE_PATTERNS: RegExp[] = [
+  /^\d{1,3}(\.\d{1,3}){3}$/, // IP 그대로 남은 기록
+  /^[a-z]+:\d{1,3}(\.\d{1,3}){3}$/i, // portone:52.78.5.241 같은 인프라 키
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i, // UUID(세션·디바이스 키)
+  /(^|[-_.])bot([-_.]|\d|$)/i, // demo-bot, repro_bot_check
+  /^__.+__/, // __probe__@example.com
+  /probe|cutover|recheck|deploy-test|smoke|e2e/i, // 배포·회귀 점검 흔적
+  /@example\.com$/i,
+  /@(cat\.dev|catchap\.dev|catchap5\.test)$/i, // 개발·테스트 도메인
+  /:signup$/i, // 가입 흐름 내부 키
+];
+
+/** 사람이 입력한 로그인 아이디로 보기 어려운 것(한 글자·자모만 등) */
+function isTooShort(s: string): boolean {
+  const t = s.trim();
+  return t.length <= 2 || /^[ㄱ-ㅎㅏ-ㅣ\s]+$/.test(t);
+}
+
+function isNoiseIdentifier(s: string): boolean {
+  return NOISE_PATTERNS.some((re) => re.test(s)) || isTooShort(s);
+}
+
 export default function OpsAccountUnlock() {
   const [rows, setRows] = useState<OpsThrottleRow[]>([]);
   const [threshold, setThreshold] = useState(0);
@@ -28,6 +56,8 @@ export default function OpsAccountUnlock() {
   const [notice, setNotice] = useState<string | null>(null);
   /** 메일을 보낼 수 없는 학생의 임시 비밀번호 — 화면에 1회만 보여준다(서버에 평문 저장 없음) */
   const [tempPw, setTempPw] = useState<{ loginId: string; password: string } | null>(null);
+  /** 숨긴 자동화·탐색 기록까지 전부 볼지 — 기본은 '관리가 필요한 것만' */
+  const [showAllOrphans, setShowAllOrphans] = useState(false);
 
   const load = () => {
     setState('loading');
@@ -83,7 +113,21 @@ export default function OpsAccountUnlock() {
   };
 
   const real = rows.filter((r) => r.account);
-  const orphan = rows.filter((r) => !r.account);
+
+  // 가입되지 않은 아이디 — ① 같은 아이디가 여러 번 남았으면 한 줄로 합치고(실패 횟수 합산)
+  // ② 자동화·인프라 흔적은 기본으로 숨긴다. 남는 건 '사람이 오타 낸 것'뿐이라 관리 대상이 또렷해진다.
+  const orphanRaw = rows.filter((r) => !r.account);
+  const mergedMap = new Map<string, { subject: string; fail: number }>();
+  for (const r of orphanRaw) {
+    const cur = mergedMap.get(r.subject);
+    if (cur) cur.fail += r.fail_count;
+    else mergedMap.set(r.subject, { subject: r.subject, fail: r.fail_count });
+  }
+  const orphanMerged = [...mergedMap.values()];
+  const orphanKeep = orphanMerged.filter((o) => !isNoiseIdentifier(o.subject));
+  const orphanShown = (showAllOrphans ? orphanMerged : orphanKeep).sort((a, b) => b.fail - a.fail);
+  const hiddenCount = orphanMerged.length - orphanKeep.length;
+  const dupCollapsed = orphanRaw.length - orphanMerged.length;
 
   return (
     <div className="op-root">
@@ -146,7 +190,7 @@ export default function OpsAccountUnlock() {
                       <th>구분</th>
                       <th>실패</th>
                       <th>마지막 실패</th>
-                      <th />
+                      <th className="au-actions-h" />
                     </tr>
                   </thead>
                   <tbody>
@@ -197,20 +241,37 @@ export default function OpsAccountUnlock() {
 
             <section className="au-section">
               <h2>
-                가입되지 않은 아이디 <span>{orphan.length}</span>
+                가입되지 않은 아이디 <span>{orphanShown.length}</span>
               </h2>
               <p className="au-hint">
-                오타·탐색 시도로 남은 기록입니다. 뒤에 계정이 없어 풀어줄 사람도 없습니다.
+                오타로 남은 기록입니다. 뒤에 계정이 없어 풀어줄 사람은 없지만, 실제 아이디와
+                비슷하면 가입 안내가 필요할 수 있습니다.
+                {(hiddenCount > 0 || dupCollapsed > 0) && (
+                  <>
+                    {' '}
+                    {hiddenCount > 0 && `자동화·인프라 흔적 ${hiddenCount}건은 숨겼고, `}
+                    {dupCollapsed > 0 && `같은 아이디 ${dupCollapsed}건은 합쳤습니다. `}
+                    <button
+                      type="button"
+                      className="au-linkbtn"
+                      onClick={() => setShowAllOrphans((v) => !v)}
+                    >
+                      {showAllOrphans ? '숨긴 기록 접기' : '전체 보기'}
+                    </button>
+                  </>
+                )}
               </p>
-              {orphan.length > 0 && (
+              {orphanShown.length > 0 ? (
                 <ul className="au-orphans">
-                  {orphan.map((r) => (
-                    <li key={r.identifier}>
-                      <code>{r.subject}</code>
-                      <span>{r.fail_count}회</span>
+                  {orphanShown.map((o) => (
+                    <li key={o.subject}>
+                      <code>{o.subject}</code>
+                      <span>{o.fail}회</span>
                     </li>
                   ))}
                 </ul>
+              ) : (
+                <p className="au-empty">관리가 필요한 기록이 없습니다.</p>
               )}
             </section>
           </>
