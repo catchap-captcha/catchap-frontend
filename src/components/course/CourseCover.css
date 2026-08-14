@@ -23,19 +23,18 @@
   border-radius: var(--r);
 }
 
-/* 실제 썸네일 이미지 — 원본 비율을 유지한 채 영역 안에 '전체가' 보이게 맞춘다(object-fit:contain).
-   16:9가 아닌 칸(정사각 sm·히어로 등)에선 잘리지 않고 레터박스(빈 공간)가 생긴다. 그 빈 공간은
-   아래 .cover--img의 어두운 배경으로 깔끔하게 채운다(그라데이션이 비쳐 지저분해지지 않게). */
+/* 실제 썸네일 이미지 — 어떤 비율의 사진을 넣어도 영역을 꽉 채우게 맞춘다(object-fit:cover).
+   컨테이너 비율(16:9·정사각 등)과 달라도 좌우/상하 빈 폭(레터박스) 없이 잘라 채운다(사용자 요청). */
 .cover-img {
   position: absolute;
   inset: 0;
   z-index: 3;
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
   display: block;
 }
-/* 실제 이미지가 있을 때는 컨테이너 배경을 어둡게 — contain 레터박스가 깔끔하게 보이도록. */
+/* 이미지가 로드되기 전/투명 PNG 대비 배경(cover라 평소엔 이미지가 덮어 안 보인다). */
 .cover--img {
   background: #101012;
 }

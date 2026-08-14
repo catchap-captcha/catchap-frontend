@@ -135,7 +135,7 @@ export default function StudentMyPage() {
   const [delPw, setDelPw] = useState('');          // 비밀번호(비번 계정) 또는 확인 문구(소셜)
   const [delAgree, setDelAgree] = useState(false); // 탈퇴 동의 체크박스
   const [delReason, setDelReason] = useState('');  // 탈퇴 사유 — 자유 입력(선택)
-  const [delReasonTags, setDelReasonTags] = useState<string[]>([]); // 탈퇴 사유 — 프리셋 다중 선택
+  const [delReasonSel, setDelReasonSel] = useState(''); // 탈퇴 사유 — 드롭다운 선택(1개)
   // 비밀번호로 로그인하는 계정인지 — 소셜 전용(카카오 등, 비밀번호 없음)이면 확인 문구 입력으로 확인.
   // 조회 실패 시 true(안전: 비밀번호 입력칸을 보여줌 — 이메일 가입 계정 기본값).
   const [hasPassword, setHasPassword] = useState(true);
@@ -150,11 +150,9 @@ export default function StudentMyPage() {
     setDelPw('');
     setDelAgree(false);
     setDelReason('');
-    setDelReasonTags([]);
+    setDelReasonSel('');
     setDelErr('');
   };
-  const toggleDelReason = (r: string) =>
-    setDelReasonTags((prev) => (prev.includes(r) ? prev.filter((x) => x !== r) : [...prev, r]));
   const doDeleteAccount = async () => {
     if (!delAgree) {
       setDelErr('탈퇴 안내를 확인하고 동의에 체크해 주세요.');
@@ -173,8 +171,8 @@ export default function StudentMyPage() {
     setDeleting(true);
     setDelErr('');
     try {
-      // 프리셋(다중 선택) + 자유 입력을 합쳐 보낸다(서버는 감사 로그에 최대 200자 저장).
-      const reason = [...delReasonTags, delReason.trim()].filter(Boolean).join(' / ') || undefined;
+      // 드롭다운 선택 + 자유 입력을 합쳐 보낸다(서버는 감사 로그에 최대 200자 저장).
+      const reason = [delReasonSel, delReason.trim()].filter(Boolean).join(' / ') || undefined;
       await settingsApi.deleteAccount(
         hasPassword ? { password: delPw, reason } : { confirm: DEL_CONFIRM, reason },
       );
@@ -597,22 +595,19 @@ export default function StudentMyPage() {
 
             <div className="mp-modal-reason-group">
               <div className="mp-modal-reason-head">
-                탈퇴 사유 <span className="mp-modal-optional">(선택 · 여러 개 선택할 수 있어요)</span>
+                탈퇴 사유 <span className="mp-modal-optional">(선택)</span>
               </div>
-              <div className="mp-modal-reasons">
+              <select
+                className="mp-modal-reason-sel"
+                value={delReasonSel}
+                disabled={deleting}
+                onChange={(e) => setDelReasonSel(e.target.value)}
+              >
+                <option value="">사유를 선택해 주세요</option>
                 {DEL_REASONS.map((r) => (
-                  <button
-                    type="button"
-                    key={r}
-                    className={'mp-reason-chip' + (delReasonTags.includes(r) ? ' mp-reason-chip--on' : '')}
-                    aria-pressed={delReasonTags.includes(r)}
-                    disabled={deleting}
-                    onClick={() => toggleDelReason(r)}
-                  >
-                    {r}
-                  </button>
+                  <option key={r} value={r}>{r}</option>
                 ))}
-              </div>
+              </select>
               <textarea
                 className="mp-modal-reason"
                 value={delReason}

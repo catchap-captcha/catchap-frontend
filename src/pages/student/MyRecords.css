@@ -686,7 +686,8 @@
 
 /* 두 축 — 습관 추세 + 숙련(주차별 정답률) */
 .mr-twoaxis { display: grid; grid-template-columns: 1fr; gap: 16px; }
-@media (min-width: 900px) { .mr-twoaxis { grid-template-columns: 1fr 1fr; align-items: start; } }
+/* align-items: stretch — 두 카드를 같은 높이로 맞춰 일관된 한 쌍으로 보이게 한다(사용자 요청). */
+@media (min-width: 900px) { .mr-twoaxis { grid-template-columns: 1fr 1fr; align-items: stretch; } }
 
 /* ===== 수료한 코스(성취) — 재중심화 0719, 워치볼륨 막대 대체 ===== */
 .mr-comp-empty {

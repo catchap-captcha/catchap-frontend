@@ -649,25 +649,26 @@
 }
 .mp-modal-reason:focus { border-color: var(--danger); }
 .mp-modal-reason::placeholder { color: var(--ink-3); }
-/* 탈퇴 사유 프리셋 칩(다중 선택) + 자유 입력 묶음 */
+/* 탈퇴 사유 — 드롭다운 선택 + 자유 입력 묶음 */
 .mp-modal-reason-group { margin: 0 0 16px; text-align: left; }
 .mp-modal-reason-head { font-size: 12.5px; font-weight: 700; color: var(--ink-2); margin-bottom: 8px; }
-.mp-modal-reasons { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 10px; }
-.mp-reason-chip {
-  padding: 7px 12px;
+.mp-modal-reason-sel {
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 10px;
+  padding: 11px 12px;
   border: 1.5px solid var(--line);
-  border-radius: 999px;
+  border-radius: 12px;
   background: var(--surface);
-  color: var(--ink-2);
-  font-size: 12.5px;
-  font-weight: 600;
+  color: var(--ink);
+  font-size: 14px;
   font-family: inherit;
   cursor: pointer;
-  transition: border-color 0.15s, background 0.15s, color 0.15s;
+  outline: none;
+  transition: border-color 0.15s;
 }
-.mp-reason-chip:hover:not(:disabled) { border-color: var(--ink-3); }
-.mp-reason-chip--on { border-color: var(--danger); background: var(--danger-soft); color: var(--danger); }
-.mp-reason-chip:disabled { opacity: 0.55; cursor: default; }
+.mp-modal-reason-sel:focus { border-color: var(--danger); }
+.mp-modal-reason-sel:disabled { opacity: 0.55; cursor: default; }
 /* 탈퇴 동의 체크박스 */
 .mp-modal-agree {
   display: flex;
