@@ -1,0 +1,101 @@
+/* 탈퇴 사유 관리 — 사유 집계 칩 + 표 그리드(일시/역할/익명 코드/사유).
+   폭·애니메이션은 OpsApproval.css(.op-root/.op-main), 필터·카드·페이지네이션은
+   OpsAuditLog.css(.op-log*)를 그대로 재사용하므로 다른 운영 페이지와 동일하게 보인다. */
+
+/* 사유별 집계 칩 */
+.wd-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 16px;
+}
+.wd-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--ink-2);
+}
+.wd-chip b {
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+/* 표 — 감사 로그 카드(.op-logcard) 안에 놓는 4열 그리드 */
+.wd-head,
+.wd-row {
+  display: grid;
+  grid-template-columns: 152px 84px 120px minmax(0, 1fr);
+  gap: 14px;
+  align-items: center;
+}
+.wd-head {
+  padding: 13px 20px;
+  border-bottom: 1px solid var(--line);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-3);
+}
+.wd-row {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--line);
+  font-size: 13px;
+  color: var(--ink);
+}
+.wd-row:last-child {
+  border-bottom: none;
+}
+.wd-time {
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.wd-role {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--brand-soft);
+  color: var(--brand-ink);
+  font-size: 12px;
+  font-weight: 700;
+}
+.wd-code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  color: var(--ink-3);
+}
+.wd-reason {
+  line-height: 1.5;
+  word-break: break-word;
+}
+.wd-reason--empty {
+  color: var(--ink-3);
+}
+.wd-empty {
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--ink-3);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* 좁은 화면 — 헤더 숨기고 행을 세로로 쌓는다 */
+@media (max-width: 720px) {
+  .wd-head {
+    display: none;
+  }
+  .wd-row {
+    grid-template-columns: 1fr;
+    gap: 4px;
+    padding: 14px 16px;
+  }
+  .wd-time {
+    font-weight: 700;
+    color: var(--ink);
+  }
+}
