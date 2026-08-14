@@ -23,13 +23,8 @@ import {
   type SocialProvider,
 } from '../../api/social';
 import { PATHS } from '../../routes/paths';
+import SocialLogo from './SocialLogo';
 import './SocialConnections.css';
-
-const ICONS: Record<SocialProvider, string> = {
-  kakao: 'ph-fill ph-chat-circle-dots',
-  naver: 'ph-fill ph-globe-simple',
-  google: 'ph-fill ph-google-logo',
-};
 
 function detailOf(err: unknown, fallback: string) {
   const d = (err as AxiosError<{ detail?: string }>)?.response?.data?.detail;
@@ -140,8 +135,8 @@ export default function SocialConnections({
           const blocked = Boolean(link) && onlyOneLeft;
           return (
             <div key={p.provider} className="sx-row">
-              <span className={`sx-icon sx-icon--${p.provider}`}>
-                <i className={ICONS[p.provider]} />
+              <span className="sx-icon">
+                <SocialLogo provider={p.provider} />
               </span>
               <div className="sx-info">
                 <div className="sx-title">{p.label}</div>

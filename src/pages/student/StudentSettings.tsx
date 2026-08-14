@@ -21,9 +21,9 @@ type ToggleKey =
   | 'dark'
   | 'reduce'
   | 'color'
-  | 'remind'
-  | 'badge'
-  | 'weekly'
+  | 'lecture'
+  | 'exam'
+  | 'progress'
   | 'sfx'
   | 'voice';
 
@@ -49,10 +49,11 @@ const DISPLAY_ROWS: ToggleRow[] = [
   { key: 'color', title: '색약 친화 표시', sub: '색 외에 아이콘·모양으로도 구분합니다', icon: 'ph-fill ph-circles-three', bg: 'var(--warn-soft)', color: 'var(--warn)' },
 ];
 
+// 알림 항목 — 학습에 실제로 필요한 것만: 강의 / 수료·시험 / 학습 진행(마이페이지와 동일).
 const NOTIFY_ROWS: ToggleRow[] = [
-  { key: 'remind', title: '학습 리마인드', sub: '오늘 학습을 잊지 않게 알려줍니다', icon: 'ph-fill ph-alarm', bg: 'var(--warn-soft)', color: 'var(--warn)' },
-  { key: 'badge', title: '배지 획득 알림', sub: '새 배지를 얻으면 알려줍니다', icon: 'ph-fill ph-medal', bg: 'var(--warn-soft)', color: 'var(--warn)' },
-  { key: 'weekly', title: '주간 요약 알림', sub: '한 주 학습을 정리해서 보냅니다', icon: 'ph-fill ph-calendar-check', bg: 'var(--info-soft)', color: 'var(--info)' },
+  { key: 'lecture', title: '강의 알림', sub: '수강 중인 코스에 새 강의가 올라오면 알려줍니다', icon: 'ph-fill ph-video-camera', bg: 'var(--brand-soft)', color: 'var(--brand)' },
+  { key: 'exam', title: '수료·시험 알림', sub: '수료 시험 응시와 수료증 발급 소식을 알려줍니다', icon: 'ph-fill ph-certificate', bg: 'var(--ok-soft)', color: 'var(--ok)' },
+  { key: 'progress', title: '학습 진행 알림', sub: '이어서 학습할 강의와 학습 진도를 알려줍니다', icon: 'ph-fill ph-chart-line-up', bg: 'var(--info-soft)', color: 'var(--info)' },
 ];
 
 const SOUND_ROWS: ToggleRow[] = [
