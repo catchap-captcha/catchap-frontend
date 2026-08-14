@@ -41,8 +41,9 @@
 .se-card--locked {
   opacity: 0.72;
 }
+/* 썸네일 칸 16:9 — 내 강의(.mc-cover)와 같은 규격(잘림·레터박스 없음) */
 .se-cover {
-  width: 84px;
+  width: 107px;
   height: 60px;
   border-radius: 10px;
   flex: none;

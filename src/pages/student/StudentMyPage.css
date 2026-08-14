@@ -355,12 +355,8 @@
     border-color 0.2s,
     box-shadow 0.4s;
 }
-/* 수강 코스 썸네일 — 전역 커버는 object-fit:cover(레터박스 제거용)라 이 목록의 정사각
-   썸네일에선 16:9 이미지가 좌우로 잘린다. contain으로 이미지 전체를 담고 남는 여백은
-   커버 배경이 채운다(사용자 요청: 잘리지 않고 전체 표시). */
-.mp-course .cover-img {
-  object-fit: contain;
-}
+/* 수강 코스 썸네일의 '잘리지 않게' 규칙은 CourseCover.css의 .cover--sm으로 올라갔다
+   (같은 문제가 화면마다 반복돼 컴포넌트에서 한 번에 처리 — 여기 개별 규칙은 제거). */
 .mp-course:hover {
   transform: translateY(-3px);
   border-color: var(--brand-soft-line);
