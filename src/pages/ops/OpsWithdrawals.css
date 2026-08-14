@@ -25,6 +25,12 @@
   color: var(--ink);
   font-variant-numeric: tabular-nums;
 }
+/* 집계 상한 안내 — 최근 N건만 셌을 때만 노출 */
+.wd-summary-note {
+  margin: -8px 0 16px;
+  font-size: 12px;
+  color: var(--ink-3);
+}
 
 /* 표 — 감사 로그 카드(.op-logcard) 안에 놓는 4열 그리드 */
 .wd-head,

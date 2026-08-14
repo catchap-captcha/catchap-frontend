@@ -87,7 +87,10 @@ export interface OpsWithdrawalPage {
   total: number;
   page: number;
   page_size: number;
+  /** 사유별 집계 — 1페이지 응답에서만 채워진다(그 외 빈 배열: 화면은 직전 값 유지) */
   reason_summary: { reason: string; count: number }[];
+  summary_scanned: number; // 집계에 실제로 쓴 건수
+  summary_truncated: boolean; // 상한(최근 5000건)에 걸려 일부만 셌는지
 }
 /** 회원탈퇴 조회 필터 */
 export interface OpsWithdrawalFilter {
