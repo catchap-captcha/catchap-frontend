@@ -20,6 +20,8 @@ const PAGE_SIZE = 50;
 export default function OpsWithdrawals() {
   const [rows, setRows] = useState<OpsWithdrawal[]>([]);
   const [summary, setSummary] = useState<{ reason: string; count: number }[]>([]);
+  // 집계가 상한(최근 5000건)에 걸려 일부만 셌는지 — 화면에 그대로 밝힌다(조용한 절단 금지)
+  const [summaryCap, setSummaryCap] = useState<{ scanned: number; truncated: boolean } | null>(null);
   const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading');
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -41,7 +43,12 @@ export default function OpsWithdrawals() {
       .then((d) => {
         setRows(d.items ?? []);
         setTotal(d.total ?? 0);
-        setSummary(d.reason_summary ?? []);
+        // 집계는 1페이지 응답에만 담겨 온다(감사로그가 쌓여도 페이지마다 다시 세지 않게).
+        // 필터가 바뀌면 항상 1페이지로 돌아가니 집계도 그때 갱신된다 — 2페이지 이후엔 직전 값 유지.
+        if (page === 1) {
+          setSummary(d.reason_summary ?? []);
+          setSummaryCap({ scanned: d.summary_scanned ?? 0, truncated: !!d.summary_truncated });
+        }
         setState('ready');
       })
       .catch(() => setState('error'));
@@ -83,13 +90,20 @@ export default function OpsWithdrawals() {
 
         {/* 사유별 집계 요약 — 어떤 사유가 많은지 한눈에 */}
         {state === 'ready' && summary.length > 0 && (
-          <div className="wd-summary">
-            {summary.map((s) => (
-              <span key={s.reason} className="wd-chip">
-                {s.reason} <b>{s.count.toLocaleString()}</b>
-              </span>
-            ))}
-          </div>
+          <>
+            <div className="wd-summary">
+              {summary.map((s) => (
+                <span key={s.reason} className="wd-chip">
+                  {s.reason} <b>{s.count.toLocaleString()}</b>
+                </span>
+              ))}
+            </div>
+            {summaryCap?.truncated && (
+              <p className="wd-summary-note">
+                집계는 최근 {summaryCap.scanned.toLocaleString()}건 기준이에요. 기간을 좁히면 그 구간만 정확히 집계됩니다.
+              </p>
+            )}
+          </>
         )}
 
         {/* 필터 — 역할·기간 (감사 로그와 동일한 컨트롤) */}
