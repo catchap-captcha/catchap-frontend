@@ -418,6 +418,10 @@
 .sh3-continue--empty { grid-template-columns: 1fr; }
 .sh3-continue-coverwrap { position: relative; min-height: 190px; }
 .sh3-continue-cover.cover { width: 100%; height: 100%; aspect-ratio: auto; border-radius: 0; }
+/* 이어서 학습 히어로 — 커버 영역 비율이 카드 높이에 맞춰 정해져(16:9 아님) 전역 cover면
+   좌우가 잘린다. 이 카드만 contain으로 바꿔 썸네일 전체가 비율대로 축소돼 보이게 한다
+   (남는 여백은 .cover--img 어두운 배경이 깔끔히 채운다 — 사용자 요청). */
+.sh3-continue-cover .cover-img { object-fit: contain; }
 .sh3-vchip {
   position: absolute; top: 12px; left: 12px; z-index: 4;
   display: inline-flex; align-items: center; gap: 6px;
