@@ -47,7 +47,7 @@ interface MyStats {
 }
 
 // 설정 페이지에서 흡수한 토글/링크 정의 (원본 StudentSettings와 동일 — 계정 허브로 이관)
-type ToggleKey = 'eye' | 'dark' | 'reduce' | 'color' | 'remind' | 'badge' | 'weekly' | 'sfx' | 'voice';
+type ToggleKey = 'eye' | 'dark' | 'reduce' | 'color' | 'lecture' | 'exam' | 'progress' | 'sfx' | 'voice';
 interface ToggleRow {
   key: ToggleKey;
   title: string;
@@ -63,10 +63,12 @@ const DISPLAY_ROWS: ToggleRow[] = [
   // ccReduce 전역 적용 로직은 그대로 둔다 — 값은 살아 있고 노출만 뺀다(다른 설정과 얽힘 회피).
   { key: 'color', title: '색약 친화 표시', sub: '색 외에 아이콘·모양으로도 구분합니다', icon: 'ph-fill ph-circles-three', bg: 'var(--warn-soft)', color: 'var(--warn)' },
 ];
+// 알림 항목 — 학습에 실제로 필요한 것만(사용자 요청): 강의 / 수료·시험 / 학습 진행.
+// 옛 게임화 잔재(리마인드·배지·주간 요약)는 제거. 키는 StudentNotifications 필터와 1:1.
 const NOTIFY_ROWS: ToggleRow[] = [
-  { key: 'remind', title: '학습 리마인드', sub: '오늘 학습을 잊지 않게 알려줍니다', icon: 'ph-fill ph-alarm', bg: 'var(--warn-soft)', color: 'var(--warn)' },
-  { key: 'badge', title: '배지 획득 알림', sub: '새 배지를 얻으면 알려줍니다', icon: 'ph-fill ph-medal', bg: 'var(--warn-soft)', color: 'var(--warn)' },
-  { key: 'weekly', title: '주간 요약 알림', sub: '한 주 학습을 정리해서 보냅니다', icon: 'ph-fill ph-calendar-check', bg: 'var(--info-soft)', color: 'var(--info)' },
+  { key: 'lecture', title: '강의 알림', sub: '수강 중인 코스에 새 강의가 올라오면 알려줍니다', icon: 'ph-fill ph-video-camera', bg: 'var(--brand-soft)', color: 'var(--brand)' },
+  { key: 'exam', title: '수료·시험 알림', sub: '수료 시험 응시와 수료증 발급 소식을 알려줍니다', icon: 'ph-fill ph-certificate', bg: 'var(--ok-soft)', color: 'var(--ok)' },
+  { key: 'progress', title: '학습 진행 알림', sub: '이어서 학습할 강의와 학습 진도를 알려줍니다', icon: 'ph-fill ph-chart-line-up', bg: 'var(--info-soft)', color: 'var(--info)' },
 ];
 const SOUND_ROWS: ToggleRow[] = [
   { key: 'sfx', title: '효과음', sub: '정답·오답 소리를 켭니다', icon: 'ph-fill ph-music-notes', bg: 'var(--brand-soft)', color: 'var(--brand)' },

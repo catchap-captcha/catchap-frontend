@@ -108,12 +108,18 @@ export default function StudentNotifications() {
   const [allRead, setAllRead] = useState(false);
   const [cat, setCat] = useState<NtCat>('all');
 
-  /** 설정 화면의 알림 토글 적용: 배지 획득 / 학습 리마인드 / 주간 요약 off 시 해당 알림 숨김 */
+  /** 설정 화면의 알림 토글 적용(강의 / 수료·시험 / 학습 진행). 백엔드 알림 카테고리가
+   *  진도/배지/추천문제/AI라 진행은 '진도' 카테고리로, 강의·수료는 문구로 매칭한다
+   *  (종전 리마인드·주간 매칭과 같은 방식 — best-effort, off일 때만 숨긴다). */
   const allowedBySettings = (n: NtItem) => {
     const tg = settings.toggles;
-    if (!tg.badge && n.cat === '배지') return false;
-    if (!tg.remind && n.title.includes('리마인드')) return false;
-    if (!tg.weekly && (n.title.includes('주간') || n.body.includes('주간'))) return false;
+    const text = `${n.title} ${n.body}`;
+    // 학습 진행 알림 — '진도' 카테고리(이어보기·진도)
+    if (!tg.progress && n.cat === '진도') return false;
+    // 수료·시험 알림 — 수료/수료증/시험 소식
+    if (!tg.exam && /수료|시험/.test(text)) return false;
+    // 강의 알림 — 새 강의 등록·공개 등
+    if (!tg.lecture && /(새|신규) ?강의|강의.{0,4}(등록|공개|추가|업로드|올라)/.test(text)) return false;
     return true;
   };
 

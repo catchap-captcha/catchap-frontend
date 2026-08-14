@@ -15,9 +15,9 @@ export interface StudentToggles {
   dark: boolean; // 어두운 화면
   reduce: boolean; // 움직임 줄이기 (애니메이션 off)
   color: boolean; // 색약 친화 표시 (대비·채도 보정)
-  remind: boolean; // 학습 리마인드 알림
-  badge: boolean; // 배지 획득 알림
-  weekly: boolean; // 주간 요약 알림
+  lecture: boolean; // 강의 알림 (수강 코스 새 강의)
+  exam: boolean; // 수료·시험 알림
+  progress: boolean; // 학습 진행 알림 (진도·이어보기)
   sfx: boolean; // 효과음
   voice: boolean; // 냥냥이 목소리 (TTS)
 }
@@ -33,9 +33,9 @@ export const DEFAULT_STUDENT_SETTINGS: StudentSettingsData = {
     dark: false,
     reduce: false,
     color: false,
-    remind: true,
-    badge: true,
-    weekly: false,
+    lecture: true,
+    exam: true,
+    progress: true,
     sfx: true,
     voice: true,
   },
