@@ -614,7 +614,7 @@ export default function OpsLectures() {
                         {lec.description ? ` · ${lec.description}` : ''}
                       </small>
                     </span>
-                    <span>{subjectLabel(lec.subject)}</span>
+                    <span className="op-lect-field">{subjectLabel(lec.subject)}</span>
                     <span>{fmtDur(lec.duration_sec)}</span>
                     {/* 문항 열 — 문항 수(위) / 상태 칩(아래)으로 쌓는다. 종전엔 옆으로 붙어
                         열 폭을 넘겨 '상태(공개)' 열과 겹쳐 보였다(사용자 요청). */}
