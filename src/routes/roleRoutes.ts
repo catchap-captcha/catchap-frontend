@@ -9,7 +9,7 @@ export const ROLE_HOME: Record<Role, string> = {
   teacher: PATHS.SCHOOL_SUNSET,
   grade_head: PATHS.SCHOOL_SUNSET,
   org_admin: PATHS.SCHOOL_SUNSET,
-  ops: PATHS.OPS_APPROVAL, // 운영자: 기관 가입 승인 콘솔
+  ops: PATHS.OPS_DASHBOARD, // 운영자: 운영 홈 대시보드(처리 대기·헬스·감사로그)
   instructor: PATHS.OPS_INSTRUCTOR_HOME, // 강사: 홈 대시보드(검수 대기·학생 참여·약한 문항)로 착지
 };
 
