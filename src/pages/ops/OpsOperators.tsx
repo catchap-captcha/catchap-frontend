@@ -102,6 +102,29 @@ export default function OpsOperators() {
     }
   };
 
+  // 삭제 — 되돌릴 수 없다. 서버도 '중지 상태 + 본인 아님'을 다시 검사한다(화면 가드와 이중).
+  const remove = async (op: OpsOperator) => {
+    if (
+      !window.confirm(
+        `'${op.name}'(${op.email ?? '-'}) 운영자 계정을 삭제할까요?\n\n` +
+          '되돌릴 수 없어요. 계정은 완전히 사라지고 같은 이메일로 다시 추가해야 합니다.\n' +
+          '(감사 로그에 남은 이 계정의 활동 기록은 그대로 보존돼요.)',
+      )
+    )
+      return;
+    setBusyId(op.id);
+    try {
+      await opsApi.deleteOperator(op.id);
+      say('운영자 계정을 삭제했어요.');
+      load();
+    } catch (e) {
+      const err = e as { response?: { data?: { detail?: string } } };
+      say(err.response?.data?.detail ?? '삭제에 실패했어요.');
+    } finally {
+      setBusyId(null);
+    }
+  };
+
   const resetPw = async (op: OpsOperator) => {
     const self = me?.id === op.id;
     const msg = self
@@ -205,7 +228,7 @@ export default function OpsOperators() {
                     <span className={`op-orgstatus op-orgstatus--${m.cls}`}>{m.label}</span>
                   </span>
                   <span className="op-op-login">{fmt(o.last_login_at)}</span>
-                  <span className="op-col-right" style={{ display: 'inline-flex', gap: 8, justifyContent: 'flex-end' }}>
+                  <span className="op-col-right op-op-actions">
                     <button
                       className="op-op-toggle op-op-toggle--reset"
                       disabled={busyId === o.id}
@@ -223,6 +246,21 @@ export default function OpsOperators() {
                       onClick={() => toggle(o)}
                     >
                       {o.status === 'active' ? '중지' : '활성화'}
+                    </button>
+                    {/* 삭제는 중지된 계정만 — 행마다 버튼 수가 달라지지 않게 항상 자리를 두고 비활성만 바꾼다 */}
+                    <button
+                      className="op-op-toggle op-op-toggle--del"
+                      disabled={busyId === o.id || isMe || o.status !== 'disabled'}
+                      title={
+                        isMe
+                          ? '자기 계정은 삭제할 수 없어요'
+                          : o.status !== 'disabled'
+                            ? '먼저 중지한 뒤에 삭제할 수 있어요'
+                            : '계정 삭제(되돌릴 수 없어요)'
+                      }
+                      onClick={() => remove(o)}
+                    >
+                      <i className="ph-bold ph-trash" /> 삭제
                     </button>
                   </span>
                 </div>

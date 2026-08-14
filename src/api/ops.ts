@@ -447,6 +447,9 @@ export const opsApi = {
   /** 운영자 임시 비밀번호 재설정 → 새 임시 비번 이메일 발송(1회 노출) + 기존 세션 폐기 */
   resetOperatorPassword: (id: string) =>
     client.post<OpsOperatorCreated>(`/ops/operators/${id}/reset-password`).then((r) => r.data),
+  /** 운영자 계정 삭제 — 중지된 계정만 가능(서버가 막는다). 되돌릴 수 없다. */
+  deleteOperator: (id: string) =>
+    client.delete<{ ok: boolean; deleted: string }>(`/ops/operators/${id}`).then((r) => r.data),
 
   /** 강사 계정 관리 (초대 발급 — 공개 가입 없음) */
   instructors: () => client.get<OpsInstructor[]>('/ops/instructors').then((r) => r.data),
@@ -456,6 +459,9 @@ export const opsApi = {
     client.patch<OpsInstructor>(`/ops/instructors/${id}`, body).then((r) => r.data),
   resetInstructorPassword: (id: string) =>
     client.post<OpsInstructorCreated>(`/ops/instructors/${id}/reset-password`).then((r) => r.data),
+  /** 강사 계정 삭제 — 중지 상태 + 소유 코스·강의가 없어야 가능(서버가 막는다). */
+  deleteInstructor: (id: string) =>
+    client.delete<{ ok: boolean; deleted: string }>(`/ops/instructors/${id}`).then((r) => r.data),
   logs: (filter?: OpsLogFilter) =>
     client
       .get<OpsAuditLogPage>('/ops/logs', { params: filter && Object.keys(filter).length ? filter : undefined })

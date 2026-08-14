@@ -94,6 +94,30 @@ export default function OpsInstructors() {
     }
   };
 
+  // 삭제 — 되돌릴 수 없다. 서버가 '중지 상태 + 소유 코스·강의 없음'을 다시 검사한다
+  // (강의가 남아 있으면 주인 없는 콘텐츠가 되므로 서버가 사유와 함께 막고, 그 문구를 그대로 보여준다).
+  const remove = async (it: OpsInstructor) => {
+    if (
+      !window.confirm(
+        `'${it.name}'(${it.email ?? '-'}) 강사 계정을 삭제할까요?\n\n` +
+          '되돌릴 수 없어요. 계정은 완전히 사라지고 다시 초대해야 합니다.\n' +
+          '(코스·강의가 남아 있으면 삭제되지 않아요.)',
+      )
+    )
+      return;
+    setBusyId(it.id);
+    try {
+      await opsApi.deleteInstructor(it.id);
+      say('강사 계정을 삭제했어요.');
+      load();
+    } catch (e) {
+      const err = e as { response?: { data?: { detail?: string } } };
+      say(err.response?.data?.detail ?? '삭제에 실패했어요.');
+    } finally {
+      setBusyId(null);
+    }
+  };
+
   const resetPw = async (it: OpsInstructor) => {
     const msg = `${it.name} 강사의 임시 비밀번호를 재설정할까요? 새 임시 비번이 이메일로 발송되고 기존 세션은 폐기됩니다.`;
     if (!window.confirm(msg)) return;
@@ -167,7 +191,7 @@ export default function OpsInstructors() {
                     <span className={`op-orgstatus op-orgstatus--${m.cls}`}>{m.label}</span>
                   </span>
                   <span className="op-op-login">{fmt(it.last_login_at)}</span>
-                  <span className="op-col-right" style={{ display: 'inline-flex', gap: 8, justifyContent: 'flex-end' }}>
+                  <span className="op-col-right op-op-actions">
                     <button
                       className="op-op-toggle op-op-toggle--reset"
                       disabled={busyId === it.id}
@@ -185,6 +209,19 @@ export default function OpsInstructors() {
                       onClick={() => toggle(it)}
                     >
                       {it.status === 'active' ? '중지' : '활성화'}
+                    </button>
+                    {/* 삭제는 중지된 계정만 — 행마다 버튼 수가 달라지지 않게 항상 자리를 두고 비활성만 바꾼다 */}
+                    <button
+                      className="op-op-toggle op-op-toggle--del"
+                      disabled={busyId === it.id || it.status !== 'disabled'}
+                      title={
+                        it.status !== 'disabled'
+                          ? '먼저 중지한 뒤에 삭제할 수 있어요'
+                          : '계정 삭제(되돌릴 수 없어요)'
+                      }
+                      onClick={() => remove(it)}
+                    >
+                      <i className="ph-bold ph-trash" /> 삭제
                     </button>
                   </span>
                 </div>
