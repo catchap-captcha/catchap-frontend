@@ -439,7 +439,7 @@ export default function StudentMyPage() {
                         </div>
                         {c.exam?.passed ? (
                           <span className="mp-badge mp-badge--done">
-                            {c.exam.perfect ? '완벽 수료' : '수료'}
+                            {c.exam.perfect ? '수료 완료' : '수료'}
                           </span>
                         ) : (
                           <Link to={PATHS.STUDENT_LECTURES} className="mp-course-go">
