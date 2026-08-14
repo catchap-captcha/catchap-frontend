@@ -569,6 +569,20 @@
 .mp-modal-title { margin: 0 0 8px; font-size: 19px; font-weight: 800; color: var(--ink); }
 .mp-modal-desc { margin: 0 0 18px; font-size: 13.5px; color: var(--ink-2); line-height: 1.7; }
 .mp-modal-desc b { color: var(--danger); font-weight: 700; }
+/* 탈퇴 유의사항 — 개인정보·데이터 삭제 안내(빨간 강조) + 법령 보관/유의 목록 */
+.mp-modal-notice {
+  text-align: left;
+  background: var(--danger-soft);
+  border-radius: 12px;
+  padding: 14px 15px;
+  margin: 0 0 18px;
+}
+.mp-modal-notice-h { margin: 0 0 6px; font-size: 13px; font-weight: 800; color: var(--danger); line-height: 1.55; }
+.mp-modal-notice-sub { margin: 0 0 8px; font-size: 12px; font-weight: 700; color: var(--danger); line-height: 1.5; }
+.mp-modal-notice-list { margin: 0; padding-left: 17px; display: flex; flex-direction: column; gap: 4px; }
+.mp-modal-notice-list li { font-size: 12px; color: var(--ink-2); line-height: 1.5; }
+.mp-modal-notice-caution { margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--danger); }
+.mp-modal-notice-clabel { display: block; margin-bottom: 5px; font-size: 12px; font-weight: 800; color: var(--ink); }
 .mp-modal-err {
   margin: 0 0 14px;
   display: flex;
