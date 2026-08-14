@@ -32,6 +32,11 @@
   align-items: flex-start;
   gap: 4px;
   min-width: 0;
+  /* 칩('미공개 N'·'검증 없음') 자리를 항상 비워 둔다 — 칩이 없는 강의만 셀이 20px로
+     줄어들어 그 행만 10px 낮아지고 목록 줄이 들쭉날쭉해졌다.
+     20px(문항 수 칩) + 4px(gap) + 17px(상태 칩) = 41px */
+  min-height: 41px;
+  justify-content: center;
 }
 /* 문항 수 — '공개/전체'. 클래스명은 반드시 op-lect-qnum(문항 순번 배지, 검은 원형)과
    달라야 한다 — 겹치면 그 배지 스타일을 뒤집어써 새까맣게 보인다.
