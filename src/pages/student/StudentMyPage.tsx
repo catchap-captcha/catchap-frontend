@@ -59,7 +59,8 @@ interface ToggleRow {
 const DISPLAY_ROWS: ToggleRow[] = [
   { key: 'eye', title: '눈 보호 모드', sub: '따뜻한 색으로 눈부심을 줄입니다', icon: 'ph-fill ph-eye', bg: 'var(--ok-soft)', color: 'var(--ok)' },
   { key: 'dark', title: '어두운 화면', sub: '밤에 보기 편한 다크 모드', icon: 'ph-fill ph-moon', bg: 'var(--info-soft)', color: 'var(--info)' },
-  { key: 'reduce', title: '움직임 줄이기', sub: '화면 애니메이션을 줄입니다', icon: 'ph-fill ph-wind', bg: 'var(--info-soft)', color: 'var(--info)' },
+  // '움직임 줄이기'(reduce)·'음성 안내'(voice)는 화면 항목에서 제외(사용자 요청). 스토어 키와
+  // ccReduce 전역 적용 로직은 그대로 둔다 — 값은 살아 있고 노출만 뺀다(다른 설정과 얽힘 회피).
   { key: 'color', title: '색약 친화 표시', sub: '색 외에 아이콘·모양으로도 구분합니다', icon: 'ph-fill ph-circles-three', bg: 'var(--warn-soft)', color: 'var(--warn)' },
 ];
 const NOTIFY_ROWS: ToggleRow[] = [
@@ -69,7 +70,6 @@ const NOTIFY_ROWS: ToggleRow[] = [
 ];
 const SOUND_ROWS: ToggleRow[] = [
   { key: 'sfx', title: '효과음', sub: '정답·오답 소리를 켭니다', icon: 'ph-fill ph-music-notes', bg: 'var(--brand-soft)', color: 'var(--brand)' },
-  { key: 'voice', title: '음성 안내', sub: 'AI 선생님이 음성으로 안내합니다', icon: 'ph-fill ph-microphone', bg: 'var(--info-soft)', color: 'var(--info)' },
 ];
 const LINK_ROWS = [
   { title: '결제 내역 · 환불', sub: '수강 결제 기록을 보고 환불을 요청합니다', icon: 'ph-fill ph-receipt', bg: 'var(--info-soft)', color: 'var(--info)', to: PATHS.STUDENT_ORDERS },
