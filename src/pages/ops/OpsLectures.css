@@ -231,8 +231,23 @@
 }
 
 /* 과목 필터 — 드롭다운 대신 토글 칩(레퍼런스 스타일) */
-.op-lect-chips { display: flex; gap: 10px; flex-wrap: wrap; }
+/* 분야 칩 — 새 분야로 코스를 만들면 칩이 자동으로 늘어난다(고정 목록이 아니라 실제 사용 분야).
+   그래서 개수를 예측할 수 없으므로 두 줄로 접지 않고 한 줄을 유지하고, 넘치면 가로로 스크롤한다.
+   (접히면 필터 바 높이가 들쭉날쭉해지고 아래 목록까지 밀린다.) */
+.op-lect-chips {
+  display: flex;
+  gap: 10px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  flex: 1 1 auto;
+  min-width: 0;
+  scrollbar-width: thin;
+  padding-bottom: 2px; /* 스크롤바가 칩 아래를 가리지 않게 */
+}
 .op-lect-chip {
+  flex: 0 0 auto; /* 칸이 좁아도 칩 글자가 줄바꿈되지 않게 */
+  white-space: nowrap;
   border: 1px solid var(--line-strong);
   cursor: pointer;
   font-family: inherit;
