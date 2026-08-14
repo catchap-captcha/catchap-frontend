@@ -72,6 +72,7 @@ export const PATHS = {
   OPS_BEHAVIOR: '/ops/behavior',
   OPS_BEHAVIOR_EXPORT: '/ops/behavior/export', // 외부 업체 제공용 익명 내보내기
   OPS_LOGS: '/ops/logs',
+  OPS_WITHDRAWALS: '/ops/withdrawals', // 회원탈퇴 현황·사유 (탈퇴 계정은 익명)
   OPS_OPERATORS: '/ops/operators', // 운영자 계정 관리
   OPS_MONITORING: '/ops/monitoring', // 서버 자원 모니터링 (CPU/메모리/디스크/GPU + LLM 사용량)
   OPS_DEPLOYMENTS: '/ops/deployments', // 배포 현황 — 지금 무엇이 떠 있나 (읽기 전용)

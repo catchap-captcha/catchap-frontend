@@ -73,6 +73,31 @@ export interface OpsLogFilter {
   page_size?: number;
 }
 
+/** 회원탈퇴 현황 한 건 — 탈퇴 계정은 익명화됨(익명 코드·역할·사유·시각만) */
+export interface OpsWithdrawal {
+  id: string;
+  role: string | null; // 'student' | 'user'
+  anon_code: string | null; // 계정 id 앞자리(익명 식별)
+  reason: string | null; // 드롭다운 사유 + 자유입력 합본
+  created_at: string | null;
+}
+/** 회원탈퇴 현황 응답 — 목록 + 사유별 집계 */
+export interface OpsWithdrawalPage {
+  items: OpsWithdrawal[];
+  total: number;
+  page: number;
+  page_size: number;
+  reason_summary: { reason: string; count: number }[];
+}
+/** 회원탈퇴 조회 필터 */
+export interface OpsWithdrawalFilter {
+  role?: string; // 'student' | 'user'
+  date_from?: string; // YYYY-MM-DD
+  date_to?: string; // YYYY-MM-DD
+  page?: number;
+  page_size?: number;
+}
+
 /** 감사로그 문의답변 미리보기 — 원래 질문 + 그 문의에 달린 모든 답변 */
 export interface OpsAuditInquiryDetail {
   question: string | null;
@@ -431,6 +456,11 @@ export const opsApi = {
   logs: (filter?: OpsLogFilter) =>
     client
       .get<OpsAuditLogPage>('/ops/logs', { params: filter && Object.keys(filter).length ? filter : undefined })
+      .then((r) => r.data),
+  /** 회원탈퇴 현황·사유 (settings.account_delete 감사로그 기반, 탈퇴 계정은 익명) */
+  withdrawals: (filter?: OpsWithdrawalFilter) =>
+    client
+      .get<OpsWithdrawalPage>('/ops/withdrawals', { params: filter && Object.keys(filter).length ? filter : undefined })
       .then((r) => r.data),
   inquiries: (params?: { status_filter?: string; search?: string; page?: number; page_size?: number }) =>
     client

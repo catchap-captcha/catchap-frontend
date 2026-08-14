@@ -60,6 +60,7 @@ const OpsInquiries = lazy(() => import('../pages/ops/OpsInquiries'));
 const OpsBehavior = lazy(() => import('../pages/ops/OpsBehavior'));
 const OpsBehaviorExport = lazy(() => import('../pages/ops/OpsBehaviorExport'));
 const OpsAuditLog = lazy(() => import('../pages/ops/OpsAuditLog'));
+const OpsWithdrawals = lazy(() => import('../pages/ops/OpsWithdrawals'));
 const OpsMonitoring = lazy(() => import('../pages/ops/OpsMonitoring'));
 const OpsAlerts = lazy(() => import('../pages/ops/OpsAlerts'));
 const OpsDeployments = lazy(() => import('../pages/ops/OpsDeployments'));
@@ -184,6 +185,7 @@ export default function AppRoutes() {
           <Route path={PATHS.OPS_BEHAVIOR} element={<OpsBehavior />} />
           <Route path={PATHS.OPS_BEHAVIOR_EXPORT} element={<OpsBehaviorExport />} />
           <Route path={PATHS.OPS_LOGS} element={<OpsAuditLog />} />
+          <Route path={PATHS.OPS_WITHDRAWALS} element={<OpsWithdrawals />} />
           <Route path={PATHS.OPS_MONITORING} element={<OpsMonitoring />} />
           <Route path={PATHS.OPS_ALERTS} element={<OpsAlerts />} />
           <Route path={PATHS.OPS_DEPLOYMENTS} element={<OpsDeployments />} />
