@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
+import { COURSE_FIELDS, subjectLabel } from '../../components/student/interestTaxonomy';
 import {
   API_ORIGIN,
   errorDetail,
@@ -24,8 +25,9 @@ import './OpsLectures.css';
 /** 강의 관리 — 영상 업로드(진행률)·메타 수정·소프트 삭제 + 확인 문항·자료실 CRUD.
  * 성공 표기는 서버 확정 후에만 한다(업로드는 완료 후 목록 재조회로 실재 확인 — 가짜 성공 금지). */
 
-const SUBJECTS = ['국어', '영어', '수학', '과학', '사회', '생활'];
-// 코스 브라우징용 대분류(학교식 과목 대체) — 이수·수료 검증형 교육 기준. 자유롭게 조정 가능.
+// 분야 폴백 — 정본은 interestTaxonomy(INTEREST_GROUPS). 서버 목록을 못 받았을 때만 쓴다.
+// 종전엔 옛 학교식 과목(국어·영어…)이 박혀 있어 코스 관리와 분야 체계가 갈렸다.
+const SUBJECTS = COURSE_FIELDS.map((f) => f.value);
 
 /* (제거됨 0717) 시청 확인 간격 프리셋 — 출제 시점이 전부 핀(문항의 position_sec 고정)이
    되면서 무작위 간격 설정 자체가 사라졌다. 확인이 뜨는 시점은 문항 등록에서 지정한다.
@@ -222,22 +224,33 @@ export default function OpsLectures() {
      과목·코스 필터는 드롭다운, 코스별 접기로 긴 스크롤을 줄인다. 필터·접기는 목록 표시에만
      영향(원본 rows는 그대로 — 드래그 정렬 등 무관). */
   const [search, setSearch] = useState('');
-  const [subjFilter, setSubjFilter] = useState(''); // '' = 전체 과목
+  // '' = 전체 분야. 값은 저장값(subject)이 아니라 정본 '분야 라벨' — 레거시 과목(과학·사회…)이
+  // 여러 개라도 같은 분야로 묶여 한 칩으로 걸린다.
+  const [subjFilter, setSubjFilter] = useState('');
   const [courseFilter, setCourseFilter] = useState(''); // '' = 전체 코스
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set()); // 접힌 그룹 key 집합
-  // 드롭다운 후보 — 실제 강의·코스에 쓰인 과목만(빈 과목 노이즈 방지)
-  const subjectOptions = liveSubjects.filter(
-    (s) => rows.some((l) => l.subject === s) || courses.some((c) => c.subject === s),
-  );
-  // 코스 후보 — 강의가 실제 담긴 코스만(현재 과목 필터도 반영)
+  // 분야 칩 후보 — 실제 강의·코스에 쓰인 분야만(빈 분야 노이즈 방지).
+  // 저장값을 정본 라벨로 바꿔 묶는다: 레거시 학교 과목(과학·사회·국어…)은 모두 '교양·자기계발'로
+  // 흡수되므로 라벨 기준으로 합치지 않으면 같은 칩이 여러 개 뜬다.
+  const usedSubjects = new Set<string>();
+  rows.forEach((l) => l.subject && usedSubjects.add(l.subject));
+  courses.forEach((c) => c.subject && usedSubjects.add(c.subject));
+  const subjectOptions: string[] = [];
+  for (const sub of [...liveSubjects, ...usedSubjects]) {
+    if (!usedSubjects.has(sub)) continue;
+    const label = subjectLabel(sub);
+    if (!subjectOptions.includes(label)) subjectOptions.push(label);
+  }
+  // 코스 후보 — 강의가 실제 담긴 코스만(현재 분야 필터도 반영)
   const courseOptions = courses.filter(
     (c) =>
-      (subjFilter === '' || c.subject === subjFilter) && rows.some((l) => l.course_id === c.id),
+      (subjFilter === '' || subjectLabel(c.subject) === subjFilter) &&
+      rows.some((l) => l.course_id === c.id),
   );
   const q = search.trim().toLowerCase();
   const filteredRows = rows.filter(
     (l) =>
-      (subjFilter === '' || l.subject === subjFilter) &&
+      (subjFilter === '' || subjectLabel(l.subject) === subjFilter) &&
       (courseFilter === '' || l.course_id === courseFilter) &&
       (q === '' ||
         l.title.toLowerCase().includes(q) ||
@@ -449,7 +462,7 @@ export default function OpsLectures() {
                 <option value="">전체 코스</option>
                 {courseOptions.map((c) => (
                   <option key={c.id} value={c.id}>
-                    {c.subject} · {c.title}
+                    {subjectLabel(c.subject)} · {c.title}
                   </option>
                 ))}
               </select>
@@ -524,7 +537,7 @@ export default function OpsLectures() {
                   >
                     <i className={`ph-bold ${isCollapsed(g.key) ? 'ph-caret-right' : 'ph-caret-down'}`} />
                   </button>
-                  <span className="op-lect-groupsubj">{g.subject}</span>
+                  <span className="op-lect-groupsubj">{subjectLabel(g.subject)}</span>
                   {g.courseId ? (
                     <span className="op-lect-grouptitle">
                       <i className="ph-fill ph-stack" /> {g.title}
@@ -601,7 +614,7 @@ export default function OpsLectures() {
                         {lec.description ? ` · ${lec.description}` : ''}
                       </small>
                     </span>
-                    <span>{lec.subject}</span>
+                    <span>{subjectLabel(lec.subject)}</span>
                     <span>{fmtDur(lec.duration_sec)}</span>
                     {/* 문항 열 — 문항 수(위) / 상태 칩(아래)으로 쌓는다. 종전엔 옆으로 붙어
                         열 폭을 넘겨 '상태(공개)' 열과 겹쳐 보였다(사용자 요청). */}
@@ -1493,7 +1506,7 @@ function TrashModal({
                 <div className="op-trash-info">
                   <div className="op-trash-title">{t.title}</div>
                   <div className="op-trash-meta">
-                    <span>{t.subject}</span>
+                    <span>{subjectLabel(t.subject)}</span>
                     <span>·</span>
                     <span>문항 {t.question_count}개</span>
                     <span>·</span>
