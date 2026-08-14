@@ -562,6 +562,26 @@ export default function StudentMyPage() {
             <h3 id="mp-del-title" className="mp-modal-title">정말 탈퇴하시겠어요?</h3>
             <p className="mp-modal-desc">탈퇴 버튼 선택 시, 계정은 삭제되며 복구되지 않습니다.</p>
 
+            <div className="mp-modal-notice">
+              <p className="mp-modal-notice-h">
+                회원탈퇴 시 개인정보와 학습 기록 등 계정과 관련된 모든 데이터는 삭제되며, 재가입하더라도 복원되지 않습니다.
+              </p>
+              <p className="mp-modal-notice-sub">단, 아래 항목은 관련 법령에 따라 일정 기간 보관됩니다.</p>
+              <ul className="mp-modal-notice-list">
+                <li>계약 또는 청약철회 등에 관한 기록 · 전자상거래법 · 5년</li>
+                <li>대금결제 및 강의 제공에 관한 기록 · 전자상거래법 · 5년</li>
+                <li>소비자 불만 또는 분쟁처리에 관한 기록 · 전자상거래법 · 3년</li>
+              </ul>
+              <div className="mp-modal-notice-caution">
+                <span className="mp-modal-notice-clabel">유의사항</span>
+                <ul className="mp-modal-notice-list">
+                  <li>탈퇴 후에는 개인정보를 복원할 수 없으며, 같은 정보로 복구·재가입이 제한됩니다.</li>
+                  <li>진행 중인 수강·미완료 환불이 있다면 먼저 처리한 뒤 탈퇴를 권장합니다.</li>
+                  <li>학습 기록·문제 풀이 등은 재식별이 불가능하게 익명 처리됩니다.</li>
+                </ul>
+              </div>
+            </div>
+
             {hasPassword ? (
               <label className="mp-modal-pwlabel">
                 비밀번호 확인
