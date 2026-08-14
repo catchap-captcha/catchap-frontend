@@ -93,6 +93,12 @@ export default function MyCourses() {
     setCancelAck(false);
   };
 
+  const closeCancel = () => {
+    if (canceling) return; // 처리 중엔 닫히지 않는다(중복 요청·상태 꼬임 방지)
+    setCancelTarget(null);
+    setCancelAck(false);
+  };
+
   const runCancel = async () => {
     if (!cancelTarget || canceling) return;
     const courseId = cancelTarget.id;
@@ -274,26 +280,56 @@ export default function MyCourses() {
       </section>
 
       {cancelTarget && (
-        <div className="mc-overlay" onClick={() => !canceling && setCancelTarget(null)}>
+        <div className="mc-overlay" onClick={closeCancel}>
           <div
             className="mc-modal"
             role="dialog"
             aria-modal="true"
-            aria-label="수강 취소 확인"
+            aria-labelledby="mc-cancel-title"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="mc-modal-title">수강을 취소할까요?</h2>
+            <button
+              type="button"
+              className="mc-modal-close"
+              aria-label="닫기"
+              disabled={!!canceling}
+              onClick={closeCancel}
+            >
+              <i className="ph-bold ph-x" />
+            </button>
+
+            <div className="mc-modal-ic" aria-hidden="true">
+              <i className="ph-fill ph-warning" />
+            </div>
+            <h2 id="mc-cancel-title" className="mc-modal-title">
+              수강을 취소할까요?
+            </h2>
+            <p className="mc-modal-desc">아래 코스의 수강 신청이 취소돼요.</p>
             <p className="mc-modal-course">{cancelTarget.title}</p>
-            <ul className="mc-modal-warn">
-              <li>
-                <i className="ph-fill ph-warning" /> 이 코스의 <strong>시청 기록·문제 풀이 기록·
-                수료시험 기록</strong>이 모두 삭제돼요.
-              </li>
-              <li>
-                <i className="ph-fill ph-warning" /> 삭제된 학습 이력은 되돌릴 수 없어요. 다시
-                신청해도 처음부터 시작해요.
-              </li>
-            </ul>
+
+            {/* 안내 문구는 <li> 안에서 한 덩어리(span)로 흐르게 둔다 —
+                종전엔 li가 flex라 텍스트 조각과 <strong>이 각각 flex 아이템이 되어
+                "이 코스의 / 시청 기록… / 이 모두 삭제돼 / 요." 처럼 제멋대로 끊겼다. */}
+            <div className="mc-modal-warn">
+              <p className="mc-modal-warn-h">취소하면 이렇게 돼요</p>
+              <ul className="mc-modal-warn-list">
+                <li>
+                  <i className="ph-fill ph-warning-circle" aria-hidden="true" />
+                  <span>
+                    이 코스의 <strong>시청 기록·문제 풀이 기록·수료시험 기록</strong>이 모두
+                    삭제돼요.
+                  </span>
+                </li>
+                <li>
+                  <i className="ph-fill ph-warning-circle" aria-hidden="true" />
+                  <span>
+                    삭제된 학습 이력은 <strong>되돌릴 수 없어요.</strong> 다시 신청해도 처음부터
+                    시작해요.
+                  </span>
+                </li>
+              </ul>
+            </div>
+
             <label className="mc-modal-ack">
               <input
                 type="checkbox"
@@ -301,22 +337,36 @@ export default function MyCourses() {
                 onChange={(e) => setCancelAck(e.target.checked)}
                 disabled={!!canceling}
               />
-              <span>위 내용을 확인했고, 학습 이력이 삭제되는 데 동의해요.</span>
+              <span className="mc-modal-ack-box" aria-hidden="true">
+                <i className="ph-bold ph-check" />
+              </span>
+              <span className="mc-modal-ack-text">
+                위 내용을 확인했고, 학습 이력이 삭제되는 데 동의해요.
+              </span>
             </label>
+
             <div className="mc-modal-actions">
               <button
-                className="mc-btn mc-btn-ghost"
-                onClick={() => setCancelTarget(null)}
+                type="button"
+                className="mc-modal-keep"
+                onClick={closeCancel}
                 disabled={!!canceling}
               >
                 그대로 둘게요
               </button>
               <button
+                type="button"
                 className="mc-modal-danger"
                 onClick={runCancel}
                 disabled={!cancelAck || !!canceling}
               >
-                {canceling ? '취소 중…' : '수강 취소'}
+                {canceling ? (
+                  '취소 중…'
+                ) : (
+                  <>
+                    <i className="ph-bold ph-trash" aria-hidden="true" /> 수강 취소
+                  </>
+                )}
               </button>
             </div>
           </div>
