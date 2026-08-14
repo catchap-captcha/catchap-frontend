@@ -80,16 +80,16 @@ const LINK_ROWS = [
 ];
 const FONT_LABELS = ['작게', '보통', '크게'];
 
-// 회원탈퇴 사유(선택) — 여러 개 고를 수 있는 프리셋. 자유 입력칸과 함께 서버 reason으로 합쳐 보낸다.
+// 회원탈퇴 사유(선택) 드롭다운 옵션. 자유 입력칸과 함께 서버 reason으로 합쳐 보낸다.
 const DEL_REASONS = [
-  '원하는 강의·콘텐츠가 없어요',
-  '학습 효과를 느끼지 못했어요',
-  '사용법이 어렵고 불편해요',
-  '오류·버그가 자주 생겨요',
-  '자주 이용하지 않아요',
-  '다른 서비스를 이용하려고요',
-  '비용이 부담돼요',
-  '개인정보·보안이 걱정돼요',
+  '원하는 강의·콘텐츠가 없어요.',
+  '학습 효과를 느끼지 못했어요.',
+  '사용법이 어렵고 불편해요.',
+  '오류·버그가 자주 생겨요.',
+  '자주 이용하지 않아요.',
+  '다른 서비스를 이용하려고요.',
+  '비용이 부담돼요.',
+  '개인정보·보안이 걱정돼요.',
 ];
 
 export default function StudentMyPage() {
@@ -570,7 +570,7 @@ export default function StudentMyPage() {
                   className="mp-modal-pw"
                   value={delPw}
                   onChange={(e) => setDelPw(e.target.value)}
-                  placeholder="비밀번호를 입력하세요"
+                  placeholder="비밀번호를 입력하세요."
                   autoComplete="current-password"
                   autoFocus
                 />
@@ -603,7 +603,7 @@ export default function StudentMyPage() {
                 disabled={deleting}
                 onChange={(e) => setDelReasonSel(e.target.value)}
               >
-                <option value="">사유를 선택해 주세요</option>
+                <option value="">사유를 선택해 주세요.</option>
                 {DEL_REASONS.map((r) => (
                   <option key={r} value={r}>{r}</option>
                 ))}
