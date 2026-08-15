@@ -1,23 +1,11 @@
 import { useEffect, useState } from 'react';
 import { opsApi, type OpsSystemHealth } from '../../api/ops';
 import OpsNav from '../../components/ops/OpsNav';
+import { SERVICE_NAME_META as NAME_META } from '../../constants/systemServices';
 import './OpsApproval.css';
 import './OpsRenewalShared.css';
 import './OpsSystemStatus.css';
 
-const NAME_META: Record<string, { icon: string; label: string; desc: string }> = {
-  db: { icon: 'ph-database', label: '데이터베이스', desc: 'MySQL 연결 왕복시간' },
-  'captcha-engine': { icon: 'ph-puzzle-piece', label: '캡차 엔진', desc: '문제은행 로드·출제 가능 여부' },
-  smtp: { icon: 'ph-envelope-simple', label: '이메일(SMTP)', desc: '최근 24시간 발송 결과' },
-  disk: { icon: 'ph-hard-drives', label: '디스크', desc: '백엔드 컨테이너 저장공간' },
-  // 클러스터 앱 — 서버가 server_metrics(프로메테우스 수집분)에서 읽어 보낸다.
-  // ★종전의 'ai-server' 카드는 아무것도 점검하지 않는 고정 문자열이었다. behavior-ai가
-  //   그 자리를 대신한다 — 이제 실제로 도는 파드의 값이 뜬다.
-  'captcha-api': { icon: 'ph-puzzle-piece', label: '캡차 API', desc: '캡차 발급·검증 서버' },
-  'behavior-ai': { icon: 'ph-cpu', label: '행동 AI', desc: '행동 기반 봇 위험도 판정' },
-  frontend: { icon: 'ph-browser', label: '프론트', desc: '웹 화면 서버' },
-  'stt-worker': { icon: 'ph-waveform', label: 'STT 워커', desc: '강의 자막 생성(GPU)' },
-};
 
 const STATUS_META: Record<string, { accent: string; soft: string; label: string; icon: string }> = {
   ok: { accent: 'var(--ok)', soft: 'var(--ok-soft)', label: '정상', icon: 'ph-check-circle' },
