@@ -22,6 +22,15 @@ import './OpsMonitoring.css';
 const fmtInt = (n: number) => n.toLocaleString('ko-KR');
 const usageClass = (pct: number) => (pct >= 85 ? 'mon-bad' : pct >= 60 ? 'mon-warn' : 'mon-ok');
 
+/** 카드 부제의 호스트명을 읽을 수 있게 — "host-10-0-1-241" → "10.0.1.241".
+ *
+ *  VM 카드의 host 는 metrics_agent 가 socket.gethostname() 으로 보낸 값이라
+ *  카카오가 붙인 "host-<IP를 하이픈으로>" 형태로 온다. 운영자에게는 읽히지 않는다.
+ *  ★형태가 정확히 맞을 때만 바꾼다 — 노드 카드의 host("쿠버네티스 클러스터 안")나
+ *  앞으로 다른 문구가 와도 건드리지 않는다. */
+const prettyHost = (h: string) =>
+  /^host(-\d{1,3}){4}$/.test(h) ? h.slice(5).replace(/-/g, '.') : h;
+
 function Bar({ label, pct, sub }: { label: string; pct: number; sub: string }) {
   const p = Math.max(0, Math.min(100, pct));
   return (
@@ -122,7 +131,7 @@ function ServerCard({
       <div className="mon-card-head">
         <div>
           <h3 className="mon-card-title">{s.label}</h3>
-          {s.host && <span className="mon-card-host">{s.host}</span>}
+          {s.host && <span className="mon-card-host">{prettyHost(s.host)}</span>}
         </div>
         <div className="mon-card-badges">
           {resAlerts.length > 0 && (
@@ -164,7 +173,7 @@ function ServerCard({
           <div className="mon-gpu-name">
             <i className="ph-fill ph-graphics-card" /> {s.gpu_name ?? 'GPU'}
           </div>
-          <Bar label="GPU 사용률" pct={s.gpu_util_pct ?? 0} sub="util" />
+          <Bar label="GPU 사용률" pct={s.gpu_util_pct ?? 0} sub="장별 평균" />
           <Bar
             label="VRAM"
             pct={
@@ -172,7 +181,7 @@ function ServerCard({
                 ? ((s.gpu_mem_used_mb ?? 0) / s.gpu_mem_total_mb) * 100
                 : 0
             }
-            sub={`${fmtInt(s.gpu_mem_used_mb ?? 0)} / ${fmtInt(s.gpu_mem_total_mb ?? 0)} MB`}
+            sub={`${fmtInt(s.gpu_mem_used_mb ?? 0)} / ${fmtInt(s.gpu_mem_total_mb ?? 0)} MB · 합계`}
           />
         </div>
       ) : (
