@@ -1,7 +1,11 @@
 import { useEffect, useState } from 'react';
 import { opsApi, type OpsSystemHealth } from '../../api/ops';
 import OpsNav from '../../components/ops/OpsNav';
-import { SERVICE_NAME_META as NAME_META } from '../../constants/systemServices';
+import {
+  SERVICE_KIND_META,
+  SERVICE_NAME_META as NAME_META,
+  type ServiceKind,
+} from '../../constants/systemServices';
 import './OpsApproval.css';
 import './OpsRenewalShared.css';
 import './OpsSystemStatus.css';
@@ -93,30 +97,49 @@ export default function OpsSystemStatus() {
               <span className="sys-checked">마지막 점검 {fmt(data.checked_at)} (KST)</span>
             </div>
 
-            <div className="sys-grid">
-              {data.services.map((s) => {
-                const nm = NAME_META[s.name] ?? { icon: 'ph-heartbeat', label: s.name, desc: '' };
-                const sm = STATUS_META[s.status] ?? STATUS_META.not_deployed;
-                return (
-                  <div key={s.name} className="sys-card" style={{ borderLeftColor: sm.accent }}>
-                    <div className="sys-card-top">
-                      <span className="sys-icbox"><i className={`ph ${nm.icon}`} /></span>
-                      <div className="sys-card-title">
-                        <div className="sys-card-name">{nm.label}</div>
-                        <div className="sys-card-desc">{nm.desc}</div>
-                      </div>
-                      <span className="sys-pill" style={{ color: sm.accent, background: sm.soft }}>
-                        <i className={`ph ${sm.icon}`} />{sm.label}
-                      </span>
-                    </div>
-                    <div className="sys-card-bottom">
-                      {s.latency_ms != null && <span className="sys-latency">{s.latency_ms}ms</span>}
-                      <span className="sys-detail">{s.detail}</span>
-                    </div>
+            {(['server', 'inside', 'external'] as ServiceKind[]).map((kind) => {
+              const items = data.services.filter(
+                (s) => (NAME_META[s.name]?.kind ?? 'server') === kind,
+              );
+              if (!items.length) return null;
+              const km = SERVICE_KIND_META[kind];
+              return (
+                <section key={kind} className="sys-group">
+                  <h2 className="sys-group-title">
+                    {km.title} <span className="sys-group-count">{items.length}</span>
+                  </h2>
+                  <p className="sys-group-hint">{km.hint}</p>
+                  <div className="sys-grid">
+                    {items.map((s) => {
+                      const nm = NAME_META[s.name] ?? {
+                        icon: 'ph-heartbeat',
+                        label: `미등록 (${s.name})`,
+                        desc: '',
+                      };
+                      const sm = STATUS_META[s.status] ?? STATUS_META.not_deployed;
+                      return (
+                        <div key={s.name} className="sys-card" style={{ borderLeftColor: sm.accent }}>
+                          <div className="sys-card-top">
+                            <span className="sys-icbox"><i className={`ph ${nm.icon}`} /></span>
+                            <div className="sys-card-title">
+                              <div className="sys-card-name">{nm.label}</div>
+                              <div className="sys-card-desc">{nm.desc}</div>
+                            </div>
+                            <span className="sys-pill" style={{ color: sm.accent, background: sm.soft }}>
+                              <i className={`ph ${sm.icon}`} />{sm.label}
+                            </span>
+                          </div>
+                          <div className="sys-card-bottom">
+                            {s.latency_ms != null && <span className="sys-latency">{s.latency_ms}ms</span>}
+                            <span className="sys-detail">{s.detail}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
-                );
-              })}
-            </div>
+                </section>
+              );
+            })}
           </>
         )}
       </main>
