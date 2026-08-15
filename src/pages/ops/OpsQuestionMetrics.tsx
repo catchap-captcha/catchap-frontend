@@ -3,6 +3,7 @@ import OpsNav from '../../components/ops/OpsNav';
 import { opsApi, type OpsQuestionMetricsResp, type OpsQuestionMetricsParams } from '../../api/ops';
 import './OpsApproval.css';
 import './OpsQuestionMetrics.css';
+import { questionTypeLabel } from '../../constants/questionTypes';
 
 /**
  * 문항 지표 — 문제은행 각 문항의 노출수·정답률(문제은행 2단계).
@@ -186,7 +187,7 @@ export default function OpsQuestionMetrics() {
                           {q.topic && <span className="qm-topic">{q.topic}</span>}
                         </td>
                         <td>{q.subject}</td>
-                        <td className="qm-type">{q.type ?? '—'}</td>
+                        <td className="qm-type">{questionTypeLabel(q.type)}</td>
                         <td className="qm-num">{q.attempts.toLocaleString()}</td>
                         <td>
                           <div className="qm-acc">
