@@ -51,8 +51,11 @@ export const AUDIT_ACTION_META: Record<string, { label: string; icon: string; cl
   'ops.operator_create': { label: '운영자 계정 생성', icon: 'ph-user-circle-plus', cls: 'warn' },
   'ops.operator_update': { label: '운영자 권한 변경', icon: 'ph-user-circle-gear', cls: 'warn' },
   'ops.operator_password_reset': { label: '운영자 비밀번호 재설정', icon: 'ph-key', cls: 'warn' },
+  'ops.operator_delete': { label: '운영자 계정 삭제', icon: 'ph-user-minus', cls: 'no' },
   'ops.ai_model_create': { label: 'AI 모델 등록', icon: 'ph-cpu', cls: 'ok' },
   'ops.ai_model_update': { label: 'AI 모델 수정', icon: 'ph-cpu', cls: 'neutral' },
+  // 과목별로 다른 AI 문항 생성 규칙(프롬프트). 전역 설정과 구분해서 '과목별'을 밝힌다.
+  'system.settings.ai_prompt_scoped': { label: 'AI 생성 규칙 변경(과목별)', icon: 'ph-sparkle', cls: 'warn' },
   // 기관 관리자 — 학년부장/학급
   'org.grade_head_appoint': { label: '학년부장 임명', icon: 'ph-user-circle-gear', cls: 'ok' },
   'org.grade_head_dismiss': { label: '학년부장 해임', icon: 'ph-user-circle-minus', cls: 'warn' },
@@ -78,6 +81,7 @@ export const AUDIT_ACTION_META: Record<string, { label: string; icon: string; cl
   'lecture.review.upsert': { label: '수강 후기 작성', icon: 'ph-star', cls: 'neutral' },
   // 강사 — 확인문항
   'lecture.question.create': { label: '확인문항 추가', icon: 'ph-plus-circle', cls: 'ok' },
+  'lecture.question.bulk_publish': { label: '확인문항 일괄 공개', icon: 'ph-eye', cls: 'ok' },
   'lecture.question.update': { label: '확인문항 수정', icon: 'ph-pencil-simple', cls: 'neutral' },
   'lecture.question.delete': { label: '확인문항 삭제', icon: 'ph-trash', cls: 'no' },
   'lecture.question.generate': { label: '확인문항 AI 생성', icon: 'ph-sparkle', cls: 'ok' },
@@ -107,6 +111,9 @@ export const AUDIT_ACTION_META: Record<string, { label: string; icon: string; cl
   'ops.instructor_create': { label: '강사 계정 생성', icon: 'ph-user-circle-plus', cls: 'warn' },
   'ops.instructor_update': { label: '강사 정보 수정', icon: 'ph-user-circle-gear', cls: 'neutral' },
   'ops.instructor_password_reset': { label: '강사 비밀번호 재설정', icon: 'ph-key', cls: 'warn' },
+  'ops.instructor_delete': { label: '강사 계정 삭제', icon: 'ph-user-minus', cls: 'no' },
+  // 가입되지 않은 아이디로 쌓인 로그인 실패 기록만 지운다(실제 계정·최근 24시간은 남긴다).
+  'ops.login_throttle_purge_orphans': { label: '없는 계정 잠금기록 정리', icon: 'ph-trash', cls: 'neutral' },
   'ops.student_password_reset': { label: '학생 비밀번호 재설정', icon: 'ph-key', cls: 'warn' },
   'ops.login_throttle_unlock': { label: '로그인 잠금 해제', icon: 'ph-lock-open', cls: 'warn' },
   // 운영자 — AI 런타임/시스템 설정
@@ -147,4 +154,7 @@ export const AUDIT_TARGET_LABEL: Record<string, string> = {
   lecture_material: '강의 자료',
   lecture_transcript: '강의 자막',
   lecture_question_report: '문항 신고',
+  ai_model_config: 'AI 모델 설정',
+  login_throttle: '로그인 잠금',
+  system_setting: '시스템 설정',
 };
