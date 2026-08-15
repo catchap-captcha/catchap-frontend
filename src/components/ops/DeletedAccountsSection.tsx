@@ -60,7 +60,6 @@ export default function DeletedAccountsSection({
               <span className="op-mono">{d.email ?? '-'}</span>
               <span className="op-del-state">
                 <span className="op-orgstatus op-orgstatus--deleted">삭제됨</span>
-                {d.status_before === 'disabled' && <small>중지 후</small>}
               </span>
               <span className="op-op-login">{fmt(d.deleted_at)}</span>
               {/* 삭제를 실행한 운영자도 나중에 삭제됐을 수 있다 — 없는 이름을 지어내지 않는다 */}

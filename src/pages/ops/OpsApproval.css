@@ -1514,15 +1514,14 @@
 .op-op-actions { display: inline-flex; gap: 8px; justify-content: flex-end; align-items: center; }
 .op-op-actions .op-op-toggle--off,
 .op-op-actions .op-op-toggle--on { min-width: 62px; justify-content: center; text-align: center; }
-/* 삭제된 운영자 계정 이력 — 위 표와 같은 카드 문법을 쓰되 '관리' 열이 없다(할 일이 없다).
-   대신 마지막 열이 '삭제한 운영자'라 왼쪽 정렬이고, 상태 열은 칩 + '중지 후'가 같이 들어가
-   조금 넓다. 앞 두 열(이름·이메일)은 위 표와 폭을 맞춰 두 표가 이어져 보이게 한다. */
-.op-delhead, .op-delrow { grid-template-columns: 1.4fr 1.7fr 1.1fr 1.3fr 1.4fr; }
+/* 삭제된 운영자·강사 계정 이력 — 위 표와 같은 카드 문법을 쓰되 '관리' 열이 없다(할 일이 없다).
+   ★열 폭은 위 표(.op-ophead)와 똑같이 둔다 — 두 표의 열이 세로로 맞아떨어져야 같은 계정
+   목록의 연장으로 읽힌다. 마지막 열만 '관리' 대신 '삭제한 운영자'라 왼쪽 정렬이다. */
+.op-delhead, .op-delrow { grid-template-columns: 1.4fr 1.7fr 0.9fr 1.2fr 1.7fr; }
 .op-delrow .op-org-ic { background: var(--surface-2); color: var(--ink-3); }
 .op-delrow .op-op-name { color: var(--ink-2); }
 .op-orgstatus--deleted { background: var(--danger-soft); color: var(--danger); }
-.op-del-state { display: inline-flex; align-items: center; gap: 6px; }
-.op-del-state small { font-weight: 700; font-size: 11.5px; color: var(--ink-3); }
+.op-del-state { display: inline-flex; align-items: center; }
 .op-del-by { font-weight: 700; font-size: 13px; color: var(--ink-2); }
 .op-del-by em { font-style: normal; color: var(--ink-3); }
 .op-delempty { color: var(--ink-3); font-weight: 700; font-size: 13px; }
