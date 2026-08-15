@@ -1,6 +1,12 @@
 import { useEffect, useState } from 'react';
-import { opsApi, type OpsInstructor, type OpsInstructorCreated } from '../../api/ops';
+import {
+  opsApi,
+  type OpsDeletedOperator,
+  type OpsInstructor,
+  type OpsInstructorCreated,
+} from '../../api/ops';
 import OpsNav from '../../components/ops/OpsNav';
+import DeletedAccountsSection from '../../components/ops/DeletedAccountsSection';
 import './OpsApproval.css';
 
 const STATUS_META: Record<string, { label: string; cls: string }> = {
@@ -17,6 +23,8 @@ function fmt(ts: string | null): string {
  *  강사는 /ops/login 으로 들어와 강의 콘솔에서 자기 강의만 관리한다. */
 export default function OpsInstructors() {
   const [rows, setRows] = useState<OpsInstructor[]>([]);
+  /** 삭제된 계정 이력 — 감사 로그가 출처라 위 목록과 별개로 가져온다 */
+  const [deleted, setDeleted] = useState<OpsDeletedOperator[]>([]);
   const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading');
   const [adding, setAdding] = useState(false);
   const [name, setName] = useState('');
@@ -42,6 +50,11 @@ export default function OpsInstructors() {
         setState('ready');
       })
       .catch(() => setState('error'));
+    // 삭제 이력은 실패해도 위 목록까지 '오류'로 만들지 않는다 — 보조 정보다.
+    opsApi
+      .deletedInstructors()
+      .then((d) => setDeleted(Array.isArray(d) ? d : []))
+      .catch(() => setDeleted([]));
   };
   useEffect(load, []);
 
@@ -228,6 +241,8 @@ export default function OpsInstructors() {
               );
             })}
         </div>
+
+        <DeletedAccountsSection kind="강사" items={deleted} loading={state === 'loading'} />
       </main>
 
       {/* 강사 초대 모달 */}

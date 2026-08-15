@@ -1,8 +1,14 @@
 import { useEffect, useState } from 'react';
-import { opsApi, type OpsOperator, type OpsOperatorCreated } from '../../api/ops';
+import {
+  opsApi,
+  type OpsDeletedOperator,
+  type OpsOperator,
+  type OpsOperatorCreated,
+} from '../../api/ops';
 import { settingsApi } from '../../api/settings';
 import { useAuth } from '../../hooks/useAuth';
 import OpsNav from '../../components/ops/OpsNav';
+import DeletedAccountsSection from '../../components/ops/DeletedAccountsSection';
 import SocialConnections from '../../components/account/SocialConnections';
 import { PATHS } from '../../routes/paths';
 import './OpsApproval.css';
@@ -20,6 +26,8 @@ function fmt(ts: string | null): string {
 export default function OpsOperators() {
   const { me } = useAuth();
   const [rows, setRows] = useState<OpsOperator[]>([]);
+  /** 삭제된 계정 이력 — 감사 로그가 출처라 위 목록과 별개로 가져온다 */
+  const [deleted, setDeleted] = useState<OpsDeletedOperator[]>([]);
   const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading');
   const [adding, setAdding] = useState(false);
   const [name, setName] = useState('');
@@ -52,6 +60,11 @@ export default function OpsOperators() {
         setState('ready');
       })
       .catch(() => setState('error'));
+    // 삭제 이력은 실패해도 위 목록까지 '오류'로 만들지 않는다 — 보조 정보다.
+    opsApi
+      .deletedOperators()
+      .then((d) => setDeleted(Array.isArray(d) ? d : []))
+      .catch(() => setDeleted([]));
   };
   useEffect(load, []);
 
@@ -267,6 +280,8 @@ export default function OpsOperators() {
               );
             })}
         </div>
+
+        <DeletedAccountsSection kind="운영자" items={deleted} loading={state === 'loading'} />
 
         {/* ★내 계정 — 위 표는 '다른 사람들', 이건 '나'다.
             운영자는 상단바 아바타가 이 화면으로 오므로, 콘솔 계정의 소셜 연결은 여기에 있어야
