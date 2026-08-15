@@ -123,6 +123,24 @@
 .mon-card--drag:hover {
   border-color: var(--brand-soft-line);
 }
+/* 용어 풀이 한 줄 — 개발자가 아닌 운영자를 위해 화면에 그대로 쓸 수밖에 없는 말만 푼다.
+   본문보다 한 단 흐리게 둬서 평소엔 눈에 안 걸리고, 모를 때만 읽히게. */
+.mon-glossary {
+  margin-top: 6px;
+  font-size: 12.5px;
+  line-height: 1.7;
+  color: var(--ink-3);
+}
+.mon-glossary b {
+  font-weight: 600;
+  color: var(--ink-2);
+}
+/* 부하·벌 수 설명은 마우스를 올렸을 때 뜬다(title) — 그럴 게 있다는 걸 알리는 밑줄 */
+.mon-metric-sub[title] {
+  text-decoration: underline dotted var(--line-2);
+  text-underline-offset: 3px;
+  cursor: help;
+}
 .mon-drag-hint {
   display: flex;
   align-items: center;
