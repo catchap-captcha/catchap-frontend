@@ -44,6 +44,35 @@ const ago = (sec: number | null | undefined) => {
 const APP_ORDER = ['frontend', 'backend-api', 'captcha-api', 'behavior-ai', 'stt-worker'];
 const VM_ORDER = ['vm-jump', 'vm-jump-2b', 'vm-ops', 'vm-ops-2b', 'vm-nat-2a', 'vm-nat-2b'];
 
+/** 카드를 세 묶음으로 나눈다 — 그전에는 15개가 죽 늘어서 있었다.
+ *
+ *  ★기준이 섞여 있어서 오해를 만든다:
+ *    노드·VM 카드는 "서버 한 대 = 카드 하나" 인데,
+ *    앱 카드는 "서비스 한 종류 = 카드 하나"(각각 2벌씩 떠 있다)다.
+ *  그래서 합이 15개(홀수)가 되고, 보는 사람이 ★"이중화가 안 됐나" 로 읽는다.
+ *  묶고 제목을 달아 무엇이 무엇인지, 몇 벌씩인지 한눈에 보이게 한다.
+ */
+const CARD_GROUPS = [
+  {
+    key: 'app',
+    title: '서비스',
+    hint: '사용자가 직접 쓰는 것들 — 각각 2벌씩 떠 있어서 한 벌이 죽어도 이어집니다.',
+    match: (s: ServerMetric) => APP_ORDER.includes(s.server_key),
+  },
+  {
+    key: 'node',
+    title: '서비스 서버',
+    hint: '위 서비스가 실제로 도는 곳 — 두 영역(2-a·2-b)에 나눠 둡니다.',
+    match: (s: ServerMetric) => s.server_key.startsWith('node:'),
+  },
+  {
+    key: 'vm',
+    title: '뒷단 서버',
+    hint: '접속(점프)·작업(운영)·인터넷 출구(NAT) — 영역마다 짝을 맞춰 둡니다.',
+    match: (s: ServerMetric) => s.server_key.startsWith('vm-'),
+  },
+] as const;
+
 const defaultRank = (s: ServerMetric): [number, number, string] => {
   const a = APP_ORDER.indexOf(s.server_key);
   if (a >= 0) return [0, a, ''];
@@ -163,6 +192,8 @@ function ServerCard({
       </article>
     );
   }
+  // 앱 카드(=서비스 한 종류에 여러 벌)인지 — 노드·VM 은 서버 한 대가 카드 하나다.
+  const isApp = !s.server_key.startsWith('node:') && !s.server_key.startsWith('vm-');
   const fresh =
     s.stale
       ? { cls: 'mon-fresh--stale', txt: `${ago(s.age_sec)} · 오래됨` }
@@ -179,7 +210,10 @@ function ServerCard({
     >
       <div className="mon-card-head">
         <div>
-          <h3 className="mon-card-title">{s.label}</h3>
+          <h3 className="mon-card-title">
+            {s.label}
+            {isApp && s.cpu_cores ? <span className="mon-card-copies">{s.cpu_cores}벌</span> : null}
+          </h3>
           {s.host && <span className="mon-card-host">{prettyHost(s.host)}</span>}
         </div>
         <div className="mon-card-badges">
@@ -439,8 +473,33 @@ export default function OpsMonitoring() {
               <i className="ph-bold ph-dots-six-vertical" /> 카드를 끌어다 순서를 바꿀 수 있어요
               (이 브라우저에 저장돼요).
             </p>
+            {CARD_GROUPS.map((g) => {
+              const items = orderedServers.filter(g.match);
+              if (!items.length) return null;
+              return (
+                <section key={g.key} className="mon-group">
+                  <h2 className="mon-group-title">
+                    {g.title} <span className="mon-group-count">{items.length}</span>
+                  </h2>
+                  <p className="mon-group-hint">{g.hint}</p>
+                  <div className="mon-grid">
+                    {items.map((s) => (
+                      <ServerCard
+                        key={s.server_key}
+                        s={s}
+                        onDragStart={() => (dragKey.current = s.server_key)}
+                        onDrop={() => handleDrop(s.server_key)}
+                      />
+                    ))}
+                  </div>
+                </section>
+              );
+            })}
+            {/* 위 묶음 어디에도 안 들어가는 카드(새로 생긴 종류)는 빠뜨리지 않고 아래에 둔다 */}
             <div className="mon-grid">
-              {orderedServers.map((s) => (
+              {orderedServers
+                .filter((s) => !CARD_GROUPS.some((g) => g.match(s)))
+                .map((s) => (
                 <ServerCard
                   key={s.server_key}
                   s={s}

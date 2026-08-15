@@ -436,3 +436,27 @@
   color: var(--on-brand);
   white-space: nowrap;
 }
+
+/* 카드 묶음 — 서비스 / 서비스 서버 / 뒷단 서버.
+   그전에는 15개가 한 줄로 죽 늘어서 기준이 섞인 것이 안 보였다. */
+.mon-group { margin: 18px 0 6px; }
+.mon-group-title {
+  display: flex; align-items: center; gap: 8px;
+  margin: 0; font-size: 15px; font-weight: 700; color: var(--ink-1);
+}
+.mon-group-count {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 22px; height: 20px; padding: 0 6px;
+  border-radius: 999px; background: var(--surface-3, rgba(127,127,127,.14));
+  font-size: 12px; font-weight: 600; color: var(--ink-3);
+}
+.mon-group-hint { margin: 4px 0 10px; font-size: 12.5px; color: var(--ink-3); }
+
+/* 앱 카드의 '몇 벌' 배지 — 노드·VM 은 서버 한 대가 카드 하나지만
+   앱은 카드 하나에 여러 벌이 들어 있다. 그 차이가 안 보여 오해를 만들었다. */
+.mon-card-copies {
+  margin-left: 6px; padding: 1px 7px;
+  border-radius: 999px; background: var(--surface-3, rgba(127,127,127,.14));
+  font-size: 11.5px; font-weight: 600; color: var(--ink-3);
+  vertical-align: middle;
+}
