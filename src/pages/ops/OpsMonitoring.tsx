@@ -55,20 +55,20 @@ const VM_ORDER = ['vm-jump', 'vm-jump-2b', 'vm-ops', 'vm-ops-2b', 'vm-nat-2a', '
 const CARD_GROUPS = [
   {
     key: 'app',
-    title: '서비스',
-    hint: '사용자가 직접 쓰는 것들 — 각각 2벌씩 떠 있어서 한 벌이 죽어도 이어집니다.',
+    title: '프로그램',
+    hint: '사용자가 실제로 쓰는 것 — 아래 서버 위에서 돕니다. 각각 2벌씩이라 한 벌이 죽어도 이어집니다.',
     match: (s: ServerMetric) => APP_ORDER.includes(s.server_key),
   },
   {
     key: 'node',
-    title: '서비스 서버',
-    hint: '위 서비스가 실제로 도는 곳 — 두 영역(2-a·2-b)에 나눠 둡니다.',
+    title: '프로그램이 도는 서버',
+    hint: '위 프로그램이 올라가 있는 진짜 컴퓨터 — 두 영역(2-a·2-b)에 나눠 둡니다.',
     match: (s: ServerMetric) => s.server_key.startsWith('node:'),
   },
   {
     key: 'vm',
-    title: '뒷단 서버',
-    hint: '접속(점프)·작업(운영)·인터넷 출구(NAT) — 영역마다 짝을 맞춰 둡니다.',
+    title: '관리용 서버',
+    hint: '서비스에 직접 쓰이지는 않고 뒤에서 돕는 컴퓨터 — 접속(점프)·작업(운영)·인터넷 출구(NAT).',
     match: (s: ServerMetric) => s.server_key.startsWith('vm-'),
   },
 ] as const;
@@ -166,10 +166,13 @@ function Trend({ h }: { h: NonNullable<ServerMetric['history']> }) {
 
 function ServerCard({
   s,
+  where,
   onDragStart,
   onDrop,
 }: {
   s: ServerMetric;
+  /** 앱 카드에만 — 이 프로그램이 올라가 있는 서버들(짧은 이름). */
+  where?: string[];
   onDragStart?: () => void;
   onDrop?: () => void;
 }) {
@@ -214,7 +217,19 @@ function ServerCard({
             {s.label}
             {isApp && s.cpu_cores ? <span className="mon-card-copies">{s.cpu_cores}벌</span> : null}
           </h3>
-          {s.host && <span className="mon-card-host">{prettyHost(s.host)}</span>}
+          {where && where.length > 0 ? (
+            <span className="mon-card-host" title="이 프로그램이 올라가 있는 서버">
+              {where.join(' · ')} 서버에서 실행
+            </span>
+          ) : (
+            s.host && <span className="mon-card-host">{prettyHost(s.host)}</span>
+          )}
+          {/* 이 서버 위에서 도는 프로그램 — 서버 카드와 앱 카드가 따로 놀지 않게 잇는다. */}
+          {s.apps && s.apps.length > 0 && (
+            <span className="mon-card-apps" title="이 서버에서 도는 프로그램">
+              {s.apps.join(' · ')}
+            </span>
+          )}
         </div>
         <div className="mon-card-badges">
           {resAlerts.length > 0 && (
@@ -325,6 +340,24 @@ export default function OpsMonitoring() {
 
   const llm = data?.llm;
   const maxCost = Math.max(1e-9, ...(llm?.providers.map((p) => p.cost_usd) ?? [0]));
+
+  // ★"이 프로그램이 어느 서버에 있나" — 노드 카드가 들고 온 apps 를 뒤집는다.
+  //   앱 카드의 host 는 "쿠버네티스 클러스터 안" 이라 어디인지 알려 주지 않았다.
+  //   서버→앱 만 있으면 반쪽이다. 양쪽에서 이어져야 한눈에 들어온다.
+  const nodesOfApp = useMemo(() => {
+    const m: Record<string, string[]> = {};
+    for (const s of data?.servers ?? []) {
+      if (!s.server_key.startsWith('node:') || !s.apps) continue;
+      // 이름표에서 "서비스 서버 · GPU · 2-a (10.0.2.210)" → "GPU 2-a" 로 줄인다.
+      // ★형식이 안 맞으면 replace 가 그냥 통과하므로 원래 이름표가 남는다(조용히 비지 않게).
+      const short = s.label
+        .replace(/^서비스 서버\s*·\s*/, '')
+        .replace(/\s*\(.*\)\s*$/, '')
+        .replace(/\s*·\s*/g, ' ');
+      for (const app of s.apps) (m[app] ??= []).push(short);
+    }
+    return m;
+  }, [data?.servers]);
 
   // ★먼저 기본 순서(byDefault)로 세우고, 운영자가 드래그로 정한 순서가 있으면 그것을 덮는다.
   //   Array.sort 는 안정 정렬이라, order 에 없는 서버들은 ★기본 순서를 그대로 유지한다.
@@ -487,6 +520,7 @@ export default function OpsMonitoring() {
                       <ServerCard
                         key={s.server_key}
                         s={s}
+                        where={nodesOfApp[s.label]}
                         onDragStart={() => (dragKey.current = s.server_key)}
                         onDrop={() => handleDrop(s.server_key)}
                       />

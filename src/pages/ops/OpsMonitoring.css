@@ -460,3 +460,12 @@
   font-size: 11.5px; font-weight: 600; color: var(--ink-3);
   vertical-align: middle;
 }
+
+/* 서버 카드에 "이 서버에서 도는 프로그램" — 서버와 앱이 따로 놀지 않게 잇는 줄. */
+.mon-card-apps {
+  display: block;
+  margin-top: 3px;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--ink-3);
+}

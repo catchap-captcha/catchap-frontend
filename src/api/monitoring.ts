@@ -22,6 +22,9 @@ export interface ServerMetric {
   gpu_mem_total_mb?: number | null;
   age_sec?: number | null;
   stale?: boolean;
+  /** 이 서버에서 도는 프로그램(사람이 읽는 이름). ★노드 카드에만 온다.
+   *  표에 저장하지 않고 조회할 때 프로메테우스에서 바로 읽는다 — 파드는 옮겨 다니기 때문. */
+  apps?: string[];
   /** 임계 초과 경보 — metric='수집'은 오래됨(값 없음). value/threshold는 %. */
   alerts?: { metric: string; value: number | null; threshold: number | null }[];
   /** 추이 그래프용 표본(데이터 있는 서버만). gpu는 GPU 없는 서버면 null 배열.
