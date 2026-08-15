@@ -217,11 +217,13 @@ function ServerCard({
         pct={s.mem_pct ?? 0}
         sub={`${fmtInt(s.mem_used_mb ?? 0)} / ${fmtInt(s.mem_total_mb ?? 0)} MB`}
       />
-      <Bar
-        label="디스크"
-        pct={s.disk_pct ?? 0}
-        sub={`${s.disk_used_gb ?? 0} / ${s.disk_total_gb ?? 0} GB`}
-      />
+      {s.disk_total_gb ? (
+        <Bar
+          label="디스크"
+          pct={s.disk_pct ?? 0}
+          sub={`${s.disk_used_gb ?? 0} / ${s.disk_total_gb} GB`}
+        />
+      ) : null}
       {s.gpu_present ? (
         <div className="mon-gpu">
           <div className="mon-gpu-name">
