@@ -4,6 +4,7 @@ import { settingsApi } from '../../api/settings';
 import OpsNav from '../../components/ops/OpsNav';
 import './OpsApproval.css';
 import './OpsAlerts.css';
+import SystemScreenGuide from '../../components/ops/SystemScreenGuide';
 
 /**
  * 시스템 경보 — 서버·서비스에 문제가 생겼을 때 받은 알림을 모아 본다.
@@ -124,6 +125,7 @@ export default function OpsAlerts() {
             새로고침
           </button>
         </div>
+        <SystemScreenGuide />
 
         {/* 수신 설정 — 이 화면에서 '관리'할 수 있는 것 */}
         <div className="al-prefs">

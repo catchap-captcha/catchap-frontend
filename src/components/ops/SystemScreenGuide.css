@@ -1,0 +1,38 @@
+/* 시스템 세 화면 안내 — 같은 앱을 세 곳에서 보여주므로 "무엇을 보러 왔는지" 를 밝힌다. */
+.ssg {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 10px 0 16px;
+}
+.ssg-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border: 1px solid var(--line-2, rgba(127, 127, 127, 0.22));
+  border-radius: 10px;
+  background: var(--surface-2, transparent);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.15s, background 0.15s;
+}
+.ssg-item:hover { border-color: var(--brand, #6b7280); }
+.ssg-item--here {
+  border-color: var(--brand, #6b7280);
+  background: var(--brand-soft, rgba(127, 127, 127, 0.08));
+}
+.ssg-when { font-size: 12px; font-weight: 700; color: var(--ink-3); }
+.ssg-label {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 14px; font-weight: 700; color: var(--ink-1);
+}
+.ssg-here {
+  padding: 1px 6px; border-radius: 999px;
+  background: var(--surface-3, rgba(127, 127, 127, 0.16));
+  font-size: 10.5px; font-weight: 600; color: var(--ink-3);
+}
+.ssg-what { font-size: 12px; line-height: 1.5; color: var(--ink-3); }
+@media (max-width: 720px) {
+  .ssg { grid-template-columns: 1fr; }
+}
