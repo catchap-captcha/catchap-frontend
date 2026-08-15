@@ -22,6 +22,43 @@ import './OpsMonitoring.css';
 const fmtInt = (n: number) => n.toLocaleString('ko-KR');
 const usageClass = (pct: number) => (pct >= 85 ? 'mon-bad' : pct >= 60 ? 'mon-warn' : 'mon-ok');
 
+/** 마지막으로 값이 들어온 지 얼마나 됐나 — "0s 전" 은 운영자가 읽는 말이 아니다. */
+const ago = (sec: number | null | undefined) => {
+  const n = sec ?? 0;
+  if (n < 5) return '방금';
+  if (n < 60) return `${n}초 전`;
+  const m = Math.floor(n / 60);
+  return m < 60 ? `${m}분 전` : `${Math.floor(m / 60)}시간 전`;
+};
+
+/** 카드 기본 순서 — 운영자가 드래그로 바꾸기 전에 보이는 순서.
+ *
+ *  그전에는 기본 순서가 아예 없어서 백엔드가 준 대로(=DB 조회 순) 나왔다. 그래서
+ *  노드가 "일반 2-a → GPU 2-a → GPU 2-b → 일반 2-b" 처럼 뒤죽박죽이고, VM 도
+ *  점프·운영이 섞여 ★짝이 안 보였다.
+ *
+ *  ★보는 순서대로 세운다 — "서비스가 살아 있나"(앱) → "그 앱이 도는 서버"(노드)
+ *    → "뒷단"(VM). 같은 역할은 묶고 그 안에서 2-a → 2-b 로 둬 짝이 나란히 보이게.
+ *  ⚠️노드 키는 IP 기반이라 노드가 재생성되면 바뀐다 — 그래서 노드만 이름표로 정렬한다.
+ */
+const APP_ORDER = ['frontend', 'backend-api', 'captcha-api', 'behavior-ai', 'stt-worker'];
+const VM_ORDER = ['vm-jump', 'vm-jump-2b', 'vm-ops', 'vm-ops-2b', 'vm-nat-2a', 'vm-nat-2b'];
+
+const defaultRank = (s: ServerMetric): [number, number, string] => {
+  const a = APP_ORDER.indexOf(s.server_key);
+  if (a >= 0) return [0, a, ''];
+  if (s.server_key.startsWith('node:')) return [1, 0, s.label ?? s.server_key];
+  const v = VM_ORDER.indexOf(s.server_key);
+  if (v >= 0) return [2, v, ''];
+  return [3, 0, s.label ?? s.server_key]; // 명단에 없는 새 서버는 맨 뒤
+};
+
+const byDefault = (a: ServerMetric, b: ServerMetric) => {
+  const [ga, ia, la] = defaultRank(a);
+  const [gb, ib, lb] = defaultRank(b);
+  return ga - gb || ia - ib || la.localeCompare(lb, 'ko');
+};
+
 /** 카드 부제의 호스트명을 읽을 수 있게 — "host-10-0-1-241" → "10.0.1.241".
  *
  *  VM 카드의 host 는 metrics_agent 가 socket.gethostname() 으로 보낸 값이라
@@ -31,7 +68,17 @@ const usageClass = (pct: number) => (pct >= 85 ? 'mon-bad' : pct >= 60 ? 'mon-wa
 const prettyHost = (h: string) =>
   /^host(-\d{1,3}){4}$/.test(h) ? h.slice(5).replace(/-/g, '.') : h;
 
-function Bar({ label, pct, sub }: { label: string; pct: number; sub: string }) {
+function Bar({
+  label,
+  pct,
+  sub,
+  subTitle,
+}: {
+  label: string;
+  pct: number;
+  sub: string;
+  subTitle?: string;
+}) {
   const p = Math.max(0, Math.min(100, pct));
   return (
     <div className="mon-metric">
@@ -42,7 +89,9 @@ function Bar({ label, pct, sub }: { label: string; pct: number; sub: string }) {
       <div className="mon-bar">
         <div className={`mon-bar-fill ${usageClass(p)}`} style={{ width: `${p}%` }} />
       </div>
-      <span className="mon-metric-sub">{sub}</span>
+      <span className="mon-metric-sub" title={subTitle}>
+        {sub}
+      </span>
     </div>
   );
 }
@@ -116,8 +165,8 @@ function ServerCard({
   }
   const fresh =
     s.stale
-      ? { cls: 'mon-fresh--stale', txt: `${s.age_sec}s 전 · 오래됨` }
-      : { cls: 'mon-fresh--ok', txt: `${s.age_sec ?? 0}s 전` };
+      ? { cls: 'mon-fresh--stale', txt: `${ago(s.age_sec)} · 오래됨` }
+      : { cls: 'mon-fresh--ok', txt: ago(s.age_sec) };
   const alerts = s.alerts ?? [];
   const resAlerts = alerts.filter((a) => a.metric !== '수집'); // 자원 초과(오래됨 제외)
   return (
@@ -156,6 +205,11 @@ function ServerCard({
           s.server_key.startsWith('node:') || s.server_key.startsWith('vm-')
             ? `${s.cpu_cores ?? 0}코어${s.load1 != null ? ` · 부하 ${s.load1}` : ''}`
             : `${s.cpu_cores ?? 0}벌 실행 중`
+        }
+        subTitle={
+          s.server_key.startsWith('node:') || s.server_key.startsWith('vm-')
+            ? '부하 = 차례를 기다리는 작업 수. 코어 수보다 크면 일이 밀리고 있다는 뜻이에요.'
+            : '이 서비스가 몇 벌 떠 있는지. 한 벌이 죽어도 나머지가 받아 줍니다.'
         }
       />
       <Bar
@@ -236,14 +290,16 @@ export default function OpsMonitoring() {
   const llm = data?.llm;
   const maxCost = Math.max(1e-9, ...(llm?.providers.map((p) => p.cost_usd) ?? [0]));
 
-  // 저장된 순서로 정렬 — order에 없는(새로 등장한) 서버는 뒤에 원래 순서로 둔다.
+  // ★먼저 기본 순서(byDefault)로 세우고, 운영자가 드래그로 정한 순서가 있으면 그것을 덮는다.
+  //   Array.sort 는 안정 정렬이라, order 에 없는 서버들은 ★기본 순서를 그대로 유지한다.
   const orderedServers = useMemo(() => {
-    const servers = data?.servers ?? [];
+    const base = [...(data?.servers ?? [])].sort(byDefault);
+    if (order.length === 0) return base;
     const rank = (k: string) => {
       const i = order.indexOf(k);
       return i === -1 ? Number.MAX_SAFE_INTEGER : i;
     };
-    return [...servers].sort((a, b) => rank(a.server_key) - rank(b.server_key));
+    return base.sort((a, b) => rank(a.server_key) - rank(b.server_key));
   }, [data?.servers, order]);
 
   const handleDrop = (targetKey: string) => {
@@ -269,7 +325,15 @@ export default function OpsMonitoring() {
           <div>
             <h1 className="op-title">서버 모니터링</h1>
             <p className="op-sub">
-              각 서버의 CPU·메모리·디스크·GPU와 LLM API 사용량을 한눈에 봐요. 10초마다 자동 갱신.
+              각 서버가 지금 얼마나 바쁜지(CPU·메모리·디스크·GPU)와 AI 사용량을 봐요. 10초마다
+              저절로 갱신돼요.
+            </p>
+            {/* 화면에 그대로 쓸 수밖에 없는 말만 골라 한 줄로 푼다 — 운영자는 개발자가 아니다.
+                (카드 안에서 풀어 쓰면 숫자보다 설명이 길어져 오히려 안 읽힌다) */}
+            <p className="op-sub mon-glossary">
+              <b>부하</b> 차례를 기다리는 작업 수(코어 수보다 크면 밀리는 중) ·{' '}
+              <b>토큰</b> AI 가 읽고 쓴 글자 묶음, 요금이 매겨지는 단위 ·{' '}
+              <b>2-a · 2-b</b> 서버가 놓인 두 곳(한쪽이 죽어도 다른 쪽이 버팁니다)
             </p>
           </div>
           <div className="mon-head-actions">
