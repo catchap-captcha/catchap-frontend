@@ -65,9 +65,14 @@ export default function OpsSystemStatus() {
         <div className="op-head">
           <div>
             <h1 className="op-title">시스템 상태</h1>
-            <p className="op-sub" style={{ maxWidth: 560 }}>
-              전부 서버 실측입니다 — DB 왕복시간, 문제은행 로드, 최근 24시간 이메일 발송 결과,
-              디스크, 그리고 클러스터 앱(캡차 API·행동 AI·프론트·STT 워커)의 최신 지표.
+            <p className="op-sub" style={{ maxWidth: 620 }}>
+              지금 이 순간 서버에서 직접 재 본 값입니다 — 데이터베이스가 응답하는지, 캡차 문제를
+              낼 수 있는지, 메일이 나가는지, 저장공간이 남았는지, 그리고 서비스 네 가지가 도는지.
+            </p>
+            <p className="op-sub sys-note">
+              백엔드 API 는 목록에 없습니다 — <b>이 화면을 만들어 보내는 것이 백엔드 자신</b>이라,
+              화면이 떴다는 것 자체가 살아 있다는 뜻입니다. 그 서버의 저장공간은 아래 「디스크」가
+              보여 줍니다.
             </p>
           </div>
           <button className="op-refresh" onClick={load} disabled={state === 'loading'}>
