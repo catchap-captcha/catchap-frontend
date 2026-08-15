@@ -136,11 +136,15 @@ function ServerCard({
       <Bar
         label="CPU"
         pct={s.cpu_pct ?? 0}
-        // ★cpu_cores 는 카드에 따라 뜻이 다르다 — 서버 카드는 ★코어 수,
-        //   앱 카드(node: 접두사가 없는 것)는 ★몇 벌 떠 있는지다(백엔드 _service_snapshots).
-        //   그전에는 둘 다 "2 core" 로 찍혀서 ★파드 2벌을 "2코어"라고 거짓말하고 있었다.
+        // ★cpu_cores 는 카드에 따라 뜻이 다르다.
+        //   ① 클러스터 노드(node:) — 실제 코어 수 (node-exporter)
+        //   ② VM(vm-)           — 실제 코어 수 (metrics_agent 가 psutil 로 센다)
+        //   ③ 그 밖의 앱 카드     — ★몇 벌 떠 있는지 (백엔드 _service_snapshots)
+        //   ①②는 코어, ③만 '벌'이다. 그전에는 셋 다 "2 core" 로 찍혀서
+        //   ★파드 2벌을 "2코어"라고 거짓말하고 있었다.
+        //   ⚠️키 접두사로 가르므로 ★키 규칙을 바꾸면 여기도 바꿔야 한다.
         sub={
-          s.server_key.startsWith('node:')
+          s.server_key.startsWith('node:') || s.server_key.startsWith('vm-')
             ? `${s.cpu_cores ?? 0}코어${s.load1 != null ? ` · 부하 ${s.load1}` : ''}`
             : `${s.cpu_cores ?? 0}벌 실행 중`
         }
