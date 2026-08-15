@@ -8,6 +8,7 @@ import {
   type OpsAuditLog,
 } from '../../api/ops';
 import OpsNav from '../../components/ops/OpsNav';
+import { AUDIT_ACTION_META, AUDIT_TARGET_LABEL } from '../../constants/auditActions';
 import { SERVICE_NAME_META } from '../../constants/systemServices';
 import { PATHS } from '../../routes/paths';
 import CountUp from '../../components/motion/CountUp';
@@ -283,9 +284,16 @@ export default function OpsHome() {
                   {d.logs.map((l) => (
                     <div key={l.id} className="oh-log-row">
                       <span className="oh-log-time">{fmtLogTime(l.created_at)}</span>
-                      <span className="oh-log-action">{l.action}</span>
+                      <span className="oh-log-action">
+                        {AUDIT_ACTION_META[l.action]?.label ?? `기록 종류 미등록 (${l.action})`}
+                      </span>
                       <span className="oh-log-target">
-                        {l.org_name || l.target_type || l.target_id || '—'}
+                        {l.org_name ||
+                          (l.target_type
+                            ? AUDIT_TARGET_LABEL[l.target_type] ?? `미등록 (${l.target_type})`
+                            : null) ||
+                          l.target_id ||
+                          '—'}
                       </span>
                       <span className="oh-log-actor">{l.actor_name ?? '—'}</span>
                     </div>
