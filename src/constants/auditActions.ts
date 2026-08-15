@@ -82,6 +82,12 @@ export const AUDIT_ACTION_META: Record<string, { label: string; icon: string; cl
   // 강사 — 확인문항
   'lecture.question.create': { label: '확인문항 추가', icon: 'ph-plus-circle', cls: 'ok' },
   'lecture.question.bulk_publish': { label: '확인문항 일괄 공개', icon: 'ph-eye', cls: 'ok' },
+  // ★아래 둘은 ★코드에는 없고 DB 에만 남은 옛 기록이다.
+  //   그래서 "백엔드 코드의 audit() 호출"과 대조하는 방법으로는 ★찾을 수 없었다.
+  //   0815 에 감사 로그 화면의 ★필터 목록(=DB 의 distinct action)을 보고 찾았다.
+  //   이름을 안 붙이면 운영자 화면에 "lecture.delete" 가 그대로 뜬다.
+  'lecture.delete': { label: '강의 삭제(옛 기록)', icon: 'ph-trash', cls: 'no' },
+  'student.scratch_view': { label: '학생 연습장 열람(옛 기능)', icon: 'ph-eye', cls: 'neutral' },
   'lecture.question.update': { label: '확인문항 수정', icon: 'ph-pencil-simple', cls: 'neutral' },
   'lecture.question.delete': { label: '확인문항 삭제', icon: 'ph-trash', cls: 'no' },
   'lecture.question.generate': { label: '확인문항 AI 생성', icon: 'ph-sparkle', cls: 'ok' },
