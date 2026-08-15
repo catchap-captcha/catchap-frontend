@@ -115,7 +115,15 @@ export default function OpsAuditLog() {
             <div className="op-logrow">{hasFilter ? '조건에 맞는 기록이 없어요. 필터를 바꿔 보세요.' : '기록이 아직 없어요.'}</div>
           )}
           {state === 'ready' && rows.map((r) => {
-            const m = ACTION_META[r.action] ?? { label: r.action, icon: 'ph-dot', cls: 'neutral' };
+            // ★매핑이 없으면 ★눈에 띄게 한다. r.action 을 그대로 쓰면
+            //   "ops.operator_delete" 같은 ★개발자 코드가 운영자 화면에 조용히 섞여 들어간다.
+            //   0815 에 실제로 5종이 그렇게 새 나가고 있었다(기능을 추가하며 이름만 안 붙였다).
+            //   '미등록'이라고 밝히면 운영자가 보고 알려 주고, 우리는 고칠 수 있다.
+            const m = ACTION_META[r.action] ?? {
+              label: `기록 종류 미등록 (${r.action})`,
+              icon: 'ph-question',
+              cls: 'warn',
+            };
             return (
               <div key={r.id} className="op-logrow">
                 <span className="op-logcol-act">
@@ -133,7 +141,9 @@ export default function OpsAuditLog() {
                 </span>
                 <span className="op-logcol-tgt">
                   <span className="op-tgt-type">
-                    {r.target_type ? TARGET_LABEL[r.target_type] ?? r.target_type : '-'}
+                    {r.target_type
+                      ? TARGET_LABEL[r.target_type] ?? `미등록 (${r.target_type})`
+                      : '-'}
                   </span>
                   {/* 어느 기관에서 일어난 행동인지 — 기관이 많아져도 맥락이 남는다 */}
                   {r.org_name && <small className="op-tgt-org">{r.org_name}</small>}
