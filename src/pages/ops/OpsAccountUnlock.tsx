@@ -58,6 +58,7 @@ export default function OpsAccountUnlock() {
   const [tempPw, setTempPw] = useState<{ loginId: string; password: string } | null>(null);
   /** 숨긴 자동화·탐색 기록까지 전부 볼지 — 기본은 '관리가 필요한 것만' */
   const [showAllOrphans, setShowAllOrphans] = useState(false);
+  const [purging, setPurging] = useState(false);
 
   const load = () => {
     setState('loading');
@@ -109,6 +110,35 @@ export default function OpsAccountUnlock() {
       setNotice('임시 비밀번호 발급에 실패했습니다.');
     } finally {
       setBusy(null);
+    }
+  };
+
+  /**
+   * 기록 자체를 지운다 — 위의 필터가 '화면에서 감추는 것'이라면 이쪽은 삭제다.
+   * 무엇을 남길지는 서버가 판정한다(계정 있는 식별자 · 최근 24시간 기록). 되돌릴 수
+   * 없으므로 한 번 물어본다.
+   */
+  const purgeOrphans = async () => {
+    const ok = window.confirm(
+      '가입되지 않은 아이디의 실패 기록을 삭제합니다.\n\n' +
+        '계정이 있는 아이디와, 최근 24시간 안에 시도가 있었던 기록은 남습니다.\n' +
+        '삭제한 기록은 되돌릴 수 없습니다. 계속할까요?',
+    );
+    if (!ok) return;
+    setPurging(true);
+    setNotice(null);
+    try {
+      const r = await opsAccountApi.purgeOrphanThrottles();
+      const kept =
+        r.kept_recent > 0
+          ? ` 최근 ${r.min_age_hours}시간 안에 시도가 있었던 ${r.kept_recent}건은 남겼습니다.`
+          : '';
+      setNotice(r.deleted === 0 ? '지울 기록이 없습니다.' : `기록 ${r.deleted}건을 삭제했습니다.${kept}`);
+      load();
+    } catch {
+      setNotice('기록 삭제에 실패했습니다.');
+    } finally {
+      setPurging(false);
     }
   };
 
@@ -242,6 +272,16 @@ export default function OpsAccountUnlock() {
             <section className="au-section">
               <h2>
                 가입되지 않은 아이디 <span>{orphanShown.length}</span>
+                {orphanMerged.length > 0 && (
+                  <button
+                    type="button"
+                    className="au-purge"
+                    onClick={purgeOrphans}
+                    disabled={purging || busy !== null}
+                  >
+                    <i className="ph-bold ph-trash" /> {purging ? '삭제 중…' : '기록 삭제'}
+                  </button>
+                )}
               </h2>
               <p className="au-hint">
                 오타로 남은 기록입니다. 뒤에 계정이 없어 풀어줄 사람은 없지만, 실제 아이디와

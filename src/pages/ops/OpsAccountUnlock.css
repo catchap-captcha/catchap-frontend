@@ -49,14 +49,41 @@
   margin-bottom: 26px;
 }
 .au-section h2 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   margin: 0 0 6px;
   font-size: 15px;
   color: var(--ink);
 }
 .au-section h2 span {
-  margin-left: 6px;
   color: var(--ink-3);
   font-weight: 500;
+}
+/* 기록 삭제 — 되돌릴 수 없으므로 눈에 띄게 만들지 않는다(잘못 누를 이유를 주지 않는다). */
+.au-purge {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 28px;
+  padding: 0 11px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink-3);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.au-purge:hover:not(:disabled) {
+  border-color: var(--line-strong);
+  color: var(--ink);
+}
+.au-purge:disabled {
+  opacity: 0.55;
+  cursor: default;
 }
 .au-hint,
 .au-empty {
