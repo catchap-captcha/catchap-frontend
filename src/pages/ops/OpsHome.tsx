@@ -8,6 +8,7 @@ import {
   type OpsAuditLog,
 } from '../../api/ops';
 import OpsNav from '../../components/ops/OpsNav';
+import { SERVICE_NAME_META } from '../../constants/systemServices';
 import { PATHS } from '../../routes/paths';
 import CountUp from '../../components/motion/CountUp';
 import './OpsApproval.css';
@@ -197,7 +198,7 @@ export default function OpsHome() {
               <section className="oh-card">
                 <div className="oh-card-head">
                   <i className="ph-fill ph-heartbeat" />
-                  <h2 className="oh-card-title">시스템 헬스</h2>
+                  <h2 className="oh-card-title">시스템 상태</h2>
                   <Link to={PATHS.OPS_SYSTEM_STATUS} className="oh-card-more">
                     자세히 <i className="ph-bold ph-arrow-right" />
                   </Link>
@@ -208,7 +209,12 @@ export default function OpsHome() {
                       const t = healthTone(s.status);
                       return (
                         <div key={s.name} className="oh-health-row">
-                          <span className="oh-health-name">{s.name}</span>
+                          {/* ★서버가 준 코드(db·captcha-engine…)를 그대로 찍지 않는다.
+                            0815 확인: 여기만 매핑을 안 써서 ★영문이 그대로 보이고 있었다.
+                            상세 화면과 ★같은 이름을 쓴다. 미등록이면 밝힌다(조용히 코드를 내보내지 않는다). */}
+                        <span className="oh-health-name">
+                          {SERVICE_NAME_META[s.name]?.label ?? `미등록 (${s.name})`}
+                        </span>
                           <span className="oh-health-state">
                             <span className={`oh-dot ${t.cls}`} />
                             {t.label}
