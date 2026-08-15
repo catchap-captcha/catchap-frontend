@@ -10,6 +10,7 @@ import {
 import { fmtKrw } from '../../utils/currency';
 import './OpsApproval.css';
 import './OpsMonitoring.css';
+import SystemScreenGuide from '../../components/ops/SystemScreenGuide';
 
 /**
  * 서버 자원 모니터링 — 각 VM(백엔드·DB·GPU STT·프론트)의 CPU/메모리/디스크/GPU + LLM 사용량.
@@ -424,6 +425,7 @@ export default function OpsMonitoring() {
             </button>
           </div>
         </div>
+        <SystemScreenGuide />
 
         {state === 'error' && (
           <div className="op-empty">

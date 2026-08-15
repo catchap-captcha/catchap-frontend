@@ -9,6 +9,7 @@ import {
 import './OpsApproval.css';
 import './OpsRenewalShared.css';
 import './OpsSystemStatus.css';
+import SystemScreenGuide from '../../components/ops/SystemScreenGuide';
 
 
 const STATUS_META: Record<string, { accent: string; soft: string; label: string; icon: string }> = {
@@ -91,6 +92,7 @@ export default function OpsSystemStatus() {
 
         {state === 'ready' && data && (
           <>
+            <SystemScreenGuide />
             <div className={`sys-banner sys-banner--${worst}`}>
               <i className={`ph ${worst === 'ok' ? 'ph-check-circle' : worst === 'warn' ? 'ph-warning-circle' : 'ph-x-circle'}`} />
               <b>전체 상태: {worst === 'ok' ? '정상' : worst === 'warn' ? '주의' : '오류'}</b>
