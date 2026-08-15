@@ -60,3 +60,13 @@
 .sys-card-bottom { display: flex; align-items: center; gap: 10px; padding-top: 13px; border-top: 1px solid var(--line); }
 .sys-latency { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; color: var(--ink); }
 .sys-detail { font-size: 12px; color: var(--ink-2); font-weight: 500; }
+
+/* 「백엔드 API 는 왜 없나」를 밝히는 한 줄 — 본문보다 흐리게 둬서 평소엔 눈에 안 걸리게. */
+.sys-note {
+  margin-top: 6px;
+  max-width: 620px;
+  font-size: 12.5px;
+  line-height: 1.7;
+  color: var(--ink-3);
+}
+.sys-note b { font-weight: 600; color: var(--ink-2); }
