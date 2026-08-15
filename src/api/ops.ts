@@ -755,6 +755,17 @@ export const opsAccountApi = {
         identifier,
       })
       .then((r) => r.data),
+  /**
+   * '가입되지 않은 아이디' 기록 삭제 — 무엇을 남길지는 서버가 정한다.
+   * 계정이 있는 식별자와 최근(min_age_hours) 기록은 지우지 않는다(진행 중인 시도의 카운터).
+   */
+  purgeOrphanThrottles: () =>
+    client
+      .post<{ ok: boolean; deleted: number; kept_recent: number; min_age_hours: number }>(
+        '/ops/login-throttles/purge-orphans',
+        {},
+      )
+      .then((r) => r.data),
   resetStudentPassword: (studentId: string) =>
     client
       .post<{
