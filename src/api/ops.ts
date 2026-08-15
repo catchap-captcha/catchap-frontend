@@ -127,6 +127,21 @@ export interface OpsOperatorCreated extends OpsOperator {
   email_status: string; // sent | dry_run | failed — 임시 비번 자동 통보 결과
 }
 
+/**
+ * 삭제된 운영자 계정 — 하드 삭제라 users 행은 없다. 감사 로그에 남긴 삭제 직전 스냅샷이다.
+ * 그래서 여기 값은 '삭제 시점의 기록'이지 지금의 계정 상태가 아니다.
+ */
+export interface OpsDeletedOperator {
+  id: string;
+  name: string | null;
+  email: string | null;
+  status_before: string | null; // 삭제 직전 상태(중지 후에만 삭제 가능하므로 보통 disabled)
+  deleted_at: string | null;
+  /** 삭제를 실행한 운영자 이름. 그 사람도 삭제됐으면 null이다(이름을 지어내지 않는다). */
+  deleted_by: string | null;
+  deleted_by_id: string | null;
+}
+
 /** 강사(instructor) 계정 — 운영자 초대로만 생성, 콘솔에선 자기 강의만 관리 */
 export interface OpsInstructor {
   id: string;
@@ -450,6 +465,11 @@ export const opsApi = {
   /** 운영자 계정 삭제 — 중지된 계정만 가능(서버가 막는다). 되돌릴 수 없다. */
   deleteOperator: (id: string) =>
     client.delete<{ ok: boolean; deleted: string }>(`/ops/operators/${id}`).then((r) => r.data),
+  /** 삭제된 운영자 계정 이력 — 감사 로그에 남은 삭제 직전 스냅샷 */
+  deletedOperators: () =>
+    client
+      .get<{ items: OpsDeletedOperator[] }>('/ops/operators/deleted')
+      .then((r) => r.data.items),
 
   /** 강사 계정 관리 (초대 발급 — 공개 가입 없음) */
   instructors: () => client.get<OpsInstructor[]>('/ops/instructors').then((r) => r.data),
@@ -459,6 +479,11 @@ export const opsApi = {
     client.patch<OpsInstructor>(`/ops/instructors/${id}`, body).then((r) => r.data),
   resetInstructorPassword: (id: string) =>
     client.post<OpsInstructorCreated>(`/ops/instructors/${id}/reset-password`).then((r) => r.data),
+  /** 삭제된 강사 계정 이력 — 운영자 쪽과 같은 모양(감사 로그의 삭제 직전 스냅샷) */
+  deletedInstructors: () =>
+    client
+      .get<{ items: OpsDeletedOperator[] }>('/ops/instructors/deleted')
+      .then((r) => r.data.items),
   /** 강사 계정 삭제 — 중지 상태 + 소유 코스·강의가 없어야 가능(서버가 막는다). */
   deleteInstructor: (id: string) =>
     client.delete<{ ok: boolean; deleted: string }>(`/ops/instructors/${id}`).then((r) => r.data),
