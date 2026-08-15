@@ -136,7 +136,14 @@ function ServerCard({
       <Bar
         label="CPU"
         pct={s.cpu_pct ?? 0}
-        sub={`${s.cpu_cores ?? 0} core${s.load1 != null ? ` · load ${s.load1}` : ''}`}
+        // ★cpu_cores 는 카드에 따라 뜻이 다르다 — 서버 카드는 ★코어 수,
+        //   앱 카드(node: 접두사가 없는 것)는 ★몇 벌 떠 있는지다(백엔드 _service_snapshots).
+        //   그전에는 둘 다 "2 core" 로 찍혀서 ★파드 2벌을 "2코어"라고 거짓말하고 있었다.
+        sub={
+          s.server_key.startsWith('node:')
+            ? `${s.cpu_cores ?? 0}코어${s.load1 != null ? ` · 부하 ${s.load1}` : ''}`
+            : `${s.cpu_cores ?? 0}벌 실행 중`
+        }
       />
       <Bar
         label="메모리"
@@ -337,7 +344,7 @@ export default function OpsMonitoring() {
                         </div>
                         <span className="mon-prov-cost">
                           {fmtKrw(p.cost_usd)} ·{' '}
-                          {fmtInt(p.tokens_in + p.tokens_out)} tok
+                          {fmtInt(p.tokens_in + p.tokens_out)} 토큰
                         </span>
                       </li>
                     ))}
