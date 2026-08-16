@@ -12,18 +12,20 @@ import './SystemScreenGuide.css';
  *
  * 겹치는 것을 줄이는 대신 ★무엇을 보러 어디에 왔는지를 적는다 — 목적이 다르면 둘 다 필요하다.
  */
+// ★차례는 「시스템」 드롭다운(OpsNav)과 같게 둔다 — 메뉴에서 본 순서와 여기 카드 순서가
+//   다르면 같은 세 화면인데 다른 묶음처럼 읽힌다. 한쪽을 바꾸면 다른 쪽도 바꾼다.
 const SCREENS = [
-  {
-    to: PATHS.OPS_SYSTEM_STATUS,
-    label: '시스템 상태',
-    when: '지금 되나?',
-    what: '한 번에 정상·이상만. 이상하면 여기서 먼저 본다.',
-  },
   {
     to: PATHS.OPS_MONITORING,
     label: '모니터링',
     when: '얼마나 쓰나?',
     what: 'CPU·메모리·디스크·GPU 수치와 추세. 왜 느린지 파고들 때.',
+  },
+  {
+    to: PATHS.OPS_SYSTEM_STATUS,
+    label: '시스템 상태',
+    when: '지금 되나?',
+    what: '한 번에 정상·이상만. 이상하면 여기서 먼저 본다.',
   },
   {
     to: PATHS.OPS_ALERTS,
