@@ -86,7 +86,10 @@ export const PATHS = {
   OPS_INSTRUCTOR_HOME: '/ops/home', // 강사 홈 대시보드 (검수 대기·학생 참여·약한 문항) — 강사 착지
   OPS_INQUIRY: '/ops/inquiry', // 강사·운영자 콘솔 문의하기 — 공개 /contact 와 유형이 다르다
   OPS_INSTRUCTOR_PROFILE: '/ops/profile', // 강사 프로필 — 상단바 아바타 클릭 시 착지(비밀번호 변경은 이 안의 액션)
-  OPS_LECTURES: '/ops/lectures', // 강의 관리 (영상 업로드·확인 문항·자료실) — 운영자·강사 공용
+  OPS_LECTURES: '/ops/lectures', // 강의 관리 (영상 업로드·확인 문항·자료실) — 강사가 저작하는 화면
+  // 운영자용 강의 점검 — 위 강사 화면(코스별 트리)과 달리 평평한 표 + 강사·문제 필터.
+  // 강의가 늘어도 "누가 올렸나·어디가 비었나" 를 훑을 수 있게 따로 둔다.
+  OPS_LECTURE_ADMIN: '/ops/lecture-admin',
   OPS_QUESTION_METRICS: '/ops/question-metrics', // 문항 지표 (문제은행 노출수·정답률 — 문제은행 2단계)
   OPS_INSTRUCTORS: '/ops/instructors', // 강사 계정 관리 (운영자 초대 발급)
   // 리뉴얼 상단바(2026-07-24) 신규 콘솔 화면

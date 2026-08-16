@@ -1136,3 +1136,44 @@ export function errorDetail(e: unknown, fallback: string): string {
   }
   return fallback;
 }
+
+
+/** 운영자용 강의 목록 한 행 — 강사가 보는 목록과 다르다(그쪽은 코스별 트리). */
+export interface OpsLectureAdminRow {
+  id: string;
+  title: string;
+  status: string;
+  instructor_id: string | null;
+  instructor_name: string;
+  course_id: string | null;
+  course_title: string | null;
+  question_total: number;
+  question_active: number;
+  duration_sec: number;
+  created_at: string;
+  /** noquestion(공개 문항 0) · draftleft(미공개 방치) · hidden */
+  issues: string[];
+}
+
+export interface OpsLectureAdminResponse {
+  items: OpsLectureAdminRow[];
+  total: number;
+  page: number;
+  page_size: number;
+  summary: { total: number; noquestion: number; draftleft: number; hidden: number };
+  instructors: { id: string; name: string }[];
+  courses: { id: string; title: string }[];
+}
+
+export const opsLectureAdminApi = {
+  list: (params: {
+    q?: string;
+    instructor?: string;
+    course?: string;
+    issue?: string;
+    page?: number;
+  }) =>
+    client
+      .get<OpsLectureAdminResponse>('/ops/lecture-admin', { params })
+      .then((r) => r.data),
+};
