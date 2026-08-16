@@ -211,6 +211,22 @@ export const AUDIT_FIELD_LABEL: Record<string, string> = {
   settings: '설정',
   // ★중첩 설정은 backend#81 에서 "바깥.안쪽" 으로 펴서 온다 — 바뀐 칸 하나만 짚어 준다
   'settings.alerts.email': '알림 메일 받기',
+  // ★학생 설정 — 이름은 ★학생 화면(StudentMyPage)의 실제 라벨을 그대로 가져왔다.
+  //   추측하지 않는다. auditField() 가 마지막 조각으로도 찾으므로 옛 구조(toggles.*)와
+  //   지금 구조(display.*·notify.*·sound.*) 둘 다 잡힌다.
+  eye: '눈 보호 모드',
+  dark: '어두운 화면',
+  color: '색약 친화 표시',
+  sfx: '효과음',
+  voice: '음성 안내',
+  reduce: '움직임 줄이기',
+  font: '글자 크기',
+  lecture: '강의 알림',
+  exam: '수료·시험 알림',
+  progress: '학습 진행 알림',
+  remind: '학습 알림',
+  weekly: '주간 리포트',
+  badge: '배지 알림',
   'settings.alerts.push': '알림 받기',
   'settings.theme': '화면 테마',
   'settings.language': '언어',
@@ -251,7 +267,7 @@ export const AUDIT_FIELD_LABEL: Record<string, string> = {
   segments: '자막 구간',
   source: '출처',
   dataset: '학습셋',
-  deleted: '삭제됨',
+  deleted: '지운 기록',
   skipped: '건너뜀',
   imported: '가져옴',
   created: '만듦',
