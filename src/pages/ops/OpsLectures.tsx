@@ -3441,7 +3441,11 @@ export function QuestionsModal({
                   </button>
                 )}
               </div>
-              {items && items.length > 0 && (
+              {/* ★일괄 도구(선택·삭제·공개·은행)는 전부 저작이라 강사에게만.
+                  개별 문항의 '공개하기'·'문제 은행으로'는 이미 !isOps 로 막혀 있었는데
+                  일괄 쪽만 빠져 있어서, 운영자가 눌러 확인창까지 뜨고 백엔드에서 403 이 났다
+                  (0816 화면에서 확인 — 백엔드는 require_content_author 로 강사 전용). */}
+              {!isOps && items && items.length > 0 && (
                 <div className="op-lect-bankbulk">
                   <button className="op-btn op-btn--soft" onClick={toggleSelectAll}>
                     {allSelected ? '선택 해제' : '전체 선택'}
@@ -3542,7 +3546,8 @@ export function QuestionsModal({
               <i className="ph-fill ph-warning" /> 공개(active) 문항이 없어 이 강의는 시청 검증이
               동작하지 않아요 — 학생이 확인 없이 끝까지 볼 수 있어요. 문항을 추가하거나 draft 문항을 공개하세요.
             </span>
-            {draftCount > 0 && (
+            {/* 경고 자체는 운영자도 봐야 한다(강사에게 알려야 하니까) — 버튼만 강사에게. */}
+            {!isOps && draftCount > 0 && (
               <button className="op-btn op-btn--approve" disabled={publishing} onClick={() => bulkPublish()}>
                 <i className={publishing ? 'ph ph-spinner-gap' : 'ph-bold ph-checks'} />
                 {publishing ? '공개 중…' : `검수 대기 ${draftCount}개 일괄 공개`}
@@ -3556,10 +3561,12 @@ export function QuestionsModal({
               <i className="ph-fill ph-eye-slash" /> 미공개(검수 대기) 문항이 {draftCount}개 있어요 —
               공개해야 학생 강의에 출제돼요.
             </span>
-            <button className="op-btn op-btn--approve" disabled={publishing} onClick={() => bulkPublish()}>
-              <i className={publishing ? 'ph ph-spinner-gap' : 'ph-bold ph-checks'} />
-              {publishing ? '공개 중…' : `검수 대기 ${draftCount}개 일괄 공개`}
-            </button>
+            {!isOps && (
+              <button className="op-btn op-btn--approve" disabled={publishing} onClick={() => bulkPublish()}>
+                <i className={publishing ? 'ph ph-spinner-gap' : 'ph-bold ph-checks'} />
+                {publishing ? '공개 중…' : `검수 대기 ${draftCount}개 일괄 공개`}
+              </button>
+            )}
           </div>
         )}
         {form && (
