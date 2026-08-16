@@ -32,7 +32,9 @@ const NOISE_PATTERNS: RegExp[] = [
   /(^|[-_.])bot([-_.]|\d|$)/i, // demo-bot, repro_bot_check
   /^__.+__/, // __probe__@example.com
   /probe|cutover|recheck|deploy-test|smoke|e2e/i, // 배포·회귀 점검 흔적
-  /@example\.com$/i,
+  // ★.example 은 RFC 2606 이 시험·문서용으로 예약한 최상위 도메인이라 ★절대 실주소가 아니다.
+  //   그전엔 @example.com 만 잡아서 ux-ai-review-…@invalid.example 이 '오타'로 남았다(0816 실측).
+  /\.example$/i,
   /@(cat\.dev|catchap\.dev|catchap5\.test)$/i, // 개발·테스트 도메인
   /:signup$/i, // 가입 흐름 내부 키
 ];
@@ -154,6 +156,16 @@ export default function OpsAccountUnlock() {
     else mergedMap.set(r.subject, { subject: r.subject, fail: r.fail_count });
   }
   const orphanMerged = [...mergedMap.values()];
+  // ★같은 초에 여러 건이 몰렸으면 사람이 아니라 스크립트다 — 이 모양을 화면이 안 보여 줘서
+  //   운영자가 "오타가 스물몇 개 났네" 로 읽게 된다(0816 실측: 같은 초에 4건씩 6번,
+  //   harvest-w1p0…w15p3. 주차를 1→15 로 올려 가며 4명씩 만들려던 흔적이었다).
+  const burstAt = new Map<string, number>();
+  for (const r of orphanRaw) {
+    if (!r.updated_at) continue; // 시각이 없으면 묶지 않는다(없는 신호를 만들지 않게)
+    burstAt.set(r.updated_at, (burstAt.get(r.updated_at) ?? 0) + 1);
+  }
+  const burstGroups = [...burstAt.values()].filter((n) => n >= 3);
+  const burstCount = burstGroups.reduce((a, b) => a + b, 0);
   const orphanKeep = orphanMerged.filter((o) => !isNoiseIdentifier(o.subject));
   const orphanShown = (showAllOrphans ? orphanMerged : orphanKeep).sort((a, b) => b.fail - a.fail);
   const hiddenCount = orphanMerged.length - orphanKeep.length;
@@ -284,12 +296,17 @@ export default function OpsAccountUnlock() {
                 )}
               </h2>
               <p className="au-hint">
-                오타로 남은 기록입니다. 뒤에 계정이 없어 풀어줄 사람은 없지만, 실제 아이디와
-                비슷하면 가입 안내가 필요할 수 있습니다.
+                {/* ★"오타로 남은 기록입니다" 라고 단정하고 있었다. 0816 에 실제로 세어 보니
+                    26건 중 25건이 스크립트 흔적이었다 — 단정이 틀렸고, 운영자를 엉뚱한
+                    판단으로 보낸다("오타가 스물몇 개 났구나"). 아는 것만 말한다. */}
+                뒤에 계정이 없는 아이디예요 — 풀어 줄 사람이 없습니다. 사람이 오타 낸 것일 수도,
+                자동화·시험 흔적일 수도 있어요. 실제 아이디와 비슷하면 가입 안내가 필요할 수 있습니다.
                 {(hiddenCount > 0 || dupCollapsed > 0) && (
                   <>
                     {' '}
                     {hiddenCount > 0 && `자동화·인프라 흔적 ${hiddenCount}건은 숨겼고, `}
+                    {burstGroups.length > 0 &&
+                      `${burstCount}건은 같은 초에 ${burstGroups.length}묶음으로 몰려 들어왔습니다(사람이 아니라 스크립트). `}
                     {dupCollapsed > 0 && `같은 아이디 ${dupCollapsed}건은 합쳤습니다. `}
                     <button
                       type="button"

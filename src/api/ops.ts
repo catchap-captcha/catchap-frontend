@@ -373,6 +373,8 @@ export interface OpsOrgPage {
   page_size: number;
   total_all: number;
   total_students: number;
+  /** 기관 없이 공개 가입한 학생 - total_students 에서 뺐으니 따로 온다(backend#72) */
+  no_org_students: number;
 }
 export interface OpsApiKeyPage {
   items: OpsApiKey[];
