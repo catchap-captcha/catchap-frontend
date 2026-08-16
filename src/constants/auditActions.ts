@@ -164,3 +164,82 @@ export const AUDIT_TARGET_LABEL: Record<string, string> = {
   login_throttle: '로그인 잠금',
   system_setting: '시스템 설정',
 };
+
+/**
+ * 감사 로그의 「무엇이 바뀌었나」에 나오는 칸 이름.
+ *
+ * ★0816 지적 — "감사로그에는 자세하게 나와야 하는거 아니야? 말 그대로 로그인데".
+ *   그전에는 「누가·언제·무슨 종류」까지만 보여 줬다. before/after 는 DB 에 있는데
+ *   ★응답에 안 실려 있었다(backend#80 에서 실었다).
+ *
+ * ⚠️여기 없는 칸은 ★원문 그대로 보여 준다. 감사 로그의 칸은 종류가 많고(실측 69종)
+ *   값이 함께 보여서 뜻이 통한다 — 「미등록 (…)」로 도배하면 오히려 읽기 어렵다.
+ */
+export const AUDIT_FIELD_LABEL: Record<string, string> = {
+  title: '제목',
+  name: '이름',
+  status: '상태',
+  subject: '과목',
+  order_no: '차례',
+  email: '이메일',
+  email_status: '이메일 인증',
+  code: '코드',
+  label: '이름표',
+  enabled: '켜짐',
+  version: '판',
+  count: '개수',
+  reason: '사유',
+  rating: '별점',
+  price: '수강료',
+  sale_price: '할인가',
+  duration_sec: '길이(초)',
+  position_sec: '뜨는 시점(초)',
+  content_start_sec: '내용 시작(초)',
+  answer_index: '정답 번호',
+  answer_indexes: '정답 번호들',
+  file_bytes: '파일 크기',
+  video_bytes: '영상 크기',
+  video_ext: '영상 형식',
+  file_ext: '파일 형식',
+  ext: '형식',
+  model_id: '모델',
+  provider: '제공사',
+  product: '상품',
+  first_party: '우리 앱 전용',
+  edu_subjects: '열어 준 과목',
+  rules: '규칙',
+  settings: '설정',
+  fail_count: '실패 횟수',
+  locked: '잠김',
+  identifiers: '아이디들',
+  lectures_unassigned: '미분류로 풀린 강의',
+  image_files_removed: '지운 이미지',
+  file_removed: '파일 삭제',
+  restorable: '되살릴 수 있음',
+  published: '공개됨',
+  self_verified: '자기검증 통과',
+  transcript_used: '자막 사용',
+  segments: '자막 구간',
+  source: '출처',
+  dataset: '학습셋',
+  deleted: '삭제됨',
+  skipped: '건너뜀',
+  imported: '가져옴',
+  created: '만듦',
+  replaced: '바꿈',
+};
+
+/** 값이 참/거짓·빈 값일 때 사람 말로. 그 밖에는 그대로 보여 준다. */
+export function auditValue(v: unknown): string {
+  if (v === null || v === undefined) return '—';
+  if (typeof v === 'boolean') return v ? '예' : '아니오';
+  if (Array.isArray(v)) return v.length ? v.map((x) => String(x)).join(', ') : '(빈 목록)';
+  if (typeof v === 'object') return JSON.stringify(v);
+  if (v === '') return '(비어 있음)';
+  // 상태값은 다른 화면과 같은 말을 쓴다 — 여기만 영문이 새면 안 된다
+  const STATUS: Record<string, string> = {
+    active: '공개', hidden: '비공개', disabled: '중지', deleted: '삭제됨',
+    pending: '대기', approved: '승인', rejected: '거절',
+  };
+  return STATUS[String(v)] ?? String(v);
+}

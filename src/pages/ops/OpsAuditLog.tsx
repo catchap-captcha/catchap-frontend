@@ -1,7 +1,12 @@
 import { useEffect, useState } from 'react';
 import { opsApi, type OpsAuditLog as Row } from '../../api/ops';
 import OpsNav from '../../components/ops/OpsNav';
-import { AUDIT_ACTION_META as ACTION_META, AUDIT_TARGET_LABEL as TARGET_LABEL } from '../../constants/auditActions';
+import {
+  AUDIT_ACTION_META as ACTION_META,
+  AUDIT_FIELD_LABEL as FIELD_LABEL,
+  AUDIT_TARGET_LABEL as TARGET_LABEL,
+  auditValue,
+} from '../../constants/auditActions';
 import './OpsApproval.css';
 import './OpsAuditLog.css';
 
@@ -145,8 +150,36 @@ export default function OpsAuditLog() {
                       ? TARGET_LABEL[r.target_type] ?? `미등록 (${r.target_type})`
                       : '-'}
                   </span>
+                  {/* ★0816 지적 — "말 그대로 로그인데". 그전엔 종류까지만 보여 줘서
+                      「코스 수정 · 코스」로 끝났다. ★어느 코스인지가 없었다.
+                      DB 에는 target_id 가 있었고 이름을 찾을 수 있었다(backend#80). */}
+                  {r.target_name && <b className="op-tgt-name">{r.target_name}</b>}
                   {/* 어느 기관에서 일어난 행동인지 — 기관이 많아져도 맥락이 남는다 */}
                   {r.org_name && <small className="op-tgt-org">{r.org_name}</small>}
+                  {/* ★무엇을 어떻게 바꿨나 — before/after 를 비교해 ★바뀐 칸만.
+                      DB 에는 있었는데 응답에 안 실려 있었다. 두 줄까지만 펼쳐 두고
+                      더 있으면 개수로 알린다(줄 높이가 들쭉날쭉해지지 않게). */}
+                  {r.changes?.length > 0 && (
+                    <span className="op-tgt-changes">
+                      {r.changes.slice(0, 2).map((c) => (
+                        <span key={c.field} className="op-chg">
+                          <em>{FIELD_LABEL[c.field] ?? c.field}</em>
+                          {c.before === null || c.before === undefined ? (
+                            <>{auditValue(c.after)} <i>추가</i></>
+                          ) : c.after === null || c.after === undefined ? (
+                            <>{auditValue(c.before)} <i>삭제</i></>
+                          ) : (
+                            <>
+                              {auditValue(c.before)} <i>→</i> {auditValue(c.after)}
+                            </>
+                          )}
+                        </span>
+                      ))}
+                      {r.changes.length > 2 && (
+                        <span className="op-chg op-chg--more">외 {r.changes.length - 2}가지</span>
+                      )}
+                    </span>
+                  )}
                   {/* 문의 답변은 어떤 내용을 보냈는지 미리보기로 확인 */}
                   {r.detail && (
                     <button className="op-previewbtn" onClick={() => setPreview(r)}>
