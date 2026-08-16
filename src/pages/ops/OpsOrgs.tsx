@@ -213,7 +213,8 @@ export default function OpsOrgs() {
                   백엔드는 no_org_students 를 이미 보내고 있었다(backend#72). */}
               {/* ★"등록된 전체 기관 2곳" 만 말하고 ★둘 다 중지라는 것은 안 말했다 —
                   운영자는 "쓸 수 있는 기관이 2곳" 으로 읽는다(실제로는 0곳). */}
-              {disabledShown > 0 && ` · 이 중 ${disabledShown}곳은 중지 상태예요`}
+              {disabledShown > 0 &&
+                ` · 이 중 ${disabledShown}곳은 중지(기관 관리자·교사 로그인만 막힘)`}
               {totals.noOrg > 0 &&
                 ` · 기관 없이 가입한 학생 ${totals.noOrg.toLocaleString()}명(아래 표에 안 나옵니다)`}
             </p>
@@ -290,7 +291,19 @@ export default function OpsOrgs() {
                   <span className="op-mono">{o.code}</span>
                   <span>{o.org_type}</span>
                   <span>
-                    <span className={`op-orgstatus op-orgstatus--${m.cls}`}>{m.label}</span>
+                    {/* ★「중지」가 무엇을 막는지 화면이 말하지 않았다 — 0816 코드 확인 결과
+                        ★기관 관리자·교사·학년부장의 로그인만 막는다. 그 기관의 API 키와 학생은
+                        그대로 동작한다(실제로 CatChap 은 중지인데 그 키로 학생 화면이 돈다). */}
+                    <span
+                      className={`op-orgstatus op-orgstatus--${m.cls}`}
+                      title={
+                        o.status === 'disabled'
+                          ? '기관 관리자·교사의 로그인만 막습니다. 이 기관의 API 키와 소속 학생은 그대로 동작해요.'
+                          : undefined
+                      }
+                    >
+                      {m.label}
+                    </span>
                   </span>
                   <span className="op-col-right op-org-students">{(o.students || 0).toLocaleString()}명</span>
                   <span className="op-col-right op-org-actions">
@@ -473,8 +486,14 @@ export default function OpsOrgs() {
             <div className="op-confirm-ic"><i className="ph-fill ph-warning" /></div>
             <div className="op-confirm-title">기관을 삭제할까요?</div>
             <p className="op-confirm-body">
-              <b>{deleteTarget.name}</b>({deleteTarget.code})을(를) 삭제해요. 소속 학생이나 발급된 API 키가 있으면
-              삭제되지 않고, 대신 이용을 막으려면 상태를 ‘중지’로 바꾸세요. 이 작업은 되돌릴 수 없어요.
+              {/* ★"이용을 막으려면 '중지'로 바꾸세요" 라고 안내하고 있었다 — ★사실이 아니다.
+                  0816 코드 확인: 기관 status 를 보는 곳은 _assert_org_approved 하나뿐이고
+                  ★기관 관리자·교사·학년부장의 로그인만 막는다.
+                    auth_site_key()  ApiKey.status 만 본다 — 기관이 중지여도 키는 그대로 동작
+                    student_login()  StudentProfile.status 만 본다 — 학생도 그대로 로그인
+                  실제로 CatChap 기관은 「중지」인데 그 기관 키로 학생 화면이 돌고 있다. */}
+              <b>{deleteTarget.name}</b>({deleteTarget.code})을(를) 삭제해요. 소속 학생이나 활성 API
+              키가 있으면 삭제되지 않아요. 이 작업은 되돌릴 수 없어요.
             </p>
             <div className="op-form-actions">
               <button className="op-btn op-btn--reject" disabled={deleting} onClick={() => setDeleteTarget(null)}>취소</button>
