@@ -1083,3 +1083,54 @@
 
 /* 웜 크림 캐스트 제거 — 플레이어는 자체 상단바(공유 내비 미사용)라 .lp-root로 직접 스코프 */
 body:has(.lp-root) { background: var(--bg); }
+
+/* ── 완주 → 수료 시험 카드 (사이드바 최상단) ─────────────────────────────────
+   응시 가능할 때만 브랜드색으로 눈에 띄게. 대기 상태(강의 남음·시험 준비 중)는
+   ★차분하게 둔다 — 지금 할 수 있는 일이 없는데 강조하면 재촉으로 읽힌다. */
+.lp-examcta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+  border: 1.5px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+}
+.lp-examcta--go {
+  border-color: var(--brand);
+  background: var(--brand-soft, var(--surface));
+}
+.lp-examcta-ic {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--ink-3);
+  font-size: 18px;
+}
+.lp-examcta--go .lp-examcta-ic { background: var(--brand); color: #fff; }
+.lp-examcta-body { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 3px; }
+.lp-examcta-body b { font-size: 14px; font-weight: 800; color: var(--ink); }
+.lp-examcta-body span { font-size: 12.5px; line-height: 1.5; color: var(--ink-3); }
+.lp-examcta-btn {
+  flex-shrink: 0;
+  padding: 9px 14px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--brand);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.lp-examcta-btn:hover { filter: brightness(0.95); }
+
+@media (max-width: 720px) {
+  .lp-examcta { flex-wrap: wrap; }
+  .lp-examcta-btn { width: 100%; }
+}

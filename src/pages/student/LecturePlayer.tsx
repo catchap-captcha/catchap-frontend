@@ -7,6 +7,7 @@ import {
   isActiveElsewhere,
   lectureApi,
   type HeartbeatState,
+  type ExamState,
   type LectureDetail,
   type LectureItem,
   type LectureReviewsData,
@@ -794,6 +795,26 @@ export default function LecturePlayer() {
   // 완강한 강의만 배속 조절을 허용한다(첫 시청은 1배속 고정 — 시청검증 취지와 일관).
   const isDone = meta?.progress?.status === 'done' || doneCelebrated;
 
+  // ── 완주 → 수료 시험 안내 ──────────────────────────────────────────────────
+  // 왜: 영상을 끝까지 봐도 다음에 뭘 해야 하는지 화면이 말해 주지 않았다. 사용자는
+  // '수료' 메뉴를 스스로 찾아 들어가야 했고, 거기서도 시험 문항이 없는 코스는 목록에
+  // 아예 안 떠서 "다 봤는데 왜 없지?"가 됐다(2026-08-16 신고).
+  // 완주한 그 자리에서 다음 걸음을 보여 준다.
+  const courseId = meta?.course_id ?? null;
+  const [exam, setExam] = useState<ExamState | null>(null);
+  useEffect(() => {
+    // 이 강의를 완주했을 때만 물어본다 — 보는 중에는 필요 없는 호출이다.
+    if (!courseId || !isDone) return;
+    let alive = true;
+    lectureApi
+      .examState(courseId)
+      .then((d) => alive && setExam(d))
+      .catch(() => alive && setExam(null)); // 실패하면 카드를 감춘다(틀린 안내보다 무소식이 낫다)
+    return () => {
+      alive = false;
+    };
+  }, [courseId, isDone]);
+
   const numToc = (r: LectureItem, i: number) => (r.order_no > 0 ? r.order_no : i + 1);
 
   // 수강신청 게이트 — 미신청 상태로 코스 강의를 열면 여기로. 신청하면 바로 이 강의로 들어간다.
@@ -1456,6 +1477,48 @@ export default function LecturePlayer() {
 
         {/* ===== 강의 목차 사이드바 ===== */}
         <aside className="lp-side">
+          {/* 수료 시험 카드 — 완주했을 때만. 세 갈래를 ★구분해서 말한다:
+              ① 지금 응시 가능 ② 다른 강의가 남음 ③ 시험이 아직 준비되지 않음.
+              ③을 침묵으로 두면 완주자가 원인을 모른 채 '수료' 메뉴를 헤맨다. */}
+          {isDone && exam && !exam.passed && (
+            <div
+              className={`lp-examcta${exam.available ? ' lp-examcta--go' : ''}`}
+              role={exam.available ? undefined : 'note'}
+            >
+              <span className="lp-examcta-ic">
+                <i className={`ph-fill ${exam.available ? 'ph-seal-check' : 'ph-hourglass-medium'}`} />
+              </span>
+              {exam.available ? (
+                <>
+                  <div className="lp-examcta-body">
+                    <b>수료 시험을 볼 수 있어요</b>
+                    <span>
+                      {exam.exam_size}문항 중 {exam.pass_need}문항 이상 맞히면 수료증이 발급돼요.
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    className="lp-examcta-btn"
+                    onClick={() =>
+                      navigate(`${PATHS.STUDENT_COURSE_EXAM}?course=${exam.course_id}`)
+                    }
+                  >
+                    시험 보러가기
+                  </button>
+                </>
+              ) : (
+                <div className="lp-examcta-body">
+                  <b>{exam.has_exam ? '아직 남은 강의가 있어요' : '수료 시험을 준비하고 있어요'}</b>
+                  <span>
+                    {exam.has_exam
+                      ? `이 코스의 강의를 전부 완주하면 열려요. (${exam.lectures_done}/${exam.lectures_total} 완주)`
+                      : '이 코스는 아직 시험 문항이 등록되지 않았어요. 준비되면 여기에서 바로 응시할 수 있어요.'}
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+
           <div className="lp-side-head">
             <div className="lp-side-title">
               <i className="ph-fill ph-list-numbers" />
