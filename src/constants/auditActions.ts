@@ -209,6 +209,11 @@ export const AUDIT_FIELD_LABEL: Record<string, string> = {
   edu_subjects: '열어 준 과목',
   rules: '규칙',
   settings: '설정',
+  // ★중첩 설정은 backend#81 에서 "바깥.안쪽" 으로 펴서 온다 — 바뀐 칸 하나만 짚어 준다
+  'settings.alerts.email': '알림 메일 받기',
+  'settings.alerts.push': '알림 받기',
+  'settings.theme': '화면 테마',
+  'settings.language': '언어',
   fail_count: '실패 횟수',
   locked: '잠김',
   identifiers: '아이디들',
@@ -230,6 +235,19 @@ export const AUDIT_FIELD_LABEL: Record<string, string> = {
 };
 
 /** 값이 참/거짓·빈 값일 때 사람 말로. 그 밖에는 그대로 보여 준다. */
+/**
+ * 칸 이름을 사람 말로. 매핑에 있으면 그것을, 없으면 ★마지막 조각만 보여 준다.
+ *
+ * ★중첩 설정은 "settings.alerts.email" 처럼 경로로 온다(backend#81). 경로를 통째로
+ *   보여 주면 그것이 곧 개발자 말이다 — 매핑이 없으면 마지막 조각(email)이 그나마 읽힌다.
+ */
+export function auditField(field: string): string {
+  const known = AUDIT_FIELD_LABEL[field];
+  if (known) return known;
+  const tail = field.split('.').pop() ?? field;
+  return AUDIT_FIELD_LABEL[tail] ?? tail;
+}
+
 export function auditValue(v: unknown): string {
   if (v === null || v === undefined) return '—';
   if (typeof v === 'boolean') return v ? '예' : '아니오';

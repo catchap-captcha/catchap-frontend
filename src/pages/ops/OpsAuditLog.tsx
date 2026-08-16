@@ -3,7 +3,7 @@ import { opsApi, type OpsAuditLog as Row } from '../../api/ops';
 import OpsNav from '../../components/ops/OpsNav';
 import {
   AUDIT_ACTION_META as ACTION_META,
-  AUDIT_FIELD_LABEL as FIELD_LABEL,
+  auditField,
   AUDIT_TARGET_LABEL as TARGET_LABEL,
   auditValue,
 } from '../../constants/auditActions';
@@ -163,7 +163,7 @@ export default function OpsAuditLog() {
                     <span className="op-tgt-changes">
                       {r.changes.slice(0, 2).map((c) => (
                         <span key={c.field} className="op-chg">
-                          <em>{FIELD_LABEL[c.field] ?? c.field}</em>
+                          <em>{auditField(c.field)}</em>
                           {c.before === null || c.before === undefined ? (
                             <>{auditValue(c.after)} <i>추가</i></>
                           ) : c.after === null || c.after === undefined ? (
