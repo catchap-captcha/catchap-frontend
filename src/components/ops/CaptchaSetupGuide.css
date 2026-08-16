@@ -102,3 +102,12 @@
 .csg-source li b { color: var(--ink-2); }
 .csg-source p { margin: 0; font-size: 12.5px; line-height: 1.7; color: var(--ink-3); }
 .csg-source p b { color: var(--ink-2); }
+
+/* 「지금은 우리 사이트에 붙여 쓴다」 — 파는 안내로 오해하지 않게 먼저 밝힌다. */
+.csg-now {
+  margin: 0 0 12px; padding: 10px 12px;
+  border-left: 3px solid var(--ok, #16a34a);
+  border-radius: 0 8px 8px 0;
+  background: var(--ok-soft, rgba(22,163,74,.08));
+  font-size: 12.5px; line-height: 1.7; color: var(--ink-2);
+}

@@ -197,12 +197,12 @@ export default function OpsApiKeys() {
           <div>
             <h1 className="op-title">API 발급 · 관리</h1>
             <p className="op-sub">
-              봇 차단 캡차 · 학습 문제 캡차 키를 발급해 다른 사이트에 붙일 수 있어요 · 활성 키{' '}
-              {activeTotal}개
+              캡차를 사이트에 붙일 때 쓰는 키를 관리해요 · 활성 키 {activeTotal}개
             </p>
             <p className="op-sub ak-scope">
-              여기서 발급하는 두 가지만 밖에 붙일 수 있어요. 우리 로그인·회원가입에 뜨는 캡차는
-              키 없이 우리 앱 안에서만 도는 것이라 밖으로 나가지 않습니다.
+              <b>지금은 우리 학생 화면이 이 키로 돌고 있어요.</b> 밖에 파는 것은 계획에 없지만,
+              같은 방식으로 다른 사이트에도 붙일 수 있게 해 뒀습니다. 우리 로그인·회원가입에 뜨는
+              캡차는 키 없이 앱 안에서만 도는 다른 것이에요.
               {activeTotal}개
             </p>
           </div>
