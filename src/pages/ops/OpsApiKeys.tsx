@@ -101,7 +101,7 @@ export default function OpsApiKeys() {
     opsApi
       .setEntitlements(orgId, entSubs)
       .then((r) => {
-        flash('구매 과목을 저장했어요.');
+        flash('열어 준 과목을 저장했어요.');
         setOrgs((prev) =>
           prev.map((o) => (o.id === orgId ? { ...o, edu_subjects: r.edu_subjects } : o)),
         );
@@ -347,7 +347,7 @@ export default function OpsApiKeys() {
           {selectedOrg && (
             <div className="ak-ent">
               <div className="ak-ent-head">
-                <i className="ph-fill ph-shopping-bag-open" />
+                <i className="ph-fill ph-lock-key-open" />
                 <b>{selectedOrg.name}</b> 에 열어 준 과목
                 <span className="ak-hint">기관 관리자는 이 과목만 셀프 발급할 수 있어요.</span>
               </div>
@@ -373,7 +373,7 @@ export default function OpsApiKeys() {
                   disabled={savingEnt}
                 >
                   <i className="ph-bold ph-floppy-disk" />
-                  {savingEnt ? '저장 중…' : '구매 과목 저장'}
+                  {savingEnt ? '저장 중…' : '열어 준 과목 저장'}
                 </button>
               </div>
             </div>
