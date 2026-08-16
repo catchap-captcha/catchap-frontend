@@ -72,7 +72,14 @@ export default function OpsSystemStatus() {
             </p>
             <p className="op-sub sys-note">
               백엔드 API 는 목록에 없습니다 — <b>이 화면을 만들어 보내는 것이 백엔드 자신</b>이라,
-              화면이 떴다는 것 자체가 살아 있다는 뜻입니다. 그 서버가 쓰는 자리는 아래 「저장공간」이 보여 줍니다.
+              화면이 떴다는 것 자체가 살아 있다는 뜻입니다.
+            </p>
+            {/* ★영상이 어디에 있는지 밝혀 둔다 — 「서버 저장공간」을 영상 보관함으로
+                오해하면(그전 설명이 실제로 그랬다) 이 카드가 초록인 것을 보고
+                "영상 올릴 자리 넉넉하다" 고 잘못 읽는다. */}
+            <p className="op-sub sys-note">
+              강의 영상·자막·이미지는 <b>서버가 아니라 오브젝트 스토리지</b>에 쌓입니다 — 아래
+              「서버 저장공간」은 그것이 아니라 <b>프로그램이 도는 서버들의 남은 자리</b>예요.
             </p>
           </div>
           <button className="op-refresh" onClick={load} disabled={state === 'loading'}>
