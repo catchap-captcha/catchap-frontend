@@ -28,15 +28,14 @@ const ISSUE_META: Record<string, { label: string; help: string; cls: string }> =
     help: '공개된 확인 문항이 하나도 없어요 — 이 강의는 시청 검증이 꺼진 채로 나갑니다.',
     cls: 'bad',
   },
-  draftleft: {
-    label: '미공개 문항 남음',
-    help: '만들어 두고 공개하지 않은 문항이 있어요 — 강사가 마무리해야 합니다.',
-    cls: 'warn',
-  },
   hidden: { label: '숨김', help: '학생 화면에 안 보이는 상태예요.', cls: 'muted' },
 };
 
-const ISSUE_KEYS = ['noquestion', 'draftleft', 'hidden'] as const;
+// ⚠️'미공개 문항 남음' 은 뺐다 — 실측하니 강의 17개 중 16개가 그 상태였다.
+//   강사가 문항을 많이 만들어 두고 몇 개만 공개하는 것이 정상 흐름이라,
+//   경고로 두면 전부에 배지가 붙어 정작 볼 것을 가린다.
+//   미공개 수는 표의 '확인 문항 (공개 / 전체)' 칸이 이미 보여 준다.
+const ISSUE_KEYS = ['noquestion', 'hidden'] as const;
 
 const fmtMin = (sec: number) => {
   if (!sec) return '—';
@@ -126,6 +125,11 @@ export default function OpsLectureAdmin() {
               <span>{ISSUE_META[k].label}</span>
             </button>
           ))}
+          {/* 누르는 필터가 아니라 정보 — "그동안 뭐가 올라왔나" 가 훑을 때 첫 질문이다 */}
+          <div className="la-kpi la-kpi--info">
+            <b>{data?.summary.recent ?? '—'}</b>
+            <span>최근 7일 새 강의</span>
+          </div>
         </div>
 
         <div className="la-filters">

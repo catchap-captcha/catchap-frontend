@@ -108,3 +108,7 @@
 @media (max-width: 900px) {
   .la-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+/* 정보 칸(누르는 필터가 아님) — 커서를 손가락으로 바꾸지 않는다. */
+.la-kpi--info { cursor: default; }
+.la-kpi--info:hover { border-color: var(--line-2, rgba(127,127,127,.22)); }

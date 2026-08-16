@@ -1151,7 +1151,7 @@ export interface OpsLectureAdminRow {
   question_active: number;
   duration_sec: number;
   created_at: string;
-  /** noquestion(공개 문항 0) · draftleft(미공개 방치) · hidden */
+  /** noquestion(공개 문항 0 = 시청 검증 꺼짐) · hidden */
   issues: string[];
 }
 
@@ -1160,7 +1160,7 @@ export interface OpsLectureAdminResponse {
   total: number;
   page: number;
   page_size: number;
-  summary: { total: number; noquestion: number; draftleft: number; hidden: number };
+  summary: { total: number; noquestion: number; hidden: number; recent: number };
   instructors: { id: string; name: string }[];
   courses: { id: string; title: string }[];
 }
