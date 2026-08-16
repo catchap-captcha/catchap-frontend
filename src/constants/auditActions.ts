@@ -216,7 +216,31 @@ export const AUDIT_FIELD_LABEL: Record<string, string> = {
   'settings.language': '언어',
   fail_count: '실패 횟수',
   locked: '잠김',
-  identifiers: '아이디들',
+  identifiers: '지운 아이디',
+  truncated: '목록에서 생략',
+  kept_recent: '남긴 최근 기록',
+  k_dropped: 'k-익명성으로 뺀 묶음',
+  demoted_from_active: '공개에서 내린 문항',
+  bank_id: '문제은행',
+  lecture_id: '강의',
+  course_id: '코스',
+  image_id: '이미지',
+  slot: '자리',
+  origin: '출처',
+  admin_email: '관리자 이메일',
+  instructor_id: '강사',
+  source_type: '출처 종류',
+  fmt: '형식',
+  mode: '방식',
+  n: '개수',
+  len: '길이',
+  to: '받는 사람',
+  from: '보낸 사람',
+  changed: '바뀐 것',
+  placed: '배치됨',
+  bytes: '크기',
+  ids: '대상들',
+  rules_len: '규칙 길이',
   lectures_unassigned: '미분류로 풀린 강의',
   image_files_removed: '지운 이미지',
   file_removed: '파일 삭제',
@@ -248,6 +272,19 @@ export function auditField(field: string): string {
   return AUDIT_FIELD_LABEL[tail] ?? tail;
 }
 
+/**
+ * ★한쪽 값만 있는 것을 「추가」·「삭제」라고 부르면 안 된다.
+ *
+ * audit() 을 부르는 곳마다 ★결과를 before 에 넣기도 하고 after 에 넣기도 한다.
+ * 실측(0816) — 「없는 계정 잠금기록 정리」는 결과 넷을 이렇게 나눠 담았다.
+ *
+ *   before  {deleted: 270, identifiers: [...], truncated: 220}
+ *   after   {kept_recent: 26}
+ *
+ * 둘 다 ★결과인데, 한쪽만 있다는 사실로 "만들었다/지웠다"를 추론하면 화면이
+ * 「지운 기록 270 ★삭제」·「남긴 최근 기록 26 ★추가」라고 말한다 — 뜻이 틀리고
+ * 서로 어긋난다. ★무엇을 한 것인지는 ★행동 이름이 이미 말한다.
+ */
 export function auditValue(v: unknown): string {
   if (v === null || v === undefined) return '—';
   if (typeof v === 'boolean') return v ? '예' : '아니오';
