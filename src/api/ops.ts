@@ -48,6 +48,10 @@ export interface OpsAuditLog {
   organization_id: string | null;
   org_name: string | null;
   target_type: string | null;
+  /** ★대상 이름 — UUID 만 보내던 것을 backend#80 에서 붙였다. 모르는 종류면 null */
+  target_name: string | null;
+  /** ★무엇이 어떻게 바뀌었나 — 바뀐 칸만 온다 */
+  changes: { field: string; before: unknown; after: unknown }[];
   target_id: string | null;
   detail: OpsAuditInquiryDetail | null; // 문의 답변 미리보기용 스레드 (그 외 액션은 null)
   created_at: string | null;
