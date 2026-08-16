@@ -3,6 +3,7 @@ import { deploymentApi, type DeploymentSnapshot } from '../../api/deployments';
 import OpsNav from '../../components/ops/OpsNav';
 import './OpsApproval.css'; // 표준 콘솔 셸(op-root/op-main)·테마 토큰 — 다른 페이지와 폭·색을 맞춘다
 import './OpsDeployments.css';
+import SystemScreenGuide from '../../components/ops/SystemScreenGuide';
 
 /**
  * 배포 현황 — 지금 무엇이 떠 있나.
@@ -86,6 +87,7 @@ export default function OpsDeployments() {
             {loading ? '불러오는 중…' : '새로 고침'}
           </button>
         </header>
+        <SystemScreenGuide />
 
         {error && (
           <div className="dep-error" role="alert">

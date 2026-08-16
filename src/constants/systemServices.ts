@@ -7,21 +7,30 @@
 //
 // ⚠️서버가 새 구성요소를 보내기 시작하면 여기에도 이름을 붙여야 한다.
 //   안 붙이면 화면이 '미등록'이라고 밝힌다(조용히 영문 코드를 내보내지 않는다).
-export type ServiceKind = 'server' | 'inside' | 'external';
+export type ServiceKind = 'serving' | 'working' | 'backing';
 
-/** 종류별 묶음 제목·설명 — "이게 서버인가?" 가 화면에서 바로 답이 되게. */
+/** 묶음 제목·설명.
+ *
+ * ★그전에는 "우리 서버 / 백엔드 안쪽 / 바깥 서비스" 로 ★어디에 있는가로 갈랐다.
+ *   그러니 두 가지가 이상해졌다(0816 지적) —
+ *     ① 「우리 서버」에 백엔드만 없다 → "백엔드는 서버가 아닌가?" 로 읽힌다
+ *     ② 「백엔드 안쪽」에 저장공간이 있다 → 저장공간은 '안에서 도는 부분' 이 아니다
+ *
+ * 운영자가 이 화면에서 알고 싶은 것은 ★"지금 뭐가 안 되나" 다.
+ * 그래서 있는 곳이 아니라 ★무엇을 확인한 것인가로 가른다.
+ */
 export const SERVICE_KIND_META: Record<ServiceKind, { title: string; hint: string }> = {
-  server: {
-    title: '우리 서버',
-    hint: '우리가 띄운 프로그램 — 각각 2벌씩 돌고 있어서 한 벌이 죽어도 이어집니다.',
+  serving: {
+    title: '서비스가 도나',
+    hint: '사용자가 쓰는 것들이 떠 있는지 — 각각 2벌씩이라 한 벌이 죽어도 이어집니다.',
   },
-  inside: {
-    title: '백엔드 안쪽',
-    hint: '따로 뜬 서버가 아니라 백엔드 프로그램 안에서 도는 부분 — 백엔드가 살아 있으면 같이 삽니다.',
+  working: {
+    title: '기능이 되나',
+    hint: '실제로 시켜 보고 되는지 확인한 것 — 되는지 안 되는지가 바로 나옵니다.',
   },
-  external: {
-    title: '바깥 서비스',
-    hint: '우리가 띄운 것이 아니라 빌려 쓰는 것 — 카카오클라우드 관리형 DB, 메일 발송 업체.',
+  backing: {
+    title: '받쳐 주는 것',
+    hint: '이게 흔들리면 위가 전부 멈춥니다 — 데이터가 있는 곳과 남은 자리.',
   },
 };
 
@@ -29,57 +38,55 @@ export const SERVICE_NAME_META: Record<
   string,
   { icon: string; label: string; desc: string; kind: ServiceKind }
 > = {
-  db: {
-    icon: 'ph-database',
-    label: '데이터베이스',
-    desc: '학생·강의·문항이 저장된 곳 (카카오클라우드 관리형 MySQL)',
-    kind: 'external',
-  },
-  smtp: {
-    icon: 'ph-envelope-simple',
-    label: '이메일 발송',
-    desc: '비밀번호 재설정·알림 메일이 실제로 나갔는지 (최근 24시간)',
-    kind: 'external',
-  },
-  // ★"캡차 엔진" 과 "캡차 API" 를 구별할 수 없다는 지적(0815). 하나는 백엔드 안의 부분이고
-  //   다른 하나는 따로 뜬 서버다. 이름과 설명에서 그 차이가 바로 보이게 고쳤다.
-  'captcha-engine': {
-    icon: 'ph-books',
-    label: '캡차 문제은행',
-    desc: '백엔드 안에서 캡차 문제를 꺼내 오는 부분 — 따로 뜬 서버가 아닙니다',
-    kind: 'inside',
-  },
-  disk: {
-    icon: 'ph-hard-drives',
-    label: '백엔드 저장공간',
-    desc: '백엔드가 올라가 있는 곳의 남은 용량',
-    kind: 'inside',
-  },
-  // 클러스터 앱 — 서버가 server_metrics(프로메테우스 수집분)에서 읽어 보낸다.
-  // ★종전의 'ai-server' 카드는 아무것도 점검하지 않는 고정 문자열이었다. behavior-ai가
-  //   그 자리를 대신한다 — 이제 실제로 도는 파드의 값이 뜬다.
+  // ── 서비스가 도나 (따로 뜬 서버들) ─────────────────────────────
   'captcha-api': {
     icon: 'ph-shield-check',
     label: '캡차 API',
-    desc: '캡차를 만들어 주고 맞았는지 확인하는 ★따로 뜬 서버',
-    kind: 'server',
+    desc: '캡차를 만들어 주고 맞았는지 확인하는 서버',
+    kind: 'serving',
   },
   'behavior-ai': {
     icon: 'ph-cpu',
     label: '행동 AI',
     desc: '마우스·터치 움직임으로 사람인지 봇인지 판정하는 서버',
-    kind: 'server',
+    kind: 'serving',
   },
   frontend: {
     icon: 'ph-browser',
     label: '프론트',
     desc: '사용자가 보는 웹 화면을 내려 주는 서버',
-    kind: 'server',
+    kind: 'serving',
   },
   'stt-worker': {
     icon: 'ph-waveform',
     label: 'STT 워커',
     desc: '강의 영상에서 자막을 뽑는 서버 (GPU 사용)',
-    kind: 'server',
+    kind: 'serving',
+  },
+  // ── 기능이 되나 (실제로 시켜 본 것) ────────────────────────────
+  'captcha-engine': {
+    icon: 'ph-books',
+    label: '캡차 문제 출제',
+    desc: '문제은행에서 실제로 문제를 꺼내 봤을 때 나오는지',
+    kind: 'working',
+  },
+  smtp: {
+    icon: 'ph-envelope-simple',
+    label: '이메일 발송',
+    desc: '비밀번호 재설정·알림 메일이 실제로 나갔는지 (최근 24시간)',
+    kind: 'working',
+  },
+  // ── 받쳐 주는 것 ──────────────────────────────────────────────
+  db: {
+    icon: 'ph-database',
+    label: '데이터베이스',
+    desc: '학생·강의·문항이 저장된 곳 (카카오클라우드 관리형 MySQL)',
+    kind: 'backing',
+  },
+  disk: {
+    icon: 'ph-hard-drives',
+    label: '저장공간',
+    desc: '영상·자막·이미지를 쌓는 곳의 남은 자리',
+    kind: 'backing',
   },
 };
