@@ -195,6 +195,9 @@ export default function OpsOrgs() {
     }
   };
 
+  // 지금 표에 보이는 것 중 중지 상태가 몇인가(검색·페이지가 걸리면 그 안에서 센다)
+  const disabledShown = rows.filter((o) => o.status === 'disabled').length;
+
   return (
     <div className="op-root">
       <OpsNav />
@@ -208,6 +211,9 @@ export default function OpsOrgs() {
                   가입한 사람들이라, 운영 홈이 "학생 14" 라고 하는데 이 화면은 "합계 0명"
                   이라고 말했다 — 학생이 사라져 보인다.
                   백엔드는 no_org_students 를 이미 보내고 있었다(backend#72). */}
+              {/* ★"등록된 전체 기관 2곳" 만 말하고 ★둘 다 중지라는 것은 안 말했다 —
+                  운영자는 "쓸 수 있는 기관이 2곳" 으로 읽는다(실제로는 0곳). */}
+              {disabledShown > 0 && ` · 이 중 ${disabledShown}곳은 중지 상태예요`}
               {totals.noOrg > 0 &&
                 ` · 기관 없이 가입한 학생 ${totals.noOrg.toLocaleString()}명(아래 표에 안 나옵니다)`}
             </p>

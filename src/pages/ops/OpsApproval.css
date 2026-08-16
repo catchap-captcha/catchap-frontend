@@ -1733,3 +1733,22 @@ body:has(.op-root) { background: #f5f5f7; }
 .op-subtab i { font-size: 16px; }
 .op-subtab:hover { color: var(--ink); }
 .op-subtab--on { background: var(--surface); color: var(--brand-strong); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); }
+
+/* 이름 옆 「고치기」 — 평소엔 흐리게 두고 줄에 마우스를 올리면 또렷해진다.
+   ★자주 쓰는 것이 아니라(오타 정정용) 이름을 읽는 데 방해되면 안 된다. */
+.op-name-edit {
+  margin-left: 6px;
+  padding: 2px 4px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--ink-3, #9aa0a6);
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.45;
+  transition: opacity 0.15s, color 0.15s, background 0.15s;
+}
+.op-logrow:hover .op-name-edit { opacity: 1; }
+.op-name-edit:hover:not(:disabled) { color: var(--ink-1); background: var(--surface-3, rgba(127, 127, 127, 0.1)); }
+.op-name-edit:disabled { opacity: 0.25; cursor: default; }

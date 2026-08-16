@@ -642,7 +642,10 @@ export interface AiKeyStatus {
 export interface AiSettings {
   llm: AiKeyStatus;
   stt: AiKeyStatus;
+  /** .env 폴백 — 「LLM 모델」에 고른 것이 하나도 없을 때만 쓴다 */
   llm_model: string;
+  /** ★지금 실제로 부르는 모델(슬롯). 고른 것이 없으면 null */
+  llm_model_in_use: string | null;
   /** 자체 STT 워커(faster-whisper/GPU) 설정 여부 — 켜져 있으면 STT는 무료(OpenAI 키 불요) */
   stt_worker: { configured: boolean };
 }

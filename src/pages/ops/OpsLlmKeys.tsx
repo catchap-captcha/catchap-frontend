@@ -88,7 +88,14 @@ export default function OpsLlmKeys() {
 
         <KeyCard
           title="LLM — 문항 생성 (Anthropic)"
-          desc={`강의 확인 문항을 자동 생성하는 언어 모델이에요. 사용 모델: ${data?.llm_model ?? '—'}`}
+          /* ★"사용 모델: claude-opus-4-8" 이라고 찍고 있었는데 ★그건 폴백(.env LLM_MODEL)이고
+              실제 생성은 claude-opus-5 로 돌고 있었다(0816 실측). 지금 실제로 부르는 것을 말한다.
+              슬롯이 하나도 없을 때만 폴백을 쓰므로, 그때는 그렇다고 밝힌다. */
+          desc={
+            data?.llm_model_in_use
+              ? `강의 확인 문항을 자동 생성하는 언어 모델이에요. 지금 쓰는 모델: ${data.llm_model_in_use} (「LLM 모델」에서 바꿔요)`
+              : `강의 확인 문항을 자동 생성하는 언어 모델이에요. 「LLM 모델」에 고른 것이 없어 기본값 ${data?.llm_model ?? '—'} 으로 동작해요.`
+          }
           status={data?.llm ?? null}
           provider="anthropic"
           placeholder="sk-ant-…"

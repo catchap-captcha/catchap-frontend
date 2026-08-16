@@ -65,6 +65,23 @@ export default function OpsInstructors() {
     setAdding(true);
   };
 
+  /** 이름 고치기 — 오타 정정용. 로그인 아이디(이메일)는 여기서 못 바꾼다(계정 식별자라).
+   *  서버가 before/after 를 감사 로그에 남긴다. */
+  const renameAccount = async (row: OpsInstructor) => {
+    const next = window.prompt(`'${row.name}' 강사의 이름을 무엇으로 바꿀까요?`, row.name)?.trim();
+    if (!next || next === row.name) return;
+    setBusyId(row.id);
+    try {
+      await opsApi.updateInstructor(row.id, { name: next });
+      say('이름을 바꿨어요.');
+      await load();
+    } catch {
+      say('이름을 바꾸지 못했어요.');
+    } finally {
+      setBusyId(null);
+    }
+  };
+
   const submit = async () => {
     if (!name.trim()) return setFormErr('강사 이름을 입력해 주세요.');
     if (!email.trim()) return setFormErr('로그인용 이메일을 입력해 주세요.');
@@ -198,7 +215,18 @@ export default function OpsInstructors() {
                   <span className="op-op-name">
                     <span className="op-org-ic"><i className="ph-fill ph-chalkboard-teacher" /></span>
                     {it.name}
-                  </span>
+                  {/* ★백엔드는 처음부터 이름 수정을 받고 감사 로그까지 남긴다(PATCH — name·status).
+                      ★화면에만 길이 없어서 운영자가 오타를 고칠 수 없었다 — 실제로 강사 한 명이
+                      「조조성성원원」로 저장돼 있었다(0816). */}
+                  <button
+                    className="op-name-edit"
+                    disabled={busyId === it.id}
+                    title="이름 고치기"
+                    onClick={() => renameAccount(it)}
+                  >
+                    <i className="ph-bold ph-pencil-simple" />
+                  </button>
+                </span>
                   <span className="op-mono">{it.email ?? '-'}</span>
                   <span>
                     <span className={`op-orgstatus op-orgstatus--${m.cls}`}>{m.label}</span>
