@@ -19,6 +19,19 @@ const STATUS_META: Record<string, { accent: string; soft: string; label: string;
   unknown: { accent: 'var(--ink-3)', soft: 'var(--bg)', label: '모름', icon: 'ph-question' },
 };
 
+/**
+ * 왕복시간 표기.
+ *
+ * ★백엔드가 max(1, int(...)) 로 바닥을 치고 있었다 — 0.3ms 도 "1ms" 로 찍혀 정확한 값처럼
+ *   보였다(backend#77 에서 없앴다). 그런데 소수 한 자리로 재니 캡차 출제가 0.04ms 라
+ *   ★"0ms" 로 찍혔다 — 이번엔 "안 쟀다" 처럼 보인다. 정직해지려다 다른 오해를 만들었다.
+ *   잰 값이 0.1ms 도 안 되면 그렇다고 말한다.
+ */
+function ms(v: number): string {
+  if (v <= 0) return '0.1ms 미만';
+  return `${v}ms`;
+}
+
 function fmt(ts: string | null): string {
   if (!ts) return '-';
   return ts.replace('T', ' ').slice(0, 19);
@@ -134,7 +147,9 @@ export default function OpsSystemStatus() {
                             </span>
                           </div>
                           <div className="sys-card-bottom">
-                            {s.latency_ms != null && <span className="sys-latency">{s.latency_ms}ms</span>}
+                            {s.latency_ms != null && (
+                              <span className="sys-latency">{ms(s.latency_ms)}</span>
+                            )}
                             <span className="sys-detail">{s.detail}</span>
                           </div>
                         </div>
