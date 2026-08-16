@@ -164,14 +164,17 @@ export default function OpsAuditLog() {
                       {r.changes.slice(0, 2).map((c) => (
                         <span key={c.field} className="op-chg">
                           <em>{auditField(c.field)}</em>
-                          {c.before === null || c.before === undefined ? (
-                            <>{auditValue(c.after)} <i>추가</i></>
-                          ) : c.after === null || c.after === undefined ? (
-                            <>{auditValue(c.before)} <i>삭제</i></>
-                          ) : (
+                          {/* ★한쪽만 있으면 「추가/삭제」라고 단정하지 않는다 —
+                              audit() 을 부르는 곳마다 결과를 before 에 넣기도 after 에
+                              넣기도 해서, 그것으로 뜻을 추론하면 틀린다.
+                              무엇을 한 것인지는 ★행동 이름이 이미 말한다. */}
+                          {c.before !== null && c.before !== undefined &&
+                          c.after !== null && c.after !== undefined ? (
                             <>
                               {auditValue(c.before)} <i>→</i> {auditValue(c.after)}
                             </>
+                          ) : (
+                            auditValue(c.before ?? c.after)
                           )}
                         </span>
                       ))}
