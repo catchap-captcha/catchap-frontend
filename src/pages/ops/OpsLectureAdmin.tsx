@@ -20,7 +20,7 @@ import './OpsLectureAdmin.css';
  *   편하지만, 강사와 강의가 늘면 운영자가 "누가 올렸나 · 어디가 비었나" 를 찾을 수 없다.
  *
  * 운영자가 여기서 하는 일은 셋이다.
- *   ① 문제 있는 강의 찾기  ② 강사별로 보기  ③ 문제가 있으면 그 강의로 들어가 내리기
+ *   ① 문제 있는 강의 찾기  ② 강사별로 보기  ③ 문제가 있으면 바로 비공개로 돌리기
  * 그래서 요약 → 필터 → 평평한 표 순으로 둔다(대규모 관리 콘솔의 기본 모양).
  */
 const ISSUE_META: Record<string, { label: string; help: string; cls: string }> = {
@@ -78,7 +78,7 @@ export default function OpsLectureAdmin() {
       .catch(() => setState('error'));
   };
 
-  /** 공개 ↔ 숨김. ★운영자가 할 수 있는 유일한 조치라 이 화면에서 바로 되어야 한다
+  /** 공개 ↔ 비공개. ★운영자가 할 수 있는 유일한 조치라 이 화면에서 바로 되어야 한다
    *  (그전에는 강사 화면으로 보냈는데, 문제를 찾은 자리에서 못 내리면 반쪽이다).
    *  저작(수정·삭제)은 여기서도 강사 전용 — 백엔드가 status 외 필드를 403 으로 막는다. */
   const toggleStatus = async (r: OpsLectureAdminRow) => {
@@ -117,8 +117,8 @@ export default function OpsLectureAdmin() {
           <div>
             <h1 className="op-title">강의 점검</h1>
             <p className="op-sub">
-              올라온 강의를 훑고, 문제가 있으면 그 강의로 들어가 내립니다. 강의·문항 저작은
-              강사가 하고 운영자는 조회와 공개/숨김만 할 수 있어요.
+              올라온 강의를 훑어보고, 문제가 있으면 바로 비공개로 돌립니다. 강의와 문항을
+              만드는 건 강사가 하고, 운영자는 보기와 공개/비공개만 할 수 있어요.
             </p>
           </div>
           <button className="op-refresh" onClick={load} disabled={state === 'loading'}>

@@ -157,7 +157,7 @@
   background: var(--danger-soft);
   color: var(--danger-ink);
 }
-/* 운영자 모더레이션(숨기기/공개) — 저작이 아니라 중립 톤 */
+/* 운영자 조치(비공개/공개) — 저작이 아니라 중립 톤 */
 .op-lect-grid > .op-lect-actions .op-lect-act--mod {
   background: var(--info-soft);
   color: var(--info-ink);

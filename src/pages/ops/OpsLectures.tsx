@@ -389,8 +389,8 @@ export default function OpsLectures() {
           <div className="op-lect-hint op-lect-modnote">
             <i className="ph-fill ph-shield-check" />
             <span>
-              운영자는 <b>감독·검수 전용</b>이에요 — 강의·문항 <b>저작은 강사</b>가 하고,
-              운영자는 조회와 <b>공개/숨김</b>(모더레이션)만 할 수 있어요.
+              운영자는 <b>감독·검수 전용</b>이에요 — 강의와 문항을 <b>만드는 건 강사</b>가 하고,
+              운영자는 보기와 <b>공개/비공개</b>만 할 수 있어요.
             </span>
           </div>
         )}
@@ -692,11 +692,11 @@ export default function OpsLectures() {
                         자료
                       </button>
                       {isOps ? (
-                        // 운영자 모더레이션 — 공개/숨김만(수정·삭제는 저작이라 숨김)
+                        // 운영자 조치 — 공개/비공개만(수정·삭제는 저작이라 감춘다)
                         <button
                           className="op-btn op-lect-act op-lect-act--mod"
                           onClick={() => setLecStatus(lec, lec.status === 'active' ? 'hidden' : 'active')}
-                          title="학생 화면에서 공개/숨김 전환(모더레이션)"
+                          title="학생 화면에 보이게 하거나 안 보이게 합니다(강의는 지워지지 않아요)."
                         >
                           <i className={`ph-bold ${lec.status === 'active' ? 'ph-eye-slash' : 'ph-eye'}`} />
                           {lec.status === 'active' ? '비공개로' : '공개로'}
@@ -1308,7 +1308,7 @@ function LectureFormModal({
                   .map((c) => (
                     <option key={c.id} value={c.id}>
                       {c.title}
-                      {c.status === 'hidden' ? ' (숨김)' : ''}
+                      {c.status === 'hidden' ? ' (비공개)' : ''}
                     </option>
                   ))}
               </select>
@@ -2057,7 +2057,7 @@ export function ExamQuestionsModal({
           )}
           <span className="lu-help">
             {isOps
-              ? `공개 문항 ${activeCount}개 — 운영자는 통과율·수료율 통계와 문항을 검수만 해요(저작은 강사).`
+              ? `공개 문항 ${activeCount}개 — 운영자는 통과율·수료율 통계와 문항을 검수만 해요(만드는 건 강사).`
               : activeCount > 0
               ? `공개 문항 ${activeCount}개 — 학생이 강의를 전부 완주하면 이 문항들을 다 맞혀야 수료해요(틀린 건 다시).`
               : '공개 문항이 없어요 — 활성 문항이 0개면 학생에게 수료 시험이 보이지 않아요. (가져오기·AI 생성 문항은 초안이라 검수 후 공개하세요.)'}
@@ -3384,7 +3384,7 @@ export function QuestionsModal({
         {isOps ? (
           <div className="op-lect-qtools">
             <span className="lu-help">
-              <i className="ph-fill ph-shield-check" /> 운영자는 확인 문항을 검수(조회)만 해요 — 문항·자막 저작은 강사가 합니다.
+              <i className="ph-fill ph-shield-check" /> 운영자는 확인 문항을 검수(조회)만 해요 — 문항·자막을 만드는 건 강사가 합니다.
             </span>
           </div>
         ) : (
