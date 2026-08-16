@@ -42,7 +42,7 @@ const GROUPS: NavGroup[] = [
       //   직접 쳐야만 닿았다 — 부적절한 강의를 내려야 할 때 손을 쓸 수 없다는 뜻이다.
       //   이름을 '관리'가 아니라 '점검'으로 둔 이유: 운영자가 여기서 할 수 있는 일은
       //   보는 것과 숨기는 것뿐이고, 저작(수정·삭제)은 강사 전용이다.
-      { to: PATHS.OPS_LECTURES, icon: 'ph-video-camera', label: '강의 점검' },
+      { to: PATHS.OPS_LECTURE_ADMIN, icon: 'ph-video-camera', label: '강의 점검' },
       { to: PATHS.OPS_COURSES, icon: 'ph-stack', label: '코스 점검' },
     ],
   },

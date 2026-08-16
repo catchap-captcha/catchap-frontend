@@ -1,0 +1,240 @@
+import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
+
+import {
+  opsLectureAdminApi,
+  type OpsLectureAdminResponse,
+  type OpsLectureAdminRow,
+} from '../../api/lectures';
+import OpsNav from '../../components/ops/OpsNav';
+import { PATHS } from '../../routes/paths';
+import './OpsApproval.css';
+import './OpsLectureAdmin.css';
+
+/**
+ * 강의 점검 — 운영자 화면.
+ *
+ * ★왜 따로 만드나 — 그전에는 강사용 화면(OpsLectures)을 그대로 쓰고 버튼만 숨겼다.
+ *   그건 강사가 ★자기 강의를 만드는 화면이라 코스별 트리로 접혀 있다. 강의가 몇 개일 때는
+ *   편하지만, 강사와 강의가 늘면 운영자가 "누가 올렸나 · 어디가 비었나" 를 찾을 수 없다.
+ *
+ * 운영자가 여기서 하는 일은 셋이다.
+ *   ① 문제 있는 강의 찾기  ② 강사별로 보기  ③ 문제가 있으면 그 강의로 들어가 내리기
+ * 그래서 요약 → 필터 → 평평한 표 순으로 둔다(대규모 관리 콘솔의 기본 모양).
+ */
+const ISSUE_META: Record<string, { label: string; help: string; cls: string }> = {
+  noquestion: {
+    label: '확인 문항 없음',
+    help: '공개된 확인 문항이 하나도 없어요 — 이 강의는 시청 검증이 꺼진 채로 나갑니다.',
+    cls: 'bad',
+  },
+  draftleft: {
+    label: '미공개 문항 남음',
+    help: '만들어 두고 공개하지 않은 문항이 있어요 — 강사가 마무리해야 합니다.',
+    cls: 'warn',
+  },
+  hidden: { label: '숨김', help: '학생 화면에 안 보이는 상태예요.', cls: 'muted' },
+};
+
+const ISSUE_KEYS = ['noquestion', 'draftleft', 'hidden'] as const;
+
+const fmtMin = (sec: number) => {
+  if (!sec) return '—';
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return m ? `${m}분 ${s}초` : `${s}초`;
+};
+
+const fmtDate = (iso: string) => {
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime()) ? '—' : `${d.getMonth() + 1}/${d.getDate()}`;
+};
+
+export default function OpsLectureAdmin() {
+  const [data, setData] = useState<OpsLectureAdminResponse | null>(null);
+  const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading');
+  const [q, setQ] = useState('');
+  const [instructor, setInstructor] = useState('');
+  const [course, setCourse] = useState('');
+  const [issue, setIssue] = useState('');
+  const [page, setPage] = useState(1);
+
+  const load = () => {
+    setState('loading');
+    opsLectureAdminApi
+      .list({
+        q: q || undefined,
+        instructor: instructor || undefined,
+        course: course || undefined,
+        issue: issue || undefined,
+        page,
+      })
+      .then((d) => {
+        setData(d);
+        setState('ready');
+      })
+      .catch(() => setState('error'));
+  };
+
+  // 필터가 바뀌면 1쪽부터 — 3쪽을 보다가 필터를 걸면 빈 화면이 나온다
+  useEffect(() => setPage(1), [q, instructor, course, issue]);
+  useEffect(load, [q, instructor, course, issue, page]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const rows = data?.items ?? [];
+  const pages = Math.max(1, Math.ceil((data?.total ?? 0) / (data?.page_size || 50)));
+  const filtered = useMemo(
+    () => Boolean(q || instructor || course || issue),
+    [q, instructor, course, issue],
+  );
+
+  return (
+    <div className="op-root">
+      <OpsNav />
+      <main className="op-main">
+        <div className="op-head">
+          <div>
+            <h1 className="op-title">강의 점검</h1>
+            <p className="op-sub">
+              올라온 강의를 훑고, 문제가 있으면 그 강의로 들어가 내립니다. 강의·문항 저작은
+              강사가 하고 운영자는 조회와 공개/숨김만 할 수 있어요.
+            </p>
+          </div>
+          <button className="op-refresh" onClick={load} disabled={state === 'loading'}>
+            새로고침
+          </button>
+        </div>
+
+        {/* 요약 — "지금 무엇이 문제인가" 를 먼저. 누르면 그 문제만 걸러 본다. */}
+        <div className="la-kpis">
+          <button
+            type="button"
+            className={`la-kpi${issue === '' ? ' la-kpi--on' : ''}`}
+            onClick={() => setIssue('')}
+          >
+            <b>{data?.summary.total ?? '—'}</b>
+            <span>전체 강의</span>
+          </button>
+          {ISSUE_KEYS.map((k) => (
+            <button
+              key={k}
+              type="button"
+              className={`la-kpi la-kpi--${ISSUE_META[k].cls}${issue === k ? ' la-kpi--on' : ''}`}
+              onClick={() => setIssue(issue === k ? '' : k)}
+              title={ISSUE_META[k].help}
+            >
+              <b>{data?.summary[k] ?? '—'}</b>
+              <span>{ISSUE_META[k].label}</span>
+            </button>
+          ))}
+        </div>
+
+        <div className="la-filters">
+          <input
+            className="la-search"
+            placeholder="강의 제목으로 찾기"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+          />
+          <select value={instructor} onChange={(e) => setInstructor(e.target.value)}>
+            <option value="">전체 강사</option>
+            {(data?.instructors ?? []).map((i) => (
+              <option key={i.id} value={i.id}>
+                {i.name}
+              </option>
+            ))}
+          </select>
+          <select value={course} onChange={(e) => setCourse(e.target.value)}>
+            <option value="">전체 코스</option>
+            <option value="none">미분류</option>
+            {(data?.courses ?? []).map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.title}
+              </option>
+            ))}
+          </select>
+          {filtered && (
+            <button
+              className="op-btn op-btn--soft"
+              onClick={() => {
+                setQ('');
+                setInstructor('');
+                setCourse('');
+                setIssue('');
+              }}
+            >
+              필터 지우기
+            </button>
+          )}
+        </div>
+
+        {state === 'error' && <div className="op-empty">목록을 불러오지 못했어요.</div>}
+        {state === 'ready' && rows.length === 0 && (
+          <div className="op-empty">
+            {filtered ? '조건에 맞는 강의가 없어요.' : '아직 올라온 강의가 없어요.'}
+          </div>
+        )}
+
+        {rows.length > 0 && (
+          <>
+            <div className="la-table" role="table">
+              <div className="la-tr la-tr--head" role="row">
+                <span>강의</span>
+                <span>강사</span>
+                <span>코스</span>
+                <span className="la-num">확인 문항</span>
+                <span>길이</span>
+                <span>올린 날</span>
+                <span>상태</span>
+              </div>
+              {rows.map((r: OpsLectureAdminRow) => (
+                <div key={r.id} className="la-tr" role="row">
+                  <span className="la-title">
+                    {/* 손볼 것은 강의 화면에서 — 여기서는 찾아 주고 보내 준다 */}
+                    <Link to={`${PATHS.OPS_LECTURES}?lecture=${r.id}`}>{r.title}</Link>
+                    <span className="la-issues">
+                      {r.issues.map((k) => (
+                        <em
+                          key={k}
+                          className={`la-badge la-badge--${ISSUE_META[k]?.cls ?? 'muted'}`}
+                          title={ISSUE_META[k]?.help}
+                        >
+                          {ISSUE_META[k]?.label ?? k}
+                        </em>
+                      ))}
+                    </span>
+                  </span>
+                  <span>{r.instructor_name}</span>
+                  <span className="la-course">{r.course_title ?? '미분류'}</span>
+                  <span className="la-num">
+                    <b className={r.question_active === 0 ? 'la-zero' : ''}>{r.question_active}</b>
+                    <span className="la-of"> / {r.question_total}</span>
+                  </span>
+                  <span>{fmtMin(r.duration_sec)}</span>
+                  <span>{fmtDate(r.created_at)}</span>
+                  <span>{r.status === 'active' ? '공개' : '숨김'}</span>
+                </div>
+              ))}
+            </div>
+            <p className="la-note">
+              「확인 문항」은 <b>공개 / 전체</b>입니다. 공개가 0이면 그 강의는 시청 검증 없이
+              나갑니다. 손보려면 강의 이름을 눌러 강의 화면으로 가세요.
+            </p>
+            {pages > 1 && (
+              <div className="la-pager">
+                <button disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
+                  이전
+                </button>
+                <span>
+                  {page} / {pages}
+                </span>
+                <button disabled={page >= pages} onClick={() => setPage((p) => p + 1)}>
+                  다음
+                </button>
+              </div>
+            )}
+          </>
+        )}
+      </main>
+    </div>
+  );
+}

@@ -4,6 +4,7 @@ import ProtectedRoute from './ProtectedRoute';
 import { PATHS } from './paths';
 import { ROLE_HOME } from './roleRoutes';
 import { useAuth } from '../hooks/useAuth';
+import OpsLectureAdmin from '../pages/ops/OpsLectureAdmin';
 
 // 공개
 const MainPage = lazy(() => import('../pages/public/MainPage'));
@@ -178,6 +179,7 @@ export default function AppRoutes() {
         {/* 운영자 (ops) */}
         <Route element={<ProtectedRoute roles={['ops']} />}>
           <Route path={PATHS.OPS_DASHBOARD} element={<OpsHome />} />
+          <Route path={PATHS.OPS_LECTURE_ADMIN} element={<OpsLectureAdmin />} />
           <Route path={PATHS.OPS_APPROVAL} element={<OpsApproval />} />
           <Route path={PATHS.OPS_ORGS} element={<OpsOrgs />} />
           <Route path={PATHS.OPS_API_KEYS} element={<OpsApiKeys />} />
