@@ -1,0 +1,89 @@
+/* 「다른 사이트에 붙이는 법」 안내 — 평소엔 접혀 있고 필요할 때 편다.
+   발급 화면이 길어서 항상 펼쳐 두면 정작 키 목록이 아래로 밀린다. */
+.csg { margin: 14px 0 18px; }
+
+.csg-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--line-2, rgba(127, 127, 127, 0.22));
+  border-radius: 10px;
+  background: var(--surface-2, transparent);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink-1);
+  cursor: pointer;
+  text-align: left;
+}
+.csg-toggle:hover { border-color: var(--brand, #6b7280); }
+.csg-toggle-sub { margin-left: auto; font-size: 12px; font-weight: 500; color: var(--ink-3); }
+
+.csg-body {
+  margin-top: 10px;
+  padding: 16px;
+  border: 1px solid var(--line-2, rgba(127, 127, 127, 0.22));
+  border-radius: 10px;
+  background: var(--surface-2, transparent);
+}
+.csg-what {
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--surface-3, rgba(127, 127, 127, 0.08));
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--ink-2);
+}
+
+/* 3단계 흐름 — 번호가 눈에 들어오게 */
+.csg-flow { margin: 0 0 16px; padding-left: 0; list-style: none; counter-reset: csg; }
+.csg-flow li {
+  position: relative;
+  padding: 0 0 12px 34px;
+  counter-increment: csg;
+}
+.csg-flow li::before {
+  content: counter(csg);
+  position: absolute;
+  left: 0;
+  top: 1px;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--brand-soft, rgba(127, 127, 127, 0.16));
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-2);
+}
+.csg-flow b { display: block; font-size: 13.5px; color: var(--ink-1); }
+.csg-flow span { display: block; margin-top: 2px; font-size: 12.5px; line-height: 1.6; color: var(--ink-3); }
+.csg-flow code {
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: var(--surface-3, rgba(127, 127, 127, 0.14));
+  font-size: 12px;
+}
+
+.csg-block { margin-bottom: 14px; }
+.csg-block-h { display: flex; align-items: baseline; gap: 8px; margin-bottom: 6px; }
+.csg-block-h b { font-size: 13px; color: var(--ink-1); }
+.csg-block-h span { font-size: 12px; color: var(--ink-3); }
+.csg-pre {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: var(--code-bg, rgba(127, 127, 127, 0.1));
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--ink-1);
+  overflow-x: auto;      /* 긴 줄이 화면을 밀지 않게 */
+  white-space: pre;
+}
+
+.csg-notes { margin: 0; padding-left: 18px; }
+.csg-notes li { margin-bottom: 6px; font-size: 12.5px; line-height: 1.7; color: var(--ink-3); }
+.csg-notes b { color: var(--ink-2); }

@@ -17,7 +17,7 @@ const EXPORT_CAP = 2000; // CSV 내보내기 상한 (서버 페이지 200 × 10�
 
 const SOURCE_LABEL: Record<string, string> = {
   game: '인앱 게임',
-  'edu-api': '교육형 API',
+  'edu-api': '학습 문제 캡차',
   forest: '메인 캡차(숲)', // 로그인 게이트 forest 캡차 — 원시 문자열 노출 방지
   captcha: '캡차 API',
 };
@@ -375,7 +375,7 @@ export default function OpsBehavior() {
             <div className="op-kpi">
               <div className="op-kpi-ic op-kpi-ic--inq"><i className="ph-fill ph-graduation-cap" /></div>
               <div className="op-kpi-num">{(ov.by_source['edu-api'] ?? 0).toLocaleString()}</div>
-              <div className="op-kpi-lb">교육형 API 수집</div>
+              <div className="op-kpi-lb">학습 문제 캡차 수집</div>
             </div>
             <div className="op-kpi">
               <div className="op-kpi-ic op-kpi-ic--org"><i className="ph-fill ph-check-square" /></div>
@@ -435,7 +435,7 @@ export default function OpsBehavior() {
           <select className="op-bh-select" value={source} onChange={(e) => setSource(e.target.value)}>
             <option value="">출처 전체</option>
             <option value="game">인앱 게임</option>
-            <option value="edu-api">교육형 API</option>
+            <option value="edu-api">학습 문제 캡차</option>
             <option value="forest">메인 캡차(숲)</option>
           </select>
           <select className="op-bh-select" value={group} onChange={(e) => setGroup(e.target.value)}>
