@@ -1,7 +1,7 @@
 /* 시스템 세 화면 안내 — 같은 앱을 세 곳에서 보여주므로 "무엇을 보러 왔는지" 를 밝힌다. */
 .ssg {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
   margin: 10px 0 16px;
 }
@@ -33,6 +33,9 @@
   font-size: 10.5px; font-weight: 600; color: var(--ink-3);
 }
 .ssg-what { font-size: 12px; line-height: 1.5; color: var(--ink-3); }
-@media (max-width: 720px) {
+@media (max-width: 1080px) {
+  .ssg { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 560px) {
   .ssg { grid-template-columns: 1fr; }
 }

@@ -349,12 +349,13 @@ export default function OpsMonitoring() {
     const m: Record<string, string[]> = {};
     for (const s of data?.servers ?? []) {
       if (!s.server_key.startsWith('node:') || !s.apps) continue;
-      // 이름표에서 "서비스 서버 · GPU · 2-a (10.0.2.210)" → "GPU 2-a" 로 줄인다.
+      // 이름표에서 "GPU 서버 · 2-a (10.0.2.210)" → "GPU 2-a" 로 줄인다.
       // ★형식이 안 맞으면 replace 가 그냥 통과하므로 원래 이름표가 남는다(조용히 비지 않게).
       const short = s.label
-        .replace(/^서비스 서버\s*·\s*/, '')
         .replace(/\s*\(.*\)\s*$/, '')
-        .replace(/\s*·\s*/g, ' ');
+        .replace(/\s*서버\s*/, ' ')
+        .replace(/\s*·\s*/g, ' ')
+        .trim();
       for (const app of s.apps) (m[app] ??= []).push(short);
     }
     return m;

@@ -28,6 +28,12 @@ const SCREENS = [
     what: '한 번에 정상·이상만. 이상하면 여기서 먼저 본다.',
   },
   {
+    to: PATHS.OPS_DEPLOYMENTS,
+    label: '배포 현황',
+    when: '무엇이 떠 있나?',
+    what: '지금 올라가 있는 판(버전)과 벌 수. 방금 바꾼 게 반영됐는지.',
+  },
+  {
     to: PATHS.OPS_ALERTS,
     label: '시스템 경보',
     when: '무슨 일이 있었나?',

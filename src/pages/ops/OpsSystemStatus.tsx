@@ -76,8 +76,7 @@ export default function OpsSystemStatus() {
             </p>
             <p className="op-sub sys-note">
               백엔드 API 는 목록에 없습니다 — <b>이 화면을 만들어 보내는 것이 백엔드 자신</b>이라,
-              화면이 떴다는 것 자체가 살아 있다는 뜻입니다. 그 서버의 남은 용량은 아래
-              「백엔드 저장공간」이 보여 줍니다.
+              화면이 떴다는 것 자체가 살아 있다는 뜻입니다. 그 서버가 쓰는 자리는 아래 「저장공간」이 보여 줍니다.
             </p>
           </div>
           <button className="op-refresh" onClick={load} disabled={state === 'loading'}>
@@ -99,9 +98,9 @@ export default function OpsSystemStatus() {
               <span className="sys-checked">마지막 점검 {fmt(data.checked_at)} (KST)</span>
             </div>
 
-            {(['server', 'inside', 'external'] as ServiceKind[]).map((kind) => {
+            {(['serving', 'working', 'backing'] as ServiceKind[]).map((kind) => {
               const items = data.services.filter(
-                (s) => (NAME_META[s.name]?.kind ?? 'server') === kind,
+                (s) => (NAME_META[s.name]?.kind ?? 'serving') === kind,
               );
               if (!items.length) return null;
               const km = SERVICE_KIND_META[kind];
