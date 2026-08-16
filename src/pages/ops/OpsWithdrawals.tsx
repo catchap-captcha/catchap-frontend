@@ -9,7 +9,10 @@ function fmt(ts: string | null): string {
   if (!ts) return '-';
   return ts.replace('T', ' ').slice(0, 16);
 }
-const ROLE_LABEL: Record<string, string> = { student: '수강생', user: '사용자' };
+// ★'사용자' 였다 — 운영자가 보면 "수강생도 사용자 아닌가?" 가 된다.
+//   백엔드가 주는 값은 AuditLog.target_type 이고 'user' 는 users 표의 계정,
+//   즉 ★학생이 아닌 역할(강사·운영자·기관 관리자·학부모)을 뜻한다.
+const ROLE_LABEL: Record<string, string> = { student: '수강생', user: '학생이 아닌 계정' };
 const PAGE_SIZE = 50;
 
 /**
@@ -116,7 +119,7 @@ export default function OpsWithdrawals() {
           >
             <option value="">전체 역할</option>
             <option value="student">수강생</option>
-            <option value="user">사용자</option>
+            <option value="user">{ROLE_LABEL.user}</option>
           </select>
           <input
             className="op-fildate"
