@@ -22,6 +22,16 @@ export default function OpsAuditLog() {
   // 감사 로그는 절대 조작된(가짜) 행을 보여주지 않는다 — 실제 상태만 표시
   const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading');
   // 문의 답변 미리보기 모달 — '어떤 답변을 보냈는지' 확인
+  // ★"외 2가지" 로 감춘 것을 못 본다 — 감사 로그인데 일부만 보여 주면 안 된다(0816 지적).
+  //   기본은 두 줄까지만 펼쳐 둔다(줄 높이가 들쭉날쭉해지지 않게) — 누르면 전부 보인다.
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const toggleRow = (id: string) =>
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+
   const [preview, setPreview] = useState<Row | null>(null);
   // 필터 선택지(서버가 감사로그 전체에서 뽑아 준다) + 총 건수
   const [actions, setActions] = useState<string[]>([]);
@@ -144,7 +154,7 @@ export default function OpsAuditLog() {
                     <small className="op-actor-sub">삭제된 계정 {r.actor_user_id.slice(0, 8)}</small>
                   ) : null}
                 </span>
-                <span className="op-logcol-tgt">
+                <span className={`op-logcol-tgt${expanded.has(r.id) ? ' op-logcol-tgt--open' : ''}`}>
                   <span className="op-tgt-type">
                     {r.target_type
                       ? TARGET_LABEL[r.target_type] ?? `미등록 (${r.target_type})`
@@ -161,7 +171,7 @@ export default function OpsAuditLog() {
                       더 있으면 개수로 알린다(줄 높이가 들쭉날쭉해지지 않게). */}
                   {r.changes?.length > 0 && (
                     <span className="op-tgt-changes">
-                      {r.changes.slice(0, 2).map((c) => (
+                      {(expanded.has(r.id) ? r.changes : r.changes.slice(0, 2)).map((c) => (
                         <span key={c.field} className="op-chg">
                           <em>{auditField(c.field)}</em>
                           {/* ★한쪽만 있으면 「추가/삭제」라고 단정하지 않는다 —
@@ -179,7 +189,21 @@ export default function OpsAuditLog() {
                         </span>
                       ))}
                       {r.changes.length > 2 && (
-                        <span className="op-chg op-chg--more">외 {r.changes.length - 2}가지</span>
+                        <button
+                          type="button"
+                          className="op-chg op-chg--more"
+                          onClick={() => toggleRow(r.id)}
+                        >
+                          {expanded.has(r.id) ? (
+                            <>
+                              <i className="ph-bold ph-caret-up" /> 접기
+                            </>
+                          ) : (
+                            <>
+                              <i className="ph-bold ph-caret-down" /> 나머지 {r.changes.length - 2}가지 보기
+                            </>
+                          )}
+                        </button>
                       )}
                     </span>
                   )}

@@ -137,8 +137,32 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+/* ★펼치면 감춘 것 없이 다 보인다 — 값이 길어도 줄을 바꿔 전부 보여 준다
+   (접힌 상태에서는 한 줄로 잘라 표의 높이가 들쭉날쭉해지지 않게 한다). */
+.op-logcol-tgt--open .op-chg {
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+  word-break: break-all;
+}
 /* 칸 이름은 값보다 흐리게 — 훑을 때 ★값이 먼저 눈에 들어와야 한다 */
 .op-chg em { font-style: normal; margin-right: 5px; color: var(--ink-3); }
 /* 화살표·추가/삭제 표시 */
 .op-chg i { font-style: normal; margin: 0 3px; color: var(--ink-3); }
-.op-chg--more { color: var(--ink-3); }
+/* 「나머지 N가지 보기」 — 감사 로그인데 일부만 보여 주면 안 된다. 눌러서 전부 편다. */
+.op-chg--more {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  align-self: flex-start;
+  margin-top: 1px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink-3);
+  font-size: 11.5px;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.op-chg--more:hover { color: var(--ink-1); }
