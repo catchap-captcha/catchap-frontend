@@ -29,7 +29,7 @@ const ISSUE_META: Record<string, { label: string; help: string; cls: string }> =
     help: '공개된 확인 문항이 하나도 없어요 — 이 강의는 시청 검증이 꺼진 채로 나갑니다.',
     cls: 'bad',
   },
-  hidden: { label: '숨김', help: '학생 화면에 안 보이는 상태예요.', cls: 'muted' },
+  hidden: { label: '비공개', help: '학생 화면에 안 보이는 상태예요.', cls: 'muted' },
 };
 
 // ⚠️'미공개 문항 남음' 은 뺐다 — 실측하니 강의 17개 중 16개가 그 상태였다.
@@ -83,11 +83,13 @@ export default function OpsLectureAdmin() {
    *  저작(수정·삭제)은 여기서도 강사 전용 — 백엔드가 status 외 필드를 403 으로 막는다. */
   const toggleStatus = async (r: OpsLectureAdminRow) => {
     const next = r.status === 'active' ? 'hidden' : 'active';
-    if (next === 'hidden' && !window.confirm(`「${r.title}」을 학생 화면에서 내릴까요?`)) return;
+    if (next === 'hidden' && !window.confirm(`「${r.title}」을 비공개로 돌릴까요?
+학생 화면에서 바로 내려가고, 강의가 지워지지는 않아요.`))
+      return;
     setBusy(r.id);
     try {
       await lectureApi.opsUpdate(r.id, { status: next });
-      setMsg(next === 'hidden' ? '학생 화면에서 내렸어요.' : '다시 공개했어요.');
+      setMsg(next === 'hidden' ? '비공개로 돌렸어요 — 학생 화면에서 내려갔어요.' : '다시 공개했어요.');
       load();
     } catch {
       setMsg('상태를 바꾸지 못했어요.');
@@ -239,7 +241,7 @@ export default function OpsLectureAdmin() {
                   <span>{fmtMin(r.duration_sec)}</span>
                   <span>{fmtDate(r.created_at)}</span>
                   <span className={r.status === 'active' ? '' : 'la-hidden'}>
-                    {r.status === 'active' ? '공개' : '숨김'}
+                    {r.status === 'active' ? '공개' : '비공개'}
                   </span>
                   <span>
                     <button
@@ -248,11 +250,11 @@ export default function OpsLectureAdmin() {
                       onClick={() => toggleStatus(r)}
                       title={
                         r.status === 'active'
-                          ? '학생 화면에서 내려요(강의는 지워지지 않아요).'
-                          : '다시 학생 화면에 올려요.'
+                          ? '비공개로 — 학생 화면에서 내려가고 강의는 남아요.'
+                          : '공개로 — 다시 학생 화면에 보여요.'
                       }
                     >
-                      {busy === r.id ? '…' : r.status === 'active' ? '내리기' : '올리기'}
+                      {busy === r.id ? '…' : r.status === 'active' ? '비공개로' : '공개로'}
                     </button>
                   </span>
                 </div>

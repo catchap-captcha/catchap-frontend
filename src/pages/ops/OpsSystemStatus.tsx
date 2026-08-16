@@ -1,11 +1,7 @@
 import { useEffect, useState } from 'react';
 import { opsApi, type OpsSystemHealth } from '../../api/ops';
 import OpsNav from '../../components/ops/OpsNav';
-import {
-  SERVICE_KIND_META,
-  SERVICE_NAME_META as NAME_META,
-  type ServiceKind,
-} from '../../constants/systemServices';
+import { SERVICE_NAME_META as NAME_META } from '../../constants/systemServices';
 import './OpsApproval.css';
 import './OpsRenewalShared.css';
 import './OpsSystemStatus.css';
@@ -71,8 +67,8 @@ export default function OpsSystemStatus() {
           <div>
             <h1 className="op-title">시스템 상태</h1>
             <p className="op-sub" style={{ maxWidth: 620 }}>
-              지금 이 순간 서버에서 직접 재 본 값입니다 — 데이터베이스가 응답하는지, 캡차 문제를
-              낼 수 있는지, 메일이 나가는지, 저장공간이 남았는지, 그리고 서비스 네 가지가 도는지.
+              여덟 가지를 지금 이 순간 직접 재 봅니다. <b>이상한 것이 위로 올라옵니다</b> — 전부
+              초록이면 더 볼 것이 없다는 뜻이에요.
             </p>
             <p className="op-sub sys-note">
               백엔드 API 는 목록에 없습니다 — <b>이 화면을 만들어 보내는 것이 백엔드 자신</b>이라,
@@ -98,20 +94,20 @@ export default function OpsSystemStatus() {
               <span className="sys-checked">마지막 점검 {fmt(data.checked_at)} (KST)</span>
             </div>
 
-            {(['serving', 'working', 'backing'] as ServiceKind[]).map((kind) => {
-              const items = data.services.filter(
-                (s) => (NAME_META[s.name]?.kind ?? 'serving') === kind,
+            {(() => {
+              // ★묶음을 뺐다(0816) — "서비스가 도나"·"기능이 되나" 가 둘 다 '되나?' 라 구별이
+              //   안 되고, 캡차 API 와 캡차 문제 출제가 갈려 "캡차가 왜 두 군데?" 로 읽혔다.
+              //   무엇을 재는지는 각 카드의 부제가 이미 말한다("…하는 서버" / "…나오는지").
+              //   대신 ★이상한 것을 위로 올린다 — 여덟 개가 전부 초록이면 볼 것이 없다.
+              const rank = (st: string) =>
+                st === 'error' ? 0 : st === 'degraded' ? 1 : st === 'dry-run' ? 2 : st === 'unknown' ? 3 : 4;
+              const sorted = [...data.services].sort(
+                (a, b) => rank(a.status) - rank(b.status),
               );
-              if (!items.length) return null;
-              const km = SERVICE_KIND_META[kind];
               return (
-                <section key={kind} className="sys-group">
-                  <h2 className="sys-group-title">
-                    {km.title} <span className="sys-group-count">{items.length}</span>
-                  </h2>
-                  <p className="sys-group-hint">{km.hint}</p>
+                <section className="sys-group">
                   <div className="sys-grid">
-                    {items.map((s) => {
+                    {sorted.map((s) => {
                       const nm = NAME_META[s.name] ?? {
                         icon: 'ph-heartbeat',
                         label: `미등록 (${s.name})`,
@@ -140,7 +136,7 @@ export default function OpsSystemStatus() {
                   </div>
                 </section>
               );
-            })}
+            })()}
           </>
         )}
       </main>

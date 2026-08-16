@@ -343,7 +343,7 @@ export default function OpsLectures() {
   const setLecStatus = async (lec: OpsLecture, status: 'active' | 'hidden') => {
     try {
       await lectureApi.opsUpdate(lec.id, { status });
-      say(status === 'hidden' ? '강의를 숨겼어요(학생 화면에서 내려감).' : '강의를 공개했어요.');
+      say(status === 'hidden' ? '비공개로 돌렸어요 — 학생 화면에서 내려갔어요.' : '다시 공개했어요.');
       load();
     } catch (e) {
       say(errorDetail(e, '상태 변경에 실패했어요.'));
@@ -651,7 +651,7 @@ export default function OpsLectures() {
                       <span
                         className={`op-sys-status op-sys-status--${lec.status === 'active' ? 'ok' : 'warn'}`}
                       >
-                        {lec.status === 'active' ? '공개' : '숨김'}
+                        {lec.status === 'active' ? '공개' : '비공개'}
                       </span>
                     </span>
                     <span className="op-col-right op-lect-actions">
@@ -699,7 +699,7 @@ export default function OpsLectures() {
                           title="학생 화면에서 공개/숨김 전환(모더레이션)"
                         >
                           <i className={`ph-bold ${lec.status === 'active' ? 'ph-eye-slash' : 'ph-eye'}`} />
-                          {lec.status === 'active' ? '숨기기' : '공개'}
+                          {lec.status === 'active' ? '비공개로' : '공개로'}
                         </button>
                       ) : (
                         <>
@@ -1370,7 +1370,7 @@ function LectureFormModal({
               공개 상태
               <select value={form.status} onChange={(e) => set('status')(e.target.value)}>
                 <option value="active">공개</option>
-                <option value="hidden">숨김</option>
+                <option value="hidden">비공개</option>
               </select>
             </label>
           )}
