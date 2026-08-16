@@ -140,3 +140,15 @@
   margin: 0 0 10px;
   padding: 0 18px;
 }
+
+/* 다른 계정으로 연결 — 행 위에 한 줄. 행과 같은 좌우 여백(18px)을 쓴다. */
+.sx-reauth {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: -2px 18px 10px;
+  font-size: 12.5px;
+  color: var(--ink-3);
+  cursor: pointer;
+}
+.sx-reauth input { cursor: pointer; }

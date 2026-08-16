@@ -52,6 +52,9 @@ export default function SocialConnections({
   const [params, setParams] = useSearchParams();
   const [data, setData] = useState<SocialConnectionsResponse | null>(null);
   const [busy, setBusy] = useState<SocialProvider | null>(null);
+  // 다른 계정을 연결하고 싶을 때 — provider 세션이 살아 있으면 지금 로그인된 계정으로만
+  // 연결되어, 계정을 바꿔 연결할 방법이 없었다.
+  const [reauth, setReauth] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
 
@@ -78,7 +81,7 @@ export default function SocialConnections({
     setError('');
     setBusy(provider);
     try {
-      const res = await socialApi.authorize(provider);
+      const res = await socialApi.authorize(provider, reauth);
       rememberSocialIntent(provider, 'connect', returnTo);
       window.location.href = res.authorize_url;
     } catch (err) {
@@ -132,6 +135,11 @@ export default function SocialConnections({
           <span>{error}</span>
         </div>
       )}
+
+      <label className="sx-reauth">
+        <input type="checkbox" checked={reauth} onChange={(e) => setReauth(e.target.checked)} />
+        <span>다른 계정으로 연결할래요 (계정 선택 화면을 다시 띄워요)</span>
+      </label>
 
       {data.available
         .filter((p) => p.enabled)

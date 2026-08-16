@@ -75,10 +75,13 @@ export const socialApi = {
       .get<{ providers: SocialProviderInfo[] }>('/auth/social/providers')
       .then((r) => r.data.providers),
 
-  authorize: (provider: SocialProvider) =>
+  /** reauth=true면 '다른 계정으로 로그인' — provider 세션이 살아 있어도 로그인·계정선택
+   *  화면을 다시 띄운다. 우리가 로그아웃해도 provider 세션은 남아서, 버튼을 누르는 즉시
+   *  같은 계정으로 되돌아온다(OAuth 표준 동작). 계정을 바꾸려면 이 경로가 필요하다. */
+  authorize: (provider: SocialProvider, reauth = false) =>
     client
       .get<SocialAuthorizeResponse>(`/auth/social/${provider}/authorize`, {
-        params: { redirect_uri: callbackUrl() },
+        params: { redirect_uri: callbackUrl(), ...(reauth ? { reauth: true } : {}) },
       })
       .then((r) => r.data),
 
