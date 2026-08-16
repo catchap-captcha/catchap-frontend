@@ -34,15 +34,24 @@ export default function StudentExams() {
     };
   }, []);
 
-  const examCourses = (courses ?? []).filter((c) => c.exam?.has_exam);
+  // ★기준은 '내가 듣는 코스'다 — 종전엔 has_exam(시험 문항이 있는가)으로 걸렀는데,
+  // 그러면 화면이 정확히 뒤집힌다: 수강도 안 한 코스가 '잠김'으로 늘어서고, 정작 내가
+  // 완주한 코스는 시험 문항이 아직 없다는 이유로 ★사라진다. 실제로 그렇게 신고가 왔다
+  // (2026-08-16: "다 봤는데 수료 시험이 안 떠요" — 그 코스는 목록에 아예 없었다).
+  // 시험 문항 유무는 목록에서 빼는 근거가 아니라 카드 안에서 '준비 중'으로 말할 사실이다.
+  const examCourses = (courses ?? []).filter((c) => c.enrolled && c.exam);
   // 행동 우선 정렬 — 진행 중(이어서) → 응시 전 → 잠김(강의 미완주) → 수료 완료.
   // '진행 중'은 시험을 시작해 일부 문항을 정복했지만 아직 통과 못 한 상태(mastered_count>0).
   const started = (c: StudentCourse) => (c.exam?.mastered_count ?? 0) > 0;
   const progress = examCourses.filter((c) => c.exam?.available && !c.exam?.passed && started(c));
   const fresh = examCourses.filter((c) => c.exam?.available && !c.exam?.passed && !started(c));
-  const locked = examCourses.filter((c) => !c.exam?.available && !c.exam?.passed);
+  // 잠김(강의 미완주)과 '시험 준비 중'(문항 없음)은 다른 사실이라 나눠서 보여 준다.
+  const locked = examCourses.filter(
+    (c) => !c.exam?.available && !c.exam?.passed && c.exam?.has_exam,
+  );
+  const pending = examCourses.filter((c) => !c.exam?.passed && !c.exam?.has_exam);
   const passed = examCourses.filter((c) => c.exam?.passed);
-  const ordered = [...progress, ...fresh, ...locked, ...passed];
+  const ordered = [...progress, ...fresh, ...locked, ...pending, ...passed];
 
   const goExam = (id: string) => navigate(`${PATHS.STUDENT_COURSE_EXAM}?course=${id}`);
 
@@ -79,14 +88,19 @@ export default function StudentExams() {
           <div className="se-list">
             {ordered.map((c) => {
               const ex = c.exam!;
-              // 5단계: 잠김(강의 미완주) → 응시 전(안 봄) → 진행 중(봤는데 미통과) → 수료 → 만점 수료
-              const status: 'done' | 'progress' | 'new' | 'locked' = ex.passed
+              // 잠김(강의 미완주) → 준비 중(문항 없음) → 응시 전 → 진행 중 → 수료 → 만점 수료
+              // ★'준비 중'을 '잠김'과 섞지 않는다: 잠김은 ★내가 할 일(더 보기)이 남은 것이고,
+              //   준비 중은 ★내가 할 수 있는 게 없는 것이다. 같은 회색 뱃지로 뭉개면 완주자가
+              //   "더 볼 게 없는데 왜 잠김이지?"로 갇힌다.
+              const status: 'done' | 'progress' | 'new' | 'locked' | 'pending' = ex.passed
                 ? 'done'
-                : !ex.available
-                  ? 'locked'
-                  : ex.mastered_count > 0
-                    ? 'progress'
-                    : 'new';
+                : !ex.has_exam
+                  ? 'pending'
+                  : !ex.available
+                    ? 'locked'
+                    : ex.mastered_count > 0
+                      ? 'progress'
+                      : 'new';
               return (
                 <div key={c.id} className={`se-card se-card--${status}`}>
                   <CourseCover
@@ -109,6 +123,9 @@ export default function StudentExams() {
                         <span className="se-badge se-badge-progress">진행 중</span>
                       )}
                       {status === 'locked' && <span className="se-badge se-badge-locked">잠김</span>}
+                      {status === 'pending' && (
+                        <span className="se-badge se-badge-locked">준비 중</span>
+                      )}
                     </div>
                     <div className="se-meta">
                       {status === 'done'
@@ -119,7 +136,9 @@ export default function StudentExams() {
                           ? `문항 ${ex.question_count}개 · 아직 응시하지 않았어요`
                           : status === 'progress'
                             ? `${ex.mastered_count}/${ex.question_count} 정답 · 아직 통과 전이에요`
-                            : `강의 ${ex.lectures_done}/${ex.lectures_total} 완주 시 열려요`}
+                            : status === 'pending'
+                              ? `강의 ${ex.lectures_done}/${ex.lectures_total} 완주 · 수료 시험을 준비하고 있어요`
+                              : `강의 ${ex.lectures_done}/${ex.lectures_total} 완주 시 열려요`}
                     </div>
                   </div>
                   {status === 'new' && (
