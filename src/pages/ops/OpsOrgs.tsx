@@ -57,7 +57,7 @@ export default function OpsOrgs() {
   const [search, setSearch] = useState(''); // Enter로 확정된 서버 검색어
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
-  const [totals, setTotals] = useState({ all: 0, students: 0 });
+  const [totals, setTotals] = useState({ all: 0, students: 0, noOrg: 0 });
   const [modal, setModal] = useState<Modal>(null);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
@@ -87,7 +87,11 @@ export default function OpsOrgs() {
         }
         setRows(items);
         setTotal(tot);
-        setTotals({ all: d.total_all ?? 0, students: d.total_students ?? 0 });
+        setTotals({
+          all: d.total_all ?? 0,
+          students: d.total_students ?? 0,
+          noOrg: d.no_org_students ?? 0,
+        });
         setState('ready');
       })
       .catch(() => setState('error'));
@@ -200,6 +204,12 @@ export default function OpsOrgs() {
             <h1 className="op-title">기관 관리</h1>
             <p className="op-sub">
               등록된 전체 기관 {totals.all}곳 · 소속 학생 합계 {totals.students.toLocaleString()}명
+              {/* ★그전에는 여기까지만 보여 줬다. 그런데 우리 학생은 대부분 기관 없이 공개
+                  가입한 사람들이라, 운영 홈이 "학생 14" 라고 하는데 이 화면은 "합계 0명"
+                  이라고 말했다 — 학생이 사라져 보인다.
+                  백엔드는 no_org_students 를 이미 보내고 있었다(backend#72). */}
+              {totals.noOrg > 0 &&
+                ` · 기관 없이 가입한 학생 ${totals.noOrg.toLocaleString()}명(아래 표에 안 나옵니다)`}
             </p>
           </div>
           <div style={{ display: 'flex', gap: 10 }}>

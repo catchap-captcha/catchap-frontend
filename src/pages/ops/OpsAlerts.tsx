@@ -25,6 +25,35 @@ function split(title: string): { tag: string; rest: string } {
   return m ? { tag: m[1], rest: m[2] } : { tag: '', rest: title };
 }
 
+const HANGUL = /[가-힣]/;
+
+/**
+ * 목록에 보일 한 줄 — ★규칙 이름(CatchapServiceDown)이 아니라 사람이 읽는 말.
+ *
+ * ★백엔드는 0816 부터 제목에 한글을 넣는다(backend#68). 그런데 ★그것은 경보를 ★받을 때
+ *   만들어 저장하는 값이라, 그 전에 쌓인 기록은 제목이 영문 규칙 이름 그대로다.
+ *   실제로 지금 화면의 15건이 전부 그렇다 —
+ *     [급함] CatchapServiceDown — monitoring-kube-state-metrics-6cb6769d69-przfr 외 1건
+ *   반납까지 새 경보가 안 오면 운영자는 영문만 보게 된다.
+ *
+ * ★고칠 자리는 저장된 값이 아니라 ★보여 주는 쪽이다. 본문(message)에는 그때도 한글
+ *   설명이 들어 있었다("· [급함] catchap 지표가 10분째 안 들어옵니다"). 그것을 쓴다.
+ *   저장된 원문은 건드리지 않는다 — 기록은 온 그대로 남아야 한다.
+ */
+function headline(title: string, message: string | null): string {
+  const { rest } = split(title);
+  if (HANGUL.test(rest)) return rest; // 이미 한글이면 그대로
+  const m = /^·\s*\[[^\]]*\]\s*(.+)$/m.exec(message || '');
+  const ko = m?.[1]?.trim();
+  if (!ko || !HANGUL.test(ko)) return rest; // 본문에도 한글이 없으면 손대지 않는다
+  // 규칙 이름 자리만 한글로 바꾸고 "— 어디서 · 외 N건" 은 살린다.
+  const tail = rest.replace(/^[A-Za-z][A-Za-z0-9_]*/, '').replace(/^\s*—\s*/, '').trim();
+  const more = /외 \d+건$/.exec(tail)?.[0] ?? '';
+  const where = tail.replace(/\s*외 \d+건$/, '').trim();
+  // 한글 설명이 이미 그 파드·배포 이름을 담고 있으면 같은 말을 두 번 붙이지 않는다
+  return [ko, where && !ko.includes(where) ? `— ${where}` : '', more].filter(Boolean).join(' ');
+}
+
 const TAG_CLASS: Record<string, string> = {
   급함: 'crit',
   경고: 'warn',
@@ -177,7 +206,8 @@ export default function OpsAlerts() {
           )}
           {state === 'ready' &&
             shown.map((n) => {
-              const { tag, rest } = split(n.title);
+              const { tag } = split(n.title);
+              const rest = headline(n.title, n.message);
               const cls = TAG_CLASS[tag] ?? 'info';
               return (
                 <button key={n.id} className={`al-row ${n.read_at ? '' : 'unread'}`} onClick={() => openOne(n)}>
@@ -229,7 +259,7 @@ export default function OpsAlerts() {
               <span className={`al-tag al-tag--${TAG_CLASS[split(open.title).tag] ?? 'info'}`}>
                 {split(open.title).tag || '알림'}
               </span>
-              <b>{split(open.title).rest}</b>
+              <b>{headline(open.title, open.message)}</b>
               <button className="al-modal-x" onClick={() => setOpen(null)} aria-label="닫기">
                 <i className="ph-bold ph-x" />
               </button>
