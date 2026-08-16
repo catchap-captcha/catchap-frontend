@@ -49,14 +49,14 @@
 }
 .la-tr {
   display: grid;
-  grid-template-columns: minmax(260px, 3fr) 100px minmax(120px, 1.2fr) 90px 88px 70px 62px;
+  grid-template-columns: minmax(240px, 3fr) 96px minmax(110px, 1.1fr) 86px 84px 66px 56px 72px;
   gap: 10px;
   align-items: center;
   padding: 11px 14px;
   border-bottom: 1px solid var(--line-3, rgba(127, 127, 127, 0.12));
   font-size: 13px;
   color: var(--ink-2);
-  min-width: 860px;
+  min-width: 940px;
 }
 .la-tr:last-child { border-bottom: 0; }
 .la-tr--head {
@@ -107,4 +107,24 @@
 
 @media (max-width: 900px) {
   .la-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* 정보 칸(누르는 필터가 아님) — 커서를 손가락으로 바꾸지 않는다. */
+.la-kpi--info { cursor: default; }
+.la-kpi--info:hover { border-color: var(--line-2, rgba(127,127,127,.22)); }
+
+/* 표 안의 조치 버튼 — 운영자가 할 수 있는 유일한 것(내리기/올리기). */
+.la-act {
+  height: 26px; padding: 0 10px;
+  border: 1px solid var(--line-2, rgba(127,127,127,.22));
+  border-radius: 6px; background: var(--surface-2, transparent);
+  color: var(--ink-2); font-size: 12px; cursor: pointer; white-space: nowrap;
+}
+.la-act:hover:not(:disabled) { border-color: var(--brand, #6b7280); color: var(--ink-1); }
+.la-act:disabled { opacity: .5; cursor: default; }
+.la-hidden { color: var(--ink-3); }
+.la-msg {
+  margin: 0 0 10px; padding: 9px 12px; border-radius: 8px;
+  background: var(--ok-soft, rgba(22,163,74,.08));
+  font-size: 12.5px; color: var(--ink-2);
 }

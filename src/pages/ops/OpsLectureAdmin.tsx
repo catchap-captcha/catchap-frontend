@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import {
+  lectureApi,
   opsLectureAdminApi,
   type OpsLectureAdminResponse,
   type OpsLectureAdminRow,
@@ -28,15 +29,14 @@ const ISSUE_META: Record<string, { label: string; help: string; cls: string }> =
     help: '공개된 확인 문항이 하나도 없어요 — 이 강의는 시청 검증이 꺼진 채로 나갑니다.',
     cls: 'bad',
   },
-  draftleft: {
-    label: '미공개 문항 남음',
-    help: '만들어 두고 공개하지 않은 문항이 있어요 — 강사가 마무리해야 합니다.',
-    cls: 'warn',
-  },
   hidden: { label: '숨김', help: '학생 화면에 안 보이는 상태예요.', cls: 'muted' },
 };
 
-const ISSUE_KEYS = ['noquestion', 'draftleft', 'hidden'] as const;
+// ⚠️'미공개 문항 남음' 은 뺐다 — 실측하니 강의 17개 중 16개가 그 상태였다.
+//   강사가 문항을 많이 만들어 두고 몇 개만 공개하는 것이 정상 흐름이라,
+//   경고로 두면 전부에 배지가 붙어 정작 볼 것을 가린다.
+//   미공개 수는 표의 '확인 문항 (공개 / 전체)' 칸이 이미 보여 준다.
+const ISSUE_KEYS = ['noquestion', 'hidden'] as const;
 
 const fmtMin = (sec: number) => {
   if (!sec) return '—';
@@ -58,6 +58,8 @@ export default function OpsLectureAdmin() {
   const [course, setCourse] = useState('');
   const [issue, setIssue] = useState('');
   const [page, setPage] = useState(1);
+  const [busy, setBusy] = useState<string | null>(null); // 상태 바꾸는 중인 강의 id
+  const [msg, setMsg] = useState('');
 
   const load = () => {
     setState('loading');
@@ -74,6 +76,24 @@ export default function OpsLectureAdmin() {
         setState('ready');
       })
       .catch(() => setState('error'));
+  };
+
+  /** 공개 ↔ 숨김. ★운영자가 할 수 있는 유일한 조치라 이 화면에서 바로 되어야 한다
+   *  (그전에는 강사 화면으로 보냈는데, 문제를 찾은 자리에서 못 내리면 반쪽이다).
+   *  저작(수정·삭제)은 여기서도 강사 전용 — 백엔드가 status 외 필드를 403 으로 막는다. */
+  const toggleStatus = async (r: OpsLectureAdminRow) => {
+    const next = r.status === 'active' ? 'hidden' : 'active';
+    if (next === 'hidden' && !window.confirm(`「${r.title}」을 학생 화면에서 내릴까요?`)) return;
+    setBusy(r.id);
+    try {
+      await lectureApi.opsUpdate(r.id, { status: next });
+      setMsg(next === 'hidden' ? '학생 화면에서 내렸어요.' : '다시 공개했어요.');
+      load();
+    } catch {
+      setMsg('상태를 바꾸지 못했어요.');
+    } finally {
+      setBusy(null);
+    }
   };
 
   // 필터가 바뀌면 1쪽부터 — 3쪽을 보다가 필터를 걸면 빈 화면이 나온다
@@ -126,6 +146,11 @@ export default function OpsLectureAdmin() {
               <span>{ISSUE_META[k].label}</span>
             </button>
           ))}
+          {/* 누르는 필터가 아니라 정보 — "그동안 뭐가 올라왔나" 가 훑을 때 첫 질문이다 */}
+          <div className="la-kpi la-kpi--info">
+            <b>{data?.summary.recent ?? '—'}</b>
+            <span>최근 7일 새 강의</span>
+          </div>
         </div>
 
         <div className="la-filters">
@@ -136,7 +161,7 @@ export default function OpsLectureAdmin() {
             onChange={(e) => setQ(e.target.value)}
           />
           <select value={instructor} onChange={(e) => setInstructor(e.target.value)}>
-            <option value="">전체 강사</option>
+            <option value="">올린 사람 전체</option>
             {(data?.instructors ?? []).map((i) => (
               <option key={i.id} value={i.id}>
                 {i.name}
@@ -167,6 +192,7 @@ export default function OpsLectureAdmin() {
           )}
         </div>
 
+        {msg && <div className="la-msg">{msg}</div>}
         {state === 'error' && <div className="op-empty">목록을 불러오지 못했어요.</div>}
         {state === 'ready' && rows.length === 0 && (
           <div className="op-empty">
@@ -179,12 +205,13 @@ export default function OpsLectureAdmin() {
             <div className="la-table" role="table">
               <div className="la-tr la-tr--head" role="row">
                 <span>강의</span>
-                <span>강사</span>
+                <span>올린 사람</span>
                 <span>코스</span>
                 <span className="la-num">확인 문항</span>
                 <span>길이</span>
                 <span>올린 날</span>
                 <span>상태</span>
+                <span>관리</span>
               </div>
               {rows.map((r: OpsLectureAdminRow) => (
                 <div key={r.id} className="la-tr" role="row">
@@ -211,7 +238,23 @@ export default function OpsLectureAdmin() {
                   </span>
                   <span>{fmtMin(r.duration_sec)}</span>
                   <span>{fmtDate(r.created_at)}</span>
-                  <span>{r.status === 'active' ? '공개' : '숨김'}</span>
+                  <span className={r.status === 'active' ? '' : 'la-hidden'}>
+                    {r.status === 'active' ? '공개' : '숨김'}
+                  </span>
+                  <span>
+                    <button
+                      className="la-act"
+                      disabled={busy === r.id}
+                      onClick={() => toggleStatus(r)}
+                      title={
+                        r.status === 'active'
+                          ? '학생 화면에서 내려요(강의는 지워지지 않아요).'
+                          : '다시 학생 화면에 올려요.'
+                      }
+                    >
+                      {busy === r.id ? '…' : r.status === 'active' ? '내리기' : '올리기'}
+                    </button>
+                  </span>
                 </div>
               ))}
             </div>
