@@ -58,12 +58,12 @@ const GROUPS: NavGroup[] = [
       { to: PATHS.OPS_LLM_MODELS, icon: 'ph-cpu', label: 'LLM 모델' },
       { to: PATHS.OPS_LLM_KEYS, icon: 'ph-key', label: 'API 키' },
       { to: PATHS.OPS_LLM_PROMPTS, icon: 'ph-note-pencil', label: '프롬프트' },
-      { to: PATHS.OPS_MONITORING, icon: 'ph-gauge', label: '모니터링' },
-      // '시스템 상태'는 ★지금 살아 있나(DB 왕복시간·SMTP·디스크 실측),
-      // '시스템 경보'는 ★그동안 무슨 일이 있었나(감시 장치가 보낸 경보 이력·수신 설정).
-      // 보는 시점이 달라 둘 다 둔다 — 상태는 현재, 경보는 지나간 일.
-      { to: PATHS.OPS_SYSTEM_STATUS, icon: 'ph-heartbeat', label: '시스템 상태' },
       { to: PATHS.OPS_DEPLOYMENTS, icon: 'ph-rocket-launch', label: '배포 현황' },
+      // ★뒤의 셋은 SystemScreenGuide 의 카드 순서와 같게 둔다 — 메뉴에서 본 차례와
+      //   화면 안 안내 카드의 차례가 다르면 같은 세 화면인데 다른 묶음처럼 읽힌다.
+      //   모니터링(얼마나 쓰나) → 시스템 상태(지금 되나) → 시스템 경보(무슨 일이 있었나).
+      { to: PATHS.OPS_MONITORING, icon: 'ph-gauge', label: '모니터링' },
+      { to: PATHS.OPS_SYSTEM_STATUS, icon: 'ph-heartbeat', label: '시스템 상태' },
       { to: PATHS.OPS_ALERTS, icon: 'ph-bell-ringing', label: '시스템 경보' },
     ],
   },
