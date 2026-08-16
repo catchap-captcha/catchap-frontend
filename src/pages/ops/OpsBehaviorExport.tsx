@@ -11,7 +11,10 @@ import { BEHAVIOR_SOURCE_OPTIONS } from '../../constants/behaviorSources';
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 /**
- * OpsBehaviorExport — 외부 업체(학습지사) 제공용 **익명** 행동데이터 내보내기.
+ * OpsBehaviorExport — 밖으로 내보내는 **익명** 행동데이터.
+ *
+ * ★판매는 접었다(0716 학습 강화 전환). 그래도 이 화면은 남긴다 — 연구·검증 목적으로
+ *   밖에 자료를 줄 일이 있고, 그때 ★식별정보가 새지 않게 하는 것이 이 화면의 일이다.
  *
  * 두 모드: 집계(개인 0·k-익명성, 판매 최안전) / 행단위(가명 anon_code, 모델학습용).
  * 학교명·학생 식별정보는 서버가 전부 제거한다. 내보낼 때마다 감사로그가 남는다.
@@ -93,7 +96,7 @@ export default function OpsBehaviorExport() {
           <div>
             <h1 className="op-title">외부 내보내기</h1>
             <p className="op-sub">
-              외부 업체(학습지사)에 제공할 <b>익명</b> 행동데이터예요. 학교명·학생 식별정보는 빠지고,
+              밖으로 내보낼 <b>익명</b> 행동데이터예요. 학교명·학생 식별정보는 빠지고,
               내보내기는 모두 감사 로그에 남아요.
             </p>
           </div>
@@ -122,7 +125,7 @@ export default function OpsBehaviorExport() {
               className={`ox-segbtn${mode === 'aggregate' ? ' ox-segbtn-on' : ''}`}
               onClick={() => setMode('aggregate')}
             >
-              집계 (판매용·최안전)
+              집계 (사람별 정보 0건·가장 안전)
             </button>
             <button
               className={`ox-segbtn${mode === 'rows' ? ' ox-segbtn-on' : ''}`}

@@ -51,7 +51,7 @@ export default function OpsApiKeys() {
   const [firstParty, setFirstParty] = useState(false);
   const [issuing, setIssuing] = useState(false);
 
-  // 기관 구매 과목(edu_subjects) 편집 — 판매 프로비저닝
+  // 기관에 열어 준 과목(edu_subjects) 편집
   const [entSubs, setEntSubs] = useState<string[]>([]);
   const [savingEnt, setSavingEnt] = useState(false);
 
@@ -197,9 +197,12 @@ export default function OpsApiKeys() {
           <div>
             <h1 className="op-title">API 발급 · 관리</h1>
             <p className="op-sub">
-              봇 차단 캡차 · 학습 문제 캡차 키를 발급해 다른 사이트에 붙일 수 있어요 · 활성 키{' '}
-              {activeTotal}개
-              {activeTotal}개
+              {/* ★판매는 접었다(0716 학습 강화 전환·0720 이수 검증형). 지금 이 키로 도는 것은
+                  ★우리 학생 화면이다. 기능은 그대로 두되 지금 무엇인지를 먼저 말한다.
+                  그리고 ★{activeTotal}개 를 두 번 그리고 있었다 — 화면에 「활성 키 1개1개」로 보였다. */}
+              지금은 <b>우리 학생 화면</b>이 이 키로 돌고 있어요 · 활성 키 {activeTotal}개
+              <br />
+              같은 키를 다른 사이트에 붙일 수도 있어요(추후 판매 시).
             </p>
           </div>
           <button className="op-refresh" onClick={load}>
@@ -334,18 +337,18 @@ export default function OpsApiKeys() {
                 <span>우리 앱 전용 (한 키로 여러 과목 전환 허용)</span>
               </label>
               <span className="ak-hint">
-                체크하면 한 키로 여러 과목을 전환할 수 있어요(우리 인앱 전용). 외부 판매 키는 체크 해제
+                체크하면 한 키로 여러 과목을 전환할 수 있어요(우리 인앱 전용). 밖에 줄 키는 체크 해제
                 — 발급 과목에 고정돼요.
               </span>
             </label>
           </div>
 
-          {/* 판매 프로비저닝: 이 기관이 구매한 교육형 과목 설정 */}
+          {/* 이 기관에 열어 준 학습 문제 캡차 과목 */}
           {selectedOrg && (
             <div className="ak-ent">
               <div className="ak-ent-head">
                 <i className="ph-fill ph-shopping-bag-open" />
-                <b>{selectedOrg.name}</b> 구매 교육형 과목
+                <b>{selectedOrg.name}</b> 에 열어 준 과목
                 <span className="ak-hint">기관 관리자는 이 과목만 셀프 발급할 수 있어요.</span>
               </div>
               <div className="ak-ent-chips">
@@ -441,7 +444,11 @@ export default function OpsApiKeys() {
                         )}
                       </div>
                       <div className="op-card-code">
-                        {k.organization_name} · {k.plan}
+                        {/* ★백엔드가 요금제 없는 기관에 「미구독」을 보낸다. 판매를 접었으니 ★우리 자신의
+                            키에까지 그 말이 붙어 "구독을 해야 하나?" 로 읽힌다. 있을 때만 보여 준다.
+                            (요금제가 발급을 막을 때는 발급 실패 메시지가 그 사실을 직접 말한다.) */}
+                        {k.organization_name}
+                        {k.plan && k.plan !== '미구독' ? ` · ${k.plan}` : ''}
                       </div>
                     </div>
                     <span
