@@ -1480,6 +1480,32 @@ export default function LecturePlayer() {
           {/* 수료 시험 카드 — 완주했을 때만. 세 갈래를 ★구분해서 말한다:
               ① 지금 응시 가능 ② 다른 강의가 남음 ③ 시험이 아직 준비되지 않음.
               ③을 침묵으로 두면 완주자가 원인을 모른 채 '수료' 메뉴를 헤맨다. */}
+          {/* 수료 후 — 카드를 없애지 않는다. 종전엔 통과하는 순간 사라져서, 수료증을 다시
+              보거나 만점에 도전하려면 '수료' 메뉴를 따로 찾아가야 했다. 완주한 그 자리에
+              계속 두는 것이 이 카드의 취지다. */}
+          {isDone && exam && exam.passed && (
+            <div className="lp-examcta lp-examcta--go">
+              <span className="lp-examcta-ic">
+                <i className="ph-fill ph-certificate" />
+              </span>
+              <div className="lp-examcta-body">
+                <b>{exam.perfect ? '만점으로 수료했어요' : '수료를 마쳤어요'}</b>
+                <span>
+                  {exam.can_perfect_challenge
+                    ? '수료증을 다시 보거나, 전 문항을 한 번에 맞히는 만점에 도전할 수 있어요.'
+                    : '수료증은 언제든 다시 볼 수 있어요.'}
+                </span>
+              </div>
+              <button
+                type="button"
+                className="lp-examcta-btn"
+                onClick={() => navigate(`${PATHS.STUDENT_COURSE_EXAM}?course=${exam.course_id}`)}
+              >
+                {exam.can_perfect_challenge ? '수료증·만점 도전' : '수료증 보기'}
+              </button>
+            </div>
+          )}
+
           {isDone && exam && !exam.passed && (
             <div
               className={`lp-examcta${exam.available ? ' lp-examcta--go' : ''}`}
