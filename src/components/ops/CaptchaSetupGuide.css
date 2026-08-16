@@ -87,3 +87,18 @@
 .csg-notes { margin: 0; padding-left: 18px; }
 .csg-notes li { margin-bottom: 6px; font-size: 12.5px; line-height: 1.7; color: var(--ink-3); }
 .csg-notes b { color: var(--ink-2); }
+
+/* 「문제는 어디서 오나」 — 고객사가 자기 문제를 넣는 것으로 오해하지 않게 먼저 밝힌다. */
+.csg-source {
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  border-left: 3px solid var(--brand, #6b7280);
+  border-radius: 0 8px 8px 0;
+  background: var(--surface-3, rgba(127, 127, 127, 0.08));
+}
+.csg-source > b { display: block; margin-bottom: 6px; font-size: 13px; color: var(--ink-1); }
+.csg-source ul { margin: 0 0 8px; padding-left: 18px; }
+.csg-source li { margin-bottom: 5px; font-size: 12.5px; line-height: 1.7; color: var(--ink-3); }
+.csg-source li b { color: var(--ink-2); }
+.csg-source p { margin: 0; font-size: 12.5px; line-height: 1.7; color: var(--ink-3); }
+.csg-source p b { color: var(--ink-2); }

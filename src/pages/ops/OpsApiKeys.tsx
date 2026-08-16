@@ -199,6 +199,10 @@ export default function OpsApiKeys() {
             <p className="op-sub">
               봇 차단 캡차 · 학습 문제 캡차 키를 발급해 다른 사이트에 붙일 수 있어요 · 활성 키{' '}
               {activeTotal}개
+            </p>
+            <p className="op-sub ak-scope">
+              여기서 발급하는 두 가지만 밖에 붙일 수 있어요. 우리 로그인·회원가입에 뜨는 캡차는
+              키 없이 우리 앱 안에서만 도는 것이라 밖으로 나가지 않습니다.
               {activeTotal}개
             </p>
           </div>

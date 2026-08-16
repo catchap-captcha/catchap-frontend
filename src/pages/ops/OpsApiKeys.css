@@ -450,3 +450,6 @@
 /* ── 빈 상태 / 토스트(공용 재정의) ── */
 .ops-apikeys .op-empty i { color: var(--ink-3); }
 .ops-apikeys .op-toast { border-radius: 12px; box-shadow: var(--shadow-md); }
+
+/* 「밖에 붙일 수 있는 것은 여기 둘뿐」 — 로그인 캡차와 헷갈리지 않게. */
+.ak-scope { margin-top: 4px; font-size: 12.5px; line-height: 1.6; color: var(--ink-3); }
