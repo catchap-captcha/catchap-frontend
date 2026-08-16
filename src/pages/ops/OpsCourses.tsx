@@ -279,7 +279,7 @@ export default function OpsCourses() {
                   )}
                 </span>
                 <span className={`crs-badge crs-badge--${c.status === 'active' ? 'active' : 'hidden'}`}>
-                  {c.status === 'active' ? '공개' : '숨김'}
+                  {c.status === 'active' ? '공개' : '비공개'}
                 </span>
                 <div className="crs-rowactions">
                   <button
@@ -327,7 +327,7 @@ export default function OpsCourses() {
                   <button
                     className="crs-abtn crs-abtn--icon"
                     disabled={busyId === c.id}
-                    title={c.status === 'active' ? '숨기기' : '공개'}
+                    title={c.status === 'active' ? '비공개로' : '공개로'}
                     onClick={() => toggleStatus(c)}
                   >
                     <i className={c.status === 'active' ? 'ph ph-eye-slash' : 'ph ph-eye'} />
