@@ -10,16 +10,19 @@ import {
 import OpsNav from '../../components/ops/OpsNav';
 import './OpsApproval.css';
 import './OpsApiKeys.css';
+import CaptchaSetupGuide from '../../components/ops/CaptchaSetupGuide';
+import { CAPTCHA_PRODUCT_META, type CaptchaProduct } from '../../constants/captchaProducts';
 
 /** 위젯 임베드 스니펫이 가리킬 API 베이스 (client.ts와 동일 규칙) */
 const API_BASE = `${
   (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? 'http://localhost:8000'
 }/api/v1`;
 
-const PRODUCT_META: Record<string, { icon: string; cls: string; blurb: string }> = {
-  captcha: { icon: 'ph-shield-check', cls: 'captcha', blurb: '봇 차단 · 사람 확인 (통과/실패)' },
-  edu: { icon: 'ph-brain', cls: 'edu', blurb: '학습하며 행동데이터 수집 (반응·조작·재시도)' },
-};
+// 상품 이름·설명은 공용 상수(constants/captchaProducts)에서 — 화면마다 다르게 부르지 않게.
+const PRODUCT_META = CAPTCHA_PRODUCT_META as Record<
+  string,
+  { icon: string; cls: string; blurb: string; label: string; detail: string }
+>;
 
 function errMsg(e: unknown, fallback: string): string {
   const detail = (e as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
@@ -119,7 +122,7 @@ export default function OpsApiKeys() {
   const onIssue = (e: React.FormEvent) => {
     e.preventDefault();
     if (!orgId) return flash('발급할 기관을 선택해 주세요.');
-    if (product === 'edu' && !subject) return flash('교육형 API는 과목을 선택해야 해요.');
+    if (product === 'edu' && !subject) return flash('학습 문제 캡차는 과목을 선택해야 해요.');
     setIssuing(true);
     opsApi
       .issueApiKey({
@@ -194,7 +197,8 @@ export default function OpsApiKeys() {
           <div>
             <h1 className="op-title">API 발급 · 관리</h1>
             <p className="op-sub">
-              메인 캡차 / 교육형 API 키를 요금제에 맞춰 발급하고, 외부 서비스에 붙일 수 있어요 · 활성 키{' '}
+              봇 차단 캡차 · 학습 문제 캡차 키를 발급해 다른 사이트에 붙일 수 있어요 · 활성 키{' '}
+              {activeTotal}개
               {activeTotal}개
             </p>
           </div>
@@ -203,6 +207,13 @@ export default function OpsApiKeys() {
             새로고침
           </button>
         </div>
+
+        {/* 발급한 키를 남의 사이트에 어떻게 붙이나 — 운영자가 이 화면만 보고 안내할 수 있게 */}
+        <CaptchaSetupGuide
+          apiBase={API_BASE}
+          siteKey={keys.find((k) => k.status === 'active')?.site_key}
+          product={(keys.find((k) => k.status === 'active')?.product as CaptchaProduct) ?? 'captcha'}
+        />
 
         {/* 제품 안내 */}
         {plans && (
@@ -320,7 +331,7 @@ export default function OpsApiKeys() {
                   checked={firstParty}
                   onChange={(e) => setFirstParty(e.target.checked)}
                 />
-                <span>1st-party (우리 앱 · 과목 전환 허용)</span>
+                <span>우리 앱 전용 (한 키로 여러 과목 전환 허용)</span>
               </label>
               <span className="ak-hint">
                 체크하면 한 키로 여러 과목을 전환할 수 있어요(우리 인앱 전용). 외부 판매 키는 체크 해제
@@ -424,7 +435,7 @@ export default function OpsApiKeys() {
                         <span className="op-card-type">{k.product_name}</span>
                         {k.subject && <span className="ak-subject">{k.subject}</span>}
                         {k.first_party ? (
-                          <span className="ak-fp ak-fp--in">1st-party</span>
+                          <span className="ak-fp ak-fp--in">우리 앱 전용</span>
                         ) : (
                           k.product === 'edu' && <span className="ak-fp ak-fp--ext">외부·과목고정</span>
                         )}
