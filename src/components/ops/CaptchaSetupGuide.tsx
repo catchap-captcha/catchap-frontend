@@ -9,7 +9,7 @@ import './CaptchaSetupGuide.css';
  * ★왜 필요한가 — 0816 확인: 발급 화면에 임베드 코드 버튼만 있고
  *   ① 이게 무슨 캡차인지 ② 붙이면 화면이 어떻게 바뀌는지 ③ 어디에 넣는지
  *   ④ 서버에서 마지막으로 확인하는 절차가 ★아무 데도 없었다.
- *   운영자가 고객사에 안내하려면 이 화면만 보고 설명할 수 있어야 한다.
+ *   운영자가 붙이는 쪽에 안내하려면 이 화면만 보고 설명할 수 있어야 한다.
  *
  * ★코드는 하드코딩하지 않는다 — 실제 발급된 키(siteKey)와 이 배포의 API 주소를 그대로 넣는다.
  */
@@ -35,7 +35,7 @@ export default function CaptchaSetupGuide({
 <!-- ② 페이지 아무 곳(</body> 앞이 무난)에 한 번만 -->
 <script src="${apiBase}/widget/catchap-widget.js" defer></script>`;
 
-  const serverSnippet = `# ③ 고객사 서버에서 마지막 확인 (★이 단계를 빼면 캡차가 무의미합니다)
+  const serverSnippet = `# ③ 붙이는 사이트의 서버에서 마지막 확인 (★이 단계를 빼면 캡차가 무의미합니다)
 #    폼이 제출되면 catchap-token 이라는 값이 같이 옵니다. 그걸 우리에게 물어보세요.
 curl -X POST ${apiBase}/captcha/v1/validate \
   -H "Content-Type: application/json" \
@@ -51,7 +51,7 @@ curl -X POST ${apiBase}/captcha/v1/validate \
       <button type="button" className="csg-toggle" onClick={() => setOpen((v) => !v)}>
         <i className={`ph-bold ${open ? 'ph-caret-down' : 'ph-caret-right'}`} />
         다른 사이트에 붙이는 법 — 3단계
-        <span className="csg-toggle-sub">발급한 키를 고객사 홈페이지에 넣는 순서</span>
+        <span className="csg-toggle-sub">발급한 키를 그 사이트에 넣는 순서</span>
       </button>
 
       {open && (
@@ -65,7 +65,7 @@ curl -X POST ${apiBase}/captcha/v1/validate \
           <ol className="csg-flow">
             <li>
               <b>사용자가 캡차를 푼다</b>
-              <span>고객사 페이지에 우리 위젯이 뜨고, 사용자가 문제를 풉니다.</span>
+              <span>그 사이트에 우리 위젯이 뜨고, 사용자가 문제를 풉니다.</span>
             </li>
             <li>
               <b>우리 서버가 채점해 표를 준다</b>
@@ -75,7 +75,7 @@ curl -X POST ${apiBase}/captcha/v1/validate \
               </span>
             </li>
             <li>
-              <b>고객사 서버가 그 표를 우리에게 확인받는다</b>
+              <b>그 사이트의 서버가 그 표를 우리에게 확인받는다</b>
               <span>
                 ★이 단계를 빼면 누구나 표를 지어내 보낼 수 있습니다. 반드시 서버에서 확인하세요.
               </span>
@@ -84,7 +84,7 @@ curl -X POST ${apiBase}/captcha/v1/validate \
 
           <div className="csg-block">
             <div className="csg-block-h">
-              <b>고객사 홈페이지(HTML)에 넣을 것</b>
+              <b>그 사이트의 화면(HTML)에 넣을 것</b>
               <span>가입·로그인 폼 안, 제출 버튼 위</span>
             </div>
             <pre className="csg-pre">{htmlSnippet}</pre>
@@ -92,7 +92,7 @@ curl -X POST ${apiBase}/captcha/v1/validate \
 
           <div className="csg-block">
             <div className="csg-block-h">
-              <b>고객사 서버에서 마지막 확인</b>
+              <b>그 사이트의 서버에서 마지막 확인</b>
               <span>비밀키(sk_…)는 서버에만 두세요 — 화면에 두면 뚫립니다</span>
             </div>
             <pre className="csg-pre">{serverSnippet}</pre>
