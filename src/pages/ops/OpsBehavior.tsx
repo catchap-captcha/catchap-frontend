@@ -11,16 +11,12 @@ import OpsSubTabs, { BEHAVIOR_TABS } from '../../components/ops/OpsSubTabs';
 import { dateSuffix, downloadCSV } from '../../utils/download';
 import './OpsApproval.css';
 import './OpsBehavior.css';
+import { BEHAVIOR_SOURCE_LABEL } from '../../constants/behaviorSources';
 
 const PAGE_SIZE = 50;
 const EXPORT_CAP = 2000; // CSV 내보내기 상한 (서버 페이지 200 × 10회)
 
-const SOURCE_LABEL: Record<string, string> = {
-  game: '인앱 게임',
-  'edu-api': '학습 문제 캡차',
-  forest: '메인 캡차(숲)', // 로그인 게이트 forest 캡차 — 원시 문자열 노출 방지
-  captcha: '캡차 API',
-};
+const SOURCE_LABEL = BEHAVIOR_SOURCE_LABEL; // ★공용 상수 — 내보내기 화면과 같은 말을 쓴다
 const RISK_LABEL: Record<string, string> = { low: '낮음', review: '검토', elevated: '높음' };
 const GROUP_LABEL: Record<string, string> = {
   child: '아동 (학생 계정)',
@@ -434,9 +430,9 @@ export default function OpsBehavior() {
         <div className="op-bh-filters">
           <select className="op-bh-select" value={source} onChange={(e) => setSource(e.target.value)}>
             <option value="">출처 전체</option>
-            <option value="game">인앱 게임</option>
+            <option value="game">{SOURCE_LABEL.game}</option>
             <option value="edu-api">학습 문제 캡차</option>
-            <option value="forest">메인 캡차(숲)</option>
+            <option value="forest">{SOURCE_LABEL.forest}</option>
           </select>
           <select className="op-bh-select" value={group} onChange={(e) => setGroup(e.target.value)}>
             <option value="">그룹 전체</option>

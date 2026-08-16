@@ -6,6 +6,7 @@ import OpsNav from '../../components/ops/OpsNav';
 import OpsSubTabs, { BEHAVIOR_TABS } from '../../components/ops/OpsSubTabs';
 import './OpsApproval.css';
 import './OpsBehaviorExport.css';
+import { BEHAVIOR_SOURCE_OPTIONS } from '../../constants/behaviorSources';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -17,12 +18,7 @@ import './OpsBehaviorExport.css';
  */
 type Mode = 'aggregate' | 'rows';
 
-const SOURCES = [
-  { v: '', label: '전체' },
-  { v: 'edu-api', label: '교육형 위젯' },
-  { v: 'game', label: '인앱 게임' },
-  { v: 'forest', label: '메인 캡차' },
-];
+const SOURCES = BEHAVIOR_SOURCE_OPTIONS; // ★공용 상수 — 행동 데이터 화면과 같은 말·차례
 const DATASETS = [
   { v: 'included', label: '학습셋 포함(큐레이션됨)' },
   { v: 'candidate', label: '후보' },
