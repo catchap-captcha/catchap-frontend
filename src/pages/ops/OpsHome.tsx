@@ -190,7 +190,7 @@ export default function OpsHome() {
                 icon="ph-fill ph-fingerprint"
                 tone="review"
                 value={d.behaviorReview}
-                label="행동 데이터 검토"
+                label="행동 데이터 검토 · 봇 의심"
               />
             </div>
 
@@ -233,11 +233,15 @@ export default function OpsHome() {
                 {dash && (
                   <div className="oh-health-foot">
                     <div className="oh-health-foot-row">
-                      <span>오늘 API 호출</span>
+                      <span title="발급한 API 키로 외부에서 부른 횟수(오늘 0시부터). 학생이 콘솔에서 캡차를 푸는 것은 여기 안 들어갑니다.">
+                        오늘 외부 API 호출
+                      </span>
                       <b>{dash.api_calls_today.toLocaleString()}</b>
                     </div>
                     <div className="oh-health-foot-row">
-                      <span>오류율</span>
+                      <span title="위 호출 중 서버 잘못(500 이상)으로 실패한 비율. 잘못된 요청(4xx)은 세지 않습니다.">
+                        그중 서버 오류
+                      </span>
                       <b>{dash.error_rate}</b>
                     </div>
                   </div>
@@ -252,7 +256,7 @@ export default function OpsHome() {
                 </div>
                 <div className="oh-scales">
                   <ScaleStat value={dash?.organizations} label="기관" />
-                  <ScaleStat value={dash?.users} label="사용자" />
+                  <ScaleStat value={dash?.users} label="운영자·강사" />
                   <ScaleStat value={dash?.students} label="학생" />
                   <ScaleStat value={dash?.active_api_keys} label="활성 API 키" />
                 </div>
