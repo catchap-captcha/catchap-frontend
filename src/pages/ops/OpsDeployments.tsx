@@ -4,6 +4,7 @@ import OpsNav from '../../components/ops/OpsNav';
 import './OpsApproval.css'; // 표준 콘솔 셸(op-root/op-main)·테마 토큰 — 다른 페이지와 폭·색을 맞춘다
 import './OpsDeployments.css';
 import SystemScreenGuide from '../../components/ops/SystemScreenGuide';
+import { SERVICE_NAME_META } from '../../constants/systemServices';
 
 /**
  * 배포 현황 — 지금 무엇이 떠 있나.
@@ -32,13 +33,17 @@ function ago(iso: string | null): string {
   return new Date(iso).toLocaleDateString('ko-KR');
 }
 
-/** 서비스 이름을 사람이 읽는 말로. 모르는 이름은 그대로 둔다. */
-const LABEL: Record<string, string> = {
-  'backend-api': '백엔드 API',
-  frontend: '화면',
-  'captcha-api': '캡차',
-  'behavior-ai': '행동 판별 AI',
-};
+/** 서비스 이름을 사람이 읽는 말로. 모르는 이름은 그대로 둔다.
+ *
+ * ★이 화면이 ★자기 표를 따로 갖고 있어서 다른 화면과 말이 갈렸다(0816 실측) —
+ *     frontend      배포 현황 「화면」        ↔  시스템 상태 「프론트」
+ *     captcha-api   배포 현황 「캡차」        ↔  시스템 상태 「캡차 API」
+ *     behavior-ai   배포 현황 「행동 판별 AI」 ↔  시스템 상태 「행동 AI」
+ *     stt-worker    배포 현황 ★이름이 없어 영문 그대로  ↔  시스템 상태 「STT 워커」
+ *   공용 상수 하나를 쓴다 — 새 서비스가 늘면 거기에만 이름을 붙이면 된다. */
+const LABEL: Record<string, string> = Object.fromEntries(
+  Object.entries(SERVICE_NAME_META).map(([k, v]) => [k, v.label]),
+);
 
 export default function OpsDeployments() {
   const [snap, setSnap] = useState<DeploymentSnapshot | null>(null);

@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { lectureApi, thumbnailSrc, type OpsCourse } from '../../api/lectures';
@@ -7,6 +8,7 @@ import { ExamQuestionsModal, PricingModal } from './OpsLectures';
 import './OpsApproval.css';
 import './OpsRenewalShared.css';
 import './OpsCourses.css';
+import { PATHS } from '../../routes/paths';
 
 // 코스 '분야' = 관심사·문제은행 필터와 공유하는 정본(interestTaxonomy COURSE_FIELDS).
 // 별도 '분류(category)'는 폐지 — 분야 하나로 일원화했다(과목 필드도 화면에선 '분야'로 부른다).
@@ -158,9 +160,11 @@ export default function OpsCourses() {
       <main className="op-main crs-page">
         <div className="op-head">
           <div>
-            <h1 className="op-title">코스 관리</h1>
+            <h1 className="op-title">{isOps ? '코스 점검' : '코스 관리'}</h1>
             <p className="op-sub" style={{ maxWidth: 620 }}>
-              여러 강의를 코스로 묶어 학생 화면에서 하나의 과정으로 보여줍니다. 코스는 한 과목으로 고정됩니다.
+              {isOps
+                ? '올라온 코스를 훑어보고, 문제가 있으면 비공개로 돌립니다. 코스를 만들고 고치는 건 강사가 하고, 운영자는 보기와 공개/비공개만 할 수 있어요.'
+                : '여러 강의를 코스로 묶어 학생 화면에서 하나의 과정으로 보여줍니다. 코스는 한 과목으로 고정됩니다.'}
             </p>
           </div>
           {!isOps && (
@@ -174,7 +178,19 @@ export default function OpsCourses() {
         <div className="crs-banner">
           <i className="ph ph-info" />
           <span>
-            코스를 삭제해도 담긴 강의는 삭제되지 않고 '미분류'로 풀립니다. 분야를 바꾸면 그 코스의 강의·연습문항도 함께 옮겨가요.
+            {isOps ? (
+                <>
+                  {/* ★실측(0816) — 코스를 비공개로 돌려도 ★담긴 강의는 학생 강의 목록에 그대로
+                      보인다. 학생 강의 목록(GET /lectures)·상세·재생 어디도 Course.status 를
+                      보지 않고 Lecture.status 만 본다. 운영자가 "코스를 내렸으니 됐다" 고
+                      믿으면 ★부적절한 강의가 그대로 노출된다. */}
+                  코스를 비공개로 하면 <b>코스 목록에서만</b> 내려갑니다 — 담긴 강의는 강의
+                  목록에 그대로 보여요. 강의도 내리려면 <Link to={PATHS.OPS_LECTURE_ADMIN}>강의 점검</Link>에서
+                  각각 비공개로 돌리세요.
+                </>
+              ) : (
+                "코스를 삭제해도 담긴 강의는 삭제되지 않고 '미분류'로 풀립니다. 분야를 바꾸면 그 코스의 강의·연습문항도 함께 옮겨가요."
+              )}
           </span>
         </div>
 

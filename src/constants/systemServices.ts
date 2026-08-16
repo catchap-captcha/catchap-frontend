@@ -39,6 +39,14 @@ export const SERVICE_NAME_META: Record<
   { icon: string; label: string; desc: string; kind: ServiceKind }
 > = {
   // ── 서비스가 도나 (따로 뜬 서버들) ─────────────────────────────
+  // ★시스템 상태 화면에는 안 나온다(그 화면을 만들어 보내는 것이 백엔드 자신이라).
+  //   배포 현황 화면은 백엔드도 그리므로 이름이 필요하다 — 그쪽이 따로 표를 갖지 않게 여기 둔다.
+  'backend-api': {
+    icon: 'ph-hard-drives',
+    label: '백엔드 API',
+    desc: '데이터를 읽고 쓰고 화면에 내려 주는 서버',
+    kind: 'serving',
+  },
   'captcha-api': {
     icon: 'ph-shield-check',
     label: '캡차 API',
