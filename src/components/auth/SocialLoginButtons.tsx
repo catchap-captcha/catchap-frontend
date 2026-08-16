@@ -97,6 +97,9 @@ export default function SocialLoginButtons({
   const [providers, setProviders] = useState<SocialProviderInfo[]>([]);
   const [busy, setBusy] = useState<SocialProvider | null>(null);
   const [error, setError] = useState('');
+  // '다른 계정으로 로그인' — 켜면 provider 에게 다시 물어보라고 요청한다.
+  // ★기본이 꺼짐인 이유: 항상 켜 두면 매번 다시 로그인하게 되어 간편 로그인이 아니게 된다.
+  const [reauth, setReauth] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -119,7 +122,7 @@ export default function SocialLoginButtons({
     setError('');
     setBusy(provider);
     try {
-      const res = await socialApi.authorize(provider);
+      const res = await socialApi.authorize(provider, reauth);
       rememberSocialIntent(provider, intent);
       window.location.href = res.authorize_url;
     } catch {
@@ -166,6 +169,20 @@ export default function SocialLoginButtons({
       )}
 
       {buttonList}
+
+      {/* 다른 계정으로 로그인 — provider 세션이 남아 있어 같은 계정으로 되돌아올 때 쓴다.
+          공용 PC나 계정이 여러 개인 경우가 아니면 쓸 일이 없어 작은 링크로만 둔다. */}
+      <button
+        type="button"
+        className={`sl-reauth${reauth ? ' sl-reauth--on' : ''}`}
+        onClick={() => setReauth((v) => !v)}
+        aria-pressed={reauth}
+      >
+        <i className={`ph-bold ${reauth ? 'ph-check-circle' : 'ph-user-switch'}`} />
+        {reauth
+          ? `${intent === 'connect' ? '연결할' : '로그인할'} 계정을 직접 고를게요`
+          : '다른 계정으로 ' + (intent === 'connect' ? '연결하기' : '로그인')}
+      </button>
 
       {error && (
         <div className="lg-formerr">

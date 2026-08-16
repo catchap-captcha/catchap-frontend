@@ -108,3 +108,23 @@ html[data-theme='dark'] .sl-btn--google,
     animation: none;
   }
 }
+
+/* 다른 계정으로 로그인 — 소셜 버튼 아래 작은 링크. 평소엔 눈에 띄지 않아야 한다
+   (공용 PC·다중 계정에서만 쓰는 예외 경로다). 켜면 색으로 상태를 알린다. */
+.sl-reauth {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  margin-top: 10px;
+  padding: 6px 4px;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink-3);
+}
+.sl-reauth:hover { color: var(--ink-2); }
+.sl-reauth--on { color: var(--brand-ink, var(--ink)); }
