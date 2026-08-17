@@ -314,3 +314,13 @@ export function auditValue(v: unknown): string {
   };
   return STATUS[String(v)] ?? String(v);
 }
+
+
+
+Object.assign(AUDIT_ACTION_META, {
+    'behavior.export.preview': { label: '행동데이터 미리보기', icon: 'ph-eye', cls: 'neutral' },
+    'behavior.export.requested': { label: '행동데이터 내보내기 요청', icon: 'ph-clock', cls: 'warn' },
+    'behavior.export.completed': { label: '행동데이터 파일 생성 완료', icon: 'ph-check-circle', cls: 'ok' },
+    'behavior.export.failed': { label: '행동데이터 파일 생성 실패', icon: 'ph-warning-circle', cls: 'no' },
+    'behavior.export.download_issued': { label: '행동데이터 다운로드 링크 발급', icon: 'ph-link-simple', cls: 'warn' },
+});
