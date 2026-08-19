@@ -63,6 +63,21 @@
   gap: 6px;
   flex-shrink: 0;
 }
+/* 남은 시간. 숫자 폭이 고정돼야 초가 바뀔 때 옆 버튼이 안 흔들린다
+   (`tabular-nums`). 평소에는 눈에 안 띄는 회색으로 두고, 급할 때만 색을 준다 —
+   내내 빨갛게 두면 사람이 서두르게 되고, 서두른 궤적은 오탐을 늘린다. */
+.fc-timer {
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-3);
+  padding: 6px 8px;
+  border-radius: var(--r-sm);
+  background: var(--surface-2, transparent);
+}
+.fc-timer.is-urgent {
+  color: var(--danger, #d92d20);
+}
 .fc-text-btn {
   border: 1px solid var(--line-strong);
   background: var(--surface);

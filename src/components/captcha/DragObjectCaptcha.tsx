@@ -153,6 +153,13 @@ export default function DragObjectCaptcha({ onToken, onClose }: Props) {
   /** 잠깐 쉬는 것(false)과 자동화 의심으로 막힌 것(true)을 나눈다. */
   const [blocked, setBlocked] = useState(false);
   const [message, setMessage] = useState('보안 확인을 준비하고 있습니다.');
+  /** 이 문제에 남은 초. `null` 이면 아직 문제가 없거나 시간을 못 읽은 것이다.
+   *
+   *  ★서버는 문제 하나를 60초만 살려두고(`CHALLENGE_TTL_SECONDS`), 지나서 제출하면
+   *  410 을 돌려준다. 그런데 화면은 `expires_at` 을 받아만 놓고 안 썼다 — 그래서
+   *  천천히 푼 사람이 **정답을 골라놓고도** 아무 설명 없이 실패했다. 판정이 틀린
+   *  것보다 규칙을 안 알려준 쪽이 더 억울하다. */
+  const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
 
   const sessionIdRef = useRef<string>(makeSessionId());
   const startedAtRef = useRef<number>(0);
@@ -258,6 +265,46 @@ export default function DragObjectCaptcha({ onToken, onClose }: Props) {
     const timer = window.setTimeout(() => setCooldown((n) => n - 1), 1000);
     return () => window.clearTimeout(timer);
   }, [phase, cooldown, blocked, load]);
+
+  // 이 문제에 남은 시간을 세고, 0 이 되면 **틀린 것으로 처리**한다.
+  //
+  // ★서버는 `expires_at`(서버 시계 기준 시각) 하나만 보낸다. 남은 길이를 알려면
+  //   기기 시계와 빼는 수밖에 없는데, 기기 시계는 몇 분씩 틀어져 있기도 하다.
+  //
+  //   그래서 **결과가 말이 되는지 먼저 본다.** 0 이하이거나 10분을 넘으면 시계가
+  //   어긋난 것으로 보고 **타이머를 안 그리고 실패 처리도 안 한다.** 시계가 틀렸다는
+  //   이유로 사람을 떨어뜨리면 안 된다 — 그 사람은 무엇을 잘못했는지 영영 모른다.
+  //   그 경우에도 서버의 60초는 그대로 살아 있어 보안이 약해지지는 않는다.
+  //
+  // ★0.25초마다 센다. 1초 간격이면 화면 숫자가 한 번씩 건너뛰어 보인다.
+  useEffect(() => {
+    if (phase !== 'ready' || !challenge) {
+      setSecondsLeft(null);
+      return;
+    }
+    const total = (Date.parse(challenge.expires_at) - Date.now()) / 1000;
+    const trustworthy = Number.isFinite(total) && total > 0 && total <= 600;
+    if (!trustworthy) {
+      setSecondsLeft(null);
+      return;
+    }
+    const endsAt = performance.now() + total * 1000;
+    setSecondsLeft(Math.ceil(total));
+
+    const id = window.setInterval(() => {
+      const left = Math.max(0, Math.ceil((endsAt - performance.now()) / 1000));
+      setSecondsLeft(left);
+      if (left > 0) return;
+      window.clearInterval(id);
+      // 오답과 같은 흐름을 탄다 — 실패를 알리고 잠시 뒤 새 문제. 다르게 굴면
+      // 사용자는 "고장났나" 로 읽는다.
+      track('challenge_expired');
+      setPhase('error');
+      setMessage('시간이 지나 확인에 실패했습니다. 새 문제로 다시 시도해주세요.');
+      window.setTimeout(() => void load(), 1400);
+    }, 250);
+    return () => window.clearInterval(id);
+  }, [phase, challenge, load, track]);
 
   useEffect(() => {
     void load();
@@ -461,6 +508,19 @@ export default function DragObjectCaptcha({ onToken, onClose }: Props) {
             <p className="fc-instruction">{message}</p>
           </div>
           <div className="fc-head-actions">
+            {/* 남은 시간. 시간을 못 읽었으면(null) 아예 안 그린다 — 멈춘 타이머는
+                없는 것보다 나쁘다. 10초 아래로 내려가면 색이 바뀐다.
+                `aria-live="off"` 로 둔 이유: 매초 바뀌는 숫자를 읽어 주면 화면
+                낭독기 사용자는 문제 설명을 못 듣는다. 대신 남은 시간을 문구로 붙인다. */}
+            {secondsLeft !== null && (
+              <span
+                className={`fc-timer ${secondsLeft <= 10 ? 'is-urgent' : ''}`}
+                aria-live="off"
+                aria-label={`남은 시간 ${secondsLeft}초`}
+              >
+                {Math.floor(secondsLeft / 60)}:{String(secondsLeft % 60).padStart(2, '0')}
+              </span>
+            )}
             <button
               type="button"
               className="fc-text-btn"
